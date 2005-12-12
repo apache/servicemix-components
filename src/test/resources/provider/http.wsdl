@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions name='Provider' 
+	         targetNamespace='http://http.servicemix.org/Test' 
+	         xmlns:tns='http://http.servicemix.org/Test' 
+             xmlns:http='http://schemas.xmlsoap.org/wsdl/http/' 
+             xmlns='http://schemas.xmlsoap.org/wsdl/'
+			 xmlns:jbi='http://servicemix.org/wsdl/jbi/'>
+
+   <portType name='ProviderInterface'>
+   </portType>
+
+   <binding name='ProviderJmsBinding' type='tns:ProviderInterface'>
+		<http:binding verb="GET"></http:binding>
+   </binding>
+
+   <service name='Provider'>
+      <port name='TestEndpoint' binding='tns:ProviderJmsBinding'>
+			<http:address location="http://localhost:8192/CheckAvailability">
+			</http:address>
+			<jbi:endpoint role="provider"/>
+      </port>
+   </service>
+</definitions>

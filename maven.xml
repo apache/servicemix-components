@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project default="default"
+    xmlns:ant="jelly:ant">
+
+  <goal name="default" prereqs="jbi:install"/>
+
+  <goal name="nightly" prereqs="clean, jbi:install, jbi:deploy"/>
+
+  <postGoal name="java:compile">
+    <attainGoal name="xbean:generate" />
+  </postGoal>
+
+  <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files.">
+    <path id="test.classpath">
+      <pathelement path="${maven.build.dest}" />
+      <pathelement path="${basedir}/target/classes" />
+      <pathelement path="${basedir}/target/test-classes" />
+      <path refid="maven.dependency.classpath" />
+    </path>
+
+    <taskdef name="xsdGenerate" classname="org.xbean.spring.generator.MappingGeneratorTask">
+      <classpath refid="test.classpath" />
+    </taskdef>
+    <xsdGenerate destFile="${basedir}/target/servicemix-http-${pom.currentVersion}.xsd" namespace="http://servicemix.org/http/1.0"
+    		classpathref="test.classpath" srcdir="${basedir}/src/main/java"  metaInfDir="${basedir}/target/generated/"/>
+  	<copy file="${basedir}/target/servicemix-http-${pom.currentVersion}.xsd" todir="${basedir}/target/generated/"/>
+  	<copy file="${basedir}/target/servicemix-http-${pom.currentVersion}.xsd" todir="${basedir}/../xdocs"/>    
+    <copy file="${basedir}/target/servicemix-http-${pom.currentVersion}.xsd.html" todir="${basedir}/../xdocs"/>
+  </goal>
+</project>
