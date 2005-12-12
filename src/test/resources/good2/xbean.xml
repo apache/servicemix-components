@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<beans xmlns:jsr181="http://servicemix.org/jsr181/1.0">
+
+  <jsr181:endpoint endpoint="endpoint1"
+  				   typeMapping="xmlbeans">
+    <jsr181:pojo>
+      <bean class="test.EchoService" />
+    </jsr181:pojo>
+  </jsr181:endpoint>
+
+  <jsr181:endpoint pojoClass="test.EchoService2"
+  				   annotations="none" />
+  				   
+</beans>

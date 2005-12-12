@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.org/config/1.0" 
+	   xmlns:jsr181="http://servicemix.org/jsr181/1.0">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true">
+    <sm:activationSpecs>
+
+      <!-- output using a POJO -->
+      <sm:activationSpec>
+      	<sm:component>
+            <jsr181:component>
+            	<jsr181:endpoints>
+            		<jsr181:endpoint pojoClass="test.EchoService2"
+  				   					 annotations="none" />
+            	</jsr181:endpoints>
+            </jsr181:component>
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+
+</beans>

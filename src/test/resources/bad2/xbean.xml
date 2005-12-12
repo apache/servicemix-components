@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<beans>
+
+  <bean class="test.EchoService"/>
+  				   
+</beans>

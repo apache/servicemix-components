@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<beans>
+  <bean name="endpoint1" class="org.servicemix.jsr181.Jsr181Endpoint">
+  	<property name="typeMapping" value="xmlbeans"/>
+    <property name="pojo">
+      <bean class="test.EchoService" />
+    </property>
+  </bean>
+</beans>
