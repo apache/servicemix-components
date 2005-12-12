@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions name='Echo' 
+	         targetNamespace='http://jms.servicemix.org/Test' 
+	         xmlns:tns='http://jms.servicemix.org/Test' 
+             xmlns:jms='http://servicemix.org/wsdl/jms/' 
+             xmlns='http://schemas.xmlsoap.org/wsdl/'
+			 xmlns:jbi='http://servicemix.org/wsdl/jbi/'>
+
+   <portType name='EchoInterface'>
+   </portType>
+
+   <binding name='EchoJmsBinding' type='tns:EchoInterface'>
+      <jms:binding />
+   </binding>
+
+   <service name='Echo'>
+      <port name='EchoEndpoint' binding='tns:EchoJmsBinding'>
+	    <jms:address destinationStyle="queue"
+		             jmsProviderDestinationName="queue/A"
+		             jndiConnectionFactoryName="ConnectionFactory"/>
+		<jbi:endpoint role="consumer"/>
+      </port>
+   </service>
+</definitions>
