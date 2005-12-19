@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<wsnt:Subscribe
+  xmlns:wsnt="http://docs.oasis-open.org/wsn/b-1"
+  xmlns:wsa="http://www.w3.org/2005/03/addressing"
+  xmlns:ncex="http://www.consumer.org"
+  xmlns:npex="http://www.producer.org">
+  <wsnt:ConsumerReference>
+    <wsa:Address>
+      http://www.consumer.org/ConsumerEndpoint
+    </wsa:Address>
+  </wsnt:ConsumerReference>
+  <wsnt:Filter>
+    <wsnt:TopicExpression Dialect="http://docs.oasis-open.org/wsn/t-1/TopicExpression/Simple">
+      npex:SomeTopic
+    </wsnt:TopicExpression>
+    <wsnt:MessageContent Dialect="http://www.w3.org/TR/1999/REC-xpath-19991116">
+      boolean(ncex:Producer="15")
+    </wsnt:MessageContent>
+  </wsnt:Filter>
+  <wsnt:InitialTerminationTime>
+    2007-12-25T00:00:00.00000Z
+  </wsnt:InitialTerminationTime>
+</wsnt:Subscribe>
