@@ -1,5 +1,8 @@
 package org.servicemix.wsn.jms;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -9,6 +12,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +42,11 @@ import org.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.servicemix.wsn.jaxws.UnableToDestroySubscriptionFault;
 import org.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public abstract class JmsSubscription extends AbstractSubscription implements MessageListener {
 
@@ -114,10 +129,7 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 	public void onMessage(Message message) {
 		try {
 			TextMessage text = (TextMessage) message;
-	        boolean match = true;
-			if (contentFilter != null) {
-				match = doFilter(text.getText());
-			}
+	        boolean match = doFilter(text.getText());
 			if (match) {
 				doNotify(text.getText());
 			}
@@ -127,6 +139,44 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 	}
 	
 	protected boolean doFilter(String notify) {
+		if (contentFilter != null) {
+			if (!contentFilter.getDialect().equals(XPATH1_URI)) {
+				throw new IllegalStateException("Unsupported dialect: " + contentFilter.getDialect());
+			}
+			try {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				factory.setNamespaceAware(true);
+				Document doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(notify)));
+				Element root = doc.getDocumentElement();
+				Element holder = (Element) root.getElementsByTagNameNS("http://docs.oasis-open.org/wsn/b-1", "NotificationMessage").item(0);
+				Element message = (Element) holder.getElementsByTagNameNS("http://docs.oasis-open.org/wsn/b-1", "Message").item(0);
+				Element content = null;
+				for (int i = 0; i < message.getChildNodes().getLength(); i++) {
+					if (message.getChildNodes().item(i) instanceof Element) {
+						content = (Element) message.getChildNodes().item(i);
+						break;
+					}
+				}
+				XPathFactory xpfactory = XPathFactory.newInstance();
+				XPath xpath = xpfactory.newXPath();
+				XPathExpression exp = xpath.compile(contentFilter.getContent().get(0).toString());
+				Boolean ret = (Boolean) exp.evaluate(content, XPathConstants.BOOLEAN);
+				return ret.booleanValue();
+			} catch (SAXException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParserConfigurationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (XPathExpressionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return false;
+		}
 		return true;
 	}
 	
