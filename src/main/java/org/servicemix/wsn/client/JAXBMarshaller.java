@@ -1,4 +1,4 @@
-package org.servicemix.wsn;
+package org.servicemix.wsn.client;
 
 import java.io.StringWriter;
 

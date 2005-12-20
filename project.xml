@@ -94,7 +94,7 @@
       <artifactId>servicemix-jbi</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
-        <_eclipse.dependency>true</_eclipse.dependency>
+        <eclipse.dependency>true</eclipse.dependency>
       </properties>
     </dependency>
     <dependency>
@@ -102,7 +102,7 @@
       <artifactId>servicemix-core</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
-        <_eclipse.dependency>true</_eclipse.dependency>
+        <eclipse.dependency>true</eclipse.dependency>
       </properties>
     </dependency>
     <dependency>
@@ -118,7 +118,7 @@
       <artifactId>servicemix-components</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
-        <_eclipse.dependency>true</_eclipse.dependency>
+        <eclipse.dependency>true</eclipse.dependency>
       </properties>
     </dependency>
     <dependency>
