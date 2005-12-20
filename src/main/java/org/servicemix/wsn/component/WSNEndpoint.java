@@ -1,6 +1,7 @@
 package org.servicemix.wsn.component;
 
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +10,8 @@ import java.util.List;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessageExchange.Role;
@@ -17,8 +20,11 @@ import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
+import javax.xml.ws.WebFault;
 
+import org.oasis_open.docs.wsrf.bf_1.BaseFaultType;
 import org.servicemix.common.Endpoint;
 import org.servicemix.common.ExchangeProcessor;
 import org.servicemix.jbi.jaxp.StringSource;
@@ -61,6 +67,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 		}
 		endpointInterface = Class.forName(ws.endpointInterface());
 		List<Class> classes = new ArrayList<Class>();
+		classes.add(JbiFault.class);
 		for (Method mth : endpointInterface.getMethods()) {
 			WebMethod wm = (WebMethod) mth.getAnnotation(WebMethod.class);
 			if (wm != null) {
@@ -84,6 +91,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 		return this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void process(MessageExchange exchange) throws Exception {
 		if (exchange.getStatus() == ExchangeStatus.DONE) {
 			return;
@@ -104,8 +112,33 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 		if (webMethod ==  null) {
 			throw new IllegalStateException("Could not determine invoked web method");
 		}
-		Object output = webMethod.invoke(pojo, new Object[] { input });
-		if (webMethod.getAnnotation(Oneway.class) != null) {
+		boolean oneWay = webMethod.getAnnotation(Oneway.class) != null;
+		Object output;
+		try {
+			output = webMethod.invoke(pojo, new Object[] { input });
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof Exception) {
+				WebFault fa = (WebFault) e.getCause().getClass().getAnnotation(WebFault.class);
+				if (exchange instanceof InOnly == false && fa != null) {
+					BaseFaultType info = (BaseFaultType) e.getCause().getClass().getMethod("getFaultInfo", null).invoke(e.getCause(), null);
+					Fault fault = exchange.createFault();
+					exchange.setFault(fault);
+					exchange.setError((Exception) e.getCause());
+					StringWriter writer = new StringWriter();
+					jaxbContext.createMarshaller().marshal(new JbiFault(info), writer);
+					fault.setContent(new StringSource(writer.toString()));
+					channel.send(exchange);
+					return;
+				} else {
+					throw (Exception) e.getCause();
+				}
+			} else if (e.getCause() instanceof Error) {
+				throw (Error) e.getCause();
+			} else {
+				throw new RuntimeException(e.getCause());
+			}
+		}
+		if (oneWay) {
 			exchange.setStatus(ExchangeStatus.DONE);
 			channel.send(exchange);
 		} else {
@@ -115,6 +148,22 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 			jaxbContext.createMarshaller().marshal(output, writer);
 			msg.setContent(new StringSource(writer.toString()));
 			channel.send(exchange);
+		}
+	}
+	
+	@XmlRootElement(name = "Fault")
+	public static class JbiFault {
+		private BaseFaultType info;
+		public JbiFault() {
+		}
+		public JbiFault(BaseFaultType info) {
+			this.info = info;
+		}
+		public BaseFaultType getInfo() {
+			return info;
+		}
+		public void setInfo(BaseFaultType info) {
+			this.info = info;
 		}
 	}
 	
@@ -133,6 +182,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	protected WebService getWebServiceAnnotation() {
 		for (Class cl = pojo.getClass(); cl != null; cl = cl.getSuperclass()) {
 			WebService ws = (WebService) cl.getAnnotation(WebService.class);
