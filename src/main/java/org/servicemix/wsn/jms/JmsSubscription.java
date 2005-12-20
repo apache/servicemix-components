@@ -44,7 +44,6 @@ import org.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -54,7 +53,6 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 	
 	private Connection connection;
 	private Session session;
-    private MessageConsumer consumer;
     private JmsTopicExpressionConverter topicConverter;
     private Topic jmsTopic;
 	
@@ -66,7 +64,7 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 	protected void start() throws SubscribeCreationFailedFault {
 		try {
 			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            consumer = session.createConsumer(jmsTopic);
+			MessageConsumer consumer = session.createConsumer(jmsTopic);
             consumer.setMessageListener(this);
 		} catch (JMSException e) {
 			SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
@@ -88,14 +86,36 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 
 	@Override
 	protected void pause() throws PauseFailedFault {
-		PauseFailedFaultType fault = new PauseFailedFaultType();
-		throw new PauseFailedFault("Pause not supported", fault);
+		if (session == null) {
+			PauseFailedFaultType fault = new PauseFailedFaultType();
+			throw new PauseFailedFault("Subscription is already paused", fault);
+		} else {
+			try {
+				session.close();
+			} catch (JMSException e) {
+				PauseFailedFaultType fault = new PauseFailedFaultType();
+				throw new PauseFailedFault("Error pausing subscription", fault, e);
+			} finally {
+				session = null;
+			}
+		}
 	}
 
 	@Override
 	protected void resume() throws ResumeFailedFault {
-		ResumeFailedFaultType fault = new ResumeFailedFaultType();
-		throw new ResumeFailedFault("Resume not supported", fault);
+		if (session != null) {
+			ResumeFailedFaultType fault = new ResumeFailedFaultType();
+			throw new ResumeFailedFault("Subscription is already running", fault);
+		} else {
+			try {
+				session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+				MessageConsumer consumer = session.createConsumer(jmsTopic);
+	            consumer.setMessageListener(this);
+			} catch (JMSException e) {
+				ResumeFailedFaultType fault = new ResumeFailedFaultType();
+				throw new ResumeFailedFault("Error resuming subscription", fault, e);
+			}
+		}
 	}
 
 	@Override
@@ -108,12 +128,15 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 
 	@Override
 	protected void unsubscribe() throws UnableToDestroySubscriptionFault {
+		super.unsubscribe();
 		if (session != null) {
 			try {
 				session.close();
 			} catch (JMSException e) {
 				UnableToDestroySubscriptionFaultType fault = new UnableToDestroySubscriptionFaultType();
 				throw new UnableToDestroySubscriptionFault("Unable to unsubscribe", fault, e);
+			} finally {
+				session = null;
 			}
 		}
 	}
@@ -163,17 +186,13 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 				Boolean ret = (Boolean) exp.evaluate(content, XPathConstants.BOOLEAN);
 				return ret.booleanValue();
 			} catch (SAXException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.warn("Could not filter notification", e);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.warn("Could not filter notification", e);
 			} catch (ParserConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.warn("Could not filter notification", e);
 			} catch (XPathExpressionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.warn("Could not filter notification", e);
 			}
 			return false;
 		}
