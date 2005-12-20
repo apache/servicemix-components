@@ -11,6 +11,7 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
 import org.oasis_open.docs.wsn.b_1.Destroy;
 import org.oasis_open.docs.wsn.b_1.DestroyResponse;
 import org.oasis_open.docs.wsn.b_1.GetMessages;
@@ -21,6 +22,7 @@ import org.oasis_open.docs.wsn.b_1.UnableToDestroyPullPointType;
 import org.servicemix.wsn.jaxws.NotificationConsumer;
 import org.servicemix.wsn.jaxws.PullPoint;
 import org.servicemix.wsn.jaxws.ResourceUnknownFault;
+import org.servicemix.wsn.jaxws.UnableToCreatePullPoint;
 import org.servicemix.wsn.jaxws.UnableToDestroyPullPoint;
 
 @WebService(endpointInterface = "org.servicemix.wsn.PullPointConsumer")
@@ -88,6 +90,9 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
     	log.debug("Destroy");
     	destroy();
     	return new DestroyResponse();
+    }
+    
+    public void create(CreatePullPoint createPullPointRequest) throws UnableToCreatePullPoint {
     }
     
 	protected abstract void store(NotificationMessageHolderType messageHolder);

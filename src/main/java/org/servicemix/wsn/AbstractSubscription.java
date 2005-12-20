@@ -236,7 +236,12 @@ public abstract class AbstractSubscription extends AbstractEndpoint
 		this.terminationTime = terminationTime;
 	}
 	
-	public abstract void subscribe(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault;
+	public void create(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+		validateSubscription(subscribeRequest);
+		start();
+	}
+	
+	protected abstract void start() throws SubscribeCreationFailedFault;
 	
 	protected abstract void pause() throws PauseFailedFault;
 	

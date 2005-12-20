@@ -35,7 +35,7 @@ public class WSNLifeCycle extends BaseLifeCycle {
 	@Override
 	protected void doInit() throws Exception {
 		super.doInit();
-		notificationBroker = new JbiNotificationBroker("Broker");
+		notificationBroker = new JbiNotificationBroker(configuration.getBrokerName());
 		notificationBroker.setContext(context);
 		notificationBroker.setManager(new WSNEndpointManager());
 		if (connectionFactory == null) {

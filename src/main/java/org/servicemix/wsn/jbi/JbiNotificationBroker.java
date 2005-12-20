@@ -3,6 +3,7 @@ package org.servicemix.wsn.jbi;
 import javax.jbi.component.ComponentContext;
 
 import org.servicemix.wsn.jms.JmsNotificationBroker;
+import org.servicemix.wsn.jms.JmsPublisher;
 import org.servicemix.wsn.jms.JmsSubscription;
 
 public class JbiNotificationBroker extends JmsNotificationBroker {
@@ -18,6 +19,14 @@ public class JbiNotificationBroker extends JmsNotificationBroker {
 		JbiSubscription subscription = new JbiSubscription(name);
 		subscription.setContext(context);
 		return subscription;
+	}
+
+	@Override
+	protected JmsPublisher createJmsPublisher(String name) {
+		JbiPublisher publisher = new JbiPublisher(name);
+		publisher.setContext(context);
+		publisher.setNotificationBrokerAddress(address);
+		return publisher;
 	}
 
 	public ComponentContext getContext() {

@@ -70,8 +70,8 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 	}
 
     public void init() throws Exception {
-        anonymousPublisher = createPublisher("Anonymous", null);
         register();
+        anonymousPublisher = createPublisher("Anonymous");
         anonymousPublisher.register();
     }
     
@@ -148,9 +148,9 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 		AbstractSubscription subscription = null;
 		boolean success = false;
 		try {
-			subscription = createSubcription(idGenerator.generateSanitizedId(), subscribeRequest);
+			subscription = createSubcription(idGenerator.generateSanitizedId());
 			subscriptions.put(subscription.getAddress(), subscription);
-			subscription.subscribe(subscribeRequest);
+			subscription.create(subscribeRequest);
 			subscription.register();
 			SubscribeResponse response = new SubscribeResponse();
 			response.setSubscriptionReference(createEndpointReference(subscription.getAddress()));
@@ -217,9 +217,10 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
     	AbstractPublisher publisher = null;
     	boolean success = false;
     	try {
-    		publisher = createPublisher(idGenerator.generateSanitizedId(), registerPublisherRequest);
+    		publisher = createPublisher(idGenerator.generateSanitizedId());
     		publishers.put(publisher.getAddress(), publisher);
     		publisher.register();
+    		publisher.create(registerPublisherRequest);
     		RegisterPublisherResponse response = new RegisterPublisherResponse(); 
     		response.setPublisherRegistrationReference(createEndpointReference(publisher.getAddress()));
     		success = true;
@@ -258,8 +259,9 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
     	AbstractPullPoint pullPoint = null;
     	boolean success = false;
     	try {
-    		pullPoint = createPullPoint(idGenerator.generateSanitizedId(), createPullPointRequest);
+    		pullPoint = createPullPoint(idGenerator.generateSanitizedId());
     		pullPoints.put(pullPoint.getAddress(), pullPoint);
+    		pullPoint.create(createPullPointRequest);
     		pullPoint.register();
     		CreatePullPointResponse response = new CreatePullPointResponse(); 
     		response.setPullPoint(createEndpointReference(pullPoint.getAddress()));
@@ -288,10 +290,10 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 		return epr;
 	}
 
-	protected abstract AbstractPublisher createPublisher(String name, RegisterPublisher registerPublisherRequest);
+	protected abstract AbstractPublisher createPublisher(String name);
 	
-	protected abstract AbstractPullPoint createPullPoint(String name, CreatePullPoint createPullPointRequest);
+	protected abstract AbstractPullPoint createPullPoint(String name);
 	
-	protected abstract AbstractSubscription createSubcription(String name, Subscribe subscribeRequest);
+	protected abstract AbstractSubscription createSubcription(String name);
 
 }

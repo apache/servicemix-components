@@ -12,15 +12,11 @@ import junit.framework.TestCase;
 
 import org.oasis_open.docs.wsn.b_1.Subscribe;
 import org.servicemix.wsn.jaxws.InvalidFilterFault;
-import org.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
-import org.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
 import org.servicemix.wsn.jaxws.InvalidUseRawValueFault;
 import org.servicemix.wsn.jaxws.PauseFailedFault;
 import org.servicemix.wsn.jaxws.ResumeFailedFault;
 import org.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
-import org.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
-import org.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
 
@@ -115,7 +111,7 @@ public class SubscriptionTest extends TestCase {
 		}
 
 		@Override
-		public void subscribe(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+		protected void start() throws SubscribeCreationFailedFault {
 		}
 
 		@Override

@@ -24,9 +24,7 @@ import javax.jms.Topic;
 import javax.xml.namespace.QName;
 
 import org.activemq.command.ActiveMQTopic;
-import org.oasis_open.docs.wsn.b_1.TopicExpressionDialectUnknownFaultType;
 import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
-import org.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
 
 public class JmsTopicExpressionConverter {
 
@@ -47,7 +45,7 @@ public class JmsTopicExpressionConverter {
         return answer;
     }
 
-    public ActiveMQTopic toActiveMQTopic(List<TopicExpressionType> topics) throws TopicExpressionDialectUnknownFault {
+    public ActiveMQTopic toActiveMQTopic(List<TopicExpressionType> topics) throws InvalidTopicException {
         if (topics == null || topics.size() == 0) {
             return null;
         }
@@ -59,11 +57,10 @@ public class JmsTopicExpressionConverter {
 
         ActiveMQTopic topic = new ActiveMQTopic();
         topic.setCompositeDestinations(childrenDestinations);
-        //topic.setChildDestinations(childrenDestinations);
         return topic;
     }
 
-    public ActiveMQTopic toActiveMQTopic(TopicExpressionType topic) throws TopicExpressionDialectUnknownFault {
+    public ActiveMQTopic toActiveMQTopic(TopicExpressionType topic) throws InvalidTopicException {
         String dialect = topic.getDialect();
         if (dialect == null || SIMPLE_DIALECT.equals(dialect)) {
             for (Iterator iter = topic.getContent().iterator(); iter.hasNext();) {
@@ -72,11 +69,10 @@ public class JmsTopicExpressionConverter {
                     return answer;
                 }
             }
-            throw new RuntimeException("No topic name available topic: " + topic);
+            throw new InvalidTopicException("No topic name available topic: " + topic);
         }
         else {
-        	TopicExpressionDialectUnknownFaultType fault = new TopicExpressionDialectUnknownFaultType();
-        	throw new TopicExpressionDialectUnknownFault("Topic dialect: " + dialect + " not supported", fault);
+        	throw new InvalidTopicException("Topic dialect: " + dialect + " not supported");
         }
     }
 

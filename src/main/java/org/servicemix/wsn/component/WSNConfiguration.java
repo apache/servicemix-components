@@ -6,6 +6,8 @@ public class WSNConfiguration implements WSNConfigurationMBean {
 	private String jndiProviderURL;
 	private String jndiConnectionFactoryName;
 	
+	private String brokerName = "Broker";
+	
 	public String getInitialContextFactory() {
 		return initialContextFactory;
 	}
@@ -23,5 +25,11 @@ public class WSNConfiguration implements WSNConfigurationMBean {
 	}
 	public void setJndiProviderURL(String jndiProviderURL) {
 		this.jndiProviderURL = jndiProviderURL;
+	}
+	public String getBrokerName() {
+		return brokerName;
+	}
+	public void setBrokerName(String brokerName) {
+		this.brokerName = brokerName;
 	}
 }

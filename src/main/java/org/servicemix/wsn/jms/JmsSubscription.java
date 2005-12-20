@@ -22,6 +22,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.oasis_open.docs.wsn.b_1.InvalidTopicExpressionFaultType;
 import org.oasis_open.docs.wsn.b_1.PauseFailedFaultType;
 import org.oasis_open.docs.wsn.b_1.ResumeFailedFaultType;
 import org.oasis_open.docs.wsn.b_1.Subscribe;
@@ -75,15 +76,14 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
 	@Override
 	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		super.validateSubscription(subscribeRequest);
-		jmsTopic = topicConverter.toActiveMQTopic(topic);
+		try {
+			jmsTopic = topicConverter.toActiveMQTopic(topic);
+		} catch (InvalidTopicException e) {
+			InvalidTopicExpressionFaultType fault = new InvalidTopicExpressionFaultType();
+			throw new InvalidTopicExpressionFault(e.getMessage(), fault);
+		}
 	}
 	
-	@Override
-	public void subscribe(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
-		validateSubscription(subscribeRequest);
-		start();
-	}
-
 	@Override
 	protected void pause() throws PauseFailedFault {
 		if (session == null) {

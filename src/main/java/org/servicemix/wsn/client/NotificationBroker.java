@@ -1,5 +1,7 @@
 package org.servicemix.wsn.client;
 
+import java.util.List;
+
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.xml.bind.JAXBContext;
@@ -10,6 +12,7 @@ import javax.xml.namespace.QName;
 import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
 import org.oasis_open.docs.wsn.b_1.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_1.FilterType;
+import org.oasis_open.docs.wsn.b_1.GetCurrentMessage;
 import org.oasis_open.docs.wsn.b_1.GetCurrentMessageResponse;
 import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_1.Notify;
@@ -23,34 +26,56 @@ import org.servicemix.client.DefaultServiceMixClient;
 import org.servicemix.client.ServiceMixClient;
 import org.servicemix.client.ServiceMixClientFacade;
 import org.servicemix.jbi.container.JBIContainer;
-import org.servicemix.jbi.resolver.EndpointResolver;
 import org.servicemix.jbi.resolver.ServiceNameEndpointResolver;
 import org.servicemix.wsn.AbstractSubscription;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 
-public class NotificationBroker {
+public class NotificationBroker extends AbstractWSAClient {
 
-	public static QName NOTIFICATION_BROKER = new QName("http://servicemix.org/wsnotification", "NotificationBroker"); 
+	public static String WSN_URI = "http://servicemix.org/wsnotification";
+	public static String WSN_SERVICE = "NotificationBroker";
 	
-	private ServiceMixClient client;
-	private EndpointResolver resolver;
-
+	public static QName NOTIFICATION_BROKER = new QName(WSN_URI, WSN_SERVICE); 
 	
-	public NotificationBroker(ComponentContext context) {
-		this.client = new ServiceMixClientFacade(context);
-		resolver = new ServiceNameEndpointResolver(NOTIFICATION_BROKER);
+	public NotificationBroker(ComponentContext context) throws JAXBException {
+		ServiceMixClientFacade client = new ServiceMixClientFacade(context); 
+		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+		setClient(client);
+		setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
+	}
+	
+	public NotificationBroker(ComponentContext context, String brokerName) throws JAXBException {
+		ServiceMixClientFacade client = new ServiceMixClientFacade(context); 
+		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+		setClient(client);
+		setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
+		setResolver(resolveWSA(getEndpoint()));
 	}
 	
 	public NotificationBroker(JBIContainer container) throws JBIException, JAXBException {
 		DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+		setClient(client);
+		setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
+	}
+	
+	public NotificationBroker(JBIContainer container, String brokerName) throws JBIException, JAXBException {
+		DefaultServiceMixClient client = new DefaultServiceMixClient(container);
 		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class)));
-		this.client = client;
-		resolver = new ServiceNameEndpointResolver(NOTIFICATION_BROKER);
+		setClient(client);
+		setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
+		setResolver(resolveWSA(getEndpoint()));
 	}
 	
 	public NotificationBroker(ServiceMixClient client) {
-		this.client = client;
-		resolver = new ServiceNameEndpointResolver(NOTIFICATION_BROKER);
+		setClient(client);
+		setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
+	}
+
+	public NotificationBroker(ServiceMixClient client, String brokerName) {
+		setClient(client);
+		setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
+		setResolver(resolveWSA(getEndpoint()));
 	}
 
 	public void notify(String topic, Object msg) throws JBIException {
@@ -64,7 +89,7 @@ public class NotificationBroker {
 		holder.setMessage(new NotificationMessageHolderType.Message());
 		holder.getMessage().setAny(msg);
 		notify.getNotificationMessage().add(holder);
-		client.send(resolver, null, null, notify);
+		send(notify);
 	}
 
 	public Subscription subscribe(EndpointReferenceType consumer, 
@@ -85,25 +110,40 @@ public class NotificationBroker {
 			xpathExp.getContent().add(xpath);
 			subscribeRequest.getFilter().getAny().add(new JAXBElement<QueryExpressionType>(AbstractSubscription.QNAME_MESSAGE_CONTENT, QueryExpressionType.class, xpathExp));
 		}
-		SubscribeResponse response = (SubscribeResponse) client.request(resolver, null, null, subscribeRequest);
-		return new Subscription(response.getSubscriptionReference(), client);
+		SubscribeResponse response = (SubscribeResponse) request(subscribeRequest);
+		return new Subscription(response.getSubscriptionReference(), getClient());
 	}
 
-	public GetCurrentMessageResponse getCurrentMessage(String topic) throws JBIException {
-		return null;
+	public List<Object> getCurrentMessage(String topic) throws JBIException {
+		GetCurrentMessage getCurrentMessageRequest = new GetCurrentMessage();
+		if (topic != null) {
+			TopicExpressionType topicExp = new TopicExpressionType();
+			topicExp.getContent().add(topic);
+			getCurrentMessageRequest.setTopic(topicExp);
+		}
+		GetCurrentMessageResponse response = (GetCurrentMessageResponse) request(getCurrentMessageRequest);
+		return response.getAny();
 	}
 
 	public Publisher registerPublisher(EndpointReferenceType publisherReference,
-									   String topic) throws JBIException {
+									   String topic,
+									   boolean demand) throws JBIException {
 		
 		RegisterPublisher registerPublisherRequest = new RegisterPublisher();
-		RegisterPublisherResponse response = (RegisterPublisherResponse) client.request(resolver, null, null, registerPublisherRequest);
-		return new Publisher(response.getPublisherRegistrationReference(), client);
+		registerPublisherRequest.setPublisherReference(publisherReference);
+		if (topic != null) {
+			TopicExpressionType topicExp = new TopicExpressionType();
+			topicExp.getContent().add(topic);
+			registerPublisherRequest.getTopic().add(topicExp);
+		}
+		registerPublisherRequest.setDemand(Boolean.valueOf(demand));
+		RegisterPublisherResponse response = (RegisterPublisherResponse) request(registerPublisherRequest);
+		return new Publisher(response.getPublisherRegistrationReference(), getClient());
 	}
 
 	public PullPoint createPullPoint() throws JBIException {
-		CreatePullPointResponse response = (CreatePullPointResponse) client.request(resolver, null, null, new CreatePullPoint());
-		return new PullPoint(response.getPullPoint(), client);
+		CreatePullPointResponse response = (CreatePullPointResponse) request(new CreatePullPoint());
+		return new PullPoint(response.getPullPoint(), getClient());
 	}
 
 }

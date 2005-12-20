@@ -11,4 +11,6 @@ public interface WSNConfigurationMBean {
 	String getJndiConnectionFactoryName();
 	void setJndiConnectionFactoryName(String jndiConnectionFactoryName);
 	
+	String getBrokerName();
+	void setBrokerName(String brokerName);
 }

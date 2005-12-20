@@ -3,9 +3,6 @@ package org.servicemix.wsn.jms;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 
-import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
 import org.servicemix.wsn.AbstractNotificationBroker;
 import org.servicemix.wsn.AbstractPublisher;
 import org.servicemix.wsn.AbstractPullPoint;
@@ -29,15 +26,15 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
     }
 	
 	@Override
-	protected AbstractPublisher createPublisher(String name, RegisterPublisher registerPublisherRequest) {
-		JmsPublisher publisher = new JmsPublisher(name);
+	protected AbstractPublisher createPublisher(String name) {
+		JmsPublisher publisher = createJmsPublisher(name);
 		publisher.setManager(getManager());
 		publisher.setConnection(connection);
 		return publisher;
 	}
 
 	@Override
-	protected AbstractPullPoint createPullPoint(String name, CreatePullPoint createPullPointRequest) {
+	protected AbstractPullPoint createPullPoint(String name) {
 		JmsPullPoint pullPoint = new JmsPullPoint(name);
 		pullPoint.setManager(getManager());
 		pullPoint.setConnection(connection);
@@ -45,7 +42,7 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
 	}
 
 	@Override
-	protected AbstractSubscription createSubcription(String name, Subscribe subscribeRequest) {
+	protected AbstractSubscription createSubcription(String name) {
 		JmsSubscription subscription = createJmsSubscription(name);
 		subscription.setManager(getManager());
 		subscription.setConnection(connection);
@@ -53,6 +50,8 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
 	}
 	
 	protected abstract JmsSubscription createJmsSubscription(String name);
+
+	protected abstract JmsPublisher createJmsPublisher(String name);
 
 	public ConnectionFactory getConnectionFactory() {
 		return connectionFactory;

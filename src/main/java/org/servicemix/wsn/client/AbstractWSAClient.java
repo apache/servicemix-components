@@ -6,6 +6,7 @@ import javax.xml.namespace.QName;
 import org.servicemix.client.ServiceMixClient;
 import org.servicemix.jbi.resolver.EndpointResolver;
 import org.servicemix.jbi.resolver.ServiceAndEndpointNameResolver;
+import org.w3._2005._03.addressing.AttributedURIType;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 
 public abstract class AbstractWSAClient {
@@ -23,12 +24,20 @@ public abstract class AbstractWSAClient {
 		this.client = client;
 	}
 
-	protected EndpointResolver resolveWSA(EndpointReferenceType ref) {
-		String[] parts = split(ref.getAddress().getValue());
+	public static EndpointReferenceType createWSA(String address) {
+		EndpointReferenceType epr = new EndpointReferenceType();
+		AttributedURIType attUri = new AttributedURIType();
+		attUri.setValue(address);
+		epr.setAddress(attUri);
+		return epr;
+	}
+	
+	public static EndpointResolver resolveWSA(EndpointReferenceType ref) {
+		String[] parts = splitUri(ref.getAddress().getValue());
 		return new ServiceAndEndpointNameResolver(new QName(parts[0], parts[1]), parts[2]);
 	}
 
-    protected String[] split(String uri) {
+	public static String[] splitUri(String uri) {
 		char sep;
 		if (uri.indexOf('/') > 0) {
 			sep = '/';
@@ -66,8 +75,13 @@ public abstract class AbstractWSAClient {
 	public void setClient(ServiceMixClient client) {
 		this.client = client;
 	}
+	
 	protected Object request(Object request) throws JBIException {
 		return client.request(resolver, null, null, request);
+	}
+	
+	protected void send(Object request) throws JBIException {
+		client.sendSync(resolver, null, null, request);
 	}
 
 }
