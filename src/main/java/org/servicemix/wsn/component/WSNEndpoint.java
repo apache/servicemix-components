@@ -120,7 +120,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 			if (e.getCause() instanceof Exception) {
 				WebFault fa = (WebFault) e.getCause().getClass().getAnnotation(WebFault.class);
 				if (exchange instanceof InOnly == false && fa != null) {
-					BaseFaultType info = (BaseFaultType) e.getCause().getClass().getMethod("getFaultInfo", null).invoke(e.getCause(), null);
+					BaseFaultType info = (BaseFaultType) e.getCause().getClass().getMethod("getFaultInfo").invoke(e.getCause());
 					Fault fault = exchange.createFault();
 					exchange.setFault(fault);
 					exchange.setError((Exception) e.getCause());
