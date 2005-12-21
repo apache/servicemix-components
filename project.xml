@@ -120,8 +120,13 @@
         <version>${spring_version}</version>
       </dependency>
       <dependency>
+        <groupId>xbean</groupId>
+        <artifactId>xbean-spring</artifactId>
+        <version>${xbean_version}</version>
+      </dependency>
+      <dependency>
         <groupId>activemq</groupId>
-        <artifactId>activemq-core</artifactId>
+        <artifactId>activemq</artifactId>
         <version>${activemq_version}</version>
       </dependency>
       <dependency>
