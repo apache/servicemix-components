@@ -19,7 +19,6 @@ import org.oasis_open.docs.wsn.b_1.Notify;
 import org.oasis_open.docs.wsn.b_1.QueryExpressionType;
 import org.oasis_open.docs.wsn.b_1.Subscribe;
 import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
-import org.oasis_open.docs.wsn.b_1.SubscriptionPolicy;
 import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
 import org.oasis_open.docs.wsn.b_1.UseRaw;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisher;

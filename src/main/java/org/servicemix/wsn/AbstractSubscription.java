@@ -18,7 +18,6 @@ import org.oasis_open.docs.wsn.b_1.InvalidFilterFaultType;
 import org.oasis_open.docs.wsn.b_1.InvalidMessageContentExpressionFaultType;
 import org.oasis_open.docs.wsn.b_1.InvalidProducerPropertiesExpressionFaultType;
 import org.oasis_open.docs.wsn.b_1.InvalidTopicExpressionFaultType;
-import org.oasis_open.docs.wsn.b_1.InvalidUseRawValueFaultType;
 import org.oasis_open.docs.wsn.b_1.PauseSubscription;
 import org.oasis_open.docs.wsn.b_1.PauseSubscriptionResponse;
 import org.oasis_open.docs.wsn.b_1.QueryExpressionType;

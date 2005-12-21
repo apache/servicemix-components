@@ -29,7 +29,9 @@ public abstract class AbstractEndpoint {
 	}
 	
 	public void unregister() throws EndpointRegistrationException {
-		manager.unregister(endpoint);
+		if (endpoint != null) {
+			manager.unregister(endpoint);
+		}
 	}
 
 	public EndpointManager getManager() {

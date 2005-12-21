@@ -13,7 +13,6 @@ import junit.framework.TestCase;
 import org.oasis_open.docs.wsn.b_1.Subscribe;
 import org.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
-import org.servicemix.wsn.jaxws.InvalidUseRawValueFault;
 import org.servicemix.wsn.jaxws.PauseFailedFault;
 import org.servicemix.wsn.jaxws.ResumeFailedFault;
 import org.servicemix.wsn.jaxws.SubscribeCreationFailedFault;

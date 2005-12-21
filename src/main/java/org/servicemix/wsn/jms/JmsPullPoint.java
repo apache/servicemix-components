@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -50,7 +49,6 @@ public class JmsPullPoint extends AbstractPullPoint {
 			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			queue = session.createQueue(getName());
 			producer = session.createProducer(queue);
-			producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			consumer = session.createConsumer(queue);
 		}
 	}
