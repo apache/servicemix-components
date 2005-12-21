@@ -346,9 +346,5 @@ public abstract class AbstractSubscription extends AbstractEndpoint
 	    			"InitialTerminationTime is not supported",
 	    			fault);
 		}
-		if (useRaw) {
-			InvalidUseRawValueFaultType fault = new InvalidUseRawValueFaultType();
-			throw new InvalidUseRawValueFault("UseRaw mode is not supported", fault);
-		}
 	}
 }

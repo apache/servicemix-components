@@ -40,6 +40,7 @@ import org.w3._2005._03.addressing.AttributedURIType;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 public class WSNComponentTest extends TestCase {
@@ -101,6 +102,29 @@ public class WSNComponentTest extends TestCase {
 		Thread.sleep(50);
 		
 		receiver.getMessageList().assertMessagesReceived(1);
+		NormalizedMessage msg = (NormalizedMessage) receiver.getMessageList().getMessages().get(0);
+		Node node = new SourceTransformer().toDOMNode(msg);
+		assertEquals("Notify", node.getLocalName());
+		
+		// Wait for acks to be processed
+		Thread.sleep(50);
+	}
+
+	public void testRawNotify() throws Exception {
+		ReceiverComponent receiver = new ReceiverComponent();
+		jbi.activateComponent(receiver, "receiver");
+		
+		EndpointReferenceType consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
+		wsnBroker.subscribe(consumer, "myTopic", null, true);
+		
+		wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+		// Wait for notification
+		Thread.sleep(50);
+		
+		receiver.getMessageList().assertMessagesReceived(1);
+		NormalizedMessage msg = (NormalizedMessage) receiver.getMessageList().getMessages().get(0);
+		Node node = new SourceTransformer().toDOMNode(msg);
+		assertEquals("hello", node.getLocalName());
 		
 		// Wait for acks to be processed
 		Thread.sleep(50);

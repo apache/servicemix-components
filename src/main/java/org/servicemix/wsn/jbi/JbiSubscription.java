@@ -8,12 +8,12 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
+import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.oasis_open.docs.wsn.b_1.Subscribe;
 import org.oasis_open.docs.wsn.b_1.SubscribeCreationFailedFaultType;
-import org.servicemix.jbi.jaxp.StringSource;
 import org.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
@@ -24,6 +24,7 @@ import org.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
 import org.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.servicemix.wsn.jms.JmsSubscription;
+import org.w3c.dom.Element;
 
 public class JbiSubscription extends JmsSubscription {
 
@@ -63,14 +64,14 @@ public class JbiSubscription extends JmsSubscription {
     }
 	
 	@Override
-	protected void doNotify(String notify) {
+	protected void doNotify(Element content) {
 		try {
 			DeliveryChannel channel = context.getDeliveryChannel();
 			MessageExchangeFactory factory = channel.createExchangeFactory(endpoint);
 			InOnly inonly = factory.createInOnlyExchange();
 			NormalizedMessage msg = inonly.createMessage();
 			inonly.setInMessage(msg);
-			msg.setContent(new StringSource(notify));
+			msg.setContent(new DOMSource(content));
 			if (!channel.sendSync(inonly)) {
 				log.warn("Notification was aborted");
 			}

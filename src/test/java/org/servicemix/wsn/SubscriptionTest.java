@@ -71,12 +71,7 @@ public class SubscriptionTest extends TestCase {
 	
 	public void testWithUseRaw() throws Exception {
 		Subscribe subscribe = getSubscription("subscribe-raw.xml");
-		try {
-			subscription.validateSubscription(subscribe);
-			fail("UseRaw used. Fault was expected.");
-		} catch (InvalidUseRawValueFault e) {
-			// OK
-		}
+		subscription.validateSubscription(subscribe);
 	}
 	
 	public void testWithProducerProperties() throws Exception {

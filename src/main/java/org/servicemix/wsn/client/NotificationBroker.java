@@ -19,7 +19,9 @@ import org.oasis_open.docs.wsn.b_1.Notify;
 import org.oasis_open.docs.wsn.b_1.QueryExpressionType;
 import org.oasis_open.docs.wsn.b_1.Subscribe;
 import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_1.SubscriptionPolicy;
 import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
+import org.oasis_open.docs.wsn.b_1.UseRaw;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse;
 import org.servicemix.client.DefaultServiceMixClient;
@@ -93,8 +95,20 @@ public class NotificationBroker extends AbstractWSAClient {
 	}
 
 	public Subscription subscribe(EndpointReferenceType consumer, 
+			  					  String topic) throws JBIException {
+		return subscribe(consumer, topic, null, false);
+	}
+
+	public Subscription subscribe(EndpointReferenceType consumer, 
 			  					  String topic,
 			  					  String xpath) throws JBIException {
+		return subscribe(consumer, topic, xpath, false);
+	}
+
+	public Subscription subscribe(EndpointReferenceType consumer, 
+			  					  String topic,
+			  					  String xpath,
+			  					  boolean raw) throws JBIException {
 		
 		Subscribe subscribeRequest = new Subscribe();
 		subscribeRequest.setConsumerReference(consumer);
@@ -109,6 +123,10 @@ public class NotificationBroker extends AbstractWSAClient {
 			xpathExp.setDialect(AbstractSubscription.XPATH1_URI);
 			xpathExp.getContent().add(xpath);
 			subscribeRequest.getFilter().getAny().add(new JAXBElement<QueryExpressionType>(AbstractSubscription.QNAME_MESSAGE_CONTENT, QueryExpressionType.class, xpathExp));
+		}
+		if (raw) {
+			subscribeRequest.setSubscriptionPolicy(new Subscribe.SubscriptionPolicy());
+			subscribeRequest.getSubscriptionPolicy().getAny().add(new UseRaw());
 		}
 		SubscribeResponse response = (SubscribeResponse) request(subscribeRequest);
 		return new Subscription(response.getSubscriptionReference(), getClient());
