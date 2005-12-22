@@ -239,12 +239,17 @@ public class Jsr181Endpoint extends Endpoint {
         props.put(ObjectServiceFactory.PORT_TYPE, interfaceName);
         props.put(ObjectServiceFactory.STYLE, SoapConstants.STYLE_WRAPPED);
         props.put(ObjectServiceFactory.USE, SoapConstants.USE_LITERAL);
+        factory.getSoap11Transports().clear();
+        factory.getSoap12Transports().clear();
+        factory.getSoap11Transports().add(JbiTransport.JBI_BINDING);
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
         xfire.getServiceRegistry().register(xfireService);
+        /*
         xfire.getTransportManager().disableAll(xfireService);
         Transport jbiT = xfire.getTransportManager().getTransport(JbiTransport.JBI_BINDING);
         xfire.getTransportManager().enable(jbiT, xfireService);
+        */
         this.description = generateWsdl();
         
         // Check service name and endpoint name

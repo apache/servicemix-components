@@ -38,7 +38,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.exchange.InMessage;
-import org.codehaus.xfire.exchange.RobustInOutExchange;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.transport.Channel;
 import org.codehaus.xfire.transport.Transport;
@@ -75,7 +74,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         ctx.setXFire(xfire);
         ctx.setService(service);
         ctx.setProperty(Channel.BACKCHANNEL_URI, out);
-        ctx.setExchange(new RobustInOutExchange(ctx));
+        ctx.setExchange(new org.codehaus.xfire.exchange.MessageExchange(ctx));
         InMessage msg = new InMessage();
         ctx.getExchange().setInMessage(msg);
         NormalizedMessage in = exchange.getMessage("in");

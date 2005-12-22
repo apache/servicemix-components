@@ -41,7 +41,7 @@ import org.codehaus.xfire.exchange.InMessage;
 import org.codehaus.xfire.exchange.MessageSerializer;
 import org.codehaus.xfire.exchange.OutMessage;
 import org.codehaus.xfire.fault.XFireFault;
-import org.codehaus.xfire.soap.SoapBinding;
+import org.codehaus.xfire.soap.AbstractSoapBinding;
 import org.codehaus.xfire.transport.AbstractChannel;
 import org.codehaus.xfire.transport.Channel;
 import org.codehaus.xfire.util.STAXUtils;
@@ -129,12 +129,12 @@ public class JbiChannel extends AbstractChannel {
         MessageSerializer serializer = context.getOutMessage().getSerializer();
         if (serializer == null)
         {
-            SoapBinding binding = (SoapBinding) context.getBinding();
+        	AbstractSoapBinding binding = (AbstractSoapBinding) context.getBinding();
             if (binding == null)
             {
                 throw new XFireException("Couldn't find the binding!");
             }
-            serializer = SoapBinding.getSerializer(binding.getStyle(), binding.getUse());
+            serializer = AbstractSoapBinding.getSerializer(binding.getStyle(), binding.getUse());
         }
         serializer.writeMessage(message, writer, context);
         writer.close();

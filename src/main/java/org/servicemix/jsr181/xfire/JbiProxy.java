@@ -78,8 +78,7 @@ public class JbiProxy {
     
     public Object getProxy() throws Exception {
         if (proxy == null) {
-            Transport transport = xfire.getTransportManager().getTransportForUri("jbi://");
-            Client client = new Client(transport, getDescription(), serviceClass);
+            Client client = new Client(JbiTransport.JBI_BINDING, getDescription(), serviceClass);
             if (interfaceName != null) {
                 client.getService().setProperty(JbiChannel.JBI_INTERFACE_NAME, interfaceName);
             }
