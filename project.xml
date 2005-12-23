@@ -74,6 +74,14 @@
         </properties>
       </dependency>
       <dependency>
+        <groupId>servicemix</groupId>
+        <artifactId>xfire-jaxws</artifactId>
+        <version>${xfire_jaxws_version}</version>
+        <properties>
+          <jbi.bundle>true</jbi.bundle>
+        </properties>
+      </dependency>
+      <dependency>
         <groupId>stax</groupId>
         <artifactId>stax-api</artifactId>
         <version>${stax_api_version}</version>
