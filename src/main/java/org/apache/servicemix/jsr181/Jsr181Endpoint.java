@@ -1,21 +1,19 @@
-/** 
- * 
- * Copyright 2005 LogicBlaze, Inc. http://www.logicblaze.com
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+/*
+ * Copyright 2005-2006 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
- * 
- **/
-package org.servicemix.jsr181;
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.servicemix.jsr181;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,12 +46,11 @@ import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.BeanInvoker;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.soap.SoapConstants;
-import org.codehaus.xfire.transport.Transport;
 import org.codehaus.xfire.transport.TransportManager;
 import org.codehaus.xfire.xmlbeans.XmlBeansTypeRegistry;
-import org.servicemix.common.Endpoint;
-import org.servicemix.common.ExchangeProcessor;
-import org.servicemix.jsr181.xfire.JbiTransport;
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -245,11 +242,6 @@ public class Jsr181Endpoint extends Endpoint {
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
         xfire.getServiceRegistry().register(xfireService);
-        /*
-        xfire.getTransportManager().disableAll(xfireService);
-        Transport jbiT = xfire.getTransportManager().getTransport(JbiTransport.JBI_BINDING);
-        xfire.getTransportManager().enable(jbiT, xfireService);
-        */
         this.description = generateWsdl();
         
         // Check service name and endpoint name

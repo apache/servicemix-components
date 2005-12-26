@@ -1,21 +1,19 @@
-/** 
- * 
- * Copyright 2005 LogicBlaze, Inc. http://www.logicblaze.com
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+/*
+ * Copyright 2005-2006 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
- * 
- **/
-package org.servicemix.jsr181;
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.servicemix.jsr181;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
@@ -30,12 +28,14 @@ import javax.xml.transform.Source;
 
 import junit.framework.TestCase;
 
-import org.servicemix.client.DefaultServiceMixClient;
-import org.servicemix.components.util.EchoComponent;
-import org.servicemix.jbi.container.ActivationSpec;
-import org.servicemix.jbi.container.JBIContainer;
-import org.servicemix.jbi.jaxp.StringSource;
-import org.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jsr181.Jsr181Endpoint;
+import org.apache.servicemix.jsr181.Jsr181SpringComponent;
+import org.apache.servicemix.tck.ReceiverComponent;
 
 public class Jsr181ComplexPojoTest extends TestCase {
 
@@ -75,8 +75,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
 
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
-        me.setInterfaceName(new QName("http://jsr181.servicemix.org", "ComplexPojoPortType"));
-        me.getInMessage().setContent(new StringSource("<oneWay xmlns='http://jsr181.servicemix.org'><in0>world</in0></oneWay>"));
+        me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
+        me.getInMessage().setContent(new StringSource("<oneWay xmlns='http://jsr181.servicemix.apache.org'><in0>world</in0></oneWay>"));
         client.sendSync(me);
         
         // Wait all acks being processed
@@ -102,8 +102,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
 
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
-        me.setInterfaceName(new QName("http://jsr181.servicemix.org", "ComplexPojoPortType"));
-        me.getInMessage().setContent(new StringSource("<twoWay xmlns='http://jsr181.servicemix.org'><in0>world</in0></twoWay>"));
+        me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
+        me.getInMessage().setContent(new StringSource("<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world</in0></twoWay>"));
         client.sendSync(me);
         client.done(me);
         
