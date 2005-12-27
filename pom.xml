@@ -184,6 +184,7 @@
 							      <classpath refid="maven.dependency.classpath"/>
 							    </taskdef>
 							    <mkdir dir="${basedir}/target/generated" />
+							    <mkdir dir="${basedir}/target/generated-classes" />
 							    <wsimport
 							            fork="true"
 							            debug="false"
