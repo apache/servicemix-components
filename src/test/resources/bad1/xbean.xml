@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<beans xmlns:jsr181="http://servicemix.org/jsr181/1.0">
+<beans xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0">
 
   <jsr181:endpoint endpoint="endpoint1" />
   				   

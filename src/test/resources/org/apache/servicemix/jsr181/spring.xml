@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns:sm="http://servicemix.org/config/1.0" 
-	   xmlns:jsr181="http://servicemix.org/jsr181/1.0">
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0">
 
   <!-- the JBI container -->
   <sm:container id="jbi" embedded="true">
