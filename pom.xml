@@ -218,7 +218,7 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>process-classes</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <tasks>
                                 <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
@@ -227,8 +227,8 @@
                                         <path refid="maven.dependency.classpath"></path>
                                     </classpath>
                                 </taskdef>
-                                <mapping destFile="target/servicemix-jsr181-${version}.xsd" namespace="http://servicemix.org/jsr181/1.0"
-                                    srcdir="src/main/java" metaInfDir="target/generated/"/>
+                                <mapping destFile="${basedir}/target/servicemix-jsr181-${version}.xsd" namespace="http://servicemix.org/jsr181/1.0"
+                                    srcdir="${basedir}/src/main/java" metaInfDir="${basedir}/target/generated/"/>
                             </tasks>
                         </configuration>
                         <goals>
