@@ -141,7 +141,7 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>process-classes</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <tasks>
                                 <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
