@@ -150,7 +150,7 @@
                                         <path refid="maven.dependency.classpath"></path>
                                     </classpath>
                                 </taskdef>
-                                <mapping destFile="${basedir}/target/servicemix-http-${version}.xsd" namespace="http://servicemix.org/http/1.0"
+                                <mapping destFile="${basedir}/target/servicemix-http-${version}.xsd" namespace="http://servicemix.apache.org/http/1.0"
                                     srcdir="${basedir}/src/main/java" metaInfDir="${basedir}/target/generated/"/>
                             </tasks>
                         </configuration>

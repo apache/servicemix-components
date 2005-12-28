@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns:sm="http://servicemix.org/config/1.0" 
-	   xmlns:http="http://servicemix.org/http/1.0"
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:http="http://servicemix.apache.org/http/1.0"
 	   xmlns:test="http://test">
 
   <!-- the JBI container -->

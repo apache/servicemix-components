@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<beans xmlns:http="http://servicemix.org/http/1.0"
+<beans xmlns:http="http://servicemix.apache.org/http/1.0"
        xmlns:test="http://test">
 
 	<http:endpoint service="test:MyConsumerService"
