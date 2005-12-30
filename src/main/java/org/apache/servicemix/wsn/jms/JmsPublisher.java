@@ -26,9 +26,9 @@ import javax.jms.Topic;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.activemq.advisory.ConsumerEvent;
-import org.activemq.advisory.ConsumerEventSource;
-import org.activemq.advisory.ConsumerListener;
+import org.apache.activemq.advisory.ConsumerEvent;
+import org.apache.activemq.advisory.ConsumerEventSource;
+import org.apache.activemq.advisory.ConsumerListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.wsn.AbstractPublisher;

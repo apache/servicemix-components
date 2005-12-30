@@ -21,7 +21,7 @@ import java.util.List;
 import javax.jms.Topic;
 import javax.xml.namespace.QName;
 
-import org.activemq.command.ActiveMQTopic;
+import org.apache.activemq.command.ActiveMQTopic;
 import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
 
 public class JmsTopicExpressionConverter {

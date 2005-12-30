@@ -31,8 +31,8 @@ import javax.xml.transform.Source;
 
 import junit.framework.TestCase;
 
-import org.activemq.ActiveMQConnectionFactory;
-import org.activemq.broker.BrokerService;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.broker.BrokerService;
 import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_1.Notify;
 import org.oasis_open.docs.wsn.b_1.Subscribe;
