@@ -31,8 +31,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-wsn2005</artifactId>
-    <packaging>jar</packaging>
-    <name>ServiceMix :: WS-Notification</name>
+    <packaging>jbi-component</packaging>
+    <name>ServiceMix :: WS-Notification Service Engine</name>
     <description>WS-Notification Service Engine</description>
     <dependencies>
         
@@ -216,6 +216,15 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.servicemix.plugins</groupId>
+                <artifactId>maven2-jbi-plugin</artifactId>
+                <configuration>
+                   <type>service-engine</type>
+                   <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
+                   <component>org.apache.servicemix.wsn.component.WSNComponent</component>
+                </configuration>
             </plugin>
         </plugins>
     </build>
