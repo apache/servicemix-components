@@ -31,7 +31,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-jsr181</artifactId>
-    <packaging>jar</packaging>
+    <packaging>jbi-component</packaging>
     <name>ServiceMix :: JSR-181 Service Engine</name>
     <description>JSR-181 service engine</description>
     <dependencies>
@@ -236,6 +236,15 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.servicemix.plugins</groupId>
+                <artifactId>maven2-jbi-plugin</artifactId>
+                <configuration>
+                   <type>service-engine</type>
+                   <bootstrap>org.apache.servicemix.jsr181.Jsr181Bootstrap</bootstrap>
+                   <component>org.apache.servicemix.jsr181.Jsr181Component</component>
+                </configuration>
             </plugin>
         </plugins>
     </build>
