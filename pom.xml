@@ -82,7 +82,7 @@
             <artifactId>servicemix-components</artifactId>
         </dependency>
         <dependency>
-            <groupId>springframework</groupId>
+            <groupId>org.springframework</groupId>
             <artifactId>spring</artifactId>
         </dependency>
         <dependency>
