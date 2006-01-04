@@ -36,23 +36,6 @@
     <description>JSR-181 service engine</description>
     <dependencies>
     
-        <!-- Check this dependency -->
-        <!-- dependency>
-            <groupId>servicemix</groupId>
-            <artifactId>maven-jbi-plugin</artifactId>
-            <version>${pom.currentVersion}</version>
-            <type>plugin</type>
-            <classifier></classifier>
-            <scope></scope>
-            <systemPath></systemPath>
-            <exclusions>
-                <exclusion></exclusion>
-            </exclusions>
-            <optional></optional>
-        </dependency -->
-        
-        <!-- found in codehaus.org and should be in parent pom.xml -->
-             
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-common</artifactId>
@@ -99,7 +82,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
+            <artifactId>spring-beans</artifactId>
         </dependency>
         <dependency>
             <groupId>woodstox</groupId>
@@ -127,64 +110,42 @@
             <artifactId>jaxb-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-j2ee-connector</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-jta</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-jbi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mx4j</groupId>
-            <artifactId>mx4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mx4j</groupId>
-            <artifactId>mx4j-remote</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-components</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring</artifactId>
         </dependency>
         <dependency>
-            <groupId>activemq</groupId>
-            <artifactId>activemq</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jencks</groupId>
-            <artifactId>jencks-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>concurrent</groupId>
-            <artifactId>concurrent</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
+            <artifactId>commons-beanutils-core</artifactId>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>annogen</groupId>
             <artifactId>annogen</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>qdox</groupId>
             <artifactId>qdox</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>beehive</groupId>
