@@ -99,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
+            <artifactId>commons-beanutils-core</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
