@@ -36,84 +36,25 @@
     <description>WS-Notification Service Engine</description>
     <dependencies>
         
-        <!-- Check this dependency -->
-        <!--dependency>
-            <groupId>servicemix</groupId>
-            <artifactId>maven-jbi-plugin</artifactId>
-        </dependency-->
         <dependency>
-	        <groupId>org.apache.servicemix</groupId>
+	          <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>backport-util-concurrent</groupId>
-            <artifactId>backport-util-concurrent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>wsdl4j</groupId>
-            <artifactId>wsdl4j</artifactId>
-        </dependency>
-        <dependency>
-	        <groupId>org.apache.servicemix</groupId>
-            <artifactId>servicemix-jbi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-j2ee-connector</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-jta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-jms</artifactId>
-        </dependency>
-        <dependency>
-	        <groupId>org.apache.servicemix</groupId>
+	          <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-	        <groupId>org.apache.servicemix</groupId>
+	          <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-components</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>activemq</groupId>
             <artifactId>activemq</artifactId>
         </dependency>
-        <dependency>
-            <groupId>concurrent</groupId>
-            <artifactId>concurrent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jencks</groupId>
-            <artifactId>jencks-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mx4j</groupId>
-            <artifactId>mx4j</artifactId>
-        </dependency>
-
+        
     <dependency>
       <groupId>servicemix</groupId>
       <artifactId>jsr181-api</artifactId>
@@ -169,11 +110,24 @@
       <artifactId>sjsxp</artifactId>
       <version>20051215</version>
     </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jaxws-tools</artifactId>
-      <version>20051215</version>
-    </dependency>
+
+        <dependency>
+            <groupId>servicemix</groupId>
+            <artifactId>jaxws-tools</artifactId>
+            <version>20051215</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>geronimo-spec</groupId>
+            <artifactId>geronimo-spec-activation</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>stax</groupId>
+            <artifactId>stax-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
 
     </dependencies>
 
