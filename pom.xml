@@ -31,87 +31,60 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-http</artifactId>
-    <packaging>jar</packaging>
+    <packaging>jbi-component</packaging>
     <name>ServiceMix :: HTTP</name>
     <description>HTTP Binding Component</description>
     <dependencies>
         
-        <!-- Check this dependency -->
-        <!--dependency>
-            <groupId>servicemix</groupId>
-            <artifactId>maven-jbi-plugin</artifactId>
-        </dependency-->
         <dependency>
-	        <groupId>org.apache.servicemix</groupId>
+	          <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
+            <groupId>geronimo-spec</groupId>
+            <artifactId>geronimo-spec-servlet</artifactId>
         </dependency>
         <dependency>
-            <groupId>backport-util-concurrent</groupId>
-            <artifactId>backport-util-concurrent</artifactId>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jetty</groupId>
+            <artifactId>org.mortbay.jetty</artifactId>
         </dependency>
         <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
         </dependency>
         <dependency>
-	        <groupId>org.apache.servicemix</groupId>
-            <artifactId>servicemix-jbi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-j2ee-connector</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-jta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-jms</artifactId>
-        </dependency>
-        <dependency>
-	        <groupId>org.apache.servicemix</groupId>
+	          <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-	        <groupId>org.apache.servicemix</groupId>
+	          <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-jbi</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+	          <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-components</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
+          <groupId>org.xbean</groupId>
+          <artifactId>xbean-spring</artifactId>
+          <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>activemq</groupId>
-            <artifactId>activemq</artifactId>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+          <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>concurrent</groupId>
-            <artifactId>concurrent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jencks</groupId>
-            <artifactId>jencks-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mx4j</groupId>
-            <artifactId>mx4j</artifactId>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+          <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -155,6 +128,15 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.servicemix.plugins</groupId>
+                <artifactId>maven2-jbi-plugin</artifactId>
+                <configuration>
+                   <type>service-engine</type>
+                   <bootstrap>org.apache.servicemix.http.HttpBootstrap</bootstrap>
+                   <component>org.apache.servicemix.http.HttpComponent</component>
+                </configuration>
             </plugin>
         </plugins>
     </build>

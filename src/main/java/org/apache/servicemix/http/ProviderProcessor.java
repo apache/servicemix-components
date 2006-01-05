@@ -28,7 +28,6 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.components.http.InvalidStatusResponseException;
 
 public class ProviderProcessor implements ExchangeProcessor {
 
@@ -55,7 +54,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         marshaler.fromNMS(method, exchange, exchange.getMessage("in"));
         int response = getClient().executeMethod(host, method);
         if (response != HttpStatus.SC_OK) {
-            throw new InvalidStatusResponseException(response);
+            throw new Exception("Invalid status response: " + response);
         }
         if (exchange instanceof InOut) {
             NormalizedMessage msg = exchange.createMessage();

@@ -17,15 +17,12 @@ package org.apache.servicemix.http;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.codehaus.xfire.XFire;
-import org.codehaus.xfire.XFireFactory;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 
 public class HttpLifeCycle extends BaseLifeCycle {
 
     protected ServerManager server;
-    protected XFire xfire;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
     protected HttpConfiguration configuration;
@@ -43,14 +40,6 @@ public class HttpLifeCycle extends BaseLifeCycle {
         this.server = server;
     }
 
-    public XFire getXFire() {
-        return xfire;
-    }
-
-    public void setXFire(XFire xfire) {
-        this.xfire = xfire;
-    }
-    
     public HttpClient getClient() {
         return client;
     }
@@ -80,9 +69,6 @@ public class HttpLifeCycle extends BaseLifeCycle {
         if (server == null) {
             server = new ServerManager();
             server.init();
-        }
-        if (xfire == null) {
-            xfire = XFireFactory.newInstance().getXFire();
         }
         if (client == null) {
             connectionManager = new MultiThreadedHttpConnectionManager();
