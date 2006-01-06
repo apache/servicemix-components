@@ -185,7 +185,7 @@
                                 <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                                     <classpath>
                                         <pathelement path="${basedir}/target/classes"></pathelement>
-                                        <path refid="maven.dependency.classpath"></path>
+                                        <path refid="maven.test.classpath"></path>
                                     </classpath>
                                 </taskdef>
                                 <mapping destFile="${basedir}/target/servicemix-jsr181-${version}.xsd" namespace="http://servicemix.apache.org/jsr181/1.0"
