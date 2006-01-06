@@ -118,8 +118,8 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>geronimo-spec</groupId>
-            <artifactId>geronimo-spec-activation</artifactId>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-activation_1.0.2_spec</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
