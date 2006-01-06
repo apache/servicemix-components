@@ -40,7 +40,7 @@ import org.codehaus.xfire.aegis.type.DefaultTypeMappingRegistry;
 import org.codehaus.xfire.aegis.type.TypeMappingRegistry;
 import org.codehaus.xfire.annotations.AnnotationServiceFactory;
 import org.codehaus.xfire.annotations.WebAnnotations;
-import org.codehaus.xfire.annotations.backport175.Backport175WebAnnotations;
+import org.codehaus.xfire.annotations.jsr181.Jsr181WebAnnotations;
 import org.codehaus.xfire.annotations.commons.CommonsWebAttributes;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.BeanInvoker;
@@ -80,7 +80,7 @@ public class Jsr181Endpoint extends Endpoint {
         }
         
         knownAnnotations = new HashMap();
-        knownAnnotations.put("backport", new Backport175WebAnnotations());
+        knownAnnotations.put("jsr181", new Jsr181WebAnnotations());
         knownAnnotations.put("commons", new CommonsWebAttributes());
         try {
             Class cl = Class.forName("org.codehaus.xfire.annotations.jsr181.Jsr181WebAnnotations");
