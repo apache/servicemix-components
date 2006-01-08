@@ -51,10 +51,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>activemq</groupId>
-            <artifactId>activemq</artifactId>
+            <groupId>org.apache.servicemix.dependencies</groupId>
+            <artifactId>activemq-core</artifactId>
         </dependency>
         
+        
+        <dependency>
+            <groupId>com.sun.xml</groupId>
+            <artifactId>jaxws-tools</artifactId>
+            <version>2.0-JAXWS-2.0-EA3</version>
+        </dependency>
+        <!--
     <dependency>
       <groupId>servicemix</groupId>
       <artifactId>jsr181-api</artifactId>
@@ -127,7 +134,7 @@
             <artifactId>stax-api</artifactId>
             <scope>compile</scope>
         </dependency>
-
+-->
 
     </dependencies>
 
@@ -149,7 +156,7 @@
                         <configuration>
                             <tasks>
 							    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-							      <classpath refid="maven.dependency.classpath"/>
+							      <classpath refid="maven.test.classpath"/>
 							    </taskdef>
 							    <mkdir dir="${basedir}/target/generated" />
 							    <mkdir dir="${basedir}/target/generated-classes" />
