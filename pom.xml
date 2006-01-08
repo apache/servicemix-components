@@ -34,8 +34,48 @@
     <packaging>jbi-component</packaging>
     <name>ServiceMix :: JSR-181 Service Engine</name>
     <description>JSR-181 service engine</description>
-    <dependencies>
     
+    <dependencies>
+        <dependency>
+	          <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+        </dependency>
+        <dependency>
+	          <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.dependencies</groupId>
+            <artifactId>xfire-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.dependencies</groupId>
+            <artifactId>xfire-jaxws</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jdom</groupId>
+            <artifactId>jdom</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-attributes</groupId>
+            <artifactId>commons-attributes-api</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>ant</groupId>
+                <artifactId>ant</artifactId>
+              </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>beehive</groupId>
+          <artifactId>wsm</artifactId>
+        </dependency>
+        <dependency>
+        <groupId>org.apache.servicemix.dependencies</groupId>
+          <artifactId>XmlSchema</artifactId>
+        </dependency>
+<!--    
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-common</artifactId>
@@ -51,14 +91,6 @@
         <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>servicemix</groupId>
-            <artifactId>xfire-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>servicemix</groupId>
-            <artifactId>xfire-jaxws</artifactId>
         </dependency>
         <dependency>
             <groupId>stax</groupId>
@@ -99,7 +131,6 @@
         <dependency>
             <groupId>commons-attributes</groupId>
             <artifactId>commons-attributes-plugin</artifactId>
-            <!--type>plugin</type-->
         </dependency>
         <dependency>
             <groupId>backport175</groupId>
@@ -155,6 +186,7 @@
             <groupId>ws-commons</groupId>
             <artifactId>XmlSchema</artifactId>
         </dependency>
+        -->
     </dependencies>
 
     <build>
