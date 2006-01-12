@@ -27,11 +27,11 @@
     <shortDescription>JMS Binding Component</shortDescription>
     <description>JMS Binding Component</description>
   
-    <package>org.servicemix.jms</package>
+    <package>org.apache.servicemix.jms</package>
     <packageGroups>
       <packageGroup>
         <title>JMS Binding Component</title>
-        <packages>org.servicemix.jms</packages>
+        <packages>org.apache.servicemix.jms</packages>
       </packageGroup>
     </packageGroups>
  
@@ -41,7 +41,7 @@
     <dependencies>
     
       <dependency>
-        <groupId>servicemix</groupId>
+        <groupId>org.apache.servicemix</groupId>
         <artifactId>maven-jbi-plugin</artifactId>
         <version>${pom.currentVersion}</version>
         <type>plugin</type>
@@ -49,7 +49,7 @@
     
       <!-- JBI bundled dependencies -->
       <dependency>
-        <groupId>servicemix</groupId>
+        <groupId>org.apache.servicemix</groupId>
         <artifactId>servicemix-common</artifactId>
         <version>${pom.currentVersion}</version>
         <properties>
@@ -86,12 +86,17 @@
       
       <!-- Provided dependencies -->
       <dependency>
-        <groupId>servicemix</groupId>
+        <groupId>org.apache.servicemix</groupId>
         <artifactId>servicemix-jbi</artifactId>
         <version>${pom.currentVersion}</version>
         <properties>
           <eclipse.dependency>true</eclipse.dependency>
         </properties>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jms_1.1_spec</artifactId>
+        <version>${geronimo_spec_jms_version}</version>
       </dependency>
       <!-- dependency>
         <groupId>servicemix</groupId>
@@ -108,16 +113,11 @@
         <artifactId>geronimo-spec-jta</artifactId>
         <version>${geronimo_spec_jta_version}</version>
       </dependency -->
-      <dependency>
-        <groupId>geronimo-spec</groupId>
-        <artifactId>geronimo-spec-jms</artifactId>
-        <version>${geronimo_spec_jms_version}</version>
-      </dependency>
-
+      
 
       <!-- Testing only -->
       <dependency>
-        <groupId>servicemix</groupId>
+        <groupId>org.apache.servicemix</groupId>
         <artifactId>servicemix-core</artifactId>
         <version>${pom.currentVersion}</version>
         <properties>
@@ -125,7 +125,7 @@
         </properties>
       </dependency>
       <dependency>
-        <groupId>servicemix</groupId>
+        <groupId>org.apache.servicemix</groupId>
         <artifactId>servicemix-components</artifactId>
         <version>${pom.currentVersion}</version>
         <properties>
@@ -186,7 +186,6 @@
         <artifactId>xbean-spring</artifactId>
         <version>${xbean_version}</version>
       </dependency>
-
-
+      
     </dependencies>    
 </project>
