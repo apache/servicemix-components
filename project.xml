@@ -85,7 +85,7 @@
         </properties>
       </dependency>
       <dependency>
-        <groupId>xfire</groupId>
+        <groupId>servicemix</groupId>
         <artifactId>xfire-all</artifactId>
         <version>${xfire_version}</version>
         <properties>
@@ -93,7 +93,7 @@
         </properties>
       </dependency>
       <dependency>
-        <groupId>xfire</groupId>
+        <groupId>servicemix</groupId>
         <artifactId>xfire-jaxws</artifactId>
         <version>${xfire_jaxws_version}</version>
         <properties>
