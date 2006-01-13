@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+
+    Copyright 2005 The Apache Software Foundation
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<project default="default" 
+         xmlns:j="jelly:core" 
+         xmlns:ant="jelly:ant" 
+         xmlns:maven="jelly:maven">
+
+         <!-- redefined "build" goal from parent pom -->
+	 <goal name="build" prereqs="clean, jar:install, jbi:install"/>
+	             
+	 <goal name="default">
+	   <attainGoal name="build"/>
+         </goal> 
+         
+         <preGoal name="java:compile">
+           <attainGoal name="jaxws:compile"/>
+         </preGoal>
+
+         <goal name="jaxws:compile" prereqs="setclasspath" description="generate JAX-WS POJOS from WSDL">
+           <mkdir dir="${jaxws.compiled.java.dir}"/>
+           <mkdir dir="${jaxws.compiled.classes.dir}"/>
+	   <wsimport fork="true"
+                     debug="${debug}"
+                     verbose="${verbose}"
+                     keep="${keep}"
+                     sourcedestdir="${jaxws.compiled.java.dir}"
+                     destdir="${jaxws.compiled.classes.dir}"
+                     wsdl="${wsdl.home}/wsn.wsdl">
+           </wsimport>
+         </goal>
+
+         <goal name="setclasspath">
+           <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+             <classpath refid="maven.dependency.classpath"/>
+           </taskdef>
+
+           <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+             <classpath refid="maven.dependency.classpath"/>
+           </taskdef>
+
+           <taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
+             <classpath refid="maven.dependency.classpath"/>
+           </taskdef>
+         </goal>
+
+         <!--==================================================================-->
+         <!-- Initializations                                                  -->
+         <!--==================================================================-->
+         <goal name="jbi:su-init" description="Initialise filesystem and other resources for a jbi service unit">
+           <ant:available property="jbiSuResourcesPresent" 
+                          type="dir"
+                          file="${maven.jbi.su.src}"
+                          />
+         </goal>
+  
+         <goal name="jbi:su" prereqs="jbi:su-init,jar:jar" description="Build a jbi su file">
+           <!-- Copy resources -->
+           <j:if test="${jbiSuResourcesPresent == 'true'}">
+             <ant:copy todir="${maven.jbi.su.build.dir}" preservelastmodified="true">
+               <ant:fileset dir="${maven.jbi.su.src}"
+                            includes="${maven.jbi.su.src.includes}"
+                            excludes="${maven.jbi.su.src.excludes},META-INF/jbi.xml,xbean.xml">
+               </ant:fileset>
+             </ant:copy>
+           </j:if>
+
+           <!-- Copy libs -->
+           <j:forEach var="lib" items="${pom.artifacts}">
+             <j:set var="dep" value="${lib.dependency}"/>     
+             <j:if test="${dep.getProperty('jbi.su.bundle')=='true'}">
+               <j:if test="${dep.type =='jar'}"> 
+                 <ant:copy todir="${maven.jbi.su.build.lib}" file="${lib.path}"/>  
+               </j:if> 
+             </j:if>  
+           </j:forEach>  
+       
+           <ant:copy todir="${maven.jbi.su.build.lib}" file="${maven.build.dir}/${maven.final.name}.jar"/>        
+
+           <j:file name="${maven.jbi.su.build.dir}/META-INF/jbi.xml"
+                   outputMode="xml"
+                   prettyPrint="true"
+                   encoding="${maven.jbi.su.descriptor.encoding}">
+             <j:import file="${maven.jbi.su.descriptor}" inherit="true" />
+           </j:file>  
+
+           <j:file name="${maven.jbi.su.build.dir}/xbean.xml"
+                   outputMode="xml"
+                   prettyPrint="true"
+                   encoding="${maven.jbi.su.xbean.encoding}">
+           
+             <j:import file="${maven.jbi.su.xbean}" inherit="true" />
+           </j:file>  
+    
+           <ant:jar destfile="${maven.build.dir}/${maven.jbi.su.final.name}"
+                    basedir="${maven.jbi.su.build.dir}">
+           </ant:jar>
+         </goal>
+
+         <!--==================================================================-->
+         <!-- Initializations                                                  -->
+         <!--==================================================================-->
+         <goal name="jbi:sa-init" 
+               description="Initialise filesystem and other resources for a jbi service assembly">
+
+           <ant:available property="jbiSaResourcesPresent" 
+                          type="dir"
+                          file="${maven.jbi.sa.src}"/>
+      
+         </goal>
+  
+         <goal name="jbi:sa" prereqs="jbi:sa-init,jbi:su" description="Build a jbi sa file">
+           <!-- Copy resources -->
+           <j:if test="${jbiSaResourcesPresent == 'true'}">
+             <ant:copy todir="${maven.jbi.sa.build.dir}" preservelastmodified="true">
+               <ant:fileset dir="${maven.jbi.sa.src}"
+                            includes="${maven.jbi.sa.src.includes}"
+                            excludes="${maven.jbi.sa.src.excludes},META-INF/jbi.xml">
+               </ant:fileset>
+             </ant:copy>
+           </j:if>
+    
+           <ant:mkdir dir="${maven.jbi.sa.build.dir}/META-INF" />
+           
+           <j:file name="${maven.jbi.sa.build.dir}/META-INF/jbi.xml"
+                   outputMode="xml"
+                   prettyPrint="true"
+                   encoding="${maven.jbi.sa.descriptor.encoding}">
+    
+             <j:import file="${maven.jbi.sa.descriptor}" inherit="true" />
+           </j:file>  
+
+           <ant:copy todir="${maven.jbi.sa.build.dir}" file="${maven.build.dir}/${maven.jbi.su.final.name}" />
+    
+           <ant:jar destfile="${maven.build.dir}/${maven.jbi.sa.final.name}"
+                    basedir="${maven.jbi.sa.build.dir}">
+           </ant:jar>
+         </goal>
+
+</project>
