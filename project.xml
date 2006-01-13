@@ -20,7 +20,7 @@
 
 <project>
   <pomVersion>3</pomVersion>
-  <extend>../project.xml</extend>
+  <extend>${basedir}/../etc/project.xml</extend>
 
   <name>ServiceMix :: WS-Notification 2005</name>
   <id>servicemix-wsn2005</id>
