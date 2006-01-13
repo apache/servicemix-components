@@ -20,7 +20,7 @@
 <!DOCTYPE project>
 <project>
     <pomVersion>3</pomVersion>
-    <extend>../project.xml</extend>
+    <extend>${basedir}/../etc/project.xml</extend>
 
     <name>ServiceMix :: JMS</name>
     <id>servicemix-jms</id>
