@@ -196,7 +196,7 @@
       
       <!--  JAXB -->
       <dependency>
-        <groupId>xfire</groupId>
+        <groupId>servicemix</groupId>
         <artifactId>jaxb-api</artifactId>
         <version>${jaxb_version}</version>
         <properties>
