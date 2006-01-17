@@ -45,7 +45,8 @@
     <taskdef name="xsdGenerate" classname="org.xbean.spring.generator.MappingGeneratorTask">
       <classpath refid="test.classpath" />
     </taskdef>
-    <xsdGenerate destFile="${basedir}/target/servicemix-jsr181-${pom.currentVersion}.xsd" namespace="http://servicemix.org/jsr181/1.0"
+    <xsdGenerate
+    destFile="${basedir}/target/servicemix-jsr181-${pom.currentVersion}.xsd" namespace="http://servicemix.apache.org/jsr181/1.0"
     		classpathref="test.classpath" srcdir="${basedir}/src/main/java"  metaInfDir="${basedir}/target/generated/"/>
   	<copy file="${basedir}/target/servicemix-jsr181-${pom.currentVersion}.xsd" todir="${basedir}/target/generated/"/>
   	<copy file="${basedir}/target/servicemix-jsr181-${pom.currentVersion}.xsd" todir="${basedir}/../xdocs"/>    
