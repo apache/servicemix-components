@@ -29,7 +29,7 @@ import javax.xml.transform.stream.StreamSource;
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.components.http.HttpInvoker;
+import org.apache.servicemix.components.http.HttpConnector;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpLifeCycle;
@@ -39,7 +39,7 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 
-public class HttpComponentConsumerTest extends TestCase {
+public class HttpProviderTest extends TestCase {
 
     protected JBIContainer container;
     
@@ -66,31 +66,30 @@ public class HttpComponentConsumerTest extends TestCase {
         // Add a receiver component
         Receiver receiver = new ReceiverComponent();
         ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
-        asReceiver.setService(new QName("http://http.servicemix.org/Test", "ProviderInOnly"));
+        asReceiver.setService(new QName("test", "receiver"));
         container.activateComponent(asReceiver);
         
-        // Add the http invoker
-        HttpInvoker invoker = new HttpInvoker();
-        invoker.setDefaultInOut(false);
-        invoker.setUrl("http://localhost:8192/InOnly/");
-        ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
-        asInvoker.setService(new QName("urn:test", "invoker"));
-        container.activateComponent(asInvoker);
+        // Add the http receiver
+        HttpConnector connector = new HttpConnector("localhost", 8192);
+        connector.setDefaultInOut(false);
+        ActivationSpec asConnector = new ActivationSpec("connector", connector);
+        asConnector.setDestinationService(new QName("test", "receiver"));
+        container.activateComponent(asConnector);
         
         // Start container
         container.start();
 
         // Deploy SU
-        URL url = getClass().getClassLoader().getResource("consumer/http.wsdl");
+        URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
-        component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
-        component.getServiceUnitManager().start("consumer");
+        component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().start("provider");
         
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         RobustInOnly in = client.createRobustInOnlyExchange();
-        in.setService(new QName("urn:test", "invoker"));
+        in.setInterfaceName(new QName("http://http.servicemix.org/Test", "ProviderInterface"));
         in.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
         
         long t0 = System.currentTimeMillis();
@@ -104,41 +103,39 @@ public class HttpComponentConsumerTest extends TestCase {
         return t1 - t0;
     }
         
-
     protected long testInOut(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
         ((HttpLifeCycle) component.getLifeCycle()).getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HTTPComponent");
         
-        // Add a receiver component
+        // Add a echo component
         EchoComponent echo = new EchoComponent();
         ActivationSpec asReceiver = new ActivationSpec("echo", echo);
-        asReceiver.setService(new QName("http://http.servicemix.org/Test", "ProviderInOut"));
+        asReceiver.setService(new QName("test", "echo"));
         container.activateComponent(asReceiver);
         
-        // Add the http invoker
-        HttpInvoker invoker = new HttpInvoker();
-        invoker.setDefaultInOut(true);
-        invoker.setUrl("http://localhost:8192/InOut/");
-        ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
-        asInvoker.setService(new QName("urn:test", "invoker"));
-        container.activateComponent(asInvoker);
+        // Add the http receiver
+        HttpConnector connector = new HttpConnector("localhost", 8192);
+        connector.setDefaultInOut(true);
+        ActivationSpec asConnector = new ActivationSpec("connector", connector);
+        asConnector.setDestinationService(new QName("test", "echo"));
+        container.activateComponent(asConnector);
         
         // Start container
         container.start();
 
         // Deploy SU
-        URL url = getClass().getClassLoader().getResource("consumer/http.wsdl");
+        URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
-        component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
-        component.getServiceUnitManager().start("consumer");
-
+        component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().start("provider");
+        
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inout = client.createInOutExchange();
-        inout.setService(new QName("urn:test", "invoker"));
+        inout.setInterfaceName(new QName("http://http.servicemix.org/Test", "ProviderInterface"));
         inout.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
         
         long t0 = System.currentTimeMillis();

@@ -60,6 +60,15 @@
         </properties>
       </dependency>
       <dependency>
+        <groupId>org.apache.servicemix</groupId>
+        <artifactId>servicemix-soap</artifactId>
+        <version>${pom.currentVersion}</version>
+        <properties>
+          <eclipse.dependency>true</eclipse.dependency>
+          <jbi.bundle>true</jbi.bundle>
+        </properties>
+      </dependency>
+      <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>${commons_logging_version}</version>
@@ -149,14 +158,14 @@
         </properties>
       </dependency>
       <dependency>
-        <groupId>servicemix</groupId>
-        <artifactId>jaxp</artifactId>
-        <version>${jaxp_version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
         <artifactId>geronimo-j2ee-connector_1.5_spec</artifactId>
         <version>${geronimo_spec_j2ee_connector_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-activation_1.0.2_spec</artifactId>
+        <version>${geronimo_spec_activation_version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
@@ -168,6 +177,26 @@
         <artifactId>geronimo-servlet_2.4_spec</artifactId>
         <version>${geronimo_spec_servlet_version}</version>
       </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-javamail_1.3.1_spec</artifactId>
+      <version>${geronimo_spec_javamail_version}</version>
+    </dependency>
+    <dependency>
+      <groupId>geronimo</groupId>
+      <artifactId>geronimo-activation</artifactId>
+      <version>${geronimo_version}</version>
+    </dependency>
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>${xml_apis_version}</version>
+    </dependency>
+    <dependency>
+      <groupId>activeio</groupId>
+      <artifactId>activeio</artifactId>
+      <version>${activeio_version}</version>
+    </dependency>
 
       <!-- Testing only -->
       <dependency>
@@ -212,8 +241,33 @@
         <version>${mx4j_version}</version>
       </dependency>
       <dependency>
+        <groupId>woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>${woodstox_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
         <id>stax+api</id>
         <version>${stax_api_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <id>stax-utils</id>
+        <version>${stax_utils_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <id>xalan</id>
+        <version>${xalan_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
       </dependency>
       <dependency>
         <groupId>annogen</groupId>
@@ -233,4 +287,28 @@
       </dependency>
     </dependencies>  
 
+    <build>
+        <unitTest>
+            <includes>
+                <include>**/*Test.*</include>
+            </includes>
+            <excludes>
+                <!-- Only works with xfire 1.0-SNAPSHOT -->
+            </excludes>
+        </unitTest>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>target/generated</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 </project>

@@ -20,11 +20,13 @@ import java.net.URI;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.wsdl.extensions.http.HTTPBinding;
+import javax.wsdl.extensions.ExtensibilityElement;
 
-import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.wsdl1.JbiExtension;
+import org.apache.servicemix.http.processors.ConsumerProcessor;
+import org.apache.servicemix.http.processors.ProviderProcessor;
+import org.apache.servicemix.soap.SoapEndpoint;
 
 /**
  * 
@@ -34,14 +36,15 @@ import org.apache.servicemix.common.wsdl1.JbiExtension;
  *                  description="An http endpoint"
  * 
  */
-public class HttpEndpoint extends Endpoint {
+public class HttpEndpoint extends SoapEndpoint {
 
-    protected HTTPBinding binding;
+    protected ExtensibilityElement binding;
     protected ExchangeProcessor processor;
     protected ServiceEndpoint activated;
     protected Role role;
     protected URI defaultMep;
     protected String locationURI;
+    protected boolean soap;
     
     public ExchangeProcessor getProcessor() {
         return this.processor;
@@ -51,11 +54,12 @@ public class HttpEndpoint extends Endpoint {
      * @see org.servicemix.common.Endpoint#activate()
      */
     public void activate() throws Exception {
+        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
         if (getRole() == Role.PROVIDER) {
-            ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
             activated = ctx.activateEndpoint(service, endpoint);
             processor = new ProviderProcessor(this);
         } else {
+            ctx.registerExternalEndpoint(new HttpExternalEndpoint(this));
             processor = new ConsumerProcessor(this);
         }
         processor.start();
@@ -74,11 +78,11 @@ public class HttpEndpoint extends Endpoint {
         processor.stop();
     }
 
-    public HTTPBinding getBinding() {
+    public ExtensibilityElement getBinding() {
         return binding;
     }
 
-    public void setBinding(HTTPBinding binding) {
+    public void setBinding(ExtensibilityElement binding) {
         this.binding = binding;
     }
 
@@ -120,6 +124,14 @@ public class HttpEndpoint extends Endpoint {
 
     public void setLocationURI(String locationUri) {
         this.locationURI = locationUri;
+    }
+
+    public boolean isSoap() {
+        return soap;
+    }
+
+    public void setSoap(boolean soap) {
+        this.soap = soap;
     }
 
 }

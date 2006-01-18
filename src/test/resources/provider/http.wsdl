@@ -15,8 +15,7 @@
 
    <service name='Provider'>
       <port name='TestEndpoint' binding='tns:ProviderJmsBinding'>
-			<http:address location="http://localhost:8192/CheckAvailability">
-			</http:address>
+			<http:address location="http://localhost:8192/CheckAvailability"/>
 			<jbi:endpoint role="provider"/>
       </port>
    </service>

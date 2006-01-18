@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+			  xmlns:ns1="urn:xmethods-delayed-quotes"
+			  xmlns:se="http://schemas.xmlsoap.org/soap/envelope/">
+	<env:Body>
+	    <!-- Comment -->
+		<ns1:getQuote 
+			se:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+
+			<ns1:symbol>IBM</ns1:symbol>
+
+		</ns1:getQuote>
+	</env:Body>
+</env:Envelope>

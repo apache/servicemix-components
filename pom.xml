@@ -41,8 +41,21 @@
             <artifactId>servicemix-common</artifactId>
         </dependency>
         <dependency>
+	          <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-soap</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-servlet_2.4_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>axis2</groupId>
+            <artifactId>axis2</artifactId>
+            <version>0.93</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>

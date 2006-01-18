@@ -18,6 +18,8 @@ package org.apache.servicemix.http;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
 import javax.wsdl.extensions.http.HTTPBinding;
+import javax.wsdl.extensions.soap.SOAPAddress;
+import javax.wsdl.extensions.soap.SOAPBinding;
 
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Endpoint;
@@ -43,26 +45,48 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
         if (jbiEndpoint == null) {
             return null;
         }
-        HttpEndpoint endpoint = new HttpEndpoint();
-        endpoint.setRole(jbiEndpoint.getRole());
-        endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
-        endpoint.setLocationURI(((HTTPAddress) portElement).getLocationURI());
-        endpoint.setBinding((HTTPBinding) bindingElement);
-        return endpoint;
+        if (portElement instanceof HTTPAddress && bindingElement instanceof HTTPBinding) {
+            HttpEndpoint endpoint = new HttpEndpoint();
+            endpoint.setSoap(false);
+            endpoint.setRole(jbiEndpoint.getRole());
+            endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
+            endpoint.setLocationURI(((HTTPAddress) portElement).getLocationURI());
+            endpoint.setBinding(bindingElement);
+            return endpoint;
+        } else if (portElement instanceof SOAPAddress && bindingElement instanceof SOAPBinding) {
+            HttpEndpoint endpoint = new HttpEndpoint();
+            endpoint.setSoap(true);
+            endpoint.setRole(jbiEndpoint.getRole());
+            endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
+            endpoint.setLocationURI(((SOAPAddress) portElement).getLocationURI());
+            endpoint.setBinding(bindingElement);
+            return endpoint;
+        } else {
+            return null;
+        }
     }
 
     /* (non-Javadoc)
      * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#filterPortElement(javax.wsdl.extensions.ExtensibilityElement)
      */
     protected boolean filterPortElement(ExtensibilityElement element) {
-        return element instanceof HTTPAddress;
+        if (element instanceof HTTPAddress) {
+            return true;
+        }
+        if (element instanceof SOAPAddress) {
+            String uri = ((SOAPAddress) element).getLocationURI();
+            if (uri.startsWith("http://") || uri.startsWith("https://")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /* (non-Javadoc)
      * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#filterBindingElement(javax.wsdl.extensions.ExtensibilityElement)
      */
     protected boolean filterBindingElement(ExtensibilityElement element) {
-        return element instanceof HTTPBinding;
+        return element instanceof HTTPBinding || element instanceof SOAPBinding;
     }
 
 }

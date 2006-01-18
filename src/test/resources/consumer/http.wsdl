@@ -15,16 +15,14 @@
 
    <service name='ProviderInOnly'>
       <port name='TestEndpoint' binding='tns:ProviderJmsBinding'>
-			<http:address location="http://localhost:8192/InOnly">
-			</http:address>
+			<http:address location="http://localhost:8192/InOnly"/>
 			<jbi:endpoint role="consumer" defaultMep='in-only'/>
       </port>
    </service>
 
    <service name='ProviderInOut'>
       <port name='TestEndpoint' binding='tns:ProviderJmsBinding'>
-			<http:address location="http://localhost:8192/InOut">
-			</http:address>
+			<http:address location="http://localhost:8192/InOut"/>
 			<jbi:endpoint role="consumer" defaultMep='in-out'/>
       </port>
    </service>
