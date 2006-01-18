@@ -256,7 +256,8 @@
         </properties>
       </dependency>
       <dependency>
-        <id>stax-utils</id>
+        <groupId>servicemix</groupId>
+        <artifactId>stax-utils</artifactId>
         <version>${stax_utils_version}</version>
         <properties>
           <scope>test</scope>
