@@ -242,7 +242,12 @@ public class WSNComponentTest extends TestCase {
 		assertEquals(0, pullPoint2.getMessages(0).size());
 	}
 	
-	public void testDemandeBasedPublisher() throws Exception {
+	/*
+	 * Comment DemandBasedPublisher test until 
+	 *   https://jira.logicblaze.com/jira/browse/AMQ-494
+	 *   is fixed
+	 * 
+	public void testDemandBasedPublisher() throws Exception {
 		PublisherComponent publisherComponent = new PublisherComponent();
 		jbi.activateComponent(publisherComponent, "publisher");
 		
@@ -268,6 +273,7 @@ public class WSNComponentTest extends TestCase {
 		
 		Thread.sleep(50);
 	}
+	 */
 	
 	protected Element parse(String txt) throws Exception {
 		DocumentBuilder builder = new SourceTransformer().createDocumentBuilder();
