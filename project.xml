@@ -168,7 +168,7 @@
     </dependency>
 
     <dependency>
-      <groupId>activemq</groupId>
+      <groupId>incubator-activemq</groupId>
       <artifactId>activemq</artifactId>
       <version>${activemq_version}</version>
     </dependency>
