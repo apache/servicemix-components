@@ -83,6 +83,11 @@
 	  <groupId>commons-logging</groupId>
 	  <artifactId>commons-logging</artifactId>
         </dependency>
+        <dependency>
+          <groupId>xfire</groupId>
+          <artifactId>jaxb-api</artifactId>
+          <scope>test</scope>
+	</dependency>
 <!--    
         <dependency>
             <groupId>org.apache.servicemix</groupId>
@@ -135,10 +140,6 @@
         <dependency>
             <groupId>backport175</groupId>
             <artifactId>backport175</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>xfire</groupId>
-            <artifactId>jaxb-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix</groupId>
