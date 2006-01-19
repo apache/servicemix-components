@@ -51,7 +51,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.servicemix.dependencies</groupId>
+            <groupId>incubator-activemq</groupId>
             <artifactId>activemq-core</artifactId>
         </dependency>
         
