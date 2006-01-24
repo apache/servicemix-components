@@ -222,31 +222,26 @@ public class WSNComponentTest extends TestCase {
 		
 		wsnBroker.notify("myTopic", parse("<msg type='a'/>"));
 		// Wait for notification
-		Thread.sleep(50);
+		Thread.sleep(500);
 
 		assertEquals(1, pullPoint1.getMessages(0).size());
 		assertEquals(0, pullPoint2.getMessages(0).size());
 		
 		wsnBroker.notify("myTopic", parse("<msg type='b'/>"));
 		// Wait for notification
-		Thread.sleep(50);
+		Thread.sleep(500);
 
 		assertEquals(0, pullPoint1.getMessages(0).size());
 		assertEquals(1, pullPoint2.getMessages(0).size());
 
 		wsnBroker.notify("myTopic", parse("<msg type='c'/>"));
 		// Wait for notification
-		Thread.sleep(50);
+		Thread.sleep(500);
 
 		assertEquals(0, pullPoint1.getMessages(0).size());
 		assertEquals(0, pullPoint2.getMessages(0).size());
 	}
 	
-	/*
-	 * Comment DemandBasedPublisher test until 
-	 *   https://jira.logicblaze.com/jira/browse/AMQ-494
-	 *   is fixed
-	 * 
 	public void testDemandBasedPublisher() throws Exception {
 		PublisherComponent publisherComponent = new PublisherComponent();
 		jbi.activateComponent(publisherComponent, "publisher");
@@ -261,19 +256,18 @@ public class WSNComponentTest extends TestCase {
 		PullPoint pullPoint = wsnBroker.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
 
-		Thread.sleep(50);
+		Thread.sleep(500);
 		assertNotNull(publisherComponent.getSubscription());
 		
 		subscription.unsubscribe();
 		
-		Thread.sleep(50);
+		Thread.sleep(500);
 		assertNull(publisherComponent.getSubscription());
 		
 		publisher.destroy();
 		
 		Thread.sleep(50);
 	}
-	 */
 	
 	protected Element parse(String txt) throws Exception {
 		DocumentBuilder builder = new SourceTransformer().createDocumentBuilder();
