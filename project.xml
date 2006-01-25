@@ -109,7 +109,7 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
+      <groupId>${pom.groupId}</groupId>
       <artifactId>servicemix-jbi</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
@@ -117,7 +117,7 @@
       </properties>
     </dependency>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
+      <groupId>${pom.groupId}</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
@@ -125,7 +125,7 @@
       </properties>
     </dependency>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
+      <groupId>${pom.groupId}</groupId>
       <artifactId>servicemix-common</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
@@ -133,7 +133,7 @@
       </properties>
     </dependency>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
+      <groupId>${pom.groupId}</groupId>
       <artifactId>servicemix-components</artifactId>
       <version>${pom.currentVersion}</version>
       <properties>
