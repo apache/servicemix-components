@@ -81,9 +81,12 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     	httpContext.stop();
         getServerManager().remove(httpContext);
     }
-    
+
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
     	QName envelopeName = null;
+        if (!"POST".equals(request.getMethod())) {
+            throw new UnsupportedOperationException(request.getMethod() + " not supported");
+        }
     	try {
     		SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
     																request.getHeader("Content-Type"));

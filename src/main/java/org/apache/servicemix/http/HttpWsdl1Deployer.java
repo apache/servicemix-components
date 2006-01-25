@@ -46,6 +46,9 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
             return null;
         }
         if (portElement instanceof HTTPAddress && bindingElement instanceof HTTPBinding) {
+            if (!"POST".equals(((HTTPBinding) bindingElement).getVerb())) {
+                throw new UnsupportedOperationException(((HTTPBinding) bindingElement).getVerb() + " not supported");
+            }
             HttpEndpoint endpoint = new HttpEndpoint();
             endpoint.setSoap(false);
             endpoint.setRole(jbiEndpoint.getRole());

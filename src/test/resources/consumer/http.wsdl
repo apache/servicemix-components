@@ -10,7 +10,7 @@
    </portType>
 
    <binding name='ProviderJmsBinding' type='tns:ProviderInterface'>
-		<http:binding verb="GET"></http:binding>
+		<http:binding verb="POST"></http:binding>
    </binding>
 
    <service name='ProviderInOnly'>
