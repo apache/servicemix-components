@@ -84,11 +84,6 @@
     </dependency>
     <dependency>
       <groupId>servicemix</groupId>
-      <artifactId>jsr181-api</artifactId>
-      <version>${jaxws_rt_version}</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
       <artifactId>jsr250-api</artifactId>
       <version>${jaxws_rt_version}</version>
     </dependency>
