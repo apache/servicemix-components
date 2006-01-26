@@ -188,6 +188,11 @@
         <artifactId>xbean-spring</artifactId>
         <version>${xbean_version}</version>
       </dependency>
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>${xml_apis_version}</version>
+      </dependency>
       
     </dependencies>    
 </project>
