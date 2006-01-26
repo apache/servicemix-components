@@ -71,6 +71,13 @@ public class ServerManagerTest extends TestCase {
         request("http://localhost:8193/echo", null);
     }
     
+    public void testSetMaxThreads()
+    		throws Exception {
+    		int maxThreads = 512;
+    		server.setMaxThreads(maxThreads);
+    		assertEquals("The max number of threads is incorrect!", maxThreads, server.getMaxThreads());
+    }
+    
     protected void checkFail(String url, String content) {
         try {
             request(url, content);

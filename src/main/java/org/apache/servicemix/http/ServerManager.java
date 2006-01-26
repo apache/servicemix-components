@@ -27,6 +27,12 @@ public class ServerManager {
 
     private Server server;
     
+	/**
+	 * The maximum number of threads for the Jetty SocketListener. It's set 
+	 * to 256 by default to match the default value in Jetty. 
+	 */
+	private int maxThreads = 256;
+
     protected void init() throws Exception {
         if (server == null) {
             server = new Server();
@@ -89,11 +95,20 @@ public class ServerManager {
             throw new UnsupportedOperationException("Protocol " + url.getProtocol() + " is not supported");
         }
         SocketListener listener = new SocketListener();
+        listener.setMaxThreads(getMaxThreads());
         listener.setHost(url.getHost());
         listener.setPort(url.getPort());
         server.addListener(listener);
         listener.start();
         return listener;
     }
+
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
 
 }
