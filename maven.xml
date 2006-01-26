@@ -31,10 +31,6 @@
     <attainGoal name="xbean:generate" />
   </postGoal>
          
-  <goal name="default">
-    <attainGoal name="build"/>
-  </goal> 
-
   <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files.">
     <path id="test.classpath">
       <pathelement path="${maven.build.dest}" />

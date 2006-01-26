@@ -257,11 +257,6 @@
         </properties>
       </dependency>
       <dependency>
-        <groupId>springframework</groupId>
-        <artifactId>spring</artifactId>
-        <version>${spring_version}</version>
-      </dependency>
-      <dependency>
         <groupId>incubator-activemq</groupId>
         <artifactId>activemq</artifactId>
         <version>${activemq_version}</version>
