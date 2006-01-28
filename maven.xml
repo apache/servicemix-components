@@ -19,7 +19,8 @@
 -->
 
 <project default="default"
-    xmlns:ant="jelly:ant">
+    xmlns:ant="jelly:ant"
+    xmlns:artifact="artifact">
 
   <!-- redefined "build" goal from parent pom -->
   <goal name="default" prereqs="clean, jbi:install"/>
@@ -48,4 +49,14 @@
   	<copy file="${basedir}/target/servicemix-http-${pom.currentVersion}.xsd" todir="${basedir}/../xdocs"/>    
     <copy file="${basedir}/target/servicemix-http-${pom.currentVersion}.xsd.html" todir="${basedir}/../xdocs"/>
   </goal>
+  
+  <!-- Uploads the installer to the dist repository after deploying the jar binary -->
+  <postGoal name="jar:deploy">
+    <artifact:deploy
+      artifact="${basedir}/target/${pom.artifactId}-installer-${pom.currentVersion}.zip"
+      type="zip"
+      project="${pom}"
+    />
+  </postGoal>
+  
 </project>
