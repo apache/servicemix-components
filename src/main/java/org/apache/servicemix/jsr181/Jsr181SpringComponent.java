@@ -18,6 +18,7 @@ package org.apache.servicemix.jsr181;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 
 /**
  * 
@@ -58,7 +59,7 @@ public class Jsr181SpringComponent extends BaseComponent {
          */
         protected void doInit() throws Exception {
             super.doInit();
-            su = new ServiceUnit();
+            su = new XBeanServiceUnit();
             su.setComponent(Jsr181SpringComponent.this);
             for (int i = 0; i < endpoints.length; i++) {
                 endpoints[i].setServiceUnit(su);

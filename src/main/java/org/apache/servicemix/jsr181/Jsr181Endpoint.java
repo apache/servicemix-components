@@ -50,6 +50,7 @@ import org.codehaus.xfire.transport.TransportManager;
 import org.codehaus.xfire.xmlbeans.XmlBeansTypeRegistry;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -168,7 +169,8 @@ public class Jsr181Endpoint extends Endpoint {
 
     public void registerService() throws Exception {
         if (pojo == null) {
-            Class cl = Class.forName(pojoClass);
+            ClassLoader classLoader = ((XBeanServiceUnit) getServiceUnit()).getConfigurationClassLoader();
+            Class cl = Class.forName(pojoClass, true, classLoader);
             pojo = cl.newInstance();
         }
         // Determine annotations
