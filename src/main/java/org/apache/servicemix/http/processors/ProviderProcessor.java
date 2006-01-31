@@ -208,6 +208,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         public void writeRequest(OutputStream out) throws IOException {
             try {
             	writer.write(out);
+                out.flush();
             } catch (Exception e) {
                 throw (IOException) new IOException("Could not write request").initCause(e);
             }

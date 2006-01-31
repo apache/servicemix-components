@@ -95,8 +95,8 @@
       </dependency>
       <dependency>
         <groupId>jetty</groupId>
-        <artifactId>org.mortbay.jetty</artifactId>
-        <version>${org.mortbay.jetty_version}</version>
+        <artifactId>jetty</artifactId>
+        <version>${jetty_version}</version>
         <properties>
           <jbi.bundle>true</jbi.bundle>
         </properties>

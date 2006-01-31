@@ -160,21 +160,22 @@ public class HttpProviderTest extends TestCase {
     }
     
     public void testPerfInOnlyWithBigMessage() throws Exception {
-        int nbRuns = 2;
+        int nbRuns = 10;
         int sizeInKb = 64;
         
         StringBuffer sb = new StringBuffer();
-        sb.append("<hello>");
+        sb.append("<hello>\n");
         for (int i = 0; i < sizeInKb; i++) {
-            sb.append("<hello>");
+            sb.append("\t<hello>");
             for (int j = 0; j < 1024 - 15; j++) {
                 sb.append((char) ('A' + (int)(Math.random() * ('Z' - 'A' + 1))));
             }
-            sb.append("</hello>");
+            sb.append("</hello>\n");
         }
-        sb.append("</hello>");
+        sb.append("</hello>\n");
         String str = sb.toString();
         
+        /*
         for(int i = 0; i < nbRuns; i++) { 
             System.gc();
             long dt = testInOnly(str, false);
@@ -182,6 +183,7 @@ public class HttpProviderTest extends TestCase {
             tearDown();
             setUp();
         }
+        */
         
         for(int i = 0; i < nbRuns; i++) { 
             System.gc();

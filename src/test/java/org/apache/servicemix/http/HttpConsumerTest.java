@@ -28,7 +28,9 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.components.http.HttpClientMarshaler;
 import org.apache.servicemix.components.http.HttpInvoker;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.http.HttpComponent;
@@ -73,6 +75,7 @@ public class HttpConsumerTest extends TestCase {
         HttpInvoker invoker = new HttpInvoker();
         invoker.setDefaultInOut(false);
         invoker.setUrl("http://localhost:8192/InOnly/");
+        invoker.setMarshaler(new HttpClientMarshaler(true));
         ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
         asInvoker.setService(new QName("urn:test", "invoker"));
         container.activateComponent(asInvoker);

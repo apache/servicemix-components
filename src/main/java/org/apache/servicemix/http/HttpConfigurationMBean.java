@@ -20,4 +20,13 @@ public interface HttpConfigurationMBean {
     public boolean isStreamingEnabled();
 
     public void setStreamingEnabled(boolean streamingEnabled);
+
+    public String getJettyConnectorClassName();
+
+    public void setJettyConnectorClassName(String jettyConnectorClassName);
+
+    public int getJettyThreadPoolSize();
+
+    public void setJettyThreadPoolSize(int jettyThreadPoolSize);
+    
 }

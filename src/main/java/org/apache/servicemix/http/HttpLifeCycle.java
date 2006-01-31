@@ -68,6 +68,7 @@ public class HttpLifeCycle extends BaseLifeCycle {
         configuration.load();
         if (server == null) {
             server = new ServerManager();
+            server.setConfiguration(configuration);
             server.init();
         }
         if (client == null) {

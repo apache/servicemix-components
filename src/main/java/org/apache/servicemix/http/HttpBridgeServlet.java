@@ -58,6 +58,8 @@ public class HttpBridgeServlet extends HttpServlet {
             throw e;
         } catch (ServletException e) {
             throw e;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new ServletException("Failed to process request: " + e, e);
         }
@@ -69,6 +71,8 @@ public class HttpBridgeServlet extends HttpServlet {
         } catch (IOException e) {
             throw e;
         } catch (ServletException e) {
+            throw e;
+        } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new ServletException("Failed to process request: " + e, e);
