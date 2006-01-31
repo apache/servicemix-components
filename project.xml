@@ -197,8 +197,8 @@
       </dependency>
     <dependency>
       <groupId>jetty</groupId>
-      <artifactId>org.mortbay.jetty</artifactId>
-      <version>${org.mortbay.jetty_version}</version>
+      <artifactId>jetty</artifactId>
+      <version>${jetty_version}</version>
     </dependency>
     <dependency>
       <id>commons-httpclient</id>
