@@ -19,8 +19,8 @@ import org.apache.servicemix.common.PersistentConfiguration;
 
 public class HttpConfiguration extends PersistentConfiguration implements HttpConfigurationMBean {
 
-    private boolean streamingEnabled = true;
-    private String jettyConnectorClassName = "org.mortbay.jetty.nio.SelectChannelConnector";
+    private boolean streamingEnabled = false;
+    private String jettyConnectorClassName = "org.mortbay.jetty.bio.SocketConnector";
 
     /**
      * The maximum number of threads for the Jetty thread pool. It's set 
@@ -43,6 +43,7 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
 
     public void setJettyConnectorClassName(String jettyConnectorClassName) {
         this.jettyConnectorClassName = jettyConnectorClassName;
+        save();
     }
 
     public int getJettyThreadPoolSize() {
@@ -51,6 +52,31 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
 
     public void setJettyThreadPoolSize(int jettyThreadPoolSize) {
         this.jettyThreadPoolSize = jettyThreadPoolSize;
+        save();
     }
-
+    
+    public void save() {
+        properties.setProperty("jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
+        properties.setProperty("jettyConnectorClassName", jettyConnectorClassName);
+        properties.setProperty("streamingEnabled", Boolean.toString(streamingEnabled));
+        super.save();
+    }
+    
+    public boolean load() {
+        if (super.load()) {
+            if (properties.getProperty("jettyThreadPoolSize") != null) {
+                jettyThreadPoolSize = Integer.parseInt(properties.getProperty("jettyThreadPoolSize"));
+            }
+            if (properties.getProperty("jettyConnectorClassName") != null) {
+                jettyConnectorClassName = properties.getProperty("jettyConnectorClassName");
+            }
+            if (properties.getProperty("streamingEnabled") != null) {
+                streamingEnabled = Boolean.getBoolean(properties.getProperty("streamingEnabled"));
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
 }

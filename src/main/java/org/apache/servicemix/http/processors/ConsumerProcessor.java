@@ -112,8 +112,11 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange);
                 ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
+                // TODO: make this timeout configurable
                 boolean result = cont.suspend(1000 * 60); // 60 s
-                if (!result) {
+                // TODO: inconsitency between javadoc and implementation
+                // the WaitingContinuation returns true if it has timed out
+                if (result) {
                     throw new Exception("Error sending exchange: aborted");
                 }
             } else {
