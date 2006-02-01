@@ -312,9 +312,6 @@
                 <include>**/*Test.*</include>
             </includes>
             <excludes>
-                <!-- Only works with xfire 1.0-SNAPSHOT -->
-                <exclude>**/Jsr181OverrideTest.*</exclude>
-                <exclude>**/JbiProxyTest.*</exclude>
             </excludes>
         </unitTest>
         <resources>

@@ -33,15 +33,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.exchange.InMessage;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.transport.Channel;
 import org.codehaus.xfire.transport.Transport;
-import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.jbi.jaxp.BytesSource;
-import org.apache.servicemix.jsr181.xfire.JbiTransport;
 
 public class Jsr181ExchangeProcessor implements ExchangeProcessor {
 
@@ -83,12 +83,12 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         if (isInAndOut(exchange)) {
             if (ctx.getExchange().hasFaultMessage() && ctx.getExchange().getFaultMessage().getBody() != null) {
                 Fault fault = exchange.createFault();
-                fault.setContent(new BytesSource(out.toByteArray()));
+                fault.setContent(new StringSource(out.toString()));
                 exchange.setFault(fault);
                 exchange.setStatus(ExchangeStatus.ERROR);
             } else {
                 NormalizedMessage outMsg = exchange.createMessage();
-                outMsg.setContent(new BytesSource(out.toByteArray()));
+                outMsg.setContent(new StringSource(out.toString()));
                 exchange.setMessage(outMsg, "out");
             }
         } else {

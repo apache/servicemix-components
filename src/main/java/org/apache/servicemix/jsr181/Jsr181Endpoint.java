@@ -34,24 +34,25 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
+import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
+import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.aegis.AegisBindingProvider;
 import org.codehaus.xfire.aegis.type.DefaultTypeMappingRegistry;
 import org.codehaus.xfire.aegis.type.TypeMappingRegistry;
 import org.codehaus.xfire.annotations.AnnotationServiceFactory;
 import org.codehaus.xfire.annotations.WebAnnotations;
-import org.codehaus.xfire.annotations.jsr181.Jsr181WebAnnotations;
 import org.codehaus.xfire.annotations.commons.CommonsWebAttributes;
+import org.codehaus.xfire.annotations.jsr181.Jsr181WebAnnotations;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.BeanInvoker;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.soap.SoapConstants;
 import org.codehaus.xfire.transport.TransportManager;
 import org.codehaus.xfire.xmlbeans.XmlBeansTypeRegistry;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.common.xbean.XBeanServiceUnit;
-import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -243,6 +244,7 @@ public class Jsr181Endpoint extends Endpoint {
         factory.getSoap11Transports().add(JbiTransport.JBI_BINDING);
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
+        xfireService.setFaultSerializer(new JbiFaultSerializer(getConfiguration()));
         xfire.getServiceRegistry().register(xfireService);
         this.description = generateWsdl();
         
@@ -301,6 +303,12 @@ public class Jsr181Endpoint extends Endpoint {
         Jsr181LifeCycle jsr181LifeCycle = (Jsr181LifeCycle) this.serviceUnit.getComponent().getLifeCycle();
         XFire xfire = jsr181LifeCycle.getXFire();
         return xfire;
+    }
+    
+    public Jsr181ConfigurationMBean getConfiguration() {
+        Jsr181LifeCycle jsr181LifeCycle = (Jsr181LifeCycle) this.serviceUnit.getComponent().getLifeCycle();
+        Jsr181ConfigurationMBean configuration = jsr181LifeCycle.getConfiguration();
+        return configuration;
     }
     
     public String getPojoClass() {

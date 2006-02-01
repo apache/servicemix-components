@@ -25,6 +25,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
 
 import junit.framework.TestCase;
 
@@ -32,16 +33,22 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jsr181.Jsr181Endpoint;
-import org.apache.servicemix.jsr181.Jsr181SpringComponent;
+import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
+
+import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 public class Jsr181ComplexPojoTest extends TestCase {
 
     //private static Log logger =  LogFactory.getLog(Jsr181ComponentTest.class);
     
     protected JBIContainer container;
+    protected SourceTransformer transformer = new SourceTransformer();
     
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -109,6 +116,74 @@ public class Jsr181ComplexPojoTest extends TestCase {
         
         // Wait all acks being processed
         Thread.sleep(100);
+    }
+    
+    public void testFault() throws Exception {
+        Jsr181SpringComponent component = new Jsr181SpringComponent();
+        Jsr181Endpoint endpoint = new Jsr181Endpoint();
+        endpoint.setPojo(new ComplexPojoImpl());
+        endpoint.setServiceInterface(ComplexPojo.class.getName());
+        component.setEndpoints(new Jsr181Endpoint[] { endpoint });
+        container.activateComponent(component, "JSR181Component");
+        
+        EchoComponent echo = new EchoComponent();
+        ActivationSpec as = new ActivationSpec();
+        as.setComponent(echo);
+        as.setService(ReceiverComponent.SERVICE);
+        as.setComponentName("Echo");
+        container.activateComponent(as);
+        
+        container.start();
+
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut me = client.createInOutExchange();
+        me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
+        me.getInMessage().setContent(new StringSource("<hel lo>world</hello"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        assertNotNull(me.getFault());
+        Node n = transformer.toDOMNode(me.getFault());
+        System.err.println(transformer.toString(n));
+        String xpath;
+        assertNotNull(xpath = textValueOfXPath(n, "//message"));
+        assertNull(xpath = textValueOfXPath(n, "//stack"));
+        client.done(me);
+        
+        ((Jsr181LifeCycle) component.getLifeCycle()).getConfiguration().setPrintStackTraceInFaults(true);
+        
+        me = client.createInOutExchange();
+        me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
+        me.getInMessage().setContent(new StringSource("<hel lo>world</hello"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        assertNotNull(me.getFault());
+        n = transformer.toDOMNode(me.getFault());
+        System.err.println(transformer.toString(n));
+        assertNotNull(xpath = textValueOfXPath(n, "//message"));
+        assertNotNull(xpath = textValueOfXPath(n, "//stack"));
+        client.done(me);
+        
+        // Wait all acks being processed
+        Thread.sleep(100);
+    }
+    
+    protected String textValueOfXPath(Node node, String xpath) throws TransformerException {
+        CachedXPathAPI cachedXPathAPI = new CachedXPathAPI();
+        NodeIterator iterator = cachedXPathAPI.selectNodeIterator(node, xpath);
+        Node root = iterator.nextNode();
+        if (root instanceof Element) {
+            Element element = (Element) root;
+            if (element == null) {
+                return "";
+            }
+            String text = DOMUtil.getElementText(element);
+            return text;
+        }
+        else if (root != null) {
+            return root.getNodeValue();
+        } else {
+            return null;
+        }
     }
     
     public interface ComplexPojo {
