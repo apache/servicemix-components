@@ -25,6 +25,7 @@
 
          <!-- redefined "build" goal from parent pom -->
 	 <goal name="default" prereqs="clean, jar:install, jbi:install"/>
+	 <goal name="nightly" prereqs="clean, jar:install, jbi:install, jar:deploy, jbi:deploy"/>
 	             
 	 <preGoal name="java:compile">
            <attainGoal name="jaxws:compile"/>
@@ -150,13 +151,4 @@
            </ant:jar>
          </goal>
          
-         <!-- Uploads the installer to the dist repository after deploying the jar binary -->
-	 <postGoal name="jar:deploy">
-	     <artifact:deploy
-	       artifact="${basedir}/target/${pom.artifactId}-installer-${pom.currentVersion}.zip"
-	       type="zip"
-	       project="${pom}"
-	     />
-         </postGoal>
-
 </project>
