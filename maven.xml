@@ -44,6 +44,13 @@
            </wsimport>
          </goal>
 
+         <!-- Build failure reports: initialize compile fail -->
+         <preGoal name="jaxws:compile">
+           <j:if test="${generateBuildReports == 'true'}">
+             <attainGoal name="build-failure-report:set-compile-fail"/>
+           </j:if>
+         </preGoal> 
+
          <goal name="setclasspath">
            <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
              <classpath refid="maven.dependency.classpath"/>
