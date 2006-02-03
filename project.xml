@@ -102,6 +102,14 @@
         </properties>
       </dependency>
       <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jcl</artifactId>
+        <version>${slf4j_jcl_version}</version>
+        <properties>
+          <jbi.bundle>true</jbi.bundle>
+        </properties>
+      </dependency>
+      <dependency>
         <id>commons-httpclient</id>
         <version>${commons_httpclient_version}</version>
         <properties>
