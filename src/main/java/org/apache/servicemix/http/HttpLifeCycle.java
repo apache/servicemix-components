@@ -80,7 +80,9 @@ public class HttpLifeCycle extends BaseLifeCycle {
     protected void doShutDown() throws Exception {
         super.doShutDown();
         if (server != null) {
-            server.shutDown();
+            ServerManager s = server;
+            server = null;
+            s.shutDown();
         }
         if (connectionManager != null) {
             connectionManager.shutdown();

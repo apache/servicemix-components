@@ -21,11 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.ContextHandler;
-import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
@@ -33,6 +34,8 @@ import org.mortbay.thread.BoundedThreadPool;
 
 public class ServerManager {
 
+    private static final Log logger = LogFactory.getLog(ServerManager.class);
+    
     private Server server;
     private HttpConfiguration configuration;
     
@@ -60,7 +63,6 @@ public class ServerManager {
         server.stop();
     }
     
-    // TODO: handle https
     public synchronized ContextHandler createContext(String strUrl, HttpProcessor processor) throws Exception {
         URL url = new URL(strUrl);
         Connector listener = getListener(url);
@@ -141,9 +143,11 @@ public class ServerManager {
         try {
             listener = (Connector) Class.forName(connectorClassName).newInstance();
         } catch (Exception e) {
-            // TODO use logger
-            e.printStackTrace();
-            listener = new SelectChannelConnector();
+            logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to " + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Reason: " + e.getMessage(), e);
+            }
+            listener = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME).newInstance();
         }
         listener.setHost(url.getHost());
         listener.setPort(url.getPort());
