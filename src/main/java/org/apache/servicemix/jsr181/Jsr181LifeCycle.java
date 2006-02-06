@@ -18,8 +18,8 @@ package org.apache.servicemix.jsr181;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
+import org.codehaus.xfire.DefaultXFire;
 import org.codehaus.xfire.XFire;
-import org.codehaus.xfire.XFireFactory;
 import org.codehaus.xfire.transport.Transport;
 
 public class Jsr181LifeCycle extends BaseLifeCycle {
@@ -60,7 +60,7 @@ public class Jsr181LifeCycle extends BaseLifeCycle {
         super.doInit();
         configuration.setRootDir(context.getWorkspaceRoot());
         configuration.load();
-        xfire = XFireFactory.newInstance().getXFire();
+        xfire = new DefaultXFire();
         Object[] transports = xfire.getTransportManager().getTransports().toArray();
         for (int i = 0; i < transports.length; i++) {
             xfire.getTransportManager().unregister((Transport) transports[i]);
