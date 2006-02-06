@@ -38,7 +38,7 @@ public class Jsr181Configuration extends PersistentConfiguration implements Jsr1
     public boolean load() {
         if (super.load()) {
             if (properties.getProperty("printStackTraceInFaults") != null) {
-                printStackTraceInFaults = Boolean.getBoolean(properties.getProperty("printStackTraceInFaults"));
+                printStackTraceInFaults = Boolean.valueOf(properties.getProperty("printStackTraceInFaults")).booleanValue();
             }
             return true;
         } else {
