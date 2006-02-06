@@ -19,8 +19,10 @@ import org.apache.servicemix.common.PersistentConfiguration;
 
 public class HttpConfiguration extends PersistentConfiguration implements HttpConfigurationMBean {
 
+    public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = org.mortbay.jetty.bio.SocketConnector.class.getName();
+    
     private boolean streamingEnabled = false;
-    private String jettyConnectorClassName = "org.mortbay.jetty.bio.SocketConnector";
+    private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
 
     /**
      * The maximum number of threads for the Jetty thread pool. It's set 
@@ -71,7 +73,7 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
                 jettyConnectorClassName = properties.getProperty("jettyConnectorClassName");
             }
             if (properties.getProperty("streamingEnabled") != null) {
-                streamingEnabled = Boolean.getBoolean(properties.getProperty("streamingEnabled"));
+                streamingEnabled = Boolean.valueOf(properties.getProperty("streamingEnabled")).booleanValue();
             }
             return true;
         } else {
