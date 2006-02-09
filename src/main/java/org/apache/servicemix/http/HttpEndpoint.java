@@ -32,7 +32,7 @@ import org.apache.servicemix.soap.SoapEndpoint;
  * 
  * @author gnodet
  * @version $Revision$
- * @org.xbean.XBean element="endpoint"
+ * @org.apache.xbean.XBean element="endpoint"
  *                  description="An http endpoint"
  * 
  */
@@ -95,7 +95,7 @@ public class HttpEndpoint extends SoapEndpoint {
     }
     
     /**
-     * @org.xbean.Property alias="role"
+     * @org.apache.xbean.Property alias="role"
      * @param role
      */
     public void setRoleAsString(String role) {

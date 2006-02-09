@@ -29,7 +29,7 @@ import org.w3c.dom.Node;
  * 
  * @author gnodet
  * @version $Revision$
- * @org.xbean.XBean element="component"
+ * @org.apache.xbean.XBean element="component"
  *                  description="An http component"
  */
 public class HttpSpringComponent extends BaseComponent {
