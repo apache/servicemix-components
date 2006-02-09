@@ -24,7 +24,7 @@ import org.apache.servicemix.common.xbean.XBeanServiceUnit;
  * 
  * @author gnodet
  * @version $Revision$
- * @org.xbean.XBean element="component"
+ * @org.apache.xbean.XBean element="component"
  *                  description="A jsr181 component"
  */
 public class Jsr181SpringComponent extends BaseComponent {

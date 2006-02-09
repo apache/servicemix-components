@@ -60,7 +60,7 @@ import org.xml.sax.SAXException;
  * 
  * @author gnodet
  * @version $Revision$
- * @org.xbean.XBean element="endpoint"
+ * @org.apache.xbean.XBean element="endpoint"
  *                  description="A jsr181 endpoint"
  * 
  */
@@ -130,7 +130,7 @@ public class Jsr181Endpoint extends Endpoint {
 
     /* (non-Javadoc)
      * @see org.servicemix.common.Endpoint#getRole()
-     * @org.xbean.XBean hide="true"
+     * @org.apache.xbean.XBean hide="true"
      */
     public Role getRole() {
         return Role.PROVIDER;
