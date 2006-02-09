@@ -29,6 +29,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.Jsr181Endpoint;
+import org.apache.servicemix.jsr181.Jsr181LifeCycle;
 import org.apache.servicemix.jsr181.Jsr181SpringComponent;
 import org.apache.servicemix.jsr181.xfire.JbiProxy;
 
@@ -74,6 +75,9 @@ public class JbiProxyTest extends TestCase {
         me.setInterfaceName(new QName("http://xfire.jsr181.servicemix.apache.org", "ProxyPojoPortType"));
         me.getInMessage().setContent(new StringSource("<echo xmlns='http://jsr181.servicemix.apache.org'><echoin0>world</echoin0></echo>"));
         client.sendSync(me);
+        if (me.getError() != null) {
+            throw me.getError();
+        }
         assertTrue(me.getStatus() == ExchangeStatus.ACTIVE);
         client.done(me);
     }
@@ -104,7 +108,7 @@ public class JbiProxyTest extends TestCase {
             this.context = context;
             if (context != null) {
                 try {
-                    XFire xfire = XFireFactory.newInstance().getXFire();
+                    XFire xfire = Jsr181LifeCycle.createXFire(context);
                     QName service = new QName("http://xfire.jsr181.servicemix.apache.org", "EchoService");
                     proxy = (Echo) JbiProxy.create(xfire, context, null, service, null, Echo.class);
                 } catch (Exception e) {

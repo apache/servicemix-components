@@ -75,7 +75,7 @@ public class JbiProxy {
     
     public Object getProxy() throws Exception {
         if (proxy == null) {
-            Client client = new Client(JbiTransport.JBI_BINDING, getDescription(), serviceClass);
+            JBIClient client = new JBIClient(xfire, getDescription(), serviceClass);
             if (interfaceName != null) {
                 client.getService().setProperty(JbiChannel.JBI_INTERFACE_NAME, interfaceName);
             }
@@ -137,5 +137,15 @@ public class JbiProxy {
             }
         }
         return null;
+    }
+    
+    protected static class JBIClient extends Client {
+
+        public JBIClient(XFire xfire, Definition description, Class serviceClass) throws Exception {
+            super();
+            setXFire(xfire);
+            initFromDefinition(JbiTransport.JBI_BINDING, description, serviceClass);
+        }
+        
     }
 }

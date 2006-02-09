@@ -15,6 +15,8 @@
  */
 package org.apache.servicemix.jsr181;
 
+import javax.jbi.component.ComponentContext;
+
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
@@ -60,12 +62,17 @@ public class Jsr181LifeCycle extends BaseLifeCycle {
         super.doInit();
         configuration.setRootDir(context.getWorkspaceRoot());
         configuration.load();
-        xfire = new DefaultXFire();
+        xfire = createXFire(this.context);
+    }
+    
+    public static XFire createXFire(ComponentContext context) {
+        XFire xfire = new DefaultXFire();
         Object[] transports = xfire.getTransportManager().getTransports().toArray();
         for (int i = 0; i < transports.length; i++) {
             xfire.getTransportManager().unregister((Transport) transports[i]);
         }
-        xfire.getTransportManager().register(new JbiTransport(this.context));
+        xfire.getTransportManager().register(new JbiTransport(context));
+        return xfire;
     }
     
 }
