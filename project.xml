@@ -140,6 +140,11 @@
       <artifactId>xbean-spring</artifactId>
       <version>${xbean_version}</version>
     </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${commons_beanutils_version}</version>
+    </dependency>
 
     <dependency>
       <groupId>commons-logging</groupId>
