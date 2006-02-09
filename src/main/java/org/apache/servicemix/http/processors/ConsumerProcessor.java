@@ -46,7 +46,6 @@ import org.mortbay.jetty.RetryRequest;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
-import org.mortbay.util.ajax.WaitingContinuation;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -77,11 +76,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public void process(MessageExchange exchange) throws Exception {
         Continuation cont = (Continuation) locks.remove(exchange.getExchangeId());
         if (cont != null) {
-            synchronized (cont) {
-                if (cont.isPending()) {
-                    cont.resume();
-                }
-            }
+            //System.err.println("Notifying: " + exchange.getExchangeId());
+            cont.resume();
         } else {
             throw new IllegalStateException("Exchange not found");
         }
@@ -109,33 +105,36 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         try {
             // Not giving a specific mutex will synchronize on the contination itself
             Continuation cont = ContinuationSupport.getContinuation(request, null);
-            // TODO: Bug in jetty: the mutex is not set
-            if (cont instanceof WaitingContinuation && cont.isNew()) {
-                ((WaitingContinuation) cont).setMutex(cont);
-            }
             MessageExchange exchange;
-            // Need to synchronize on the continuation so that the Continuation.resume
-            // can not be called before the suspend
-            // It should work without that, but it does not :(
-            synchronized (cont) {
-                // If the continuation is not a retry
-                if (!cont.isPending()) {
-                    SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
-                                                                            request.getHeader("Content-Type"));
-                    exchange = soapHelper.createExchange(message);
-                    NormalizedMessage inMessage = exchange.getMessage("in");
-                    inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
-                    locks.put(exchange.getExchangeId(), cont);
-                    request.setAttribute(MessageExchange.class.getName(), exchange);
-                    ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
-                    // TODO: make this timeout configurable
-                    boolean result = cont.suspend(1000 * 60); // 60 s
-                    if (!result) {
-                        throw new Exception("Error sending exchange: aborted");
-                    }
-                } else {
-                    exchange = (MessageExchange) request.getAttribute(MessageExchange.class.getName());
-                    cont.suspend(0);
+            // If the continuation is not a retry
+            if (!cont.isPending()) {
+                SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
+                                                                        request.getHeader("Content-Type"));
+                exchange = soapHelper.createExchange(message);
+                //System.err.println("Handling: " + exchange.getExchangeId());
+                NormalizedMessage inMessage = exchange.getMessage("in");
+                inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
+                locks.put(exchange.getExchangeId(), cont);
+                request.setAttribute(MessageExchange.class.getName(), exchange);
+                //System.err.println("Sending: " + exchange.getExchangeId());
+                ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
+                // TODO: make this timeout configurable
+                boolean result = cont.suspend(1000 * 60); // 60 s
+                if (!result) {
+                    throw new Exception("Error sending exchange: aborted");
+                }
+                //System.err.println("Continuing: " + exchange.getExchangeId());
+            } else {
+                exchange = (MessageExchange) request.getAttribute(MessageExchange.class.getName());
+                request.removeAttribute(MessageExchange.class.getName());
+                boolean result = cont.suspend(0); 
+                // Check if this is a timeout
+                if (exchange == null) {
+                    throw new IllegalStateException("Exchange not found");
+                }
+                //System.err.println("Processing: " + exchange.getExchangeId());
+                if (!result) {
+                    throw new Exception("Timeout");
                 }
             }
             if (exchange.getStatus() == ExchangeStatus.ERROR) {
@@ -171,7 +170,6 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         } catch (RetryRequest e) {
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
     }
