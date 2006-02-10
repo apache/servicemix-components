@@ -34,7 +34,7 @@ public class HttpAddressingTest extends SpringTestSupport {
 
     private static Log logger =  LogFactory.getLog(HttpAddressingTest.class);
 
-    public void test() throws Exception {
+    public void testOk() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("http://test", "MyProviderService"));
@@ -52,6 +52,18 @@ public class HttpAddressingTest extends SpringTestSupport {
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
+    }
+    
+    public void testBad() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://test", "MyProviderService"));
+        InputStream fis = getClass().getResourceAsStream("bad-addressing-request.xml");
+        me.getInMessage().setContent(new StreamSource(fis));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        assertNotNull(me.getFault());
+        logger.info(new SourceTransformer().toString(me.getFault().getContent()));
     }
     
     protected AbstractXmlApplicationContext createBeanFactory() {
