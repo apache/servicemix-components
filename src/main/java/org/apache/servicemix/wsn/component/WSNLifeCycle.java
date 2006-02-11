@@ -135,4 +135,8 @@ public class WSNLifeCycle extends BaseLifeCycle {
 
 	}
 
+    public JbiNotificationBroker getNotificationBroker() {
+        return notificationBroker;
+    }
+
 }

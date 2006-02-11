@@ -15,8 +15,11 @@
  */
 package org.apache.servicemix.wsn.component;
 
+import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 
 import javax.jbi.JBIException;
@@ -33,25 +36,25 @@ import junit.framework.TestCase;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.Notify;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
-import org.oasis_open.docs.wsn.b_1.Unsubscribe;
-import org.oasis_open.docs.wsn.b_1.UnsubscribeResponse;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.Publisher;
 import org.apache.servicemix.wsn.client.PullPoint;
 import org.apache.servicemix.wsn.client.Subscription;
-import org.apache.servicemix.wsn.component.WSNComponent;
+import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_1.Notify;
+import org.oasis_open.docs.wsn.b_1.Subscribe;
+import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_1.Unsubscribe;
+import org.oasis_open.docs.wsn.b_1.UnsubscribeResponse;
 import org.w3._2005._03.addressing.AttributedURIType;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 import org.w3c.dom.Document;
@@ -66,6 +69,7 @@ public class WSNComponentTest extends TestCase {
 	private JBIContainer jbi;
 	private BrokerService jmsBroker;
 	private NotificationBroker wsnBroker;
+    private WSNComponent wsnComponent;
 	
 	protected void setUp() throws Exception {
 		jmsBroker = new BrokerService();
@@ -78,11 +82,11 @@ public class WSNComponentTest extends TestCase {
 		jbi.init();
 		jbi.start();
 		
-		WSNComponent component = new WSNComponent();
-		component.setConnectionFactory(new ActiveMQConnectionFactory("vm://localhost"));
+		wsnComponent = new WSNComponent();
+        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory("vm://localhost"));
 		ActivationSpec as = new ActivationSpec();
 		as.setComponentName("servicemix-wsn2005");
-		as.setComponent(component);
+		as.setComponent(wsnComponent);
 		jbi.activateComponent(as);
 		
 		wsnBroker = new NotificationBroker(jbi);
@@ -268,6 +272,57 @@ public class WSNComponentTest extends TestCase {
 		
 		Thread.sleep(50);
 	}
+    
+    public void testDeployPullPoint() throws Exception {
+        URL url = getClass().getClassLoader().getResource("pullpoint/pullpoint.xml");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        wsnComponent.getServiceUnitManager().deploy("pullpoint", path.getAbsolutePath());
+
+        wsnComponent.getServiceUnitManager().start("pullpoint");
+        
+        wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+        PullPoint pullPoint = new PullPoint(AbstractWSAClient.createWSA("http://www.consumer.org/service/endpoint"), 
+                                            jbi);
+        assertEquals(1, pullPoint.getMessages(0).size());
+    }
+        
+    public void testDeploySubscription() throws Exception {
+        URL url = getClass().getClassLoader().getResource("subscription/subscribe.xml");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        wsnComponent.getServiceUnitManager().deploy("subscription", path.getAbsolutePath());
+        
+        ActivationSpec consumer = new ActivationSpec();
+        consumer.setService(new QName("http://www.consumer.org", "service"));
+        consumer.setEndpoint("endpoint");
+        Receiver receiver = new ReceiverComponent();
+        consumer.setComponent(receiver);
+        jbi.activateComponent(consumer);
+        
+        wsnComponent.getServiceUnitManager().start("subscription");
+
+        wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+        // Wait for notification
+        Thread.sleep(50);
+        receiver.getMessageList().assertMessagesReceived(1);
+        receiver.getMessageList().flushMessages();
+        
+        wsnComponent.getServiceUnitManager().stop("subscription");
+
+        wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+        // Wait for notification
+        Thread.sleep(50);
+        assertEquals(0, receiver.getMessageList().flushMessages().size());
+        
+        wsnComponent.getServiceUnitManager().start("subscription");
+
+        wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+        // Wait for notification
+        Thread.sleep(50);
+        receiver.getMessageList().assertMessagesReceived(1);
+        receiver.getMessageList().flushMessages();
+    }
 	
 	protected Element parse(String txt) throws Exception {
 		DocumentBuilder builder = new SourceTransformer().createDocumentBuilder();

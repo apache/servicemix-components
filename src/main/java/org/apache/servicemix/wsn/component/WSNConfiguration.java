@@ -15,7 +15,9 @@
  */
 package org.apache.servicemix.wsn.component;
 
-public class WSNConfiguration implements WSNConfigurationMBean {
+import org.apache.servicemix.common.PersistentConfiguration;
+
+public class WSNConfiguration extends PersistentConfiguration implements WSNConfigurationMBean {
 
 	private String initialContextFactory;
 	private String jndiProviderURL;

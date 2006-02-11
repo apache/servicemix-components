@@ -19,12 +19,14 @@ import java.math.BigInteger;
 import java.util.List;
 
 import javax.jbi.JBIException;
+import javax.xml.bind.JAXBException;
 
+import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.jbi.container.JBIContainer;
 import org.oasis_open.docs.wsn.b_1.Destroy;
 import org.oasis_open.docs.wsn.b_1.GetMessages;
 import org.oasis_open.docs.wsn.b_1.GetMessagesResponse;
 import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.apache.servicemix.client.ServiceMixClient;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 
 public class PullPoint extends AbstractWSAClient {
@@ -32,6 +34,10 @@ public class PullPoint extends AbstractWSAClient {
 	public PullPoint(EndpointReferenceType pullPoint, ServiceMixClient client) {
 		super(pullPoint, client);
 	}
+
+    public PullPoint(EndpointReferenceType pullPoint, JBIContainer container) throws JBIException, JAXBException {
+        super(pullPoint, createJaxbClient(container));
+    }
 
 	public List<NotificationMessageHolderType> getMessages(int max) throws JBIException {
 		GetMessages getMessages = new GetMessages();

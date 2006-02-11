@@ -6,12 +6,12 @@
   xmlns:npex="http://www.producer.org">
   <wsnt:ConsumerReference>
     <wsa:Address>
-      http://www.consumer.org/ConsumerEndpoint
+      http://www.consumer.org/service/endpoint
     </wsa:Address>
   </wsnt:ConsumerReference>
   <wsnt:Filter>
     <wsnt:TopicExpression Dialect="http://docs.oasis-open.org/wsn/t-1/TopicExpression/Simple">
-      npex:SomeTopic
+      myTopic
     </wsnt:TopicExpression>
   </wsnt:Filter>
 </wsnt:Subscribe>

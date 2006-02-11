@@ -19,13 +19,21 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.common.BaseServiceUnitManager;
+import org.apache.servicemix.common.Deployer;
 
 public class WSNComponent extends BaseComponent {
 
-	@Override
+    @Override
 	protected BaseLifeCycle createLifeCycle() {
 		return new WSNLifeCycle(this);
 	}
+
+    @Override
+    public BaseServiceUnitManager createServiceUnitManager() {
+        Deployer[] deployers = new Deployer[] { new WSNDeployer(this) };
+        return new BaseServiceUnitManager(this, deployers);
+    }
 
 	public ConnectionFactory getConnectionFactory() {
 		return ((WSNLifeCycle) lifeCycle).getConnectionFactory();

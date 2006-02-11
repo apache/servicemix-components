@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<wsnt:CreatePullPoint xmlns:wsnt="http://docs.oasis-open.org/wsn/b-1"
+                      xmlns:sm="http://servicemix.apache.org/wsn2005/1.0">
+	<sm:address> 
+		http://www.consumer.org/service/endpoint
+	</sm:address>
+</wsnt:CreatePullPoint>

@@ -46,6 +46,8 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
 
 	private static Log log = LogFactory.getLog(AbstractPullPoint.class);
 	
+    protected AbstractNotificationBroker broker;
+    
 	public AbstractPullPoint(String name) {
 		super(name);
 	}
@@ -103,7 +105,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
         throws UnableToDestroyPullPoint {
     	
     	log.debug("Destroy");
-    	destroy();
+        broker.destroyPullPoint(getAddress());
     	return new DestroyResponse();
     }
     
@@ -126,4 +128,12 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
 	protected String createAddress() {
 		return "http://servicemix.org/wsnotification/PullPoint/" + getName();
 	}
+
+    public AbstractNotificationBroker getBroker() {
+        return broker;
+    }
+
+    public void setBroker(AbstractNotificationBroker broker) {
+        this.broker = broker;
+    }
 }

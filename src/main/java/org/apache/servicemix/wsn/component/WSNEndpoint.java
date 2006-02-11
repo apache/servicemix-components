@@ -35,6 +35,7 @@ import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebFault;
@@ -81,17 +82,21 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 			throw new IllegalStateException("Unable to find WebService annotation");
 		}
 		endpointInterface = Class.forName(ws.endpointInterface());
-		List<Class> classes = new ArrayList<Class>();
-		classes.add(JbiFault.class);
-		for (Method mth : endpointInterface.getMethods()) {
-			WebMethod wm = (WebMethod) mth.getAnnotation(WebMethod.class);
-			if (wm != null) {
-				classes.add(mth.getReturnType());
-				classes.addAll(Arrays.asList(mth.getParameterTypes()));
-			}
-		}
-		return JAXBContext.newInstance(classes.toArray(new Class[0]));
+        return createJAXBContext(endpointInterface);
 	}
+    
+    public static JAXBContext createJAXBContext(Class interfaceClass) throws JAXBException {
+        List<Class> classes = new ArrayList<Class>();
+        classes.add(JbiFault.class);
+        for (Method mth : interfaceClass.getMethods()) {
+            WebMethod wm = (WebMethod) mth.getAnnotation(WebMethod.class);
+            if (wm != null) {
+                classes.add(mth.getReturnType());
+                classes.addAll(Arrays.asList(mth.getParameterTypes()));
+            }
+        }
+        return JAXBContext.newInstance(classes.toArray(new Class[0]));
+    }
 
 	@Override
 	public void deactivate() throws Exception {

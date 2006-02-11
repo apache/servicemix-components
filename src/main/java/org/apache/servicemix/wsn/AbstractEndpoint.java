@@ -38,6 +38,10 @@ public abstract class AbstractEndpoint {
 	public String getAddress() {
 		return address;
 	}
+    
+    public void setAddress(String address) {
+        this.address = address;
+    }
 	
 	public void register() throws EndpointRegistrationException {
 		endpoint = manager.register(getAddress(), this);

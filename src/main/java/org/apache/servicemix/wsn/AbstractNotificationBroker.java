@@ -15,6 +15,7 @@
  */
 package org.apache.servicemix.wsn;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,6 +42,7 @@ import org.oasis_open.docs.wsn.b_1.UnableToCreatePullPointType;
 import org.oasis_open.docs.wsn.br_1.PublisherRegistrationFailedFaultType;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse;
+import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
@@ -64,6 +66,7 @@ import org.apache.servicemix.wsn.jaxws.UnableToDestroySubscriptionFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.w3._2005._03.addressing.AttributedURIType;
 import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.w3c.dom.Element;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.NotificationBroker")
 public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker, NotificationConsumer {
@@ -156,17 +159,22 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, ResourceUnknownFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
     	
     	log.debug("Subscribe");
-    	return handleSubscribe(subscribeRequest);
+    	return handleSubscribe(subscribeRequest, null);
     }
-
-	protected SubscribeResponse handleSubscribe(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+    
+	public SubscribeResponse handleSubscribe(Subscribe subscribeRequest,
+                                             EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		AbstractSubscription subscription = null;
 		boolean success = false;
 		try {
 			subscription = createSubcription(idGenerator.generateSanitizedId());
+            subscription.setBroker(this);
 			subscriptions.put(subscription.getAddress(), subscription);
 			subscription.create(subscribeRequest);
-			subscription.register();
+            if (manager != null) {
+                subscription.setManager(manager);
+            }
+            subscription.register();
 			SubscribeResponse response = new SubscribeResponse();
 			response.setSubscriptionReference(createEndpointReference(subscription.getAddress()));
 			success = true;
@@ -185,6 +193,13 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 			}
 		}
 	}
+    
+    public void unsubscribe(String address) throws UnableToDestroySubscriptionFault {
+        AbstractSubscription subscription = (AbstractSubscription) subscriptions.remove(address);
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
+    }
 	
 	/**
      * 
@@ -229,30 +244,43 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         throws InvalidTopicExpressionFault, PublisherRegistrationFailedFault, PublisherRegistrationRejectedFault, ResourceUnknownFault, TopicNotSupportedFault {
     	
     	log.debug("RegisterPublisher");
-    	AbstractPublisher publisher = null;
-    	boolean success = false;
-    	try {
-    		publisher = createPublisher(idGenerator.generateSanitizedId());
-    		publishers.put(publisher.getAddress(), publisher);
-    		publisher.register();
-    		publisher.create(registerPublisherRequest);
-    		RegisterPublisherResponse response = new RegisterPublisherResponse(); 
-    		response.setPublisherRegistrationReference(createEndpointReference(publisher.getAddress()));
-    		success = true;
-    		return response;
-    	} catch (EndpointRegistrationException e) {
-    		PublisherRegistrationFailedFaultType fault = new PublisherRegistrationFailedFaultType();
-    		throw new PublisherRegistrationFailedFault("Unable to register new endpoint", fault, e);
-    	} finally {
-			if (!success && publisher != null) {
-				publishers.remove(publisher.getAddress());
-				try {
-					publisher.destroy();
-				} catch (ResourceNotDestroyedFault e) {
-					log.info("Error destroying publisher", e);
-				}
-			}
-    	}
+        return handleRegisterPublisher(registerPublisherRequest, null);
+    }
+    
+    public RegisterPublisherResponse handleRegisterPublisher(
+                        RegisterPublisher registerPublisherRequest,
+                        EndpointManager manager) throws InvalidTopicExpressionFault, 
+                                                        PublisherRegistrationFailedFault, 
+                                                        PublisherRegistrationRejectedFault, 
+                                                        ResourceUnknownFault, 
+                                                        TopicNotSupportedFault {
+        AbstractPublisher publisher = null;
+        boolean success = false;
+        try {
+            publisher = createPublisher(idGenerator.generateSanitizedId());
+            publishers.put(publisher.getAddress(), publisher);
+            if (manager != null) {
+                publisher.setManager(manager);
+            }
+            publisher.register();
+            publisher.create(registerPublisherRequest);
+            RegisterPublisherResponse response = new RegisterPublisherResponse(); 
+            response.setPublisherRegistrationReference(createEndpointReference(publisher.getAddress()));
+            success = true;
+            return response;
+        } catch (EndpointRegistrationException e) {
+            PublisherRegistrationFailedFaultType fault = new PublisherRegistrationFailedFaultType();
+            throw new PublisherRegistrationFailedFault("Unable to register new endpoint", fault, e);
+        } finally {
+            if (!success && publisher != null) {
+                publishers.remove(publisher.getAddress());
+                try {
+                    publisher.destroy();
+                } catch (ResourceNotDestroyedFault e) {
+                    log.info("Error destroying publisher", e);
+                }
+            }
+        }
     }
 
     /**
@@ -271,12 +299,31 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         throws PullNotificationNotSupportedFault, UnableToCreatePullPoint {
     	
     	log.debug("CreatePullEndpoint");
-    	AbstractPullPoint pullPoint = null;
+        return handleCreatePullPoint(createPullPointRequest, null);
+    }
+
+    public CreatePullPointResponse handleCreatePullPoint(
+                CreatePullPoint createPullPointRequest,
+                EndpointManager manager)
+            throws PullNotificationNotSupportedFault, UnableToCreatePullPoint {
+        AbstractPullPoint pullPoint = null;
     	boolean success = false;
     	try {
     		pullPoint = createPullPoint(idGenerator.generateSanitizedId());
+            for (Iterator it = createPullPointRequest.getAny().iterator(); it.hasNext();) {
+                Element el = (Element) it.next();
+                if ("address".equals(el.getLocalName()) &&
+                    "http://servicemix.apache.org/wsn2005/1.0".equals(el.getNamespaceURI())) {
+                    String address = DOMUtil.getElementText(el).trim();
+                    pullPoint.setAddress(address);
+                }
+            }
+            pullPoint.setBroker(this);
     		pullPoints.put(pullPoint.getAddress(), pullPoint);
     		pullPoint.create(createPullPointRequest);
+            if (manager != null) {
+                pullPoint.setManager(manager);
+            }
     		pullPoint.register();
     		CreatePullPointResponse response = new CreatePullPointResponse(); 
     		response.setPullPoint(createEndpointReference(pullPoint.getAddress()));
@@ -295,6 +342,13 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 				}
 			}
     	}
+    }
+    
+    public void destroyPullPoint(String address) throws UnableToDestroyPullPoint {
+        AbstractPullPoint pullPoint = pullPoints.remove(address);
+        if (pullPoint != null) {
+            pullPoint.destroy();
+        }
     }
 
 	protected EndpointReferenceType createEndpointReference(String address) {

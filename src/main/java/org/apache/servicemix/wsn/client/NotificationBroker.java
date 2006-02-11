@@ -24,6 +24,11 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClientFacade;
+import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
+import org.apache.servicemix.wsn.AbstractSubscription;
 import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
 import org.oasis_open.docs.wsn.b_1.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_1.FilterType;
@@ -38,12 +43,6 @@ import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
 import org.oasis_open.docs.wsn.b_1.UseRaw;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClientFacade;
-import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
-import org.apache.servicemix.wsn.AbstractSubscription;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 
 public class NotificationBroker extends AbstractWSAClient {
@@ -61,24 +60,18 @@ public class NotificationBroker extends AbstractWSAClient {
 	}
 	
 	public NotificationBroker(ComponentContext context, String brokerName) throws JAXBException {
-		ServiceMixClientFacade client = new ServiceMixClientFacade(context); 
-		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
-		setClient(client);
+        setClient(createJaxbClient(context));
 		setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
 		setResolver(resolveWSA(getEndpoint()));
 	}
 	
 	public NotificationBroker(JBIContainer container) throws JBIException, JAXBException {
-		DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
-		setClient(client);
+		setClient(createJaxbClient(container));
 		setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
 	}
 	
 	public NotificationBroker(JBIContainer container, String brokerName) throws JBIException, JAXBException {
-		DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class)));
-		setClient(client);
+        setClient(createJaxbClient(container));
 		setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
 		setResolver(resolveWSA(getEndpoint()));
 	}

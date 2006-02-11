@@ -52,15 +52,20 @@ public class JbiSubscription extends JmsSubscription {
 		super(name);
 	}
 
+    @Override
+    protected void start() throws SubscribeCreationFailedFault {
+        super.start();
+    }
+    
 	@Override
 	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		super.validateSubscription(subscribeRequest);
-		String[] parts = split(consumerReference.getAddress().getValue());
-		endpoint = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
-		if (endpoint == null) {
-			SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
-			throw new SubscribeCreationFailedFault("Unable to resolve consumer reference endpoint", fault);
-		}
+        String[] parts = split(consumerReference.getAddress().getValue().trim());
+        endpoint = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+        if (endpoint == null) {
+            SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
+            throw new SubscribeCreationFailedFault("Unable to resolve consumer reference endpoint", fault);
+        }
 	}
 
     protected String[] split(String uri) {

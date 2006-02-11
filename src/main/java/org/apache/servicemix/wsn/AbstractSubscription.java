@@ -83,6 +83,7 @@ public abstract class AbstractSubscription extends AbstractEndpoint
 	protected TopicExpressionType topic;
 	protected QueryExpressionType contentFilter;
 	protected EndpointReferenceType consumerReference;
+    protected AbstractNotificationBroker broker;
 	
 	public AbstractSubscription(String name) {
 		super(name);
@@ -131,7 +132,7 @@ public abstract class AbstractSubscription extends AbstractEndpoint
         Unsubscribe unsubscribeRequest)
         throws ResourceUnknownFault, UnableToDestroySubscriptionFault {
 
-    	unsubscribe();
+    	broker.unsubscribe(getAddress());
     	return new UnsubscribeResponse();
     }
     
@@ -361,4 +362,12 @@ public abstract class AbstractSubscription extends AbstractEndpoint
 	    			fault);
 		}
 	}
+
+    public AbstractNotificationBroker getBroker() {
+        return broker;
+    }
+
+    public void setBroker(AbstractNotificationBroker broker) {
+        this.broker = broker;
+    }
 }

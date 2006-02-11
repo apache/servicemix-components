@@ -16,11 +16,19 @@
 package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
+import javax.jbi.component.ComponentContext;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClientFacade;
+import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.resolver.EndpointResolver;
 import org.apache.servicemix.jbi.resolver.ServiceAndEndpointNameResolver;
+import org.oasis_open.docs.wsn.b_1.Subscribe;
+import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
 import org.w3._2005._03.addressing.AttributedURIType;
 import org.w3._2005._03.addressing.EndpointReferenceType;
 
@@ -32,7 +40,7 @@ public abstract class AbstractWSAClient {
 	
 	public AbstractWSAClient() {
 	}
-	
+    
 	public AbstractWSAClient(EndpointReferenceType endpoint, ServiceMixClient client) {
 		this.endpoint = endpoint;
 		this.resolver = resolveWSA(endpoint);
@@ -46,6 +54,18 @@ public abstract class AbstractWSAClient {
 		epr.setAddress(attUri);
 		return epr;
 	}
+    
+    public static ServiceMixClient createJaxbClient(JBIContainer container) throws JBIException, JAXBException {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+        return client;
+    }
+    
+    public static ServiceMixClient createJaxbClient(ComponentContext context) throws JAXBException {
+        ServiceMixClientFacade client = new ServiceMixClientFacade(context); 
+        client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+        return client;
+    }
 	
 	public static EndpointResolver resolveWSA(EndpointReferenceType ref) {
 		String[] parts = splitUri(ref.getAddress().getValue());
