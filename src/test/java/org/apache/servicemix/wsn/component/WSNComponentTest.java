@@ -45,18 +45,19 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
+import org.apache.servicemix.wsn.client.CreatePullPoint;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.Publisher;
 import org.apache.servicemix.wsn.client.PullPoint;
 import org.apache.servicemix.wsn.client.Subscription;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.Notify;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
-import org.oasis_open.docs.wsn.b_1.Unsubscribe;
-import org.oasis_open.docs.wsn.b_1.UnsubscribeResponse;
-import org.w3._2005._03.addressing.AttributedURIType;
-import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.Unsubscribe;
+import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
+import org.w3._2005._08.addressing.AttributedURIType;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -69,6 +70,7 @@ public class WSNComponentTest extends TestCase {
 	private JBIContainer jbi;
 	private BrokerService jmsBroker;
 	private NotificationBroker wsnBroker;
+    private CreatePullPoint wsnCreatePullPoint;
     private WSNComponent wsnComponent;
 	
 	protected void setUp() throws Exception {
@@ -90,6 +92,7 @@ public class WSNComponentTest extends TestCase {
 		jbi.activateComponent(as);
 		
 		wsnBroker = new NotificationBroker(jbi);
+        wsnCreatePullPoint = new CreatePullPoint(jbi);
 	}
 	
 	protected void tearDown() throws Exception {
@@ -151,7 +154,7 @@ public class WSNComponentTest extends TestCase {
 	}
 
 	public void testUnsubscribe() throws Exception {
-		PullPoint pullPoint = wsnBroker.createPullPoint();
+		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
 		
 		wsnBroker.notify("myTopic", new Notify());
@@ -173,7 +176,7 @@ public class WSNComponentTest extends TestCase {
 	}
 
 	public void testPauseResume() throws Exception {
-		PullPoint pullPoint = wsnBroker.createPullPoint();
+		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
 		
 		wsnBroker.notify("myTopic", new Notify());
@@ -203,7 +206,7 @@ public class WSNComponentTest extends TestCase {
 	}
 
 	public void testPull() throws Exception {
-		PullPoint pullPoint = wsnBroker.createPullPoint();
+		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
 		
 		wsnBroker.notify("myTopic", new Notify());
@@ -219,8 +222,8 @@ public class WSNComponentTest extends TestCase {
 	}
 	
 	public void testPullWithFilter() throws Exception {
-		PullPoint pullPoint1 = wsnBroker.createPullPoint();
-		PullPoint pullPoint2 = wsnBroker.createPullPoint();
+		PullPoint pullPoint1 = wsnCreatePullPoint.createPullPoint();
+		PullPoint pullPoint2 = wsnCreatePullPoint.createPullPoint();
 		wsnBroker.subscribe(pullPoint1.getEndpoint(), "myTopic", "@type = 'a'");
 		wsnBroker.subscribe(pullPoint2.getEndpoint(), "myTopic", "@type = 'b'");
 		
@@ -257,7 +260,7 @@ public class WSNComponentTest extends TestCase {
 		Thread.sleep(50);
 		assertNull(publisherComponent.getSubscription());
 
-		PullPoint pullPoint = wsnBroker.createPullPoint();
+		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
 
 		Thread.sleep(500);

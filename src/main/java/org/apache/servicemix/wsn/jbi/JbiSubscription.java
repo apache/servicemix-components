@@ -27,18 +27,17 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.wsn.jms.JmsSubscription;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeCreationFailedFaultType;
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidUseRawValueFault;
 import org.apache.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
 import org.apache.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
 import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
+import org.apache.servicemix.wsn.jms.JmsSubscription;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
 import org.w3c.dom.Element;
 
 public class JbiSubscription extends JmsSubscription {
@@ -58,7 +57,7 @@ public class JbiSubscription extends JmsSubscription {
     }
     
 	@Override
-	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		super.validateSubscription(subscribeRequest);
         String[] parts = split(consumerReference.getAddress().getValue().trim());
         endpoint = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);

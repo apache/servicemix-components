@@ -18,22 +18,22 @@ This document and the information contained herein is provided on an "AS IS" bas
   xmlns="http://schemas.xmlsoap.org/wsdl/" 
   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-  xmlns:wsrf-r="http://docs.oasis-open.org/wsrf/r-1" 
-  xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-1" 
-  targetNamespace="http://docs.oasis-open.org/wsrf/rw-1" 
+  xmlns:wsrf-r="http://docs.oasis-open.org/wsrf/r-2" 
+  xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2" 
+  targetNamespace="http://docs.oasis-open.org/wsrf/rw-2" 
 >
   
 <!-- ===================== Types Definitions ====================== -->
    <wsdl:types>
      <xsd:schema 
         xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-        targetNamespace="http://docs.oasis-open.org/wsrf/rw-1"
+        targetNamespace="http://docs.oasis-open.org/wsrf/rw-2"
         elementFormDefault="qualified" 
         attributeFormDefault="unqualified">
 
        <xsd:import 
-         namespace="http://docs.oasis-open.org/wsrf/r-1"
-         schemaLocation="r-1.xsd"
+         namespace="http://docs.oasis-open.org/wsrf/r-2"
+         schemaLocation="r-2.xsd"
        /> 
        
      </xsd:schema>
@@ -43,6 +43,11 @@ This document and the information contained herein is provided on an "AS IS" bas
   <wsdl:message name="ResourceUnknownFault">
      <part name="ResourceUnknownFault"
            element="wsrf-r:ResourceUnknownFault" />
+  </wsdl:message> 
+
+  <wsdl:message name="ResourceUnavailableFault">
+     <part name="ResourceUnavailableFault"
+           element="wsrf-r:ResourceUnavailableFault" />
   </wsdl:message> 
 
 </wsdl:definitions>

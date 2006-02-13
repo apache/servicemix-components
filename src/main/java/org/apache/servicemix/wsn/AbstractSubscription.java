@@ -29,31 +29,30 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
-import org.oasis_open.docs.wsn.b_1.InvalidFilterFaultType;
-import org.oasis_open.docs.wsn.b_1.InvalidMessageContentExpressionFaultType;
-import org.oasis_open.docs.wsn.b_1.InvalidProducerPropertiesExpressionFaultType;
-import org.oasis_open.docs.wsn.b_1.InvalidTopicExpressionFaultType;
-import org.oasis_open.docs.wsn.b_1.PauseSubscription;
-import org.oasis_open.docs.wsn.b_1.PauseSubscriptionResponse;
-import org.oasis_open.docs.wsn.b_1.QueryExpressionType;
-import org.oasis_open.docs.wsn.b_1.Renew;
-import org.oasis_open.docs.wsn.b_1.RenewResponse;
-import org.oasis_open.docs.wsn.b_1.ResumeSubscription;
-import org.oasis_open.docs.wsn.b_1.ResumeSubscriptionResponse;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeCreationFailedFaultType;
-import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
-import org.oasis_open.docs.wsn.b_1.UnableToDestroySubscriptionFaultType;
-import org.oasis_open.docs.wsn.b_1.UnacceptableInitialTerminationTimeFaultType;
-import org.oasis_open.docs.wsn.b_1.UnacceptableTerminationTimeFaultType;
-import org.oasis_open.docs.wsn.b_1.Unsubscribe;
-import org.oasis_open.docs.wsn.b_1.UnsubscribeResponse;
-import org.oasis_open.docs.wsn.b_1.UseRaw;
+import org.oasis_open.docs.wsn.b_2.InvalidFilterFaultType;
+import org.oasis_open.docs.wsn.b_2.InvalidMessageContentExpressionFaultType;
+import org.oasis_open.docs.wsn.b_2.InvalidProducerPropertiesExpressionFaultType;
+import org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFaultType;
+import org.oasis_open.docs.wsn.b_2.PauseSubscription;
+import org.oasis_open.docs.wsn.b_2.PauseSubscriptionResponse;
+import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
+import org.oasis_open.docs.wsn.b_2.Renew;
+import org.oasis_open.docs.wsn.b_2.RenewResponse;
+import org.oasis_open.docs.wsn.b_2.ResumeSubscription;
+import org.oasis_open.docs.wsn.b_2.ResumeSubscriptionResponse;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
+import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
+import org.oasis_open.docs.wsn.b_2.UnableToDestroySubscriptionFaultType;
+import org.oasis_open.docs.wsn.b_2.UnacceptableInitialTerminationTimeFaultType;
+import org.oasis_open.docs.wsn.b_2.UnacceptableTerminationTimeFaultType;
+import org.oasis_open.docs.wsn.b_2.Unsubscribe;
+import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.UseRaw;
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidUseRawValueFault;
 import org.apache.servicemix.wsn.jaxws.PausableSubscriptionManager;
 import org.apache.servicemix.wsn.jaxws.PauseFailedFault;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
@@ -64,13 +63,13 @@ import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.apache.servicemix.wsn.jaxws.UnableToDestroySubscriptionFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
-import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.PausableSubscriptionManager")
 public abstract class AbstractSubscription extends AbstractEndpoint 
 										   implements PausableSubscriptionManager {
 
-	public static final String WSN_URI = "http://docs.oasis-open.org/wsn/b-1";
+	public static final String WSN_URI = "http://docs.oasis-open.org/wsn/b-2";
 	public static final String XPATH1_URI = "http://www.w3.org/TR/1999/REC-xpath-19991116";
 	public static final QName QNAME_TOPIC_EXPRESSION = new QName(WSN_URI, "TopicExpression");
 	public static final QName QNAME_PRODUCER_PROPERTIES = new QName(WSN_URI, "ProducerProperties");
@@ -103,9 +102,9 @@ public abstract class AbstractSubscription extends AbstractEndpoint
      * @throws ResourceUnknownFault
      */
     @WebMethod(operationName = "Renew")
-    @WebResult(name = "RenewResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "RenewResponse")
+    @WebResult(name = "RenewResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "RenewResponse")
     public RenewResponse renew(
-        @WebParam(name = "Renew", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "RenewRequest")
+        @WebParam(name = "Renew", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "RenewRequest")
         Renew renewRequest)
         throws ResourceUnknownFault, UnacceptableTerminationTimeFault {
     	
@@ -126,9 +125,9 @@ public abstract class AbstractSubscription extends AbstractEndpoint
      * @throws ResourceUnknownFault
      */
     @WebMethod(operationName = "Unsubscribe")
-    @WebResult(name = "UnsubscribeResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "UnsubscribeResponse")
+    @WebResult(name = "UnsubscribeResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "UnsubscribeResponse")
     public UnsubscribeResponse unsubscribe(
-        @WebParam(name = "Unsubscribe", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "UnsubscribeRequest")
+        @WebParam(name = "Unsubscribe", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "UnsubscribeRequest")
         Unsubscribe unsubscribeRequest)
         throws ResourceUnknownFault, UnableToDestroySubscriptionFault {
 
@@ -145,9 +144,9 @@ public abstract class AbstractSubscription extends AbstractEndpoint
      * @throws ResourceUnknownFault
      */
     @WebMethod(operationName = "PauseSubscription")
-    @WebResult(name = "PauseSubscriptionResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "PauseSubscriptionResponse")
+    @WebResult(name = "PauseSubscriptionResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "PauseSubscriptionResponse")
     public PauseSubscriptionResponse pauseSubscription(
-        @WebParam(name = "PauseSubscription", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "PauseSubscriptionRequest")
+        @WebParam(name = "PauseSubscription", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "PauseSubscriptionRequest")
         PauseSubscription pauseSubscriptionRequest)
         throws PauseFailedFault, ResourceUnknownFault {
 
@@ -164,9 +163,9 @@ public abstract class AbstractSubscription extends AbstractEndpoint
      * @throws ResourceUnknownFault
      */
     @WebMethod(operationName = "ResumeSubscription")
-    @WebResult(name = "ResumeSubscriptionResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "ResumeSubscriptionResponse")
+    @WebResult(name = "ResumeSubscriptionResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "ResumeSubscriptionResponse")
     public ResumeSubscriptionResponse resumeSubscription(
-        @WebParam(name = "ResumeSubscription", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "ResumeSubscriptionRequest")
+        @WebParam(name = "ResumeSubscription", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "ResumeSubscriptionRequest")
         ResumeSubscription resumeSubscriptionRequest)
         throws ResourceUnknownFault, ResumeFailedFault {
 
@@ -251,7 +250,7 @@ public abstract class AbstractSubscription extends AbstractEndpoint
 		this.terminationTime = terminationTime;
 	}
 	
-	public void create(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+	public void create(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		validateSubscription(subscribeRequest);
 		start();
 	}
@@ -277,7 +276,7 @@ public abstract class AbstractSubscription extends AbstractEndpoint
 		return "http://servicemix.org/wsnotification/Subscription/" + getName();
 	}
 
-	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		// Check consumer reference
 		consumerReference = subscribeRequest.getConsumerReference();
 		// Check terminationTime

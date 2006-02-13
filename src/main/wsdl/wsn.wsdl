@@ -5,18 +5,22 @@
 	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:wsa="http://www.w3.org/2005/03/addressing"
-	xmlns:wsn-br="http://docs.oasis-open.org/wsn/br-1"
-	xmlns:wsn-brw="http://docs.oasis-open.org/wsn/brw-1"
-	xmlns:wsn-b="http://docs.oasis-open.org/wsn/b-1"
-	xmlns:wsn-bw="http://docs.oasis-open.org/wsn/bw-1"
-	xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-1"
-	xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-1"
+	xmlns:wsa="http://www.w3.org/2005/08/addressing"
+	xmlns:wsn-br="http://docs.oasis-open.org/wsn/br-2"
+	xmlns:wsn-brw="http://docs.oasis-open.org/wsn/brw-2"
+	xmlns:wsn-b="http://docs.oasis-open.org/wsn/b-2"
+	xmlns:wsn-bw="http://docs.oasis-open.org/wsn/bw-2"
+	xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2"
+	xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2"
 	xmlns:tns="http://servicemix.apache.org/wsn/jaxws"
 	targetNamespace="http://servicemix.apache.org/wsn/jaxws">
 
-	<wsdl:import namespace="http://docs.oasis-open.org/wsn/brw-1"
-		location="brw-1.wsdl">
+	<wsdl:import namespace="http://docs.oasis-open.org/wsn/brw-2"
+		location="brw-2.wsdl">
+	</wsdl:import>
+
+	<wsdl:import namespace="http://docs.oasis-open.org/wsn/bw-2"
+		location="bw-2.wsdl">
 	</wsdl:import>
 
 	<wsdl:binding name="NotificationConsumerJBI"
@@ -72,10 +76,6 @@
 			<wsdl:fault name="InvalidMessageContentExpressionFault">
 				<soap:fault use="literal"
 					name="InvalidMessageContentExpressionFault" />
-			</wsdl:fault>
-			<wsdl:fault name="InvalidUseRawValueFault">
-				<soap:fault use="literal"
-					name="InvalidUseRawValueFault" />
 			</wsdl:fault>
 			<wsdl:fault
 				name="UnacceptableInitialTerminationTimeFault">
@@ -163,10 +163,6 @@
 				<soap:fault use="literal"
 					name="InvalidMessageContentExpressionFault" />
 			</wsdl:fault>
-			<wsdl:fault name="InvalidUseRawValueFault">
-				<soap:fault use="literal"
-					name="InvalidUseRawValueFault" />
-			</wsdl:fault>
 			<wsdl:fault
 				name="UnacceptableInitialTerminationTimeFault">
 				<soap:fault use="literal"
@@ -233,6 +229,7 @@
 					name="PublisherRegistrationFailedFault" />
 			</wsdl:fault>
 		</wsdl:operation>
+		<!-- 
 		<wsdl:operation name="CreatePullPoint">
 			<wsdl:input name="CreatePullPointRequest">
 				<soap:body use="literal" />
@@ -249,6 +246,7 @@
 					name="PullNotificationNotSupportedFault" />
 			</wsdl:fault>
 		</wsdl:operation>
+		 -->
 	</wsdl:binding>
 	<wsdl:service name="NotificationBrokerService">
 		<wsdl:port name="JBI" binding="tns:NotificationBrokerJBI">
@@ -375,11 +373,11 @@
 		type="wsn-brw:PublisherRegistrationManager">
 		<soap:binding transport="http://schemas.xmlsoap.org/soap/http"
 			style="document" />
-		<wsdl:operation name="Destroy">
-			<wsdl:input name="DestroyRequest">
+		<wsdl:operation name="DestroyRegistration">
+			<wsdl:input name="DestroyRegistrationRequest">
 				<soap:body use="literal" />
 			</wsdl:input>
-			<wsdl:output name="DestroyResponse">
+			<wsdl:output name="DestroyRegistrationResponse">
 				<soap:body use="literal" />
 			</wsdl:output>
 			<wsdl:fault name="ResourceUnknownFault">
@@ -410,9 +408,9 @@
 			<wsdl:output name="CreatePullPointResponse">
 				<soap:body use="literal" />
 			</wsdl:output>
-			<wsdl:fault name="UnableToCreatePullPoint">
+			<wsdl:fault name="UnableToCreatePullPointFault">
 				<soap:fault use="literal"
-					name="UnableToCreatePullPoint" />
+					name="UnableToCreatePullPointFault" />
 			</wsdl:fault>
 		</wsdl:operation>
 	</wsdl:binding>
@@ -438,17 +436,22 @@
 				<soap:fault use="literal" name="ResourceUnknownFault" />
 			</wsdl:fault>
 		</wsdl:operation>
-		<wsdl:operation name="Destroy">
+		<wsdl:operation name="DestroyPullPoint">
 			<wsdl:input name="DestroyRequest">
 				<soap:body use="literal" />
 			</wsdl:input>
 			<wsdl:output name="DestroyResponse">
 				<soap:body use="literal" />
 			</wsdl:output>
-			<wsdl:fault name="UnableToDestroyPullPoint">
+			<wsdl:fault name="UnableToDestroyPullPointFault">
 				<soap:fault use="literal"
-					name="UnableToDestroyPullPoint" />
+					name="UnableToDestroyPullPointFault" />
 			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Notify">
+            <wsdl:input>
+				<soap:body use="literal" />
+            </wsdl:input>
 		</wsdl:operation>
 	</wsdl:binding>
 	<wsdl:service name="PullPointService">

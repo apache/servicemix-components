@@ -20,7 +20,6 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.servicemix.wsn.AbstractNotificationBroker;
 import org.apache.servicemix.wsn.AbstractPublisher;
-import org.apache.servicemix.wsn.AbstractPullPoint;
 import org.apache.servicemix.wsn.AbstractSubscription;
 
 public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
@@ -46,14 +45,6 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
 		publisher.setManager(getManager());
 		publisher.setConnection(connection);
 		return publisher;
-	}
-
-	@Override
-	protected AbstractPullPoint createPullPoint(String name) {
-		JmsPullPoint pullPoint = new JmsPullPoint(name);
-		pullPoint.setManager(getManager());
-		pullPoint.setConnection(connection);
-		return pullPoint;
 	}
 
 	@Override

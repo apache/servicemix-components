@@ -22,14 +22,14 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 
-import org.oasis_open.docs.wsn.b_1.InvalidTopicExpressionFaultType;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
-import org.oasis_open.docs.wsn.br_1.Destroy;
-import org.oasis_open.docs.wsn.br_1.DestroyResponse;
-import org.oasis_open.docs.wsn.br_1.PublisherRegistrationFailedFaultType;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
-import org.oasis_open.docs.wsn.br_1.ResourceNotDestroyedFaultType;
+import org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFaultType;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
+import org.oasis_open.docs.wsn.br_2.DestroyRegistration;
+import org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse;
+import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFaultType;
 import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationManager;
@@ -37,7 +37,7 @@ import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
 import org.apache.servicemix.wsn.jaxws.ResourceNotDestroyedFault;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
 import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
-import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.PublisherRegistrationManager")
 public abstract class AbstractPublisher extends AbstractEndpoint 
@@ -59,15 +59,15 @@ public abstract class AbstractPublisher extends AbstractEndpoint
      * @throws ResourceNotDestroyedFault
      * @throws ResourceUnknownFault
      */
-    @WebMethod(operationName = "Destroy")
-    @WebResult(name = "DestroyResponse", targetNamespace = "http://docs.oasis-open.org/wsn/br-1", partName = "DestroyResponse")
-    public DestroyResponse destroy(
-        @WebParam(name = "Destroy", targetNamespace = "http://docs.oasis-open.org/wsn/br-1", partName = "DestroyRequest")
-        Destroy destroyRequest)
+    @WebMethod(operationName = "DestroyRegistration")
+    @WebResult(name = "DestroyRegistrationResponse", targetNamespace = "http://docs.oasis-open.org/wsn/br-2", partName = "DestroyRegistrationResponse")
+    public DestroyRegistrationResponse destroyRegistration(
+        @WebParam(name = "DestroyRegistration", targetNamespace = "http://docs.oasis-open.org/wsn/br-2", partName = "DestroyRegistrationRequest")
+        DestroyRegistration destroyRegistrationRequest)
         throws ResourceNotDestroyedFault, ResourceUnknownFault {
     	
     	destroy();
-    	return new DestroyResponse();
+    	return new DestroyRegistrationResponse();
     }
     
     public abstract void notify(NotificationMessageHolderType messageHolder);

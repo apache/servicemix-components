@@ -37,10 +37,11 @@ import org.apache.servicemix.wsn.EndpointManager;
 import org.apache.servicemix.wsn.EndpointRegistrationException;
 import org.apache.servicemix.wsn.jaxws.NotificationBroker;
 import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
-import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
-import org.oasis_open.docs.wsn.b_1.CreatePullPointResponse;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
+import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
+import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
+import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 
 public class WSNDeployer extends AbstractDeployer implements Deployer {
 
@@ -159,14 +160,14 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
-            response = broker.createPullPoint(request);
+            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getCreatePullPoint();
+            response = createPullPoint.createPullPoint(request);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
-            broker.destroyPullPoint(response.getPullPoint().getAddress().getValue());
+            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getCreatePullPoint();
+            createPullPoint.destroyPullPoint(response.getPullPoint().getAddress().getValue());
         }
 
         @Override

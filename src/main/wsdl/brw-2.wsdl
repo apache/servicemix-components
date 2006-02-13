@@ -18,28 +18,28 @@ This document and the information contained herein is provided on an "AS IS" bas
   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:wsa="http://www.w3.org/2005/03/addressing"
-  xmlns:wsn-br="http://docs.oasis-open.org/wsn/br-1" 
-  xmlns:wsn-brw="http://docs.oasis-open.org/wsn/brw-1"
-  xmlns:wsn-b="http://docs.oasis-open.org/wsn/b-1"
-  xmlns:wsn-bw="http://docs.oasis-open.org/wsn/bw-1"
-  xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-1"   
-  xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-1" 
-  targetNamespace="http://docs.oasis-open.org/wsn/brw-1">
+  xmlns:wsa="http://www.w3.org/2005/08/addressing"
+  xmlns:wsn-br="http://docs.oasis-open.org/wsn/br-2" 
+  xmlns:wsn-brw="http://docs.oasis-open.org/wsn/brw-2"
+  xmlns:wsn-b="http://docs.oasis-open.org/wsn/b-2"
+  xmlns:wsn-bw="http://docs.oasis-open.org/wsn/bw-2"
+  xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2"   
+  xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2" 
+  targetNamespace="http://docs.oasis-open.org/wsn/brw-2">
 
 <!-- ========================== Imports =========================== -->
-<wsdl:import namespace="http://docs.oasis-open.org/wsrf/rw-1" 
-       location="rw-1.wsdl"/>
+<wsdl:import namespace="http://docs.oasis-open.org/wsrf/rw-2" 
+       location="rw-2.wsdl"/>
        
-   <wsdl:import namespace="http://docs.oasis-open.org/wsn/bw-1" 
-       location="bw-1.wsdl"/>
+   <wsdl:import namespace="http://docs.oasis-open.org/wsn/bw-2" 
+       location="bw-2.wsdl"/>
 
 <!-- ===================== Types Definitions ====================== -->
    <wsdl:types>
      <xsd:schema>
        <xsd:import
-         namespace="http://docs.oasis-open.org/wsn/br-1" 
-         schemaLocation="br-1.xsd"/>
+         namespace="http://docs.oasis-open.org/wsn/br-2" 
+         schemaLocation="br-2.xsd"/>
      </xsd:schema>
    </wsdl:types>
 
@@ -57,16 +57,6 @@ This document and the information contained herein is provided on an "AS IS" bas
                  element="wsn-br:RegisterPublisherResponse"/>
    </wsdl:message>
       
-   <wsdl:message name="InvalidTopicExpressionFault">
-      <wsdl:part name="InvalidTopicExpressionFault"
-            element="wsn-b:InvalidTopicExpressionFault" />
-   </wsdl:message> 
-
-   <wsdl:message name="TopicNotSupportedFault">
-      <wsdl:part name="TopicNotSupportedFault"
-            element="wsn-b:TopicNotSupportedFault" />
-   </wsdl:message> 
-
    <wsdl:message name="PublisherRegistrationRejectedFault">
       <wsdl:part name="PublisherRegistrationRejectedFault"             
             element="wsn-br:PublisherRegistrationRejectedFault"/>
@@ -77,19 +67,14 @@ This document and the information contained herein is provided on an "AS IS" bas
             element="wsn-br:PublisherRegistrationFailedFault"/>
    </wsdl:message> 
 
-   <wsdl:message name="PullNotificationNotSupportedFault">
-      <wsdl:part name="PullNotificationNotSupportedFault"
-            element="wsn-br:PullNotificationNotSupportedFault"/>
-   </wsdl:message> 
-
-   <wsdl:message name="DestroyRequest">
-      <wsdl:part name="DestroyRequest" 
-            element="wsn-br:Destroy"/>
+   <wsdl:message name="DestroyRegistrationRequest">
+      <wsdl:part name="DestroyRegistrationRequest" 
+            element="wsn-br:DestroyRegistration"/>
    </wsdl:message>
 
-   <wsdl:message name="DestroyResponse">
-      <wsdl:part name="DestroyResponse"
-            element="wsn-br:DestroyResponse"/>
+   <wsdl:message name="DestroyRegistrationResponse">
+      <wsdl:part name="DestroyRegistrationResponse"
+            element="wsn-br:DestroyRegistrationResponse"/>
    </wsdl:message>
 
    <wsdl:message name="ResourceNotDestroyedFault">
@@ -107,16 +92,17 @@ This document and the information contained herein is provided on an "AS IS" bas
          <wsdl:fault  name="ResourceUnknownFault"
                       message="wsrf-rw:ResourceUnknownFault"/>
          <wsdl:fault  name="InvalidTopicExpressionFault" 
-                      message="wsn-brw:InvalidTopicExpressionFault"/>
+                      message="wsn-bw:InvalidTopicExpressionFault"/>
          <wsdl:fault  name="TopicNotSupportedFault" 
-                      message="wsn-brw:TopicNotSupportedFault"/>
+                      message="wsn-bw:TopicNotSupportedFault"/>
          <wsdl:fault  name="PublisherRegistrationRejectedFault" 
                  message="wsn-brw:PublisherRegistrationRejectedFault"/>
 	     <wsdl:fault  name="PublisherRegistrationFailedFault" 
                  message="wsn-brw:PublisherRegistrationFailedFault"/>
+		<wsdl:fault  name="UnacceptableInitialTerminationTimeFault" 
+             message="wsn-bw:UnacceptableInitialTerminationTimeFault"/>
     </wsdl:operation>
   </wsdl:portType>
-
 
 <!-- ========== NotificationBroker PortType Definition ============ -->
    <wsdl:portType name="NotificationBroker">
@@ -143,10 +129,14 @@ This document and the information contained herein is provided on an "AS IS" bas
              message="wsn-bw:InvalidProducerPropertiesExpressionFault"/>
          <wsdl:fault  name="InvalidMessageContentExpressionFault" 
              message="wsn-bw:InvalidMessageContentExpressionFault"/>
-         <wsdl:fault  name="InvalidUseRawValueFault" 
-             message="wsn-bw:InvalidUseRawValueFault"/>
          <wsdl:fault  name="UnacceptableInitialTerminationTimeFault" 
              message="wsn-bw:UnacceptableInitialTerminationTimeFault"/>
+	      <wsdl:fault  name="UnrecognizedPolicyRequestFault" 
+             message="wsn-bw:UnrecognizedPolicyRequestFault"/>
+         <wsdl:fault  name="UnsupportedPolicyRequestFault" 
+             message="wsn-bw:UnsupportedPolicyRequestFault"/>
+         <wsdl:fault  name="NotifyMessageNotSupportedFault" 
+             message="wsn-bw:NotifyMessageNotSupportedFault"/>
          <wsdl:fault  name="SubscribeCreationFailedFault" 
                       message="wsn-bw:SubscribeCreationFailedFault"/>
       </wsdl:operation>
@@ -174,37 +164,28 @@ This document and the information contained herein is provided on an "AS IS" bas
          <wsdl:fault  name="ResourceUnknownFault" 
                       message="wsrf-rw:ResourceUnknownFault"/>
          <wsdl:fault  name="InvalidTopicExpressionFault" 
-                      message="wsn-brw:InvalidTopicExpressionFault"/>
+                      message="wsn-bw:InvalidTopicExpressionFault"/>
          <wsdl:fault  name="TopicNotSupportedFault" 
-                      message="wsn-brw:TopicNotSupportedFault"/>
+                      message="wsn-bw:TopicNotSupportedFault"/>
          <wsdl:fault  name="PublisherRegistrationRejectedFault" 
                  message="wsn-brw:PublisherRegistrationRejectedFault"/>
          <wsdl:fault  name="PublisherRegistrationFailedFault" 
                    message="wsn-brw:PublisherRegistrationFailedFault"/>
+         <wsdl:fault  name="UnacceptableInitialTerminationTimeFault" 
+             message="wsn-bw:UnacceptableInitialTerminationTimeFault"/>
       </wsdl:operation>
 
-      <!-- ========= extends CreatePullPoint ======= -->      
-   <wsdl:operation name="CreatePullPoint">
-         <wsdl:input  name="CreatePullPointRequest" 
-                      message="wsn-bw:CreatePullPointRequest" />
-         <wsdl:output name="CreatePullPointResponse" 
-                      message="wsn-bw:CreatePullPointResponse" />
-         <wsdl:fault  name="UnableToCreatePullPoint" 
-                      message="wsn-bw:UnableToCreatePullPoint" />
-         <wsdl:fault  name="PullNotificationNotSupportedFault" 
-                  message="wsn-brw:PullNotificationNotSupportedFault"/>
-      </wsdl:operation>
    </wsdl:portType>
 
 <!-- ===== PublisherRegistrationManager PortType Definition ====== -->
    <wsdl:portType name="PublisherRegistrationManager">
       
-   <!-- === Destroy:ImmediateResourceTermination========== -->
-      <wsdl:operation name="Destroy">
-         <wsdl:input  name="DestroyRequest" 
-                      message="wsn-brw:DestroyRequest" />
-         <wsdl:output name="DestroyResponse" 
-                      message="wsn-brw:DestroyResponse" />
+   <!--===DestroyRegistration:ImmediateResourceTermination==========-->
+      <wsdl:operation name="DestroyRegistration">
+         <wsdl:input  name="DestroyRegistrationRequest" 
+                      message="wsn-brw:DestroyRegistrationRequest" />
+         <wsdl:output name="DestroyRegistrationResponse" 
+                      message="wsn-brw:DestroyRegistrationResponse" />
       <wsdl:fault name="ResourceUnknownFault"
                 message="wsrf-rw:ResourceUnknownFault" />
          <wsdl:fault  name="ResourceNotDestroyedFault" 

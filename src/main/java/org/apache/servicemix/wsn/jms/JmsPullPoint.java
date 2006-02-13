@@ -34,10 +34,10 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.wsn.AbstractPullPoint;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.Notify;
-import org.oasis_open.docs.wsrf.r_1.ResourceUnknownFaultType;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsrf.r_2.ResourceUnknownFaultType;
 
 public class JmsPullPoint extends AbstractPullPoint {
 

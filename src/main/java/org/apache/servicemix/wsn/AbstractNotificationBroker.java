@@ -15,7 +15,6 @@
  */
 package org.apache.servicemix.wsn;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,55 +27,43 @@ import javax.jws.WebService;
 import org.apache.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
-import org.oasis_open.docs.wsn.b_1.CreatePullPointResponse;
-import org.oasis_open.docs.wsn.b_1.GetCurrentMessage;
-import org.oasis_open.docs.wsn.b_1.GetCurrentMessageResponse;
-import org.oasis_open.docs.wsn.b_1.NoCurrentMessageOnTopicFaultType;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.Notify;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeCreationFailedFaultType;
-import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
-import org.oasis_open.docs.wsn.b_1.UnableToCreatePullPointType;
-import org.oasis_open.docs.wsn.br_1.PublisherRegistrationFailedFaultType;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse;
-import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidUseRawValueFault;
 import org.apache.servicemix.wsn.jaxws.MultipleTopicsSpecifiedFault;
 import org.apache.servicemix.wsn.jaxws.NoCurrentMessageOnTopicFault;
 import org.apache.servicemix.wsn.jaxws.NotificationBroker;
-import org.apache.servicemix.wsn.jaxws.NotificationConsumer;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
-import org.apache.servicemix.wsn.jaxws.PullNotificationNotSupportedFault;
 import org.apache.servicemix.wsn.jaxws.ResourceNotDestroyedFault;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
 import org.apache.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
 import org.apache.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
 import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
-import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPoint;
-import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPoint;
 import org.apache.servicemix.wsn.jaxws.UnableToDestroySubscriptionFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
-import org.w3._2005._03.addressing.AttributedURIType;
-import org.w3._2005._03.addressing.EndpointReferenceType;
-import org.w3c.dom.Element;
+import org.oasis_open.docs.wsn.b_2.GetCurrentMessage;
+import org.oasis_open.docs.wsn.b_2.GetCurrentMessageResponse;
+import org.oasis_open.docs.wsn.b_2.NoCurrentMessageOnTopicFaultType;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
+import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.NotificationBroker")
-public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker, NotificationConsumer {
+public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker {
 
-	private static Log log = LogFactory.getLog(AbstractPullPoint.class);
+	private static Log log = LogFactory.getLog(AbstractNotificationBroker.class);
 	
     private IdGenerator idGenerator;
     private AbstractPublisher anonymousPublisher;
     private Map<String,AbstractPublisher> publishers;
-    private Map<String,AbstractPullPoint> pullPoints;
     private Map<String,AbstractSubscription> subscriptions;
 
 	public AbstractNotificationBroker(String name) {
@@ -84,7 +71,6 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         idGenerator = new IdGenerator();
         subscriptions = new ConcurrentHashMap<String,AbstractSubscription>();
         publishers = new ConcurrentHashMap<String, AbstractPublisher>();
-        pullPoints = new ConcurrentHashMap<String, AbstractPullPoint>();
 	}
 
     public void init() throws Exception {
@@ -156,14 +142,14 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
     public SubscribeResponse subscribe(
         @WebParam(name = "Subscribe", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "SubscribeRequest")
         Subscribe subscribeRequest)
-        throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, ResourceUnknownFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+        throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, ResourceUnknownFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
     	
     	log.debug("Subscribe");
     	return handleSubscribe(subscribeRequest, null);
     }
     
 	public SubscribeResponse handleSubscribe(Subscribe subscribeRequest,
-                                             EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, InvalidUseRawValueFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+                                             EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		AbstractSubscription subscription = null;
 		boolean success = false;
 		try {
@@ -283,85 +269,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         }
     }
 
-    /**
-     * 
-     * @param createPullPointRequest
-     * @return
-     *     returns org.oasis_open.docs.wsn.b_1.CreatePullPointResponse
-     * @throws UnableToCreatePullPoint
-     * @throws PullNotificationNotSupportedFault
-     */
-    @WebMethod(operationName = "CreatePullPoint")
-    @WebResult(name = "CreatePullPointResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "CreatePullPointResponse")
-    public CreatePullPointResponse createPullPoint(
-        @WebParam(name = "CreatePullPoint", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "CreatePullPointRequest")
-        CreatePullPoint createPullPointRequest)
-        throws PullNotificationNotSupportedFault, UnableToCreatePullPoint {
-    	
-    	log.debug("CreatePullEndpoint");
-        return handleCreatePullPoint(createPullPointRequest, null);
-    }
-
-    public CreatePullPointResponse handleCreatePullPoint(
-                CreatePullPoint createPullPointRequest,
-                EndpointManager manager)
-            throws PullNotificationNotSupportedFault, UnableToCreatePullPoint {
-        AbstractPullPoint pullPoint = null;
-    	boolean success = false;
-    	try {
-    		pullPoint = createPullPoint(idGenerator.generateSanitizedId());
-            for (Iterator it = createPullPointRequest.getAny().iterator(); it.hasNext();) {
-                Element el = (Element) it.next();
-                if ("address".equals(el.getLocalName()) &&
-                    "http://servicemix.apache.org/wsn2005/1.0".equals(el.getNamespaceURI())) {
-                    String address = DOMUtil.getElementText(el).trim();
-                    pullPoint.setAddress(address);
-                }
-            }
-            pullPoint.setBroker(this);
-    		pullPoints.put(pullPoint.getAddress(), pullPoint);
-    		pullPoint.create(createPullPointRequest);
-            if (manager != null) {
-                pullPoint.setManager(manager);
-            }
-    		pullPoint.register();
-    		CreatePullPointResponse response = new CreatePullPointResponse(); 
-    		response.setPullPoint(createEndpointReference(pullPoint.getAddress()));
-    		success = true;
-    		return response;
-    	} catch (EndpointRegistrationException e) {
-    		UnableToCreatePullPointType fault = new UnableToCreatePullPointType();
-    		throw new UnableToCreatePullPoint("Unable to register new endpoint", fault, e);
-    	} finally {
-			if (!success && pullPoint != null) {
-				pullPoints.remove(pullPoint.getAddress());
-				try {
-					pullPoint.destroy();
-				} catch (UnableToDestroyPullPoint e) {
-					log.info("Error destroying pullPoint", e);
-				}
-			}
-    	}
-    }
-    
-    public void destroyPullPoint(String address) throws UnableToDestroyPullPoint {
-        AbstractPullPoint pullPoint = pullPoints.remove(address);
-        if (pullPoint != null) {
-            pullPoint.destroy();
-        }
-    }
-
-	protected EndpointReferenceType createEndpointReference(String address) {
-		EndpointReferenceType epr = new EndpointReferenceType();
-		AttributedURIType addressUri = new AttributedURIType();
-		addressUri.setValue(address);
-		epr.setAddress(addressUri);
-		return epr;
-	}
-
 	protected abstract AbstractPublisher createPublisher(String name);
-	
-	protected abstract AbstractPullPoint createPullPoint(String name);
 	
 	protected abstract AbstractSubscription createSubcription(String name);
 

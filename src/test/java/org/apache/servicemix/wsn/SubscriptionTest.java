@@ -25,8 +25,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
-import org.apache.servicemix.wsn.AbstractSubscription;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
 import org.apache.servicemix.wsn.jaxws.PauseFailedFault;
@@ -34,6 +32,7 @@ import org.apache.servicemix.wsn.jaxws.ResumeFailedFault;
 import org.apache.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
 
 public class SubscriptionTest extends TestCase {
 

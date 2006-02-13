@@ -29,21 +29,19 @@ import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
 import org.apache.servicemix.wsn.AbstractSubscription;
-import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
-import org.oasis_open.docs.wsn.b_1.CreatePullPointResponse;
-import org.oasis_open.docs.wsn.b_1.FilterType;
-import org.oasis_open.docs.wsn.b_1.GetCurrentMessage;
-import org.oasis_open.docs.wsn.b_1.GetCurrentMessageResponse;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.Notify;
-import org.oasis_open.docs.wsn.b_1.QueryExpressionType;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.b_1.SubscribeResponse;
-import org.oasis_open.docs.wsn.b_1.TopicExpressionType;
-import org.oasis_open.docs.wsn.b_1.UseRaw;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse;
-import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.oasis_open.docs.wsn.b_2.FilterType;
+import org.oasis_open.docs.wsn.b_2.GetCurrentMessage;
+import org.oasis_open.docs.wsn.b_2.GetCurrentMessageResponse;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsn.b_2.QueryExpressionType;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
+import org.oasis_open.docs.wsn.b_2.UseRaw;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class NotificationBroker extends AbstractWSAClient {
 
@@ -164,11 +162,6 @@ public class NotificationBroker extends AbstractWSAClient {
 		registerPublisherRequest.setDemand(Boolean.valueOf(demand));
 		RegisterPublisherResponse response = (RegisterPublisherResponse) request(registerPublisherRequest);
 		return new Publisher(response.getPublisherRegistrationReference(), getClient());
-	}
-
-	public PullPoint createPullPoint() throws JBIException {
-		CreatePullPointResponse response = (CreatePullPointResponse) request(new CreatePullPoint());
-		return new PullPoint(response.getPullPoint(), getClient());
 	}
 
 }

@@ -27,10 +27,10 @@ import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.resolver.EndpointResolver;
 import org.apache.servicemix.jbi.resolver.ServiceAndEndpointNameResolver;
-import org.oasis_open.docs.wsn.b_1.Subscribe;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
-import org.w3._2005._03.addressing.AttributedURIType;
-import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.oasis_open.docs.wsn.b_2.Subscribe;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.w3._2005._08.addressing.AttributedURIType;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public abstract class AbstractWSAClient {
 

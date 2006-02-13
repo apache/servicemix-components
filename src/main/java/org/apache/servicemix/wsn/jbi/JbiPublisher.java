@@ -24,14 +24,14 @@ import javax.xml.namespace.QName;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.Subscription;
-import org.apache.servicemix.wsn.jms.JmsPublisher;
-import org.oasis_open.docs.wsn.br_1.PublisherRegistrationFailedFaultType;
-import org.oasis_open.docs.wsn.br_1.RegisterPublisher;
 import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
 import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
+import org.apache.servicemix.wsn.jms.JmsPublisher;
+import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 
 public class JbiPublisher extends JmsPublisher {
 

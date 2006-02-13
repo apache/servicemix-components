@@ -12,11 +12,22 @@ The limited permissions granted above are perpetual and will not be revoked by O
 
 This document and the information contained herein is provided on an "AS IS" basis and OASIS DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. 
 -->
-<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:wsa="http://www.w3.org/2005/03/addressing" xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://docs.oasis-open.org/wsrf/bf-1">
-  <xsd:import namespace="http://www.w3.org/2005/03/addressing" schemaLocation="wsa.xsd"/>
-   
+
+<xsd:schema 
+  xmlns="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:wsa="http://www.w3.org/2005/08/addressing"
+  xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2" 
+  elementFormDefault="qualified" attributeFormDefault="unqualified" 
+  targetNamespace=
+    "http://docs.oasis-open.org/wsrf/bf-2">
+  <xsd:import
+     namespace="http://www.w3.org/2005/08/addressing" 
+     schemaLocation="ws-addr.xsd"/>
               
-  <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd">
+  <xsd:import namespace="http://www.w3.org/XML/1998/namespace" 
+              schemaLocation="xml.xsd">
     <xsd:annotation>
       <xsd:documentation>
         Get access to the xml: attribute groups for xml:lang as declared on 'schema'
@@ -30,19 +41,26 @@ This document and the information contained herein is provided on an "AS IS" bas
   
   <xsd:complexType name="BaseFaultType">
     <xsd:sequence>
-      <xsd:element maxOccurs="1" minOccurs="1" name="Timestamp" type="xsd:dateTime"/>
-      <xsd:element maxOccurs="1" minOccurs="0" name="Originator" type="wsa:EndpointReferenceType"/>
-      <xsd:element maxOccurs="1" minOccurs="0" name="ErrorCode">
+      <xsd:any namespace="##other" processContents="lax"
+              minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Timestamp" type="xsd:dateTime" 
+               minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Originator" type="wsa:EndpointReferenceType" 
+               minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="ErrorCode" 
+               minOccurs="0" maxOccurs="1">
         <xsd:complexType>
           <xsd:complexContent mixed="true">
             <xsd:extension base="xsd:anyType">
-              <xsd:attribute name="dialect" type="xsd:anyURI" use="required"/>
+              <xsd:attribute name="dialect" type="xsd:anyURI"
+                         use="required"/>
             </xsd:extension>
           </xsd:complexContent>
         </xsd:complexType>      
       </xsd:element>
 
-      <xsd:element maxOccurs="unbounded" minOccurs="0" name="Description">
+      <xsd:element name="Description" 
+               minOccurs="0" maxOccurs="unbounded">
         <xsd:complexType>
           <xsd:simpleContent>
             <xsd:extension base="xsd:string">
@@ -51,15 +69,14 @@ This document and the information contained herein is provided on an "AS IS" bas
           </xsd:simpleContent>
         </xsd:complexType>
       </xsd:element>
-      <xsd:element maxOccurs="1" minOccurs="0" name="FaultCause">
+      <xsd:element name="FaultCause" minOccurs="0" maxOccurs="1">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:any maxOccurs="1" minOccurs="1" namespace="##other" processContents="lax"/>
+            <xsd:any namespace="##other" processContents="lax" 
+                     minOccurs="1" maxOccurs="1"/>
           </xsd:sequence>
         </xsd:complexType> 
       </xsd:element>
-
-      <xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
     </xsd:sequence>
     <xsd:anyAttribute namespace="##other" processContents="lax"/>
  </xsd:complexType>

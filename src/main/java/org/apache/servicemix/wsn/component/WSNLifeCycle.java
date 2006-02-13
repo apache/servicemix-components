@@ -28,10 +28,12 @@ import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.wsn.EndpointManager;
 import org.apache.servicemix.wsn.EndpointRegistrationException;
 import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
+import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
 
 public class WSNLifeCycle extends BaseLifeCycle {
 
 	private JbiNotificationBroker notificationBroker;
+    private JmsCreatePullPoint createPullPoint;
 	private WSNConfiguration configuration;
 	private ConnectionFactory connectionFactory;
 	private ServiceUnit serviceUnit;
@@ -50,14 +52,23 @@ public class WSNLifeCycle extends BaseLifeCycle {
 	@Override
 	protected void doInit() throws Exception {
 		super.doInit();
-		notificationBroker = new JbiNotificationBroker(configuration.getBrokerName());
-		notificationBroker.setContext(context);
-		notificationBroker.setManager(new WSNEndpointManager());
-		if (connectionFactory == null) {
-			connectionFactory = lookupConnectionFactory();
-		}
-		notificationBroker.setConnectionFactory(connectionFactory);
-		notificationBroker.init();
+        // Notification Broker
+        notificationBroker = new JbiNotificationBroker(configuration.getBrokerName());
+        notificationBroker.setContext(context);
+        notificationBroker.setManager(new WSNEndpointManager());
+        if (connectionFactory == null) {
+            connectionFactory = lookupConnectionFactory();
+        }
+        notificationBroker.setConnectionFactory(connectionFactory);
+        notificationBroker.init();
+        // Create PullPoint
+        createPullPoint = new JmsCreatePullPoint(configuration.getBrokerName());
+        createPullPoint.setManager(new WSNEndpointManager());
+        if (connectionFactory == null) {
+            connectionFactory = lookupConnectionFactory();
+        }
+        createPullPoint.setConnectionFactory(connectionFactory);
+        createPullPoint.init();
 	}
 
 	@Override
@@ -137,6 +148,10 @@ public class WSNLifeCycle extends BaseLifeCycle {
 
     public JbiNotificationBroker getNotificationBroker() {
         return notificationBroker;
+    }
+
+    public JmsCreatePullPoint getCreatePullPoint() {
+        return createPullPoint;
     }
 
 }

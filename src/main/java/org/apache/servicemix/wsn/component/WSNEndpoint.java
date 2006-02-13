@@ -40,10 +40,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebFault;
 
-import org.oasis_open.docs.wsrf.bf_1.BaseFaultType;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.oasis_open.docs.wsrf.bf_2.BaseFaultType;
 
 public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 

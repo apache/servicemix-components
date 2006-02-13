@@ -26,19 +26,19 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.oasis_open.docs.wsn.b_1.CreatePullPoint;
-import org.oasis_open.docs.wsn.b_1.Destroy;
-import org.oasis_open.docs.wsn.b_1.DestroyResponse;
-import org.oasis_open.docs.wsn.b_1.GetMessages;
-import org.oasis_open.docs.wsn.b_1.GetMessagesResponse;
-import org.oasis_open.docs.wsn.b_1.NotificationMessageHolderType;
-import org.oasis_open.docs.wsn.b_1.Notify;
-import org.oasis_open.docs.wsn.b_1.UnableToDestroyPullPointType;
+import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
+import org.oasis_open.docs.wsn.b_2.DestroyPullPoint;
+import org.oasis_open.docs.wsn.b_2.DestroyPullPointResponse;
+import org.oasis_open.docs.wsn.b_2.GetMessages;
+import org.oasis_open.docs.wsn.b_2.GetMessagesResponse;
+import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
+import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsn.b_2.UnableToDestroyPullPointFaultType;
 import org.apache.servicemix.wsn.jaxws.NotificationConsumer;
 import org.apache.servicemix.wsn.jaxws.PullPoint;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
-import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPoint;
-import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPoint;
+import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPointFault;
+import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPointFault;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.PullPointConsumer")
 public abstract class AbstractPullPoint extends AbstractEndpoint 
@@ -46,7 +46,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
 
 	private static Log log = LogFactory.getLog(AbstractPullPoint.class);
 	
-    protected AbstractNotificationBroker broker;
+    protected AbstractCreatePullPoint createPullPoint;
     
 	public AbstractPullPoint(String name) {
 		super(name);
@@ -97,31 +97,31 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
      *     returns org.oasis_open.docs.wsn.b_1.DestroyResponse
      * @throws UnableToDestroyPullPoint
      */
-    @WebMethod(operationName = "Destroy")
-    @WebResult(name = "DestroyResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "DestroyResponse")
-    public DestroyResponse destroy(
-        @WebParam(name = "Destroy", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "DestroyRequest")
-        Destroy destroyRequest)
-        throws UnableToDestroyPullPoint {
+    @WebMethod(operationName = "DestroyPullPoint")
+    @WebResult(name = "DestroyPullPointResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "DestroyPullPointResponse")
+    public DestroyPullPointResponse destroyPullPoint(
+        @WebParam(name = "DestroyPullPoint", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "DestroyPullPointRequest")
+        DestroyPullPoint destroyPullPointRequest)
+        throws UnableToDestroyPullPointFault {
     	
     	log.debug("Destroy");
-        broker.destroyPullPoint(getAddress());
-    	return new DestroyResponse();
+        createPullPoint.destroyPullPoint(getAddress());
+    	return new DestroyPullPointResponse();
     }
     
-    public void create(CreatePullPoint createPullPointRequest) throws UnableToCreatePullPoint {
+    public void create(CreatePullPoint createPullPointRequest) throws UnableToCreatePullPointFault {
     }
     
 	protected abstract void store(NotificationMessageHolderType messageHolder);
 
     protected abstract List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault;
 
-    protected void destroy() throws UnableToDestroyPullPoint {
+    protected void destroy() throws UnableToDestroyPullPointFault {
     	try {
     		unregister();
     	} catch (EndpointRegistrationException e) {
-    		UnableToDestroyPullPointType fault = new UnableToDestroyPullPointType();
-    		throw new UnableToDestroyPullPoint("Error unregistering endpoint", fault, e);
+    		UnableToDestroyPullPointFaultType fault = new UnableToDestroyPullPointFaultType();
+    		throw new UnableToDestroyPullPointFault("Error unregistering endpoint", fault, e);
     	}
     }
 
@@ -129,11 +129,11 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
 		return "http://servicemix.org/wsnotification/PullPoint/" + getName();
 	}
 
-    public AbstractNotificationBroker getBroker() {
-        return broker;
+    public AbstractCreatePullPoint getCreatePullPoint() {
+        return createPullPoint;
     }
 
-    public void setBroker(AbstractNotificationBroker broker) {
-        this.broker = broker;
+    public void setCreatePullPoint(AbstractCreatePullPoint createPullPoint) {
+        this.createPullPoint = createPullPoint;
     }
 }

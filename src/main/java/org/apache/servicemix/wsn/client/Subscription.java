@@ -17,11 +17,11 @@ package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
 
-import org.oasis_open.docs.wsn.b_1.PauseSubscription;
-import org.oasis_open.docs.wsn.b_1.ResumeSubscription;
-import org.oasis_open.docs.wsn.b_1.Unsubscribe;
+import org.oasis_open.docs.wsn.b_2.PauseSubscription;
+import org.oasis_open.docs.wsn.b_2.ResumeSubscription;
+import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 import org.apache.servicemix.client.ServiceMixClient;
-import org.w3._2005._03.addressing.EndpointReferenceType;
+import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class Subscription extends AbstractWSAClient {
 
