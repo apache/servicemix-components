@@ -198,7 +198,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
                     endpoint.activate();
                 }
             }
-            this.status = LifeCycleMBean.RUNNING;
+            this.status = LifeCycleMBean.STARTED;
         }
     }
     
