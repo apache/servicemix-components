@@ -73,6 +73,20 @@ public class ServerManager {
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
+        // Check that context does not exist yet
+        Handler[] handlers = server.getHandlers();
+        if (handlers != null) {
+            for (int i = 0; i < handlers.length; i++) {
+                if (handlers[i] instanceof ContextHandler) {
+                    ContextHandler h = (ContextHandler) handlers[i];
+                    if (h.getContextPath().startsWith(path) ||
+                        path.startsWith(h.getContextPath())) {
+                        throw new Exception("The requested context for path '" + path + "' overlaps with an existing context for path: '" + h.getContextPath() + "'");
+                    }
+                }
+            }
+        }
+        // Create context
         ContextHandler context = new ContextHandler();
         context.setContextPath(path);
         ServletHolder holder = new ServletHolder();
@@ -87,7 +101,6 @@ public class ServerManager {
         context.setHandler(handler);
         context.setAttribute("processor", processor);
         // add context
-        Handler[] handlers = server.getHandlers();
         handlers = (Handler[]) add(handlers, context, Handler.class);
         server.setHandlers(handlers);
         return context;

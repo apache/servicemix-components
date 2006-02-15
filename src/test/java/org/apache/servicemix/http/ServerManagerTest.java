@@ -81,6 +81,34 @@ public class ServerManagerTest extends TestCase {
         request("http://localhost:8193/echo", null);
     }
     
+    public void testOverlappingPath() throws Exception {
+        server.init();
+        server.start();
+        
+        server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
+        
+        try {
+            server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
+            fail("Contexts are overlapping, an exception should have been thrown");
+        } catch (Exception e) {
+            // ok
+        }
+        
+        try {
+            server.createContext("http://localhost:8192/Service1/test1/test", new TestHttpProcessor());
+            fail("Contexts are overlapping, an exception should have been thrown");
+        } catch (Exception e) {
+            // ok
+        }
+        
+        try {
+            server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
+            fail("Contexts are overlapping, an exception should have been thrown");
+        } catch (Exception e) {
+            // ok
+        }
+    }
+    
     public void testSetMaxThreads() throws Exception {
         int maxThreads = 512;
         configuration.setJettyThreadPoolSize(maxThreads);
