@@ -235,7 +235,7 @@
       </dependency>
       <dependency>
         <groupId>incubator-activemq</groupId>
-        <artifactId>activemq</artifactId>
+        <artifactId>activemq-core</artifactId>
         <version>${activemq_version}</version>
       </dependency>
       <dependency>
