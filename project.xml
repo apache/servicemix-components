@@ -169,8 +169,13 @@
 
     <dependency>
       <groupId>incubator-activemq</groupId>
-      <artifactId>activemq</artifactId>
+      <artifactId>activemq-core</artifactId>
       <version>${activemq_version}</version>
+    </dependency>
+    <dependency>
+      <groupId>activeio</groupId>
+      <artifactId>activeio</artifactId>
+      <version>${activeio_version}</version>
     </dependency>
     
     <dependency>
