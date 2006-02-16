@@ -33,6 +33,8 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFireException;
 import org.codehaus.xfire.exchange.InMessage;
@@ -53,9 +55,12 @@ public class JbiChannel extends AbstractChannel {
     public static final String JBI_SERVICE_NAME = "jbi.service";
     public static final String JBI_ENDPOINT = "jbi.endpoint";
     
+    private StAXSourceTransformer sourceTransformer;
+    
     public JbiChannel(String uri, JbiTransport transport) {
         setTransport(transport);
         setUri(uri);
+        this.sourceTransformer = new StAXSourceTransformer();
     }
 
     public void open() throws Exception {
@@ -105,7 +110,7 @@ public class JbiChannel extends AbstractChannel {
                     me.setStatus(ExchangeStatus.DONE);
                     channel.send(me);
 
-                    InMessage inMessage = new InMessage(XMLInputFactory.newInstance().createXMLStreamReader(outSrc), getUri());
+                    InMessage inMessage = new InMessage(sourceTransformer.toXMLStreamReader(outSrc), getUri());
                     getEndpoint().onReceive(context, inMessage);
                 } else {
                     // TODO
