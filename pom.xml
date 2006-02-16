@@ -22,14 +22,14 @@
     xmlns="http://maven.apache.org/POM/4.0.0">
     
     <parent>
-        <groupId>org.apache.servicemix</groupId>
+        <groupId>incubator-servicemix</groupId>
         <artifactId>servicemix</artifactId>
         <version>3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.apache.servicemix</groupId>
+    <groupId>incubator-servicemix</groupId>
     <artifactId>servicemix-http</artifactId>
     <packaging>jbi-component</packaging>
     <name>ServiceMix :: HTTP</name>
@@ -37,11 +37,11 @@
     <dependencies>
         
         <dependency>
-	          <groupId>org.apache.servicemix</groupId>
+	          <groupId>incubator-servicemix</groupId>
             <artifactId>servicemix-common</artifactId>
         </dependency>
         <dependency>
-	          <groupId>org.apache.servicemix</groupId>
+	          <groupId>incubator-servicemix</groupId>
             <artifactId>servicemix-soap</artifactId>
         </dependency>
         <dependency>
@@ -70,22 +70,22 @@
             <artifactId>wsdl4j</artifactId>
         </dependency>
         <dependency>
-	          <groupId>org.apache.servicemix</groupId>
+	          <groupId>incubator-servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-	          <groupId>org.apache.servicemix</groupId>
+	          <groupId>incubator-servicemix</groupId>
             <artifactId>servicemix-jbi</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-	          <groupId>org.apache.servicemix</groupId>
+	          <groupId>incubator-servicemix</groupId>
             <artifactId>servicemix-components</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.xbean</groupId>
+          <groupId>org.apache.xbean</groupId>
           <artifactId>xbean-spring</artifactId>
           <scope>compile</scope>
         </dependency>
@@ -126,7 +126,7 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <tasks>
-                                <taskdef classname="org.xbean.spring.generator.MappingGeneratorTask" name="mapping">
+                                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                                     <classpath>
                                         <pathelement path="${basedir}/target/classes"></pathelement>
                                         <path refid="maven.test.classpath"></path>
