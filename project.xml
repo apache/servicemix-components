@@ -64,8 +64,6 @@
         <artifactId>commons-logging</artifactId>
         <version>${commons_logging_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
-          <jbi.bootstrap>true</jbi.bootstrap>
         </properties>
       </dependency>
       <dependency>
@@ -73,7 +71,6 @@
         <artifactId>backport-util-concurrent</artifactId>
         <version>${backport_util_concurrent_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -81,7 +78,6 @@
         <artifactId>wsdl4j</artifactId>
         <version>${wsdl4j_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -105,7 +101,6 @@
         <artifactId>stax-api</artifactId>
         <version>${stax_api_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -121,7 +116,6 @@
         <artifactId>xbean-spring</artifactId>
         <version>${xbean_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -129,7 +123,6 @@
         <artifactId>xbean-server</artifactId>
         <version>${xbean_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -137,7 +130,6 @@
         <artifactId>xbean-kernel</artifactId>
         <version>${xbean_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -145,7 +137,6 @@
         <artifactId>spring</artifactId>
         <version>${spring_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
@@ -153,7 +144,6 @@
         <artifactId>wstx-asl</artifactId>
         <version>${woodstox_version}</version>
         <properties>
-          <jbi.bundle>true</jbi.bundle>
         </properties>
       </dependency>
       <dependency>
