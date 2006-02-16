@@ -299,7 +299,8 @@
                 <include>**/*Test.*</include>
             </includes>
             <excludes>
-                <!-- Only works with xfire 1.0-SNAPSHOT -->
+               <!-- http://jira.activemq.org/jira/browse/AMQ-572 -->
+              <exclude>**/ServerManagerTest.*</exclude>
             </excludes>
         </unitTest>
         <resources>
