@@ -19,7 +19,10 @@ import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,43 +34,51 @@ import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
 import org.mortbay.thread.BoundedThreadPool;
+import org.mortbay.thread.ThreadPool;
 
 public class ServerManager {
 
     private static final Log logger = LogFactory.getLog(ServerManager.class);
     
-    private Server server;
+    private Map servers;
     private HttpConfiguration configuration;
+    private ThreadPool threadPool;
     
     protected void init() throws Exception {
         if (configuration == null) {
             configuration = new HttpConfiguration();
         }
-        if (server == null) {
-            server = new Server();
-            BoundedThreadPool btp = new BoundedThreadPool();
-            btp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
-            server.setThreadPool(btp);
-        }
+        servers = new HashMap();
+        BoundedThreadPool btp = new BoundedThreadPool();
+        btp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
+        threadPool = btp;
     }
 
     protected void shutDown() throws Exception {
-        server.stop();
+        stop();
     }
 
     protected void start() throws Exception {
-        server.start();
+        threadPool.start();
+        for (Iterator it = servers.values().iterator(); it.hasNext();) {
+            Server server = (Server) it.next();
+            server.start();
+        }
     }
 
     protected void stop() throws Exception {
-        server.stop();
+        for (Iterator it = servers.values().iterator(); it.hasNext();) {
+            Server server = (Server) it.next();
+            server.stop();
+        }
+        threadPool.stop();
     }
     
     public synchronized ContextHandler createContext(String strUrl, HttpProcessor processor) throws Exception {
         URL url = new URL(strUrl);
-        Connector listener = getListener(url);
-        if (listener == null) {
-            listener = createListener(url);
+        Server server = getServer(url);
+        if (server == null) {
+            server = createServer(url);
         }
         String path = url.getPath();
         if (!path.startsWith("/")) {
@@ -125,50 +136,47 @@ public class ServerManager {
     }
     
     public synchronized void remove(ContextHandler context) {
-        Handler[] handlers = server.getHandlers();
-        handlers = (Handler[]) remove(handlers, context, Handler.class);
-        server.setHandlers(handlers);
+        for (Iterator it = servers.values().iterator(); it.hasNext();) {
+            Server server = (Server) it.next();
+            Handler[] handlers = server.getHandlers();
+            handlers = (Handler[]) remove(handlers, context, Handler.class);
+            server.setHandlers(handlers);
+        }
     }
 
-    protected Connector getListener(URL url) {
-        Connector[] listeners = server.getConnectors();
-        if (listeners != null) {
-            for (int i = 0; i < listeners.length; i++) {
-                if (listeners[i].getPort() == url.getPort()) {
-                    if (!listeners[i].getHost().equals(url.getHost())) {
-                        throw new IllegalStateException("The same port is already used for another host");
-                    }
-                    // TODO: check protocol
-                    return listeners[i];
-                }
-            }
-        }
-        return null;
+    protected Server getServer(URL url) {
+        String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        Server server = (Server) servers.get(key);
+        return server;
     }
     
-    protected Connector createListener(URL url) throws Exception {
+    protected Server createServer(URL url) throws Exception {
         if (!url.getProtocol().equals("http")) {
             // TODO: handle https ?
             throw new UnsupportedOperationException("Protocol " + url.getProtocol() + " is not supported");
         }
+        // Create a new server
         String connectorClassName = configuration.getJettyConnectorClassName();
-        Connector listener;
+        Connector connector;
         try {
-            listener = (Connector) Class.forName(connectorClassName).newInstance();
+            connector = (Connector) Class.forName(connectorClassName).newInstance();
         } catch (Exception e) {
             logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to " + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
             if (logger.isDebugEnabled()) {
                 logger.debug("Reason: " + e.getMessage(), e);
             }
-            listener = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME).newInstance();
+            connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME).newInstance();
         }
-        listener.setHost(url.getHost());
-        listener.setPort(url.getPort());
-        Connector[] connectors = server.getConnectors();
-        connectors = (Connector[]) add(connectors, listener, Connector.class);
-        server.setConnectors(connectors);
-        listener.start();
-        return listener;
+        connector.setHost(url.getHost());
+        connector.setPort(url.getPort());
+        Server server = new Server();
+        server.setThreadPool(threadPool);
+        server.setConnectors(new Connector[] { connector });
+        connector.start();
+        server.start();
+        String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        servers.put(key, server);
+        return server;
     }
 
     public HttpConfiguration getConfiguration() {
@@ -179,12 +187,8 @@ public class ServerManager {
         this.configuration = configuration;
     }
 
-    public Server getServer() {
-        return server;
-    }
-
-    public void setServer(Server server) {
-        this.server = server;
+    public ThreadPool getThreadPool() {
+        return threadPool;
     }
 
 }

@@ -113,8 +113,8 @@ public class ServerManagerTest extends TestCase {
         int maxThreads = 512;
         configuration.setJettyThreadPoolSize(maxThreads);
         server.init();
-        assertTrue(server.getServer().getThreadPool() instanceof BoundedThreadPool);
-        int threads = ((BoundedThreadPool) server.getServer().getThreadPool()).getMaxThreads();
+        assertTrue(server.getThreadPool() instanceof BoundedThreadPool);
+        int threads = ((BoundedThreadPool) server.getThreadPool()).getMaxThreads();
         assertEquals("The max number of threads is incorrect!", maxThreads, threads);
     }
     
