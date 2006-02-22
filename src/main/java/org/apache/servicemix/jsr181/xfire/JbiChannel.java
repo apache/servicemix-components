@@ -27,13 +27,12 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFireException;
@@ -44,7 +43,6 @@ import org.codehaus.xfire.fault.XFireFault;
 import org.codehaus.xfire.soap.AbstractSoapBinding;
 import org.codehaus.xfire.transport.AbstractChannel;
 import org.codehaus.xfire.transport.Channel;
-import org.codehaus.xfire.util.STAXUtils;
 
 /**
  * Jbi channel, only support local invocations. 
@@ -56,11 +54,13 @@ public class JbiChannel extends AbstractChannel {
     public static final String JBI_ENDPOINT = "jbi.endpoint";
     
     private StAXSourceTransformer sourceTransformer;
+    private XMLOutputFactory outputFactory;
     
     public JbiChannel(String uri, JbiTransport transport) {
         setTransport(transport);
         setUri(uri);
         this.sourceTransformer = new StAXSourceTransformer();
+        this.outputFactory = XMLOutputFactory.newInstance();
     }
 
     public void open() throws Exception {
@@ -70,9 +70,9 @@ public class JbiChannel extends AbstractChannel {
         if (message.getUri().equals(Channel.BACKCHANNEL_URI)) {
             final OutputStream out = (OutputStream) context.getProperty(Channel.BACKCHANNEL_URI);
             if (out != null) {
-                final XMLStreamWriter writer = STAXUtils.createXMLStreamWriter(out, message.getEncoding());
-                message.getSerializer().writeMessage(message, writer, context);
                 try {
+                    final XMLStreamWriter writer = outputFactory.createXMLStreamWriter(out, message.getEncoding());
+                    message.getSerializer().writeMessage(message, writer, context);
                     writer.close();
                 } catch (XMLStreamException e) {
                     throw new XFireException("Error closing output stream", e);
@@ -128,7 +128,7 @@ public class JbiChannel extends AbstractChannel {
     
     protected Source getContent(MessageContext context, OutMessage message) throws XMLStreamException, IOException, XFireException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        XMLStreamWriter writer = STAXUtils.createXMLStreamWriter(outStream, message.getEncoding());
+        XMLStreamWriter writer = outputFactory.createXMLStreamWriter(outStream, message.getEncoding());
         MessageSerializer serializer = context.getOutMessage().getSerializer();
         if (serializer == null)
         {
