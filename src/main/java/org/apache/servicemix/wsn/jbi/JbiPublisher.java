@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.Subscription;
+import org.apache.servicemix.wsn.component.WSNLifeCycle;
 import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
 import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
@@ -35,16 +36,12 @@ import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 
 public class JbiPublisher extends JmsPublisher {
 
-	private ComponentContext context;
+    private WSNLifeCycle lifeCycle;
 	private ServiceEndpoint endpoint;
 	private String notificationBrokerAddress;
 	
 	public JbiPublisher(String name) {
 		super(name);
-	}
-
-	public void setContext(ComponentContext context) {
-		this.context = context;
 	}
 
 	public String getNotificationBrokerAddress() {
@@ -59,7 +56,7 @@ public class JbiPublisher extends JmsPublisher {
 	protected Object startSubscription() {
 		Subscription subscription = null;
 		try {
-			NotificationBroker broker = new NotificationBroker(context);
+			NotificationBroker broker = new NotificationBroker(getContext());
 			broker.setResolver(AbstractWSAClient.resolveWSA(publisherReference));
 			subscription = broker.subscribe(AbstractWSAClient.createWSA(notificationBrokerAddress), 
 														 "noTopic", null);
@@ -87,7 +84,7 @@ public class JbiPublisher extends JmsPublisher {
 	protected void validatePublisher(RegisterPublisher registerPublisherRequest) throws InvalidTopicExpressionFault, PublisherRegistrationFailedFault, PublisherRegistrationRejectedFault, ResourceUnknownFault, TopicNotSupportedFault {
 		super.validatePublisher(registerPublisherRequest);
 		String[] parts = split(publisherReference.getAddress().getValue());
-		endpoint = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+		endpoint = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
 		if (endpoint == null) {
 			PublisherRegistrationFailedFaultType fault = new PublisherRegistrationFailedFaultType();
 			throw new PublisherRegistrationFailedFault("Unable to resolve consumer reference endpoint", fault);
@@ -107,6 +104,18 @@ public class JbiPublisher extends JmsPublisher {
 		String svcName = uri.substring(idx2 + 1, idx1);
 		String nsUri   = uri.substring(0, idx2);
     	return new String[] { nsUri, svcName, epName };
+    }
+
+    public ComponentContext getContext() {
+        return lifeCycle.getContext();
+    }
+
+    public WSNLifeCycle getLifeCycle() {
+        return lifeCycle;
+    }
+
+    public void setLifeCycle(WSNLifeCycle lifeCycle) {
+        this.lifeCycle = lifeCycle;
     }
 
 }

@@ -54,7 +54,7 @@ public class WSNLifeCycle extends BaseLifeCycle {
 		super.doInit();
         // Notification Broker
         notificationBroker = new JbiNotificationBroker(configuration.getBrokerName());
-        notificationBroker.setContext(context);
+        notificationBroker.setLifeCycle(this);
         notificationBroker.setManager(new WSNEndpointManager());
         if (connectionFactory == null) {
             connectionFactory = lookupConnectionFactory();

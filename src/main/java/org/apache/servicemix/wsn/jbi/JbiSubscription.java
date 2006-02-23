@@ -19,6 +19,7 @@ import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -27,6 +28,8 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.wsn.component.WSNLifeCycle;
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
@@ -44,11 +47,13 @@ public class JbiSubscription extends JmsSubscription {
 
 	private static Log log = LogFactory.getLog(JbiSubscription.class);
 	
-	private ComponentContext context;
+	private WSNLifeCycle lifeCycle;
 	private ServiceEndpoint endpoint;
+    private ExchangeProcessor processor;
 	
 	public JbiSubscription(String name) {
 		super(name);
+        processor = new NoOpProcessor();
 	}
 
     @Override
@@ -60,7 +65,7 @@ public class JbiSubscription extends JmsSubscription {
 	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		super.validateSubscription(subscribeRequest);
         String[] parts = split(consumerReference.getAddress().getValue().trim());
-        endpoint = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+        endpoint = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
         if (endpoint == null) {
             SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
             throw new SubscribeCreationFailedFault("Unable to resolve consumer reference endpoint", fault);
@@ -83,29 +88,42 @@ public class JbiSubscription extends JmsSubscription {
     }
 	
 	@Override
-	protected void doNotify(Element content) {
-		try {
-			DeliveryChannel channel = context.getDeliveryChannel();
-			MessageExchangeFactory factory = channel.createExchangeFactory(endpoint);
-			InOnly inonly = factory.createInOnlyExchange();
-			NormalizedMessage msg = inonly.createMessage();
-			inonly.setInMessage(msg);
-			msg.setContent(new DOMSource(content));
-			if (!channel.sendSync(inonly)) {
-				log.warn("Notification was aborted");
-			}
-		} catch (JBIException e) {
-			log.warn("Could not deliver notification", e);
-		}
+	protected void doNotify(final Element content) {
+        try {
+            DeliveryChannel channel = getContext().getDeliveryChannel();
+            MessageExchangeFactory factory = channel.createExchangeFactory(endpoint);
+            InOnly inonly = factory.createInOnlyExchange();
+            NormalizedMessage msg = inonly.createMessage();
+            inonly.setInMessage(msg);
+            msg.setContent(new DOMSource(content));
+            getLifeCycle().sendConsumerExchange(inonly, processor);
+        } catch (JBIException e) {
+            log.warn("Could not deliver notification", e);
+        }
 	}
 
 	public ComponentContext getContext() {
-		return context;
+		return lifeCycle.getContext();
 	}
 
-	public void setContext(ComponentContext context) {
-		this.context = context;
-	}
+    public WSNLifeCycle getLifeCycle() {
+        return lifeCycle;
+    }
 
+    public void setLifeCycle(WSNLifeCycle lifeCycle) {
+        this.lifeCycle = lifeCycle;
+    }
+
+    protected class NoOpProcessor implements ExchangeProcessor {
+
+        public void process(MessageExchange exchange) throws Exception {
+        }
+
+        public void start() throws Exception {
+        }
+
+        public void stop() throws Exception {
+        }
+    }
 
 }

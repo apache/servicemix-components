@@ -15,15 +15,14 @@
  */
 package org.apache.servicemix.wsn.jbi;
 
-import javax.jbi.component.ComponentContext;
-
+import org.apache.servicemix.wsn.component.WSNLifeCycle;
 import org.apache.servicemix.wsn.jms.JmsNotificationBroker;
 import org.apache.servicemix.wsn.jms.JmsPublisher;
 import org.apache.servicemix.wsn.jms.JmsSubscription;
 
 public class JbiNotificationBroker extends JmsNotificationBroker {
 
-	private ComponentContext context;
+	private WSNLifeCycle lifeCycle;
 	
 	public JbiNotificationBroker(String name) {
 		super(name);
@@ -32,24 +31,24 @@ public class JbiNotificationBroker extends JmsNotificationBroker {
 	@Override
 	protected JmsSubscription createJmsSubscription(String name) {
 		JbiSubscription subscription = new JbiSubscription(name);
-		subscription.setContext(context);
+		subscription.setLifeCycle(lifeCycle);
 		return subscription;
 	}
 
 	@Override
 	protected JmsPublisher createJmsPublisher(String name) {
 		JbiPublisher publisher = new JbiPublisher(name);
-		publisher.setContext(context);
+		publisher.setLifeCycle(lifeCycle);
 		publisher.setNotificationBrokerAddress(address);
 		return publisher;
 	}
 
-	public ComponentContext getContext() {
-		return context;
-	}
+    public WSNLifeCycle getLifeCycle() {
+        return lifeCycle;
+    }
 
-	public void setContext(ComponentContext context) {
-		this.context = context;
-	}
+    public void setLifeCycle(WSNLifeCycle lifeCycle) {
+        this.lifeCycle = lifeCycle;
+    }
 
 }
