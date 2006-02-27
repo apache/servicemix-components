@@ -211,7 +211,7 @@
       <version>${wsdl4j_version}</version>
       </dependency>
     <dependency>
-      <groupId>jetty</groupId>
+      <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
       <version>${jetty_version}</version>
     </dependency>
