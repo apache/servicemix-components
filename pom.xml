@@ -46,12 +46,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.servicemix.dependencies</groupId>
+            <groupId>org.codehaus.xfire</groupId>
             <artifactId>xfire-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.servicemix.dependencies</groupId>
-            <artifactId>xfire-jaxws</artifactId>
         </dependency>
         <dependency>
             <groupId>jdom</groupId>
@@ -72,7 +68,7 @@
           <artifactId>wsm</artifactId>
         </dependency>
         <dependency>
-        <groupId>org.apache.servicemix.dependencies</groupId>
+          <groupId>org.apache.ws.commons</groupId>
           <artifactId>XmlSchema</artifactId>
         </dependency>
         <dependency>
