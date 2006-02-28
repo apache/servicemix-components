@@ -17,6 +17,7 @@ package org.apache.servicemix.http;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 
@@ -73,6 +74,10 @@ public class HttpLifeCycle extends BaseLifeCycle {
         }
         if (client == null) {
             connectionManager = new MultiThreadedHttpConnectionManager();
+            HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+            params.setDefaultMaxConnectionsPerHost(configuration.getMaxConnectionsPerHost());
+            params.setMaxTotalConnections(configuration.getMaxTotalConnections());
+            connectionManager.setParams(params);
             client = new HttpClient(connectionManager);
         }
     }

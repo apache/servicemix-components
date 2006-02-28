@@ -102,51 +102,55 @@ public class ProviderProcessor implements ExchangeProcessor {
         }
         method.addRequestHeader("Content-Type", writer.getContentType());
         method.setRequestEntity(writeMessage(writer));
-        int response = getClient().executeMethod(host, method);
-        if (response != HttpStatus.SC_OK) {
-        	if (exchange instanceof InOnly == false) {
-        		Fault fault = exchange.createFault();
+        try {
+            int response = getClient().executeMethod(host, method);
+            if (response != HttpStatus.SC_OK) {
+            	if (exchange instanceof InOnly == false) {
+            		Fault fault = exchange.createFault();
+                    SoapReader reader = soapMarshaler.createReader();
+                    Header contentType = method.getResponseHeader("Content-Type");
+                    soapMessage = reader.read(method.getResponseBodyAsStream(), 
+                    						  contentType != null ? contentType.getValue() : null);
+                    fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
+            		jbiMarshaler.toNMS(fault, soapMessage);
+            		exchange.setFault(fault);
+            		exchange.setStatus(ExchangeStatus.ERROR);
+            		channel.send(exchange);
+            		return;
+            	} else {
+            		throw new Exception("Invalid status response: " + response);
+            	}
+            }
+            if (exchange instanceof InOut) {
+                NormalizedMessage msg = exchange.createMessage();
                 SoapReader reader = soapMarshaler.createReader();
                 Header contentType = method.getResponseHeader("Content-Type");
                 soapMessage = reader.read(method.getResponseBodyAsStream(), 
                 						  contentType != null ? contentType.getValue() : null);
-                fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-        		jbiMarshaler.toNMS(fault, soapMessage);
-        		exchange.setFault(fault);
-        		exchange.setStatus(ExchangeStatus.ERROR);
-        		channel.send(exchange);
-        		return;
-        	} else {
-        		throw new Exception("Invalid status response: " + response);
-        	}
-        }
-        if (exchange instanceof InOut) {
-            NormalizedMessage msg = exchange.createMessage();
-            SoapReader reader = soapMarshaler.createReader();
-            Header contentType = method.getResponseHeader("Content-Type");
-            soapMessage = reader.read(method.getResponseBodyAsStream(), 
-            						  contentType != null ? contentType.getValue() : null);
-            msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-            jbiMarshaler.toNMS(msg, soapMessage);
-            ((InOut) exchange).setOutMessage(msg);
-            channel.sendSync(exchange);
-        } else if (exchange instanceof InOptionalOut) {
-            if (method.getResponseContentLength() == 0) {
-                exchange.setStatus(ExchangeStatus.DONE);
-                channel.send(exchange);
-            } else {
-                NormalizedMessage msg = exchange.createMessage();
-                SoapReader reader = soapMarshaler.createReader();
-                soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                                          method.getResponseHeader("Content-Type").getValue());
                 msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                 jbiMarshaler.toNMS(msg, soapMessage);
-                ((InOptionalOut) exchange).setOutMessage(msg);
+                ((InOut) exchange).setOutMessage(msg);
                 channel.sendSync(exchange);
+            } else if (exchange instanceof InOptionalOut) {
+                if (method.getResponseContentLength() == 0) {
+                    exchange.setStatus(ExchangeStatus.DONE);
+                    channel.send(exchange);
+                } else {
+                    NormalizedMessage msg = exchange.createMessage();
+                    SoapReader reader = soapMarshaler.createReader();
+                    soapMessage = reader.read(method.getResponseBodyAsStream(), 
+                                              method.getResponseHeader("Content-Type").getValue());
+                    msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
+                    jbiMarshaler.toNMS(msg, soapMessage);
+                    ((InOptionalOut) exchange).setOutMessage(msg);
+                    channel.sendSync(exchange);
+                }
+            } else {
+                exchange.setStatus(ExchangeStatus.DONE);
+                channel.send(exchange);
             }
-        } else {
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
+        } finally {
+            method.releaseConnection();
         }
     }
 

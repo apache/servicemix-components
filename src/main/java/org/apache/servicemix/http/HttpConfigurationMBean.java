@@ -29,4 +29,12 @@ public interface HttpConfigurationMBean {
 
     public void setJettyThreadPoolSize(int jettyThreadPoolSize);
     
+    public int getMaxConnectionsPerHost();
+    
+    public void setMaxConnectionsPerHost(int maxConnectionsPerHost);
+    
+    public int getMaxTotalConnections();
+    
+    public void setMaxTotalConnections(int maxTotalConnections);
+    
 }

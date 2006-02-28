@@ -16,10 +16,11 @@
 package org.apache.servicemix.http;
 
 import org.apache.servicemix.common.PersistentConfiguration;
+import org.mortbay.jetty.nio.SelectChannelConnector;
 
 public class HttpConfiguration extends PersistentConfiguration implements HttpConfigurationMBean {
 
-    public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = org.mortbay.jetty.bio.SocketConnector.class.getName();
+    public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = SelectChannelConnector.class.getName();
     
     private boolean streamingEnabled = false;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
@@ -29,6 +30,16 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
      * to 255 by default to match the default value in Jetty. 
      */
     private int jettyThreadPoolSize = 255;
+    
+    /**
+     * Maximum number of concurrent requests to the same host.
+     */
+    private int maxConnectionsPerHost = 32;
+    
+    /**
+     * Maximum number of concurrent requests.
+     */
+    private int maxTotalConnections = 256;
 
     public boolean isStreamingEnabled() {
         return streamingEnabled;
@@ -57,10 +68,30 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
         save();
     }
     
+    public int getMaxConnectionsPerHost() {
+        return maxConnectionsPerHost;
+    }
+
+    public void setMaxConnectionsPerHost(int maxConnectionsPerHost) {
+        this.maxConnectionsPerHost = maxConnectionsPerHost;
+        save();
+    }
+
+    public int getMaxTotalConnections() {
+        return maxTotalConnections;
+    }
+
+    public void setMaxTotalConnections(int maxTotalConnections) {
+        this.maxTotalConnections = maxTotalConnections;
+        save();
+    }
+    
     public void save() {
         properties.setProperty("jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         properties.setProperty("jettyConnectorClassName", jettyConnectorClassName);
         properties.setProperty("streamingEnabled", Boolean.toString(streamingEnabled));
+        properties.setProperty("maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
+        properties.setProperty("maxTotalConnections", Integer.toString(maxTotalConnections));
         super.save();
     }
     
@@ -75,10 +106,16 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
             if (properties.getProperty("streamingEnabled") != null) {
                 streamingEnabled = Boolean.valueOf(properties.getProperty("streamingEnabled")).booleanValue();
             }
+            if (properties.getProperty("maxConnectionsPerHost") != null) {
+                maxConnectionsPerHost = Integer.parseInt(properties.getProperty("maxConnectionsPerHost"));
+            }
+            if (properties.getProperty("maxTotalConnections") != null) {
+                maxTotalConnections = Integer.parseInt(properties.getProperty("maxTotalConnections"));
+            }
             return true;
         } else {
             return false;
         }
     }
-    
+
 }
