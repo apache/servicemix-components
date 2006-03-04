@@ -261,6 +261,13 @@
         </properties>
       </dependency>
       <dependency>
+        <id>log4j</id>
+        <version>${log4j_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
         <groupId>servicemix</groupId>
         <artifactId>stax-utils</artifactId>
         <version>${stax_utils_version}</version>
@@ -295,12 +302,18 @@
 
     <build>
         <unitTest>
+            <resources>
+              <resource>
+                  <directory>src/test/resources</directory>
+                <includes>
+                  <include>**/*</include>
+                </includes>
+              </resource>
+            </resources>
             <includes>
                 <include>**/*Test.*</include>
             </includes>
             <excludes>
-               <!-- http://jira.activemq.org/jira/browse/AMQ-572 -->
-              <exclude>**/ServerManagerTest.*</exclude>
             </excludes>
         </unitTest>
         <resources>
