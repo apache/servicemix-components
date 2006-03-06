@@ -159,10 +159,10 @@ public class WSNComponentTest extends TestCase {
 	}
 
 	public void testUnsubscribe() throws Exception {
-        // START SNIPPET: subscribe
+        // START SNIPPET: sub
 		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
-        // END SNIPPET: subscribe
+        // END SNIPPET: sub
 		
 		wsnBroker.notify("myTopic", new Notify());
 		// Wait for notification
