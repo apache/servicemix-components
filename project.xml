@@ -304,10 +304,6 @@
                 <include>**/*Test.*</include>
             </includes>
             <excludes>
-
-              <!-- http://jira.activemq.org/jira/browse/SM-314 -->
-              <exclude>**/JbiProxyTest.*</exclude>
-
             </excludes>
         </unitTest>
         <resources>
