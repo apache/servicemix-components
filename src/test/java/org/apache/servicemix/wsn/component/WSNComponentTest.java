@@ -162,7 +162,7 @@ public class WSNComponentTest extends TestCase {
         // START SNIPPET: subscribe
 		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
-        // START SNIPPET: subscribe
+        // END SNIPPET: subscribe
 		
 		wsnBroker.notify("myTopic", new Notify());
 		// Wait for notification
