@@ -136,11 +136,16 @@ public class WSNComponentTest extends TestCase {
 	public void testRawNotify() throws Exception {
 		ReceiverComponent receiver = new ReceiverComponent();
 		jbi.activateComponent(receiver, "receiver");
-		
+
+
+		// START SNIPPET: notify
 		EndpointReferenceType consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
 		wsnBroker.subscribe(consumer, "myTopic", null, true);
 		
-		wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+		Element body = parse("<hello>world</hello>");
+        wsnBroker.notify("myTopic", body);
+        // END SNIPPET: notify
+        
 		// Wait for notification
 		Thread.sleep(50);
 		
@@ -154,8 +159,10 @@ public class WSNComponentTest extends TestCase {
 	}
 
 	public void testUnsubscribe() throws Exception {
+        // START SNIPPET: subscribe
 		PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
 		Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
+        // START SNIPPET: subscribe
 		
 		wsnBroker.notify("myTopic", new Notify());
 		// Wait for notification
