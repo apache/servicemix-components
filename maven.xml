@@ -18,12 +18,8 @@
     
 -->
 
-<project default="default" 
-  xmlns:ant="jelly:ant"
-  xmlns:artifact="artifact">
+<project default="default" xmlns:ant="jelly:ant">
+    
+    <!-- default goal is defined in /etc/ -->
 
-  <!-- redefined "default" goal from parent pom -->
-  <goal name="default" prereqs="clean, jar:install, jbi:install"/>  
-  <goal name="nightly" prereqs="clean, jar:install, jbi:install, jar:deploy, jbi:deploy"/>
-  
 </project>
