@@ -37,10 +37,7 @@
     </packageGroup>
   </packageGroups>
 
-  <siteDirectory>/home/projects/servicemix/public_html/maven/ws/jaxws/wsn</siteDirectory>
-
   <dependencies>
-
     <!-- For JAX-WS: only required for Java 5, will be part of Java 6 -->
     <dependency>
       <groupId>servicemix</groupId>
