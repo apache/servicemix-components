@@ -27,7 +27,6 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.namespace.QName;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
@@ -42,7 +41,6 @@ import org.apache.servicemix.soap.handlers.AddressingInHandler;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
-import org.mortbay.jetty.RetryRequest;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
@@ -76,7 +74,6 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public void process(MessageExchange exchange) throws Exception {
         Continuation cont = (Continuation) locks.remove(exchange.getExchangeId());
         if (cont != null) {
-            //System.err.println("Notifying: " + exchange.getExchangeId());
             cont.resume();
         } else {
             throw new IllegalStateException("Exchange not found");
@@ -101,77 +98,81 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         if (!"POST".equals(request.getMethod())) {
             throw new UnsupportedOperationException(request.getMethod() + " not supported");
         }
-        QName envelopeName = null;
-        try {
-            // Not giving a specific mutex will synchronize on the contination itself
-            Continuation cont = ContinuationSupport.getContinuation(request, null);
-            MessageExchange exchange;
-            // If the continuation is not a retry
-            if (!cont.isPending()) {
+        // Not giving a specific mutex will synchronize on the contination itself
+        Continuation cont = ContinuationSupport.getContinuation(request, null);
+        MessageExchange exchange;
+        // If the continuation is not a retry
+        if (!cont.isPending()) {
+            try {
                 SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
                                                                         request.getHeader("Content-Type"));
                 exchange = soapHelper.createExchange(message);
-                //System.err.println("Handling: " + exchange.getExchangeId());
                 NormalizedMessage inMessage = exchange.getMessage("in");
                 inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
                 locks.put(exchange.getExchangeId(), cont);
+                request.setAttribute(SoapMessage.class.getName(), message);
                 request.setAttribute(MessageExchange.class.getName(), exchange);
-                //System.err.println("Sending: " + exchange.getExchangeId());
                 ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
                 // TODO: make this timeout configurable
                 boolean result = cont.suspend(1000 * 60); // 60 s
                 if (!result) {
                     throw new Exception("Error sending exchange: aborted");
                 }
-                //System.err.println("Continuing: " + exchange.getExchangeId());
-            } else {
-                exchange = (MessageExchange) request.getAttribute(MessageExchange.class.getName());
-                request.removeAttribute(MessageExchange.class.getName());
-                boolean result = cont.suspend(0); 
-                // Check if this is a timeout
-                if (exchange == null) {
-                    throw new IllegalStateException("Exchange not found");
-                }
-                //System.err.println("Processing: " + exchange.getExchangeId());
-                if (!result) {
-                    throw new Exception("Timeout");
-                }
+            } catch (SoapFault fault) {
+                sendFault(fault, request, response);
+                return;
             }
-            if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                exchange.setStatus(ExchangeStatus.DONE);
-                channel.send(exchange);
-                if (exchange.getError() != null) {
-                    throw new Exception(exchange.getError());
-                } else if (exchange.getFault() != null) {
-                    throw new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
-                } else {
-                    throw new Exception("Unkown Error");
-                }
-            } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                NormalizedMessage outMsg = exchange.getMessage("out");
-                if (outMsg != null) {
-                    SoapMessage out = new SoapMessage();
-                    jbiMarshaler.fromNMS(out, outMsg);
-                    soapMarshaler.createWriter(out).write(response.getOutputStream());
-                }
-                exchange.setStatus(ExchangeStatus.DONE);
-                channel.send(exchange);
+        } else {
+            exchange = (MessageExchange) request.getAttribute(MessageExchange.class.getName());
+            request.removeAttribute(MessageExchange.class.getName());
+            boolean result = cont.suspend(0); 
+            // Check if this is a timeout
+            if (exchange == null) {
+                throw new IllegalStateException("Exchange not found");
             }
-        } catch (SoapFault fault) {
-            if (SoapFault.SENDER.equals(fault.getCode())) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            if (!result) {
+                throw new Exception("Timeout");
             }
-            SoapMessage soapFault = new SoapMessage();
-            soapFault.setFault(fault);
-            soapFault.setEnvelopeName(envelopeName);
-            soapMarshaler.createWriter(soapFault).write(response.getOutputStream());
-        } catch (RetryRequest e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
         }
+        if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            if (exchange.getError() != null) {
+                throw new Exception(exchange.getError());
+            } else {
+                throw new Exception("Unknown Error");
+            }
+        } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            try {
+                if (exchange.getFault() != null) {
+                    SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
+                    sendFault(fault, request, response);
+                } else {
+                    NormalizedMessage outMsg = exchange.getMessage("out");
+                    if (outMsg != null) {
+                        SoapMessage out = new SoapMessage();
+                        jbiMarshaler.fromNMS(out, outMsg);
+                        soapMarshaler.createWriter(out).write(response.getOutputStream());
+                    }
+                }
+            } finally {
+                exchange.setStatus(ExchangeStatus.DONE);
+                channel.send(exchange);
+            }
+        }
+    }
+    
+    protected void sendFault(SoapFault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if (SoapFault.SENDER.equals(fault.getCode())) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+        SoapMessage in = (SoapMessage) request.getAttribute(SoapMessage.class.getName());
+        SoapMessage soapFault = new SoapMessage();
+        soapFault.setFault(fault);
+        if (in != null) {
+            soapFault.setEnvelopeName(in.getEnvelopeName());
+        }
+        soapMarshaler.createWriter(soapFault).write(response.getOutputStream());
     }
     
     protected Map getHeaders(HttpServletRequest request) {
