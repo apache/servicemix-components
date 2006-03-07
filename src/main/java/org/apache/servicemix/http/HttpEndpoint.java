@@ -59,7 +59,8 @@ public class HttpEndpoint extends SoapEndpoint {
             activated = ctx.activateEndpoint(service, endpoint);
             processor = new ProviderProcessor(this);
         } else {
-            ctx.registerExternalEndpoint(new HttpExternalEndpoint(this));
+            activated = new HttpExternalEndpoint(this);
+            ctx.registerExternalEndpoint(activated);
             processor = new ConsumerProcessor(this);
         }
         processor.start();
@@ -69,11 +70,15 @@ public class HttpEndpoint extends SoapEndpoint {
      * @see org.servicemix.common.Endpoint#deactivate()
      */
     public void deactivate() throws Exception {
+        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
         if (getRole() == Role.PROVIDER) {
             ServiceEndpoint ep = activated;
             activated = null;
-            ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
             ctx.deactivateEndpoint(ep);
+        } else {
+            ServiceEndpoint ep = activated;
+            activated = null;
+            ctx.deregisterExternalEndpoint(ep);
         }
         processor.stop();
     }
