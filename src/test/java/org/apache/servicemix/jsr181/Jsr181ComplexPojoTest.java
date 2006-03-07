@@ -144,10 +144,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
         assertNotNull(me.getFault());
         Node n = transformer.toDOMNode(me.getFault());
         System.err.println(transformer.toString(n));
-        String xpath;
-        assertNotNull(xpath = textValueOfXPath(n, "//message"));
-        assertNull(xpath = textValueOfXPath(n, "//stack"));
-        client.done(me);
+        assertNotNull(textValueOfXPath(n, "//message"));
+        assertNull(textValueOfXPath(n, "//stack"));
         
         ((Jsr181LifeCycle) component.getLifeCycle()).getConfiguration().setPrintStackTraceInFaults(true);
         
@@ -159,9 +157,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
         assertNotNull(me.getFault());
         n = transformer.toDOMNode(me.getFault());
         System.err.println(transformer.toString(n));
-        assertNotNull(xpath = textValueOfXPath(n, "//message"));
-        assertNotNull(xpath = textValueOfXPath(n, "//stack"));
-        client.done(me);
+        assertNotNull(textValueOfXPath(n, "//message"));
+        assertNotNull(textValueOfXPath(n, "//stack"));
         
         // Wait all acks being processed
         Thread.sleep(100);
