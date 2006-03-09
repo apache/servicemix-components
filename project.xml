@@ -28,12 +28,12 @@
         ServiceMix implementation of WS Notification 2005
   </description>
 
-  <package>org.apache.servicemix.ws.notification</package>
+  <package>org.apache.servicemix.wsn</package>
 
   <packageGroups>
     <packageGroup>
       <title>WS-Notification Implementation</title>
-      <packages>org.apache.servicemix.ws.notification</packages>
+      <packages>org.apache.servicemix.wsn</packages>
     </packageGroup>
   </packageGroups>
 
