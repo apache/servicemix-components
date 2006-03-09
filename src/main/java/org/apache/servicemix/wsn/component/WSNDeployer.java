@@ -17,7 +17,9 @@ package org.apache.servicemix.wsn.component;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.management.LifeCycleMBean;
@@ -186,19 +188,34 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
     
     public static class WSNServiceUnit extends ServiceUnit {
         public void start() throws Exception {
-            for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                Endpoint endpoint = (Endpoint) iter.next();
-                if (endpoint instanceof WSNPullPointEndpoint) {
-                    endpoint.activate();
+            List<Endpoint> activated = new ArrayList<Endpoint>();
+            try {
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNPullPointEndpoint) {
+                        endpoint.activate();
+                        activated.add(endpoint);
+                    }
                 }
-            }
-            for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                Endpoint endpoint = (Endpoint) iter.next();
-                if (endpoint instanceof WSNSubscriptionEndpoint) {
-                    endpoint.activate();
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNSubscriptionEndpoint) {
+                        endpoint.activate();
+                        activated.add(endpoint);
+                    }
                 }
+                this.status = LifeCycleMBean.STARTED;
+            } catch (Exception e) {
+                // Deactivate activated endpoints
+                for (Endpoint endpoint : activated) {
+                    try {
+                        endpoint.deactivate();
+                    } catch (Exception e2) {
+                        // do nothing
+                    }
+                }
+                throw e;
             }
-            this.status = LifeCycleMBean.STARTED;
         }
     }
     
