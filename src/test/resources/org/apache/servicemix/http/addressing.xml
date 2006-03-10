@@ -7,26 +7,27 @@
   <sm:container id="jbi" embedded="true">
     <sm:activationSpecs>
 
-      <!-- output using a POJO -->
+      <!-- START SNIPPET: lightweight -->
       <sm:activationSpec>
-      	<sm:component>
-            <http:component>
-            	<http:endpoints>
-            		<http:endpoint service="test:dummy"
-            					   endpoint="dummy"
-            		               role="consumer" 
-            		               soap="true"
-            		               locationURI="http://localhost:8192/"
-            		               defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
-            		               
-            		<http:endpoint service="test:MyProviderService"
-            					   endpoint="myProvider"
-            		               role="provider" 
-            		               locationURI="http://localhost:8192/" />
-            	</http:endpoints>
-            </http:component>
+        <sm:component>
+          <http:component>
+            <http:endpoints>
+              <http:endpoint service="test:dummy"
+                             endpoint="dummy"
+                             role="consumer" 
+                             soap="true"
+                             locationURI="http://localhost:8192/"
+                             defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
+
+              <http:endpoint service="test:MyProviderService"
+                             endpoint="myProvider"
+                             role="provider" 
+                             locationURI="http://localhost:8192/" />
+            </http:endpoints>
+          </http:component>
         </sm:component>
       </sm:activationSpec>
+      <!-- END SNIPPET: lightweight -->
       
       <sm:activationSpec service="test:MyConsumerService" endpoint="myConsumer">
         <sm:component>

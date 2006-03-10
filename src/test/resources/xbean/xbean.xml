@@ -2,15 +2,19 @@
 <beans xmlns:http="http://servicemix.apache.org/http/1.0"
        xmlns:test="http://test">
 
-	<http:endpoint service="test:MyConsumerService"
-				   endpoint="myConsumer"
-	               role="consumer" 
-	               locationURI="http://localhost:8192/Service/"
-	               defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
-	               
-	<http:endpoint service="test:MyProviderService"
-				   endpoint="myProvider"
-	               role="provider" 
-	               locationURI="http://localhost:8192/Service/" />
+    <!-- START SNIPPET: consumer -->
+    <http:endpoint service="test:MyConsumerService"
+                   endpoint="myConsumer"
+                   role="consumer" 
+                   locationURI="http://localhost:8192/Service/"
+                   defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
+    <!-- END SNIPPET: consumer -->
+
+    <!-- START SNIPPET: provider -->
+    <http:endpoint service="test:MyProviderService"
+                   endpoint="myProvider"
+                   role="provider" 
+                   locationURI="http://localhost:8192/Service/" />
+    <!-- END SNIPPET: provider -->
   				   
 </beans>
