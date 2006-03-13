@@ -65,6 +65,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public ConsumerProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
         this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
+        if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
+            this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
+        }
         this.soapHelper = new SoapHelper(endpoint);
         this.soapHelper.addPolicy(new AddressingInHandler());
         this.jbiMarshaler = new JBIMarshaler();

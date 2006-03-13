@@ -45,6 +45,7 @@ public class HttpEndpoint extends SoapEndpoint {
     protected URI defaultMep;
     protected String locationURI;
     protected boolean soap;
+    protected String soapVersion;
     
     public ExchangeProcessor getProcessor() {
         return this.processor;
@@ -137,6 +138,14 @@ public class HttpEndpoint extends SoapEndpoint {
 
     public void setSoap(boolean soap) {
         this.soap = soap;
+    }
+
+    public String getSoapVersion() {
+        return soapVersion;
+    }
+
+    public void setSoapVersion(String soapVersion) {
+        this.soapVersion = soapVersion;
     }
 
 }
