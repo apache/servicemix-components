@@ -2,6 +2,19 @@
 <beans xmlns:http="http://servicemix.apache.org/http/1.0"
        xmlns:test="http://test">
 
+	<!--  Define an additional classpath location
+	      for wsdl resources -->
+    <classpath>
+        <location>.</location>
+    </classpath>
+
+    <http:endpoint service="test:MySoapService"
+                   endpoint="endpoint"
+                   role="consumer"
+                   locationURI="http://localhost:8192/SoapService/"
+                   soap="true" 
+                   wsdlResource="classpath:SoapService.wsdl"/>
+
     <!-- START SNIPPET: consumer -->
     <http:endpoint service="test:MyConsumerService"
                    endpoint="myConsumer"
@@ -14,7 +27,8 @@
     <http:endpoint service="test:MyProviderService"
                    endpoint="myProvider"
                    role="provider" 
-                   locationURI="http://localhost:8192/Service/" />
+                   locationURI="http://localhost:8192/Service/"
+                   wsdlResource="classpath:provider.wsdl" />
     <!-- END SNIPPET: provider -->
   				   
 </beans>

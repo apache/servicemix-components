@@ -53,6 +53,9 @@ public class HttpExternalEndpoint implements ServiceEndpoint {
     }
 
     public QName[] getInterfaces() {
+        if (endpoint.getInterfaceName() != null) {
+            return new QName[] { endpoint.getInterfaceName() }; 
+        }
         return null;
     }
 

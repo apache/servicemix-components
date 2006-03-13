@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions name='Consumer' 
+	         targetNamespace='http://test' 
+	         xmlns:tns='http://test' 
+             xmlns='http://schemas.xmlsoap.org/wsdl/'>
+
+   <portType name='Consumer'>
+   </portType>
+
+   <binding name='MyConsumer' type='tns:Consumer'>
+   </binding>
+
+   <service name='MySoapService'>
+      <port name='endpoint' binding='tns:MyConsumer' />
+   </service>
+</definitions>

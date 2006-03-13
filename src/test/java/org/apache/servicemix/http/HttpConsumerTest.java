@@ -28,7 +28,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.http.HttpClientMarshaler;
 import org.apache.servicemix.components.http.HttpInvoker;

@@ -15,18 +15,35 @@
  */
 package org.apache.servicemix.http;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.Definition;
+import javax.wsdl.Port;
+import javax.wsdl.Service;
 import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.http.HTTPAddress;
+import javax.wsdl.extensions.soap.SOAPAddress;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.wsdl1.JbiExtension;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
 import org.apache.servicemix.soap.SoapEndpoint;
+import org.springframework.core.io.Resource;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
+import com.ibm.wsdl.extensions.soap.SOAPAddressImpl;
 
 /**
  * 
@@ -46,7 +63,11 @@ public class HttpEndpoint extends SoapEndpoint {
     protected String locationURI;
     protected boolean soap;
     protected String soapVersion;
+    protected Resource wsdlResource;
     
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.common.Endpoint#getProcessor()
+     */
     public ExchangeProcessor getProcessor() {
         return this.processor;
     }
@@ -56,6 +77,7 @@ public class HttpEndpoint extends SoapEndpoint {
      */
     public void activate() throws Exception {
         ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
+        loadWsdl();
         if (getRole() == Role.PROVIDER) {
             activated = ctx.activateEndpoint(service, endpoint);
             processor = new ProviderProcessor(this);
@@ -146,6 +168,111 @@ public class HttpEndpoint extends SoapEndpoint {
 
     public void setSoapVersion(String soapVersion) {
         this.soapVersion = soapVersion;
+    }
+    
+    /**
+     * Load the wsdl for this endpoint.
+     */
+    protected void loadWsdl() {
+        // Load WSDL from the resource
+        if (description == null && wsdlResource != null) {
+            InputStream is = null;
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            try {
+                if (serviceUnit instanceof XBeanServiceUnit) {
+                    XBeanServiceUnit su = (XBeanServiceUnit) serviceUnit;
+                    Thread.currentThread().setContextClassLoader(su.getKernel().getClassLoaderFor(su.getConfiguration()));
+                }
+                is = wsdlResource.getInputStream();
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                dbf.setNamespaceAware(true);
+                Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, new InputSource(is));
+                overrideDefinition(def);
+            } catch (Exception e) {
+                logger.warn("Could not load description from resource", e);
+            } finally {
+                Thread.currentThread().setContextClassLoader(cl);
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
+        // If the endpoint is a consumer, try to find
+        // the proxied endpoint description
+        if (description == null && definition == null && getRole() == Role.CONSUMER) {
+            retrieveProxiedEndpointDefinition();
+        }
+        // If the wsdl definition is provided,
+        // convert it to a DOM document
+        if (description == null && definition != null) {
+            try {
+                description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+            } catch (Exception e) {
+                logger.warn("Could not create document from wsdl description", e);
+            }
+        }
+    }
+
+    /**
+     * Create a wsdl definition for a consumer endpoint.
+     * Loads the target endpoint definition and add http binding
+     * informations to it.
+     */
+    protected void retrieveProxiedEndpointDefinition() {
+        try {
+            if (service != null && endpoint != null) {
+                ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
+                ServiceEndpoint se = ctx.getEndpoint(service, endpoint);
+                if (se != null) {
+                    Document doc = ctx.getEndpointDescriptor(se);
+                    if (doc != null) {
+                        WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+                        Definition def = reader.readWSDL(null, doc);
+                        if (def != null) {
+                            overrideDefinition(def);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("Unable to retrieve target endpoint descriptor", e);
+        }
+    }
+    
+    protected void overrideDefinition(Definition def) {
+        Service svc = def.getService(service);
+        if (svc != null) {
+            Port port = svc.getPort(endpoint);
+            if (port != null) {
+                port.getExtensibilityElements().clear();
+                if (isSoap()) {
+                    SOAPAddress address = new SOAPAddressImpl();
+                    address.setLocationURI(getLocationURI());
+                    port.addExtensibilityElement(address);
+                    def.addNamespace("soap", "http://schemas.xmlsoap.org/wsdl/soap/");
+                } else {
+                    HTTPAddress address = new HTTPAddressImpl();
+                    address.setLocationURI(getLocationURI());
+                    port.addExtensibilityElement(address);
+                    def.addNamespace("http", "http://schemas.xmlsoap.org/wsdl/http/");
+                }
+                svc.getPorts().clear();
+                svc.addPort(port);
+                definition = def;
+            }
+        }
+    }
+
+    public Resource getWsdlResource() {
+        return wsdlResource;
+    }
+
+    public void setWsdlResource(Resource wsdlResource) {
+        this.wsdlResource = wsdlResource;
     }
 
 }

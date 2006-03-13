@@ -39,7 +39,7 @@ public class HttpComponent extends BaseComponent {
      * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] { new HttpWsdl1Deployer(this), new HttpXBeanDeployer(this) };
+        Deployer[] deployers = new Deployer[] { new HttpXBeanDeployer(this), new HttpWsdl1Deployer(this) };
         return new BaseServiceUnitManager(this, deployers);
     }
 
