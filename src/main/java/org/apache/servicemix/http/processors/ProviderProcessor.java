@@ -69,22 +69,20 @@ public class ProviderProcessor implements ExchangeProcessor {
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         try {
-        	this.endpoint = endpoint;
+            this.endpoint = endpoint;
             this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
             this.jbiMarshaler = new JBIMarshaler();
-        	this.host = new HostConfiguration();
-			this.host.setHost(new URI(endpoint.getLocationURI(), false));
-		} catch (URIException e) {
-			throw new RuntimeException(e);
-		}
+            this.host = new HostConfiguration();
+            this.host.setHost(new URI(endpoint.getLocationURI(), false));
+        } catch (URIException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void process(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.DONE) {
             return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
             return;
         }
         PostMethod method = new PostMethod(endpoint.getLocationURI());
@@ -94,39 +92,45 @@ public class ProviderProcessor implements ExchangeProcessor {
         SoapWriter writer = soapMarshaler.createWriter(soapMessage);
         Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
         if (headers != null) {
-        	for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
-        		String name = (String) it.next();
-        		String value = (String) headers.get(name);
-        		method.addRequestHeader(name, value);
-        	}
+            for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
+                String name = (String) it.next();
+                String value = (String) headers.get(name);
+                method.addRequestHeader(name, value);
+            }
         }
-        method.addRequestHeader("Content-Type", writer.getContentType());
-        method.setRequestEntity(writeMessage(writer));
+        RequestEntity entity = writeMessage(writer);
+        method.addRequestHeader("Content-Type", entity.getContentType());
+        if (entity.getContentLength() < 0) {
+            method.removeRequestHeader("Content-Length");
+        } else {
+            method.addRequestHeader("Content-Length", Long.toString(entity.getContentLength()));
+        }
+        method.setRequestEntity(entity);
         try {
             int response = getClient().executeMethod(host, method);
             if (response != HttpStatus.SC_OK) {
-            	if (exchange instanceof InOnly == false) {
-            		Fault fault = exchange.createFault();
+                if (exchange instanceof InOnly == false) {
+                    Fault fault = exchange.createFault();
                     SoapReader reader = soapMarshaler.createReader();
                     Header contentType = method.getResponseHeader("Content-Type");
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                    						  contentType != null ? contentType.getValue() : null);
+                                              contentType != null ? contentType.getValue() : null);
                     fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-            		jbiMarshaler.toNMS(fault, soapMessage);
-            		exchange.setFault(fault);
-            		exchange.setStatus(ExchangeStatus.ERROR);
-            		channel.send(exchange);
-            		return;
-            	} else {
-            		throw new Exception("Invalid status response: " + response);
-            	}
+                    jbiMarshaler.toNMS(fault, soapMessage);
+                    exchange.setFault(fault);
+                    exchange.setStatus(ExchangeStatus.ERROR);
+                    channel.send(exchange);
+                    return;
+                } else {
+                    throw new Exception("Invalid status response: " + response);
+                }
             }
             if (exchange instanceof InOut) {
                 NormalizedMessage msg = exchange.createMessage();
                 SoapReader reader = soapMarshaler.createReader();
                 Header contentType = method.getResponseHeader("Content-Type");
                 soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                						  contentType != null ? contentType.getValue() : null);
+                                          contentType != null ? contentType.getValue() : null);
                 msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                 jbiMarshaler.toNMS(msg, soapMessage);
                 ((InOut) exchange).setOutMessage(msg);
@@ -162,34 +166,34 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 
     protected Map getHeaders(HttpServletRequest request) {
-		Map headers = new HashMap();
+        Map headers = new HashMap();
         Enumeration enumeration = request.getHeaderNames();
         while (enumeration.hasMoreElements()) {
             String name = (String) enumeration.nextElement();
             String value = request.getHeader(name);
             headers.put(name, value);
         }
-		return headers;
-	}
-	
+        return headers;
+    }
+
     protected Map getHeaders(HttpMethod method) {
-		Map headers = new HashMap();
+        Map headers = new HashMap();
         Header[] h = method.getResponseHeaders();
         for (int i = 0; i < h.length; i++) {
-			headers.put(h[i].getName(), h[i].getValue());
-		}
-		return headers;
-	}
+            headers.put(h[i].getName(), h[i].getValue());
+        }
+        return headers;
+    }
 	
     protected RequestEntity writeMessage(SoapWriter writer) throws Exception {
-        HttpLifeCycle lf =  (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-    	if (lf.getConfiguration().isStreamingEnabled()) {
-    		return new StreamingRequestEntity(writer);
-    	} else {
-    		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    		writer.write(baos);
-    		return new ByteArrayRequestEntity(baos.toByteArray(), writer.getContentType());
-    	}
+        HttpLifeCycle lf = (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
+        if (lf.getConfiguration().isStreamingEnabled()) {
+            return new StreamingRequestEntity(writer);
+        } else {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            writer.write(baos);
+            return new ByteArrayRequestEntity(baos.toByteArray(), writer.getContentType());
+        }
     }
 
     protected HttpClient getClient() {
@@ -211,7 +215,7 @@ public class ProviderProcessor implements ExchangeProcessor {
 
         public void writeRequest(OutputStream out) throws IOException {
             try {
-            	writer.write(out);
+                writer.write(out);
                 out.flush();
             } catch (Exception e) {
                 throw (IOException) new IOException("Could not write request").initCause(e);
