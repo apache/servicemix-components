@@ -29,11 +29,9 @@ import javax.xml.transform.stream.StreamSource;
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.components.http.HttpClientMarshaler;
 import org.apache.servicemix.components.http.HttpInvoker;
+import org.apache.servicemix.components.http.HttpSoapClientMarshaler;
 import org.apache.servicemix.components.util.EchoComponent;
-import org.apache.servicemix.http.HttpComponent;
-import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -67,14 +65,14 @@ public class HttpConsumerTest extends TestCase {
         // Add a receiver component
         Receiver receiver = new ReceiverComponent();
         ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
-        asReceiver.setService(new QName("http://http.servicemix.org/Test", "ProviderInOnly"));
+        asReceiver.setService(new QName("http://http.servicemix.org/Test", "ConsumerInOnly"));
         container.activateComponent(asReceiver);
         
         // Add the http invoker
         HttpInvoker invoker = new HttpInvoker();
         invoker.setDefaultInOut(false);
         invoker.setUrl("http://localhost:8192/InOnly/");
-        invoker.setMarshaler(new HttpClientMarshaler(true));
+        invoker.setMarshaler(new HttpSoapClientMarshaler(true));
         ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
         asInvoker.setService(new QName("urn:test", "invoker"));
         container.activateComponent(asInvoker);
@@ -116,7 +114,7 @@ public class HttpConsumerTest extends TestCase {
         // Add a receiver component
         EchoComponent echo = new EchoComponent();
         ActivationSpec asReceiver = new ActivationSpec("echo", echo);
-        asReceiver.setService(new QName("http://http.servicemix.org/Test", "ProviderInOut"));
+        asReceiver.setService(new QName("http://http.servicemix.org/Test", "ConsumerInOut"));
         container.activateComponent(asReceiver);
         
         // Add the http invoker

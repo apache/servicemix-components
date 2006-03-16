@@ -1,29 +1,37 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<definitions name='Provider' 
-	         targetNamespace='http://http.servicemix.org/Test' 
-	         xmlns:tns='http://http.servicemix.org/Test' 
+<!-- START SNIPPET: wsdl -->
+<definitions name='Consumer' 
+             targetNamespace='http://http.servicemix.org/Test' 
+             xmlns:tns='http://http.servicemix.org/Test' 
              xmlns:http='http://schemas.xmlsoap.org/wsdl/http/' 
+             xmlns:soap='http://schemas.xmlsoap.org/wsdl/soap/' 
              xmlns='http://schemas.xmlsoap.org/wsdl/'
-			 xmlns:jbi='http://servicemix.org/wsdl/jbi/'>
+             xmlns:jbi='http://servicemix.org/wsdl/jbi/'>
 
-   <portType name='ProviderInterface'>
-   </portType>
+    <portType name='ConsumerInterface'>
+    </portType>
 
-   <binding name='ProviderJmsBinding' type='tns:ProviderInterface'>
-		<http:binding verb="POST"></http:binding>
-   </binding>
+    <binding name='ConsumerSoapBinding' type='tns:ConsumerInterface'>
+        <soap:binding transport="http"/>
+    </binding>
 
-   <service name='ProviderInOnly'>
-      <port name='TestEndpoint' binding='tns:ProviderJmsBinding'>
-			<http:address location="http://localhost:8192/InOnly"/>
-			<jbi:endpoint role="consumer" defaultMep='in-only'/>
-      </port>
-   </service>
+    <binding name='ConsumerHttpBinding' type='tns:ConsumerInterface'>
+        <http:binding verb="POST"></http:binding>
+    </binding>
 
-   <service name='ProviderInOut'>
-      <port name='TestEndpoint' binding='tns:ProviderJmsBinding'>
-			<http:address location="http://localhost:8192/InOut"/>
-			<jbi:endpoint role="consumer" defaultMep='in-out'/>
-      </port>
-   </service>
+    <service name='ConsumerInOnly'>
+        <port name='TestEndpoint' binding='tns:ConsumerSoapBinding'>
+            <soap:address location="http://localhost:8192/InOnly"/>
+            <jbi:endpoint role="consumer" defaultMep='in-only'/>
+        </port>
+    </service>
+
+    <service name='ConsumerInOut'>
+        <port name='TestEndpoint' binding='tns:ConsumerHttpBinding'>
+            <http:address location="http://localhost:8192/InOut"/>
+            <jbi:endpoint role="consumer" defaultMep='in-out'/>
+        </port>
+    </service>
+    
 </definitions>
+<!-- END SNIPPET: wsdl -->
