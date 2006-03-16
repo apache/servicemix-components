@@ -15,6 +15,8 @@
  */
 package org.apache.servicemix.http;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,18 +25,28 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
+import org.mortbay.jetty.HttpMethods;
+import org.mortbay.jetty.MimeTypes;
 import org.mortbay.jetty.Server;
+import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
 import org.mortbay.thread.BoundedThreadPool;
 import org.mortbay.thread.ThreadPool;
+import org.mortbay.util.ByteArrayISO8859Writer;
+import org.mortbay.util.StringUtil;
 
 public class ServerManager {
 
@@ -172,6 +184,7 @@ public class ServerManager {
         Server server = new Server();
         server.setThreadPool(threadPool);
         server.setConnectors(new Connector[] { connector });
+        server.setNotFoundHandler(new DisplayServiceHandler());
         connector.start();
         server.start();
         String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
@@ -189,6 +202,67 @@ public class ServerManager {
 
     public ThreadPool getThreadPool() {
         return threadPool;
+    }
+    
+    protected class DisplayServiceHandler extends AbstractHandler {
+
+        public boolean handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
+            String method = request.getMethod();
+            
+            if (!method.equals(HttpMethods.GET) || !request.getRequestURI().equals("/")) {
+                response.sendError(404);
+                return true;   
+            }
+
+            response.setStatus(404);
+            response.setContentType(MimeTypes.TEXT_HTML);
+            
+            ByteArrayISO8859Writer writer = new ByteArrayISO8859Writer(1500);
+
+            String uri = request.getRequestURI();
+            uri = StringUtil.replace(uri, "<", "&lt;");
+            uri = StringUtil.replace(uri, ">", "&gt;");
+            
+            writer.write("<HTML>\n<HEAD>\n<TITLE>Error 404 - Not Found");
+            writer.write("</TITLE>\n<BODY>\n<H2>Error 404 - Not Found.</H2>\n");
+            writer.write("No service matched or handled this request.<BR>");
+            writer.write("Known services are: <ul>");
+
+            Set servers = ServerManager.this.servers.keySet();
+            for (Iterator iter = servers.iterator(); iter.hasNext();) {
+                String serverUri = (String) iter.next();
+                Server server = (Server) ServerManager.this.servers.get(serverUri);
+                Handler[] handlers = server.getAllHandlers();
+                for (int i = 0; handlers != null && i < handlers.length; i++)
+                {
+                    if (!(handlers[i] instanceof ContextHandler)) {
+                        continue;
+                    }
+                    ContextHandler context = (ContextHandler)handlers[i];
+                        writer.write("<li><a href=\"");
+                        writer.write(serverUri);
+                        writer.write(context.getContextPath());
+                        writer.write("/?wsdl\">");
+                        writer.write(serverUri);
+                        writer.write(context.getContextPath());
+                        writer.write("</a></li>\n");
+                }
+            }
+            
+            for (int i=0; i < 10; i++) {
+                writer.write("\n<!-- Padding for IE                  -->");
+            }
+            
+            writer.write("\n</BODY>\n</HTML>\n");
+            writer.flush();
+            response.setContentLength(writer.size());
+            OutputStream out = response.getOutputStream();
+            writer.writeTo(out);
+            out.close();
+            
+            return true;
+        }
+        
     }
 
 }

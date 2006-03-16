@@ -27,6 +27,10 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
@@ -44,6 +48,7 @@ import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
+import org.w3c.dom.Document;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -98,8 +103,16 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     }
 
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if ("GET".equals(request.getMethod())) {
+            String query = request.getQueryString();
+            if (query != null && query.trim().equalsIgnoreCase("wsdl")) {
+                generateWSDL(response);
+                return;
+            }
+        }
         if (!"POST".equals(request.getMethod())) {
-            throw new UnsupportedOperationException(request.getMethod() + " not supported");
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, request.getMethod() + " not supported");
+            return;
         }
         // Not giving a specific mutex will synchronize on the contination itself
         Continuation cont = ContinuationSupport.getContinuation(request, null);
@@ -192,6 +205,18 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     protected ServerManager getServerManager() {
         HttpLifeCycle lf =  (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
         return lf.getServer();
+    }
+    
+    protected void generateWSDL(HttpServletResponse response) throws Exception {
+        Document doc = endpoint.getDescription();
+        if (doc == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "No wsdl is available for this service");
+            return;
+        }
+        response.setStatus(200);
+        response.setContentType("text/xml");
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
     }
 
 }
