@@ -39,6 +39,7 @@ public class Jsr181OverrideTest extends TestCase {
         container.setNamingContext(new InitialContext());
         container.setEmbedded(true);
         container.init();
+        container.start();
     }
     
     protected void tearDown() throws Exception {

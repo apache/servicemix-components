@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
@@ -266,8 +265,8 @@ public class Jsr181Endpoint extends Endpoint {
                     ") does not match the service name defined in the endpoint spec (" + interfaceName + 
                     "). WSDL description may be unusable.");
         }
-        Definition d = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
-        javax.wsdl.Service service = d.getService(serviceName);
+        definition = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+        javax.wsdl.Service service = definition.getService(serviceName);
         if (service != null) {
             if (service.getPorts().values().size() == 1) {
                 Port port = (Port) service.getPorts().values().iterator().next();
@@ -276,9 +275,9 @@ public class Jsr181Endpoint extends Endpoint {
                 if (endpoint == null) {
                     endpoint = endpointName;
                 } else if (!endpoint.equals(endpointName)) {
-                    logger.warn("The endpoint name defined in the wsdl (" + endpointName + 
-                            ") does not match the endpoint name defined in the endpoint spec (" + endpoint + 
-                    "). WSDL description may be unusable.");
+                    // Override generated WSDL
+                    port.setName(endpoint);
+                    description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
                 }
             }
         }
