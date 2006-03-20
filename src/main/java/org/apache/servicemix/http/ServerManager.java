@@ -241,8 +241,14 @@ public class ServerManager {
                     ContextHandler context = (ContextHandler)handlers[i];
                         writer.write("<li><a href=\"");
                         writer.write(serverUri);
+                        if (!context.getContextPath().startsWith("/")) {
+                            writer.write("/");
+                        }
                         writer.write(context.getContextPath());
-                        writer.write("/?wsdl\">");
+                        if (!context.getContextPath().endsWith("/")) {
+                            writer.write("/");
+                        }
+                        writer.write("?wsdl\">");
                         writer.write(serverUri);
                         writer.write(context.getContextPath());
                         writer.write("</a></li>\n");
