@@ -30,6 +30,7 @@ import javax.wsdl.extensions.http.HTTPAddress;
 import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -64,6 +65,7 @@ public class HttpEndpoint extends SoapEndpoint {
     protected boolean soap;
     protected String soapVersion;
     protected Resource wsdlResource;
+    protected QName defaultOperation;
     
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.Endpoint#getProcessor()
@@ -273,6 +275,20 @@ public class HttpEndpoint extends SoapEndpoint {
 
     public void setWsdlResource(Resource wsdlResource) {
         this.wsdlResource = wsdlResource;
+    }
+
+    /**
+     * @return Returns the defaultOperation.
+     */
+    public QName getDefaultOperation() {
+        return defaultOperation;
+    }
+
+    /**
+     * @param defaultOperation The defaultOperation to set.
+     */
+    public void setDefaultOperation(QName defaultOperation) {
+        this.defaultOperation = defaultOperation;
     }
 
 }

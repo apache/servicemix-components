@@ -53,6 +53,7 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
             endpoint.setSoap(false);
             endpoint.setRole(jbiEndpoint.getRole());
             endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
+            endpoint.setDefaultOperation(jbiEndpoint.getDefaultOperation());
             endpoint.setLocationURI(((HTTPAddress) portElement).getLocationURI());
             endpoint.setBinding(bindingElement);
             return endpoint;
@@ -61,6 +62,7 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
             endpoint.setSoap(true);
             endpoint.setRole(jbiEndpoint.getRole());
             endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
+            endpoint.setDefaultOperation(jbiEndpoint.getDefaultOperation());
             endpoint.setLocationURI(((SOAPAddress) portElement).getLocationURI());
             endpoint.setBinding(bindingElement);
             return endpoint;

@@ -45,6 +45,7 @@ import org.apache.servicemix.soap.handlers.AddressingInHandler;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
+import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
@@ -166,7 +167,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                     if (outMsg != null) {
                         SoapMessage out = new SoapMessage();
                         jbiMarshaler.fromNMS(out, outMsg);
-                        soapMarshaler.createWriter(out).write(response.getOutputStream());
+                        SoapWriter writer = soapMarshaler.createWriter(out);
+                        response.setContentType(writer.getContentType());
+                        writer.write(response.getOutputStream());
                     }
                 }
             } finally {
@@ -188,7 +191,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         if (in != null) {
             soapFault.setEnvelopeName(in.getEnvelopeName());
         }
-        soapMarshaler.createWriter(soapFault).write(response.getOutputStream());
+        SoapWriter writer = soapMarshaler.createWriter(soapFault);
+        response.setContentType(writer.getContentType());
+        writer.write(response.getOutputStream());
     }
     
     protected Map getHeaders(HttpServletRequest request) {
