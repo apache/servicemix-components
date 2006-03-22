@@ -36,6 +36,8 @@ import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
@@ -49,6 +51,8 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implements MessageListener {
 
+    private static final Log log = LogFactory.getLog(MultiplexingConsumerProcessor.class);
+    
     protected Session session;
     protected Destination destination;
     protected MessageConsumer consumer;
@@ -97,11 +101,17 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
 
     public void onMessage(final Message message) {
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Received jms message " + message);
+            }
             endpoint.getServiceUnit().getComponent().getWorkManager().scheduleWork(new Work() {
                 public void release() {
                 }
                 public void run() {
                     try {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Handling jms message " + message);
+                        }
                         InputStream is = null;
                         if (message instanceof TextMessage) {
                             is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
@@ -121,16 +131,13 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                         pendingMessages.put(exchange.getExchangeId(), message);
                         BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
                         lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this);
-                        
-                    } catch (Exception e) {
-                        // TODO: log exception
-                        e.printStackTrace();
+                    } catch (Throwable e) {
+                        log.error("Error while handling jms message", e);
                     }
                 }
             });
         } catch (WorkException e) {
-            // TODO: log exception
-            e.printStackTrace();
+            log.error("Error while handling jms message", e);
         }
     }
 

@@ -42,6 +42,8 @@ import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
@@ -52,6 +54,8 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class MultiplexingProviderProcessor extends AbstractJmsProcessor implements MessageListener {
 
+    private static final Log log = LogFactory.getLog(MultiplexingProviderProcessor.class);
+    
     protected Session session;
     protected Destination destination;
     protected Destination replyToDestination;
@@ -103,11 +107,17 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
 
     public void onMessage(final Message message) {
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Received jms message " + message);
+            }
             endpoint.getServiceUnit().getComponent().getWorkManager().scheduleWork(new Work() {
                 public void release() {
                 }
                 public void run() {
                     try {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Handling jms message " + message);
+                        }
                         InOut exchange = (InOut) pendingExchanges.remove(message.getJMSCorrelationID());
                         if (exchange == null) {
                             throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
@@ -138,15 +148,13 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                             ((InOut) exchange).setOutMessage(out);
                         }
                         channel.send(exchange);
-                    } catch (Exception e) {
-                        // TODO: log exception
-                        e.printStackTrace();
+                    } catch (Throwable e) {
+                        log.error("Error while handling jms message", e);
                     }
                 }
             });
         } catch (WorkException e) {
-            // TODO: log exception
-            e.printStackTrace();
+            log.error("Error while handling jms message", e);
         }
     }
 

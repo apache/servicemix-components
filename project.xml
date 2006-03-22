@@ -105,6 +105,16 @@
         <artifactId>geronimo-jms_1.1_spec</artifactId>
         <version>${geronimo_spec_jms_version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-activation_1.0.2_spec</artifactId>
+        <version>${geronimo_spec_activation_version}</version>
+      </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-javamail_1.3.1_spec</artifactId>
+      <version>${geronimo_spec_javamail_version}</version>
+    </dependency>
       <!-- dependency>
         <groupId>servicemix</groupId>
         <artifactId>jaxp</artifactId>
@@ -213,6 +223,43 @@
         <groupId>xml-apis</groupId>
         <artifactId>xml-apis</artifactId>
         <version>${xml_apis_version}</version>
+      </dependency>
+      <dependency>
+        <id>stax+api</id>
+        <version>${stax_api_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <groupId>woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>${woodstox_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <groupId>servicemix</groupId>
+        <artifactId>stax-utils</artifactId>
+        <version>${stax_utils_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <id>log4j</id>
+        <version>${log4j_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <id>xalan</id>
+        <version>${xalan_version}</version>
+        <properties>
+          <scope>test</scope>
+        </properties>
       </dependency>
       
       <dependency>

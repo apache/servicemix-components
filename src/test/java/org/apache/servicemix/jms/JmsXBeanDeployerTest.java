@@ -60,7 +60,6 @@ public class JmsXBeanDeployerTest extends TestCase {
     protected void setUp() throws Exception {
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
         System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
-
       
         BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
         bfb.afterPropertiesSet();
@@ -68,8 +67,8 @@ public class JmsXBeanDeployerTest extends TestCase {
         broker.start();
         
         container = new JBIContainer();
-        container.setUseMBeanServer(false);
-        container.setCreateMBeanServer(false);
+        //container.setUseMBeanServer(false);
+        //container.setCreateMBeanServer(false);
         container.setEmbedded(true);
         container.init();
         
@@ -88,7 +87,7 @@ public class JmsXBeanDeployerTest extends TestCase {
     public void test() throws Exception {
         // JMS Component
         JmsComponent component = new JmsComponent();
-        container.activateComponent(component, "JMSComponent");
+        container.activateComponent(component, "JMSComponent1");
         
         // Add a receiver component
         ActivationSpec asEcho = new ActivationSpec("echo", new EchoComponent() {
@@ -163,7 +162,7 @@ public class JmsXBeanDeployerTest extends TestCase {
     public void testSoap() throws Exception {
         // JMS Component
         JmsComponent component = new JmsComponent();
-        container.activateComponent(component, "JMSComponent");
+        container.activateComponent(component, "JMSComponent2");
         
         // Add a receiver component
         ActivationSpec asEcho = new ActivationSpec("echo", new EchoComponent() {

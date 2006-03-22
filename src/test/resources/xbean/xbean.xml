@@ -13,8 +13,8 @@
                   endpoint="myConsumer"
                   role="consumer" 
                   destinationStyle="queue"
-		          jmsProviderDestinationName="queue/A"
-		          jndiConnectionFactoryName="ConnectionFactory"
+                  jmsProviderDestinationName="queue/A"
+                  jndiConnectionFactoryName="ConnectionFactory"
                   defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
                   defaultOperation="test:Echo" />
     <!-- END SNIPPET: consumer -->
@@ -23,8 +23,8 @@
                   endpoint="myConsumer"
                   role="consumer"
                   destinationStyle="queue"
-		          jmsProviderDestinationName="queue/A/Soap"
-		          jndiConnectionFactoryName="ConnectionFactory"
+                  jmsProviderDestinationName="queue/A/Soap"
+                  jndiConnectionFactoryName="ConnectionFactory"
                   soap="true"
                   defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
 
@@ -33,8 +33,8 @@
                   endpoint="myProvider"
                   role="provider" 
                   destinationStyle="queue"
-		          jmsProviderDestinationName="queue/A"
-		          jndiConnectionFactoryName="ConnectionFactory"
+                  jmsProviderDestinationName="queue/A"
+                  jndiConnectionFactoryName="ConnectionFactory"
                   wsdlResource="classpath:provider.wsdl" />
     <!-- END SNIPPET: provider -->
 
@@ -42,8 +42,8 @@
                   endpoint="myProvider"
                   role="provider" 
                   destinationStyle="queue"
-		          jmsProviderDestinationName="queue/A/Soap"
-		          jndiConnectionFactoryName="ConnectionFactory"
-		          soap="true"/>
+                  jmsProviderDestinationName="queue/A/Soap"
+                  jndiConnectionFactoryName="ConnectionFactory"
+                  soap="true"/>
   				   
 </beans>
