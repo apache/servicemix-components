@@ -20,6 +20,14 @@ import javax.xml.namespace.QName;
 
 import java.io.Serializable;
 
+/**
+ * 
+ * @author gnodet
+ * @version $Revision$
+ * @org.apache.xbean.XBean element="address"
+ *                  description="A jms address"
+ * 
+ */
 public class JmsAddress implements ExtensibilityElement, Serializable {
 
     /**

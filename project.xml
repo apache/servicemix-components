@@ -60,6 +60,15 @@
         </properties>
       </dependency>
       <dependency>
+        <groupId>${pom.groupId}</groupId>
+        <artifactId>servicemix-soap</artifactId>
+        <version>${pom.currentVersion}</version>
+        <properties>
+          <eclipse.dependency>true</eclipse.dependency>
+          <jbi.bundle>true</jbi.bundle>
+        </properties>
+      </dependency>
+      <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>${commons_logging_version}</version>
@@ -183,6 +192,22 @@
         <groupId>org.apache.xbean</groupId>
         <artifactId>xbean-spring</artifactId>
         <version>${xbean_version}</version>
+        <properties>
+        </properties>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-server</artifactId>
+        <version>${xbean_version}</version>
+        <properties>
+        </properties>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-kernel</artifactId>
+        <version>${xbean_version}</version>
+        <properties>
+        </properties>
       </dependency>
       <dependency>
         <groupId>xml-apis</groupId>
@@ -190,5 +215,53 @@
         <version>${xml_apis_version}</version>
       </dependency>
       
+      <dependency>
+        <groupId>annogen</groupId>
+        <artifactId>annogen</artifactId>
+        <version>${annogen_version}</version>
+        <properties>
+          <scope>compile</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <groupId>qdox</groupId>
+        <artifactId>qdox</artifactId>
+        <version>${qdox_version}</version>
+        <properties>
+          <scope>compile</scope>
+        </properties>
+      </dependency>
     </dependencies>    
+
+    <build>
+        <unitTest>
+            <resources>
+              <resource>
+                  <directory>src/test/resources</directory>
+                <includes>
+                  <include>**/*</include>
+                </includes>
+              </resource>
+            </resources>
+            <includes>
+                <include>**/*Test.*</include>
+            </includes>
+            <excludes>
+            </excludes>
+        </unitTest>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>target/generated</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 </project>

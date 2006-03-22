@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions name='Provider' 
+	         targetNamespace='http://test' 
+	         xmlns:tns='http://test' 
+             xmlns='http://schemas.xmlsoap.org/wsdl/'>
+
+   <portType name='Provider'>
+   </portType>
+
+   <binding name='MyProvider' type='tns:Provider'>
+   </binding>
+
+   <service name='MyProviderService'>
+      <port name='myProvider' binding='tns:MyProvider' />
+   </service>
+</definitions>

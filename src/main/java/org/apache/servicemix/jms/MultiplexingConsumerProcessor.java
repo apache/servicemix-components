@@ -15,17 +15,16 @@
  */
 package org.apache.servicemix.jms;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.servicemix.common.BaseLifeCycle;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jms.wsdl.JmsAddress;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Map;
 
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -37,31 +36,48 @@ import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 
-import java.util.Map;
+import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.soap.SoapFault;
+import org.apache.servicemix.soap.SoapHelper;
+import org.apache.servicemix.soap.handlers.AddressingInHandler;
+import org.apache.servicemix.soap.marshalers.JBIMarshaler;
+import org.apache.servicemix.soap.marshalers.SoapMarshaler;
+import org.apache.servicemix.soap.marshalers.SoapMessage;
+import org.apache.servicemix.soap.marshalers.SoapWriter;
+
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implements MessageListener {
 
     protected Session session;
     protected Destination destination;
     protected MessageConsumer consumer;
-    protected JmsMarshaler marshaler = new JmsMarshaler();
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
+    protected SoapHelper soapHelper;
+    protected SoapMarshaler soapMarshaler;
+    protected JBIMarshaler jbiMarshaler;
     
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
+        this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
+        if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
+            this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
+        }
+        this.soapHelper = new SoapHelper(endpoint);
+        this.soapHelper.addPolicy(new AddressingInHandler());
+        this.jbiMarshaler = new JBIMarshaler();
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
-        JmsAddress address = endpoint.getAddress();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        if (address.getJndiDestinationName() != null) {
-            destination = (Destination) ctx.lookup(address.getJndiDestinationName());
-        } else if (address.getJmsProviderDestinationName() != null) {
-            if (STYLE_QUEUE.equals(address.getDestinationStyle())) {
-                destination = session.createQueue(address.getJmsProviderDestinationName());
+        if (endpoint.getJndiDestinationName() != null) {
+            destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
+        } else if (endpoint.getJmsProviderDestinationName() != null) {
+            if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
+                destination = session.createQueue(endpoint.getJmsProviderDestinationName());
             } else {
-                destination = session.createTopic(address.getJmsProviderDestinationName());
+                destination = session.createTopic(endpoint.getJmsProviderDestinationName());
             }
         } else {
             throw new IllegalStateException("No destination provided");
@@ -86,12 +102,22 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                 }
                 public void run() {
                     try {
-                        MessageExchange exchange = channel.createExchangeFactory().createExchange(endpoint.getDefaultMep());
-                        exchange.setService(endpoint.getService());
-                        exchange.setInterfaceName(endpoint.getInterfaceName());
-                        NormalizedMessage msg = exchange.createMessage();
-                        msg.setContent(new StringSource(((TextMessage) message).getText()));
-                        exchange.setMessage(msg, "in");
+                        InputStream is = null;
+                        if (message instanceof TextMessage) {
+                            is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
+                        } else if (message instanceof BytesMessage) {
+                            int length = (int) ((BytesMessage) message).getBodyLength();
+                            byte[] bytes = new byte[length];
+                            ((BytesMessage) message).readBytes(bytes);
+                            is = new ByteArrayInputStream(bytes);
+                        } else {
+                            throw new IllegalArgumentException("JMS message should be a text or bytes message");
+                        }
+                        String contentType = message.getStringProperty("Content-Type");
+                        SoapMessage soap = soapMarshaler.createReader().read(is, contentType);
+                        MessageExchange exchange = soapHelper.createExchange(soap);
+                        // TODO: copy protocol messages
+                        //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
                         pendingMessages.put(exchange.getExchangeId(), message);
                         BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
                         lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this);
@@ -111,17 +137,57 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     public void process(MessageExchange exchange) throws Exception {
         Message message = (Message) pendingMessages.remove(exchange.getExchangeId());
         MessageProducer producer = null;
+        Message response = null;
         try {
-            producer = session.createProducer(message.getJMSReplyTo());
-            Message response = marshaler.createMessage(((InOut) exchange).getOutMessage(), session);
-            response.setJMSCorrelationID(message.getJMSCorrelationID());
-            producer.send(response);
+            if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                Exception e = exchange.getError();
+                if (e == null) {
+                    e = new Exception("Unkown error");
+                }
+                response = session.createObjectMessage(e);
+            } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                if (exchange.getFault() != null) {
+                    SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
+                    SoapMessage soapFault = new SoapMessage();
+                    soapFault.setFault(fault);
+                    // TODO: retrieve input soap message
+                    SoapMessage in = null;
+                    if (in != null) {
+                        soapFault.setEnvelopeName(in.getEnvelopeName());
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    SoapWriter writer = soapMarshaler.createWriter(soapFault);
+                    writer.write(baos);
+                    response = session.createTextMessage(baos.toString());
+                    response.setStringProperty("Content-Type", writer.getContentType());
+                    // TODO: Copy other properties from fault
+                } else {
+                    NormalizedMessage outMsg = exchange.getMessage("out");
+                    if (outMsg != null) {
+                        SoapMessage out = new SoapMessage();
+                        jbiMarshaler.fromNMS(out, outMsg);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        SoapWriter writer = soapMarshaler.createWriter(out);
+                        writer.write(baos);
+                        response = session.createTextMessage(baos.toString());
+                        response.setStringProperty("Content-Type", writer.getContentType());
+                        // TODO: Copy other properties from response
+                    }
+                }
+            }
+            if (response != null) {
+                producer = session.createProducer(message.getJMSReplyTo());
+                response.setJMSCorrelationID(message.getJMSCorrelationID());
+                producer.send(response);
+            }
         } finally {
             if (producer != null) {
                 producer.close();
             }
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                exchange.setStatus(ExchangeStatus.DONE);
+                channel.send(exchange);
+            }
         }
     }
 

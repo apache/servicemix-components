@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<beans xmlns:jms="http://servicemix.apache.org/jms/1.0"
+       xmlns:test="http://test">
+
+	<!--  Define an additional classpath location
+	      for wsdl resources -->
+    <classpath>
+        <location>.</location>
+    </classpath>
+
+    <!-- START SNIPPET: consumer -->
+    <jms:endpoint service="test:MyConsumerService"
+                  endpoint="myConsumer"
+                  role="consumer" 
+                  destinationStyle="queue"
+		          jmsProviderDestinationName="queue/A"
+		          jndiConnectionFactoryName="ConnectionFactory"
+                  defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
+                  defaultOperation="test:Echo" />
+    <!-- END SNIPPET: consumer -->
+
+    <jms:endpoint service="test:MySoapConsumerService"
+                  endpoint="myConsumer"
+                  role="consumer"
+                  destinationStyle="queue"
+		          jmsProviderDestinationName="queue/A/Soap"
+		          jndiConnectionFactoryName="ConnectionFactory"
+                  soap="true"
+                  defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
+
+    <!-- START SNIPPET: provider -->
+    <jms:endpoint service="test:MyProviderService"
+                  endpoint="myProvider"
+                  role="provider" 
+                  destinationStyle="queue"
+		          jmsProviderDestinationName="queue/A"
+		          jndiConnectionFactoryName="ConnectionFactory"
+                  wsdlResource="classpath:provider.wsdl" />
+    <!-- END SNIPPET: provider -->
+
+    <jms:endpoint service="test:MySoapProviderService"
+                  endpoint="myProvider"
+                  role="provider" 
+                  destinationStyle="queue"
+		          jmsProviderDestinationName="queue/A/Soap"
+		          jndiConnectionFactoryName="ConnectionFactory"
+		          soap="true"/>
+  				   
+</beans>

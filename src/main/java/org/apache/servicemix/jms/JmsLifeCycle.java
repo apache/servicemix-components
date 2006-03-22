@@ -15,13 +15,14 @@
  */
 package org.apache.servicemix.jms;
 
+import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 
 public class JmsLifeCycle extends BaseLifeCycle {
 
     protected JmsConfiguration configuration;
     
-    public JmsLifeCycle(JmsComponent component) {
+    public JmsLifeCycle(BaseComponent component) {
         super(component);
         configuration = new JmsConfiguration();
     }

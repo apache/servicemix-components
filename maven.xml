@@ -22,4 +22,27 @@
     
     <!-- default goal is defined in /etc/ -->
 
+  <postGoal name="java:compile">
+    <attainGoal name="xbean:generate" />
+  </postGoal>
+
+  <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files.">
+    <path id="test.classpath">
+      <pathelement path="${maven.build.dest}" />
+      <pathelement path="${basedir}/target/classes" />
+      <pathelement path="${basedir}/target/test-classes" />
+      <path refid="maven.dependency.classpath" />
+    </path>
+
+    <taskdef name="xsdGenerate" classname="org.apache.xbean.spring.generator.MappingGeneratorTask">
+      <classpath refid="test.classpath" />
+    </taskdef>
+    <xsdGenerate
+        destFile="${basedir}/target/servicemix-jms-${pom.currentVersion}.xsd" namespace="http://servicemix.apache.org/jms/1.0"
+    		classpathref="test.classpath" srcdir="${basedir}/src/main/java"  metaInfDir="${basedir}/target/generated/"/>
+  	<copy file="${basedir}/target/servicemix-jms-${pom.currentVersion}.xsd" todir="${basedir}/target/generated/"/>
+  	<copy file="${basedir}/target/servicemix-jms-${pom.currentVersion}.xsd" todir="${basedir}/../xdocs"/>    
+    <copy file="${basedir}/target/servicemix-jms-${pom.currentVersion}.xsd.html" todir="${basedir}/../xdocs"/>
+  </goal>
+  
 </project>

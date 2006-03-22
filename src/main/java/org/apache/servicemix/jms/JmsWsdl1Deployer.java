@@ -45,7 +45,13 @@ public class JmsWsdl1Deployer extends AbstractWsdl1Deployer {
         JmsEndpoint endpoint = new JmsEndpoint();
         endpoint.setRole(jbiEndpoint.getRole());
         endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
-        endpoint.setAddress((JmsAddress) portElement);
+        endpoint.setDefaultOperation(jbiEndpoint.getDefaultOperation());
+        endpoint.setDestinationStyle(((JmsAddress) portElement).getDestinationStyle());
+        endpoint.setInitialContextFactory(((JmsAddress) portElement).getInitialContextFactory());
+        endpoint.setJmsProviderDestinationName(((JmsAddress) portElement).getJmsProviderDestinationName());
+        endpoint.setJndiConnectionFactoryName(((JmsAddress) portElement).getJndiConnectionFactoryName());
+        endpoint.setJndiDestinationName(((JmsAddress) portElement).getJndiDestinationName());
+        endpoint.setJndiProviderURL(((JmsAddress) portElement).getJndiProviderURL());
         endpoint.setBinding((JmsBinding) bindingElement);
         return endpoint;
     }

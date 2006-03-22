@@ -95,7 +95,7 @@ public class JMSComponentTest extends TestCase {
         asJmsReceiver.setDestinationService(new QName("test", "receiver"));
         container.activateComponent(asJmsReceiver);
         
-        // Add a trace component
+        // Add a receiver component
         Receiver receiver = new ReceiverComponent();
         ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
         asReceiver.setService(new QName("test", "receiver"));

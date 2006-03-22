@@ -15,15 +15,14 @@
  */
 package org.apache.servicemix.jms;
 
-import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.jms.wsdl.JmsAddress;
+import java.util.Hashtable;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import java.util.Hashtable;
+import org.apache.servicemix.common.ExchangeProcessor;
 
 public abstract class AbstractJmsProcessor implements ExchangeProcessor {
 
@@ -38,15 +37,14 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     }
 
     public void start() throws Exception {
-        JmsAddress address = endpoint.getAddress();
         Hashtable props = new Hashtable();
-        if (address.getInitialContextFactory() != null && address.getJndiProviderURL() != null) {
-            props.put(Context.INITIAL_CONTEXT_FACTORY, address.getInitialContextFactory());
-            props.put(Context.PROVIDER_URL, address.getJndiProviderURL());
+        if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
+            props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
+            props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
         }
         InitialContext ctx = new InitialContext(props);
         try {
-            ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(address.getJndiConnectionFactoryName());
+            ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
             connection = connectionFactory.createConnection();
             connection.start();
             doStart(ctx);
