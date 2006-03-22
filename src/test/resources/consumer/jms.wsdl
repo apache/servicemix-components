@@ -18,7 +18,8 @@
 	    <jms:address destinationStyle="queue"
 		             jmsProviderDestinationName="queue/A"
 		             jndiConnectionFactoryName="ConnectionFactory"/>
-		<jbi:endpoint role="consumer"/>
+		<jbi:endpoint role="consumer"
+		              defaultOperation="tns:Echo"/>
       </port>
    </service>
 </definitions>
