@@ -15,18 +15,32 @@
  */
 package org.apache.servicemix.http;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.util.EncodingUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.tck.SpringTestSupport;
-import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpSpringTest extends SpringTestSupport {
 
@@ -50,7 +64,24 @@ public class HttpSpringTest extends SpringTestSupport {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
     }
-    
+
+    public void testMimeWithHttpClient() throws Exception {
+        File f = new File(getClass().getResource("servicemix.jpg").getFile());
+        PostMethod filePost = new PostMethod("http://localhost:8192/Service/");
+        Part[] parts = { 
+            new StringPart("request", "<dummy/>"),
+            new FilePart(f.getName(), f) };
+        RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        entity.writeRequest(baos);
+        System.err.println(baos);
+        filePost.setRequestEntity(entity);
+        HttpClient client = new HttpClient();
+        int status = client.executeMethod(filePost);
+        assertEquals(200, status);
+        filePost.releaseConnection();
+    }
+
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/http/spring.xml");
     }
