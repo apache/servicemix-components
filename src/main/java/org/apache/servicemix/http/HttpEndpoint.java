@@ -217,6 +217,15 @@ public class HttpEndpoint extends SoapEndpoint {
                 logger.warn("Could not create document from wsdl description", e);
             }
         }
+        // If the dom description is provided
+        // convert it to a WSDL definition
+        if (definition == null && description != null) {
+            try {
+                definition = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+            } catch (Exception e) {
+                logger.warn("Could not create wsdl definition from dom document", e);
+            }
+        }
     }
 
     /**
