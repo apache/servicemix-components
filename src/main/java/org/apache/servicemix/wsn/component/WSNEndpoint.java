@@ -116,8 +116,6 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 		if (exchange.getStatus() == ExchangeStatus.DONE) {
 			return;
 		} else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-			exchange.setStatus(ExchangeStatus.DONE);
-			channel.send(exchange);
 			return;
 		}
 		Object input = jaxbContext.createUnmarshaller().unmarshal(exchange.getMessage("in").getContent());
