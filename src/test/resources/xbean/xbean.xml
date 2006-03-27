@@ -10,7 +10,9 @@
 
     <!-- START SNIPPET: consumer -->
     <jms:endpoint service="test:MyConsumerService"
-                  endpoint="myConsumer"
+                  endpoint="jms"
+                  targetService="test:MyConsumerService"
+                  targetEndpoint="myConsumer"
                   role="consumer" 
                   destinationStyle="queue"
                   jmsProviderDestinationName="queue/A"
@@ -19,8 +21,9 @@
                   defaultOperation="test:Echo" />
     <!-- END SNIPPET: consumer -->
 
-    <jms:endpoint service="test:MySoapConsumerService"
-                  endpoint="myConsumer"
+    <jms:endpoint service="test:MyConsumerService"
+                  endpoint="jms+soap"
+                  targetInterfaceName="test:MyConsumerInterface"
                   role="consumer"
                   destinationStyle="queue"
                   jmsProviderDestinationName="queue/A/Soap"

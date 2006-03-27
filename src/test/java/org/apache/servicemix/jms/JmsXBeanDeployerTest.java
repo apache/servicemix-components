@@ -98,6 +98,7 @@ public class JmsXBeanDeployerTest extends TestCase {
                     type.setUndefined(false);
                     type.setQName(new QName("http://test", "MyConsumerInterface"));
                     Binding binding = def.createBinding();
+                    binding.setQName(new QName("http://test", "MyConsumerBinding"));
                     binding.setUndefined(false);
                     binding.setPortType(type);
                     Service svc = def.createService();
@@ -176,7 +177,7 @@ public class JmsXBeanDeployerTest extends TestCase {
                     binding.setUndefined(false);
                     binding.setPortType(type);
                     Service svc = def.createService();
-                    svc.setQName(new QName("http://test", "MySoapConsumerService"));
+                    svc.setQName(new QName("http://test", "MyConsumerService"));
                     Port port = def.createPort();
                     port.setBinding(binding);
                     port.setName("myConsumer");
@@ -194,7 +195,7 @@ public class JmsXBeanDeployerTest extends TestCase {
             }
         });
         asEcho.setEndpoint("myConsumer");
-        asEcho.setService(new QName("http://test", "MySoapConsumerService"));
+        asEcho.setService(new QName("http://test", "MyConsumerService"));
         container.activateComponent(asEcho);
         
         // Start container
@@ -210,12 +211,12 @@ public class JmsXBeanDeployerTest extends TestCase {
         // Test wsdls
         assertNotNull(container.getRegistry().getEndpointDescriptor(
                 container.getRegistry().getExternalEndpointsForService(
-                        new QName("http://test", "MySoapConsumerService"))[0]));
+                        new QName("http://test", "MyConsumerService"))[0]));
         
         // Test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
-        me.setService(new QName("http://test", "MySoapProviderService"));
+        me.setService(new QName("http://test", "MyProviderService"));
         me.getInMessage().setContent(new StringSource("<echo xmlns='http://test'><echoin0>world</echoin0></echo>"));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
