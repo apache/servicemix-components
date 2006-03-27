@@ -122,7 +122,7 @@ public class HttpXBeanDeployerTest extends TestCase {
                 container.getRegistry().getExternalEndpointsForService(
                         new QName("http://test", "MySoapService"))[0]));
         
-        // Test
+        // Test 
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setService(new QName("http://test", "MyProviderService"));
