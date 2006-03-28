@@ -71,6 +71,9 @@ public class ProviderProcessor implements ExchangeProcessor {
         try {
             this.endpoint = endpoint;
             this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
+            if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
+                this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
+            }
             this.jbiMarshaler = new JBIMarshaler();
             this.host = new HostConfiguration();
             this.host.setHost(new URI(endpoint.getLocationURI(), false));
@@ -103,7 +106,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         if (entity.getContentLength() < 0) {
             method.removeRequestHeader("Content-Length");
         } else {
-            method.addRequestHeader("Content-Length", Long.toString(entity.getContentLength()));
+            method.setRequestHeader("Content-Length", Long.toString(entity.getContentLength()));
         }
         method.setRequestEntity(entity);
         try {
