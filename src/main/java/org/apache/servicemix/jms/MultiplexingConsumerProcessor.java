@@ -39,10 +39,10 @@ import javax.resource.spi.work.WorkException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.handlers.AddressingInHandler;
-import org.apache.servicemix.soap.marshalers.JBIMarshaler;
+import org.apache.servicemix.soap.handlers.AddressingHandler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
@@ -60,7 +60,6 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     protected DeliveryChannel channel;
     protected SoapHelper soapHelper;
     protected SoapMarshaler soapMarshaler;
-    protected JBIMarshaler jbiMarshaler;
     
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
@@ -69,8 +68,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
             this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
         }
         this.soapHelper = new SoapHelper(endpoint);
-        this.soapHelper.addPolicy(new AddressingInHandler());
-        this.jbiMarshaler = new JBIMarshaler();
+        this.soapHelper.addPolicy(new AddressingHandler());
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
@@ -125,10 +123,12 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                         }
                         String contentType = message.getStringProperty("Content-Type");
                         SoapMessage soap = soapMarshaler.createReader().read(is, contentType);
-                        MessageExchange exchange = soapHelper.createExchange(soap);
+                        Context context = soapHelper.createContext(soap);
+                        MessageExchange exchange = soapHelper.onReceive(context);
+                        context.setProperty(Message.class.getName(), message);
                         // TODO: copy protocol messages
                         //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
-                        pendingMessages.put(exchange.getExchangeId(), message);
+                        pendingMessages.put(exchange.getExchangeId(), context);
                         BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
                         lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this);
                     } catch (Throwable e) {
@@ -142,7 +142,8 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        Message message = (Message) pendingMessages.remove(exchange.getExchangeId());
+        Context context = (Context) pendingMessages.remove(exchange.getExchangeId());
+        Message message = (Message) context.getProperty(Message.class.getName());
         MessageProducer producer = null;
         Message response = null;
         try {
@@ -155,13 +156,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
             } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                 if (exchange.getFault() != null) {
                     SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
-                    SoapMessage soapFault = new SoapMessage();
-                    soapFault.setFault(fault);
-                    // TODO: retrieve input soap message
-                    SoapMessage in = null;
-                    if (in != null) {
-                        soapFault.setEnvelopeName(in.getEnvelopeName());
-                    }
+                    SoapMessage soapFault = soapHelper.onFault(context, fault);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     SoapWriter writer = soapMarshaler.createWriter(soapFault);
                     writer.write(baos);
@@ -171,8 +166,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                 } else {
                     NormalizedMessage outMsg = exchange.getMessage("out");
                     if (outMsg != null) {
-                        SoapMessage out = new SoapMessage();
-                        jbiMarshaler.fromNMS(out, outMsg);
+                        SoapMessage out = soapHelper.onReply(context, outMsg);
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         SoapWriter writer = soapMarshaler.createWriter(out);
                         writer.write(baos);
