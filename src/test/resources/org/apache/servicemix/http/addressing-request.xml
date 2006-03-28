@@ -1,10 +1,11 @@
 <soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'
-               xmlns:wsa='http://schemas.xmlsoap.org/ws/2003/03/addressing'
+               xmlns:wsa='http://www.w3.org/2005/08/addressing'
                xmlns:test='http://test'>
   <soap:Header>
+    <wsa:MessageID>myid</wsa:MessageID>
     <wsa:To>http://test/MyConsumerService/myConsumer</wsa:To>
     <wsa:ReplyTo>
-      <wsa:ServiceName>test:MyConsumerService</wsa:ServiceName>
+      <wsa:Address>test:MyConsumerService</wsa:Address>
     </wsa:ReplyTo>
   </soap:Header>
   <soap:Body>

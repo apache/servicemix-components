@@ -28,6 +28,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.w3c.dom.Node;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 
 public class HttpAddressingTest extends SpringTestSupport {
@@ -50,7 +51,10 @@ public class HttpAddressingTest extends SpringTestSupport {
                 fail("Received ERROR status");
             }
         } else {
-            logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+            Node node = new SourceTransformer().toDOMNode(me.getOutMessage());
+            logger.info(new SourceTransformer().toString(node));
+            assertEquals("myid", textValueOfXPath(node, "//*[local-name()='RelatesTo']"));
+            assertNotNull(textValueOfXPath(node, "//*[local-name()='MessageID']"));
         }
     }
     

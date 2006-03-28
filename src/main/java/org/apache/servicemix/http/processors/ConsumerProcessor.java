@@ -39,10 +39,10 @@ import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.ServerManager;
+import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.handlers.AddressingInHandler;
-import org.apache.servicemix.soap.marshalers.JBIMarshaler;
+import org.apache.servicemix.soap.handlers.AddressingHandler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
@@ -64,7 +64,6 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     protected ComponentContext context;
     protected DeliveryChannel channel;
     protected SoapMarshaler soapMarshaler;
-    protected JBIMarshaler jbiMarshaler;
     protected SoapHelper soapHelper;
     protected Map locks;
         
@@ -75,8 +74,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
         }
         this.soapHelper = new SoapHelper(endpoint);
-        this.soapHelper.addPolicy(new AddressingInHandler());
-        this.jbiMarshaler = new JBIMarshaler();
+        this.soapHelper.addPolicy(new AddressingHandler());
         this.locks = new ConcurrentHashMap();
     }
     
@@ -123,11 +121,12 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             try {
                 SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
                                                                         request.getHeader("Content-Type"));
-                exchange = soapHelper.createExchange(message);
+                Context context = soapHelper.createContext(message);
+                request.setAttribute(Context.class.getName(), context);
+                exchange = soapHelper.onReceive(context);
                 NormalizedMessage inMessage = exchange.getMessage("in");
                 inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
                 locks.put(exchange.getExchangeId(), cont);
-                request.setAttribute(SoapMessage.class.getName(), message);
                 request.setAttribute(MessageExchange.class.getName(), exchange);
                 ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
                 // TODO: make this timeout configurable
@@ -165,8 +164,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 } else {
                     NormalizedMessage outMsg = exchange.getMessage("out");
                     if (outMsg != null) {
-                        SoapMessage out = new SoapMessage();
-                        jbiMarshaler.fromNMS(out, outMsg);
+                        Context context = (Context) request.getAttribute(Context.class.getName());
+                        SoapMessage out = soapHelper.onReply(context, outMsg);
                         SoapWriter writer = soapMarshaler.createWriter(out);
                         response.setContentType(writer.getContentType());
                         writer.write(response.getOutputStream());
@@ -185,12 +184,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-        SoapMessage in = (SoapMessage) request.getAttribute(SoapMessage.class.getName());
-        SoapMessage soapFault = new SoapMessage();
-        soapFault.setFault(fault);
-        if (in != null) {
-            soapFault.setEnvelopeName(in.getEnvelopeName());
-        }
+        Context context = (Context) request.getAttribute(Context.class.getName());
+        SoapMessage soapFault = soapHelper.onFault(context, fault);
         SoapWriter writer = soapMarshaler.createWriter(soapFault);
         response.setContentType(writer.getContentType());
         writer.write(response.getOutputStream());
