@@ -56,8 +56,6 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         if (exchange.getStatus() == ExchangeStatus.DONE) {
             return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
             return;
         }
 
