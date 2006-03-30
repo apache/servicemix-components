@@ -171,6 +171,12 @@ public class JmsEndpoint extends SoapEndpoint {
         if (targetService != null && targetEndpoint != null) {
             svc = def.getService(targetService);
             port = (svc != null) ? svc.getPort(targetEndpoint) : null;
+        } else if (targetService != null) {
+            svc = def.getService(targetService);
+            if (svc != null) {
+                Iterator it = svc.getPorts().values().iterator();
+                port = (it.hasNext()) ? (Port) it.next() : null;
+            }
         } else if (targetInterfaceName != null) {
             Iterator it = def.getServices().values().iterator();
             svc = it .hasNext() ? (Service) it.next() : null;
