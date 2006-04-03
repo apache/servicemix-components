@@ -10,25 +10,25 @@
 
       <!-- START SNIPPET: lightweight -->
       <sm:activationSpec>
-      	<sm:component>
-            <jms:component>
-            	<jms:endpoints>
-            		<jms:endpoint service="test:MyConsumerService"
-            					  endpoint="myConsumer"
-            		              role="consumer" 
-            		              defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
-				                  destinationStyle="queue"
-				                  jmsProviderDestinationName="queue/A"
-				                  jndiConnectionFactoryName="jms/ConnectionFactory" />
-				                  
-            		<jms:endpoint service="test:MyProviderService"
-            					  endpoint="myProvider"
-            		              role="provider" 
-				                  destinationStyle="queue"
-				                  jmsProviderDestinationName="queue/A"
-				                  connectionFactory="#connectionFactory" />
-            	</jms:endpoints>
-            </jms:component>
+        <sm:component>
+          <jms:component>
+            <jms:endpoints>
+              <jms:endpoint service="test:MyConsumerService"
+                            endpoint="myConsumer"
+                            role="consumer" 
+                            defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
+                            destinationStyle="queue"
+                            jmsProviderDestinationName="queue/A"
+                            jndiConnectionFactoryName="jms/ConnectionFactory" />
+
+              <jms:endpoint service="test:MyProviderService"
+                            endpoint="myProvider"
+                            role="provider" 
+                            destinationStyle="queue"
+                            jmsProviderDestinationName="queue/A"
+                            connectionFactory="#connectionFactory" />
+            </jms:endpoints>
+          </jms:component>
         </sm:component>
       </sm:activationSpec>
       <!-- END SNIPPET: lightweight -->
