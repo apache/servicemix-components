@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:jms="http://servicemix.apache.org/jms/1.0"
+	   xmlns:amq="http://activemq.org/config/1.0"
+	   xmlns:test="http://test">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true" depends-on="jndi,broker">
+    <sm:activationSpecs>
+
+      <!-- START SNIPPET: lightweight -->
+      <sm:activationSpec>
+      	<sm:component>
+            <jms:component>
+            	<jms:endpoints>
+            		<jms:endpoint service="test:MyConsumerService"
+            					  endpoint="myConsumer"
+            		              role="consumer" 
+            		              defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
+				                  destinationStyle="queue"
+				                  jmsProviderDestinationName="queue/A"
+				                  jndiConnectionFactoryName="jms/ConnectionFactory" />
+				                  
+            		<jms:endpoint service="test:MyProviderService"
+            					  endpoint="myProvider"
+            		              role="provider" 
+				                  destinationStyle="queue"
+				                  jmsProviderDestinationName="queue/A"
+				                  connectionFactory="#connectionFactory" />
+            	</jms:endpoints>
+            </jms:component>
+        </sm:component>
+      </sm:activationSpec>
+      <!-- END SNIPPET: lightweight -->
+      
+      <sm:activationSpec service="test:MyConsumerService" endpoint="myConsumer">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+  
+  <bean id="jndi" 
+        class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" 
+        factory-method="makeInitialContext"
+        singleton="true">
+    <property name="entries">
+      <map>
+        <entry key="jms/ConnectionFactory" value-ref="connectionFactory" />
+      </map>
+    </property>
+  </bean>
+  
+  <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+    <property name="brokerURL" value="tcp://localhost:61216" />
+  </bean>
+  
+  <amq:broker id="broker" persistent="false" depends-on="jndi">
+
+    <amq:transportConnectors>
+      <amq:transportConnector uri="tcp://localhost:61216" />
+    </amq:transportConnectors>
+
+  </amq:broker>
+
+</beans>

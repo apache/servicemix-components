@@ -75,16 +75,19 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     protected void doStart(InitialContext ctx) throws Exception {
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        if (endpoint.getJndiDestinationName() != null) {
-            destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
-        } else if (endpoint.getJmsProviderDestinationName() != null) {
-            if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
-                destination = session.createQueue(endpoint.getJmsProviderDestinationName());
+        destination = endpoint.getDestination();
+        if (destination == null) {
+            if (endpoint.getJndiDestinationName() != null) {
+                destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
+            } else if (endpoint.getJmsProviderDestinationName() != null) {
+                if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
+                    destination = session.createQueue(endpoint.getJmsProviderDestinationName());
+                } else {
+                    destination = session.createTopic(endpoint.getJmsProviderDestinationName());
+                }
             } else {
-                destination = session.createTopic(endpoint.getJmsProviderDestinationName());
+                throw new IllegalStateException("No destination provided");
             }
-        } else {
-            throw new IllegalStateException("No destination provided");
         }
         if (destination instanceof Queue) {
             replyToDestination = session.createTemporaryQueue();

@@ -37,14 +37,19 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     }
 
     public void start() throws Exception {
-        Hashtable props = new Hashtable();
-        if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
-            props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
-            props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
-        }
-        InitialContext ctx = new InitialContext(props);
+        InitialContext ctx = null;
+        ConnectionFactory connectionFactory = null;
         try {
-            ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
+            connectionFactory = endpoint.getConnectionFactory();
+            if (connectionFactory == null) {
+                Hashtable props = new Hashtable();
+                if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
+                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
+                    props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
+                }
+                ctx = new InitialContext(props);
+                connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
+            }
             connection = connectionFactory.createConnection();
             connection.start();
             doStart(ctx);
@@ -56,7 +61,9 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             }
             throw e;
         } finally {
-            ctx.close();
+            if (ctx != null) {
+                ctx.close();
+            }
         }
     }
 

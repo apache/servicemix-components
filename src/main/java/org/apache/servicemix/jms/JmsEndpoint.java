@@ -18,6 +18,8 @@ package org.apache.servicemix.jms;
 import java.util.Iterator;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.wsdl.Service;
@@ -44,6 +46,9 @@ public class JmsEndpoint extends SoapEndpoint {
     protected String jndiConnectionFactoryName;
     protected String jndiDestinationName;
     protected String jmsProviderDestinationName;
+    // Spring configuration
+    protected ConnectionFactory connectionFactory;
+    protected Destination destination;
     
     public JmsEndpoint() {
     }
@@ -146,6 +151,34 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * @return Returns the connectionFactory.
+     */
+    public ConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
+
+    /**
+     * @param connectionFactory The connectionFactory to set.
+     */
+    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+    
+    /**
+     * @return Returns the destination.
+     */
+    public Destination getDestination() {
+        return destination;
+    }
+
+    /**
+     * @param destination The destination to set.
+     */
+    public void setDestination(Destination destination) {
+        this.destination = destination;
+    }
+
+    /**
      * @org.apache.xbean.Property alias="role"
      * @param role
      */
@@ -216,4 +249,5 @@ public class JmsEndpoint extends SoapEndpoint {
                 "address: " + jndiDestinationName + "(" + destinationStyle + "), " + 
                 "soap: " + soap + "]";
     }
+
 }
