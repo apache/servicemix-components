@@ -44,7 +44,7 @@ import org.w3c.dom.Document;
 
 public class HttpXBeanDeployerTest extends TestCase {
 
-    private static Log logger =  LogFactory.getLog(HttpSpringTest.class);
+    private static Log logger =  LogFactory.getLog(HttpXBeanDeployerTest.class);
 
     protected JBIContainer container;
     
