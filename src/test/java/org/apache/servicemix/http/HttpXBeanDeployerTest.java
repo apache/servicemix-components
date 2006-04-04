@@ -28,7 +28,6 @@ import javax.wsdl.Port;
 import javax.wsdl.PortType;
 import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
@@ -140,52 +139,6 @@ public class HttpXBeanDeployerTest extends TestCase {
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
-    }
-    
-    public void testWithNonStandaloneWsdl() throws Exception {
-        // HTTP Component
-        HttpComponent component = new HttpComponent();
-        container.activateComponent(component, "HTTPComponent");
-        
-        // Add a receiver component
-        ActivationSpec asEcho = new ActivationSpec("echo", new EchoComponent() {
-            public Document getServiceDescription(ServiceEndpoint endpoint) {
-                try {
-                    Definition def = WSDLFactory.newInstance().newDefinition();
-                    PortType type = def.createPortType();
-                    type.setUndefined(false);
-                    type.setQName(new QName("http://porttype.test", "MyConsumerInterface"));
-                    def.setTargetNamespace("http://porttype.test");
-                    def.addNamespace("tns", "http://porttype.test");
-                    def.addPortType(type);
-                    Document doc = WSDLFactory.newInstance().newWSDLWriter().getDocument(def);
-                    return doc;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        asEcho.setEndpoint("myConsumer");
-        asEcho.setService(new QName("http://test", "MyConsumerService"));
-        container.activateComponent(asEcho);
-        
-        // Start container
-        container.start();
-
-        // Deploy SU
-        URL url = getClass().getClassLoader().getResource("xbean/xbean.xml");
-        File path = new File(new URI(url.toString()));
-        path = path.getParentFile();
-        component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
-        component.getServiceUnitManager().start("xbean");
-
-        // Test WSDL
-        WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
-        Definition def;
-        def = reader.readWSDL("http://localhost:8192/Service/?wsdl");
-        assertNotNull(def);
-        assertNotNull(def.getImports());
-        assertEquals(1, def.getImports().size());
     }
     
 }
