@@ -23,10 +23,13 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.Message;
 import javax.wsdl.Port;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
@@ -233,7 +236,14 @@ public class Jsr181Endpoint extends Endpoint {
                                                    new AegisBindingProvider(tm));
         }
         String svcLocalName = (service != null) ? service.getLocalPart() : null;
-        String svcNamespace = (service != null) ? service.getNamespaceURI() : null;
+        String svcNamespace;
+        if (interfaceName != null) {
+            svcNamespace = interfaceName.getNamespaceURI();
+        } else if (service != null) {
+            svcNamespace = service.getNamespaceURI();
+        } else {
+            svcNamespace = null;
+        }
         Map props = new HashMap();
         props.put(ObjectServiceFactory.PORT_TYPE, interfaceName);
         props.put(ObjectServiceFactory.STYLE, SoapConstants.STYLE_WRAPPED);
@@ -246,6 +256,33 @@ public class Jsr181Endpoint extends Endpoint {
         xfireService.setFaultSerializer(new JbiFaultSerializer(getConfiguration()));
         xfire.getServiceRegistry().register(xfireService);
         this.description = generateWsdl();
+        
+        // If the both interfaceName and serviceName are provided with non matching namespaces,
+        // the generated wsdl is bad. We have to keep only the port type definition.
+        if (this.service != null && interfaceName != null &&
+            !this.service.getNamespaceURI().equals(interfaceName.getNamespaceURI())) {
+            // Parse the WSDL
+            definition = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+            // Get the service and port definition
+            javax.wsdl.Service svc = definition.getService(new QName(this.interfaceName.getNamespaceURI(), this.service.getLocalPart()));
+            Port port = svc != null && svc.getPorts().size() == 1 ? (Port) svc.getPorts().values().iterator().next() : null;
+            if (port != null) {
+                // If the endpoint name has not been defined, retrieve it now
+                if (endpoint == null) {
+                    endpoint = port.getName();
+                }
+                // Now, remove binding and service infos and change target namespace
+                definition.removeBinding(port.getBinding().getQName());
+                definition.removeService(svc.getQName());
+                description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+            }
+        }
+        // Write WSDL
+        if (logger.isTraceEnabled()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
+            logger.trace(baos.toString());
+        }
         
         // Check service name and endpoint name
         QName serviceName = xfireService.getName();
@@ -266,10 +303,10 @@ public class Jsr181Endpoint extends Endpoint {
                     "). WSDL description may be unusable.");
         }
         definition = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
-        javax.wsdl.Service service = definition.getService(serviceName);
-        if (service != null) {
-            if (service.getPorts().values().size() == 1) {
-                Port port = (Port) service.getPorts().values().iterator().next();
+        javax.wsdl.Service svc = definition.getService(serviceName);
+        if (svc != null) {
+            if (svc.getPorts().values().size() == 1) {
+                Port port = (Port) svc.getPorts().values().iterator().next();
                 // Check if this is the same as defined in endpoint spec
                 endpointName = port.getName();
                 if (endpoint == null) {
@@ -289,9 +326,6 @@ public class Jsr181Endpoint extends Endpoint {
     protected Document generateWsdl() throws SAXException, IOException, ParserConfigurationException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         getXFire().generateWSDL(xfireService.getSimpleName(), baos);
-        if (logger.isTraceEnabled()) {
-            logger.trace(baos.toString());
-        }
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         Document doc = factory.newDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
