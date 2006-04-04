@@ -37,7 +37,7 @@ import org.w3c.dom.Document;
 
 public class HttpWsdlTest extends TestCase {
 
-    private static Log logger =  LogFactory.getLog(HttpSpringTest.class);
+    private static Log logger =  LogFactory.getLog(HttpWsdlTest.class);
 
     protected JBIContainer container;
     
