@@ -28,20 +28,20 @@ import javax.wsdl.Port;
 import javax.wsdl.PortType;
 import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
+
+import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
-import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.w3c.dom.Document;
-
-import junit.framework.TestCase;
 
 public class HttpXBeanDeployerTest extends TestCase {
 
@@ -77,6 +77,7 @@ public class HttpXBeanDeployerTest extends TestCase {
                     type.setUndefined(false);
                     type.setQName(new QName("http://test", "MyConsumerInterface"));
                     Binding binding = def.createBinding();
+                    binding.setQName(new QName("http://test", "MyConsumerBinding"));
                     binding.setUndefined(false);
                     binding.setPortType(type);
                     Service svc = def.createService();
@@ -139,6 +140,52 @@ public class HttpXBeanDeployerTest extends TestCase {
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
+    }
+    
+    public void testWithNonStandaloneWsdl() throws Exception {
+        // HTTP Component
+        HttpComponent component = new HttpComponent();
+        container.activateComponent(component, "HTTPComponent");
+        
+        // Add a receiver component
+        ActivationSpec asEcho = new ActivationSpec("echo", new EchoComponent() {
+            public Document getServiceDescription(ServiceEndpoint endpoint) {
+                try {
+                    Definition def = WSDLFactory.newInstance().newDefinition();
+                    PortType type = def.createPortType();
+                    type.setUndefined(false);
+                    type.setQName(new QName("http://porttype.test", "MyConsumerInterface"));
+                    def.setTargetNamespace("http://porttype.test");
+                    def.addNamespace("tns", "http://porttype.test");
+                    def.addPortType(type);
+                    Document doc = WSDLFactory.newInstance().newWSDLWriter().getDocument(def);
+                    return doc;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        asEcho.setEndpoint("myConsumer");
+        asEcho.setService(new QName("http://test", "MyConsumerService"));
+        container.activateComponent(asEcho);
+        
+        // Start container
+        container.start();
+
+        // Deploy SU
+        URL url = getClass().getClassLoader().getResource("xbean/xbean.xml");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
+        component.getServiceUnitManager().start("xbean");
+
+        // Test WSDL
+        WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+        Definition def;
+        def = reader.readWSDL("http://localhost:8192/Service/?wsdl");
+        assertNotNull(def);
+        assertNotNull(def.getImports());
+        assertEquals(1, def.getImports().size());
     }
     
 }

@@ -27,10 +27,8 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import javax.wsdl.Definition;
+import javax.wsdl.factory.WSDLFactory;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
@@ -49,7 +47,6 @@ import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
-import org.w3c.dom.Document;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -105,7 +102,21 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         if ("GET".equals(request.getMethod())) {
             String query = request.getQueryString();
             if (query != null && query.trim().equalsIgnoreCase("wsdl")) {
-                generateWSDL(response);
+                String uri = request.getRequestURI();
+                if (!uri.endsWith("/")) {
+                    uri += "/";
+                }
+                uri += "main.wsdl";
+                response.sendRedirect(uri);
+                return;
+            }
+            String path = request.getPathInfo();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            if (path.endsWith(".wsdl")) {
+                Definition def = (Definition) endpoint.getWsdls().get(path);
+                generateWSDL(response, def);
                 return;
             }
         }
@@ -207,16 +218,14 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         return lf.getServer();
     }
     
-    protected void generateWSDL(HttpServletResponse response) throws Exception {
-        Document doc = endpoint.getDescription();
-        if (doc == null) {
+    protected void generateWSDL(HttpServletResponse response, Definition def) throws Exception {
+        if (def == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "No wsdl is available for this service");
             return;
         }
         response.setStatus(200);
         response.setContentType("text/xml");
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
+        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, response.getOutputStream());
     }
 
 }

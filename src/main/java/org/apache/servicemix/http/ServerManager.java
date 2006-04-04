@@ -96,6 +96,9 @@ public class ServerManager {
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
         // Check that context does not exist yet
         Handler[] handlers = server.getHandlers();
         if (handlers != null) {

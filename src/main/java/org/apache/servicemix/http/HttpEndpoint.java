@@ -15,23 +15,26 @@
  */
 package org.apache.servicemix.http;
 
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.Binding;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
+import javax.wsdl.PortType;
 import javax.wsdl.Service;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
-import javax.wsdl.extensions.soap.SOAPAddress;
+import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
+import org.apache.servicemix.http.tools.PortTypeDecorator;
 import org.apache.servicemix.soap.SoapEndpoint;
 
 import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
-import com.ibm.wsdl.extensions.soap.SOAPAddressImpl;
 
 /**
  * 
@@ -45,6 +48,7 @@ public class HttpEndpoint extends SoapEndpoint {
 
     protected ExtensibilityElement binding;
     protected String locationURI;
+    protected Map wsdls = new HashMap();
     
     public ExtensibilityElement getBinding() {
         return binding;
@@ -70,45 +74,93 @@ public class HttpEndpoint extends SoapEndpoint {
         super.setRoleAsString(role);
     }
 
-    protected void overrideDefinition(Definition def) {
-        Service svc = null;
-        Port port = null;
-        if (targetService != null && targetEndpoint != null) {
-            svc = def.getService(targetService);
-            port = (svc != null) ? svc.getPort(targetEndpoint) : null;
-        } else if (targetService != null) {
-            svc = def.getService(targetService);
-            if (svc != null) {
-                Iterator it = svc.getPorts().values().iterator();
-                port = (it.hasNext()) ? (Port) it.next() : null;
-            }
+    protected PortType getTargetPortType(Definition def) {
+        PortType portType = null;
+        // If the WSDL description only contain one PortType, use it
+        if (def.getServices().size() == 0 && def.getPortTypes().size() == 1) {
+            portType = (PortType) def.getPortTypes().values().iterator().next();
         } else if (targetInterfaceName != null) {
-            Iterator it = def.getServices().values().iterator();
-            svc = it .hasNext() ? (Service) it.next() : null;
-            if (svc != null) {
-                it = svc.getPorts().values().iterator();
-                port = (it.hasNext()) ? (Port) it.next() : null;
+            portType = def.getPortType(targetInterfaceName);
+        } else if (targetService != null && targetEndpoint != null) {
+            Service svc = def.getService(targetService);
+            Port port = (svc != null) ? svc.getPort(targetEndpoint) : null;
+            portType = (port != null) ? port.getBinding().getPortType() : null;
+        } else if (targetService != null) {
+            Service svc = def.getService(targetService);
+            if (svc != null && svc.getPorts().size() == 1) {
+                Port port = (Port) svc.getPorts().values().iterator().next();
+                portType = (port != null) ? port.getBinding().getPortType() : null;
             }
+        } else if (interfaceName != null) {
+            portType = def.getPortType(interfaceName);
         } else {
-            svc = def.getService(service);
-            port = (svc != null) ? svc.getPort(endpoint) : null;
+            Service svc = def.getService(service);
+            Port port = (svc != null) ? svc.getPort(endpoint) : null;
+            portType = (port != null && port.getBinding() != null) ? port.getBinding().getPortType() : null;
         }
-        if (port != null) {
-            port.getExtensibilityElements().clear();
-            if (isSoap()) {
-                SOAPAddress address = new SOAPAddressImpl();
-                address.setLocationURI(getLocationURI());
-                port.addExtensibilityElement(address);
-                def.addNamespace("soap", "http://schemas.xmlsoap.org/wsdl/soap/");
-            } else {
-                HTTPAddress address = new HTTPAddressImpl();
-                address.setLocationURI(getLocationURI());
-                port.addExtensibilityElement(address);
-                def.addNamespace("http", "http://schemas.xmlsoap.org/wsdl/http/");
+        return portType;
+    }
+    
+    protected void overrideDefinition(Definition def) throws Exception {
+        PortType portType = getTargetPortType(def);
+        if (portType != null) {
+            QName[] names = (QName[]) def.getPortTypes().keySet().toArray(new QName[0]);
+            for (int i = 0; i < names.length; i++) {
+                if (!names[i].equals(portType.getQName())) {
+                    def.removePortType(names[i]);
+                }
             }
-            svc.getPorts().clear();
-            svc.addPort(port);
-            definition = def;
+            names = (QName[]) def.getServices().keySet().toArray(new QName[0]);
+            for (int i = 0; i < names.length; i++) {
+                def.removeService(names[i]);
+            }
+            names = (QName[]) def.getBindings().keySet().toArray(new QName[0]);
+            for (int i = 0; i < names.length; i++) {
+                def.removeBinding(names[i]);
+            }
+            if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
+                if (isSoap()) {
+                    PortTypeDecorator.decorate(
+                            def, 
+                            portType, 
+                            getLocationURI(), 
+                            endpoint + "Binding",
+                            service.getLocalPart(),
+                            endpoint);       
+                    definition = def;
+                    wsdls.put("main.wsdl", def);
+                } else {
+                    Binding binding = def.createBinding();
+                    binding.setPortType(portType);
+                    binding.setQName(new QName(service.getNamespaceURI(), endpoint + "Binding"));
+                    binding.setUndefined(false);
+                    def.addBinding(binding);
+                    Port port = def.createPort();
+                    port.setName(endpoint);
+                    port.setBinding(binding);
+                    HTTPAddress address = new HTTPAddressImpl();
+                    address.setLocationURI(getLocationURI());
+                    port.addExtensibilityElement(address);
+                    def.addNamespace("http", "http://schemas.xmlsoap.org/wsdl/http/");
+                    Service svc = def.createService();
+                    svc.setQName(service);
+                    svc.addPort(port);
+                    def.addService(svc);
+                    definition = def;
+                    wsdls.put("main.wsdl", def);
+                }
+            } else {
+                definition = PortTypeDecorator.createImportDef(def, service.getNamespaceURI(), "porttypedef.wsdl");
+                PortTypeDecorator.decorate(
+                        definition, 
+                        portType, 
+                        getLocationURI(), 
+                        endpoint + "Binding",
+                        service.getLocalPart(),
+                        endpoint);       
+                wsdls.put("main.wsdl", definition);
+                wsdls.put("porttypedef.wsdl", def);
+            }
         }
     }
 
@@ -122,6 +174,13 @@ public class HttpEndpoint extends SoapEndpoint {
 
     protected ServiceEndpoint createExternalEndpoint() {
         return new HttpExternalEndpoint(this);
+    }
+
+    /**
+     * @return Returns the wsdls.
+     */
+    public Map getWsdls() {
+        return wsdls;
     }
 
 }
