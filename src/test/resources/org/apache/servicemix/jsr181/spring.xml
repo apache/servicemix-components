@@ -4,6 +4,10 @@
 
   <!-- the JBI container -->
   <sm:container id="jbi" embedded="true">
+    <sm:listeners>
+        <sm:dotViewEndpointListener file="target/ServiceMixComponents.dot"/>
+    </sm:listeners>
+    
     <sm:activationSpecs>
 
       <!-- output using a POJO -->
