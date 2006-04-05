@@ -1,0 +1,2 @@
+consumer=org.apache.servicemix.jms.standard.StandardConsumerProcessor
+provider=org.apache.servicemix.jms.standard.StandardProviderProcessor
