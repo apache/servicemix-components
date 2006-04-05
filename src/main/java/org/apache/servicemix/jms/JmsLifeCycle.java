@@ -34,6 +34,15 @@ public class JmsLifeCycle extends BaseLifeCycle {
         return configuration;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.common.BaseLifeCycle#doInit()
+     */
+    protected void doInit() throws Exception {
+        super.doInit();
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.load();
+    }
+    
     /**
      * @return Returns the configuration.
      */

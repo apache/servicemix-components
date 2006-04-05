@@ -15,13 +15,16 @@
  */
 package org.apache.servicemix.jms;
 
-public class JmsConfiguration implements JmsConfigurationMBean {
+import org.apache.servicemix.common.PersistentConfiguration;
+
+public class JmsConfiguration extends PersistentConfiguration implements JmsConfigurationMBean {
 
     private String userName;
     private String password;
     private String jndiInitialContextFactory;
     private String jndiProviderUrl;
-    private String jndiName;
+    private String jndiConnectionFactoryName;
+    private String processorName = "multiplexing";
     
     /**
      * @return Returns the password.
@@ -34,6 +37,7 @@ public class JmsConfiguration implements JmsConfigurationMBean {
      */
     public void setPassword(String password) {
         this.password = password;
+        save();
     }
     /**
      * @return Returns the userName.
@@ -46,18 +50,20 @@ public class JmsConfiguration implements JmsConfigurationMBean {
      */
     public void setUserName(String userName) {
         this.userName = userName;
+        save();
     }
     /**
      * @return Returns the jndiName.
      */
-    public String getJndiName() {
-        return jndiName;
+    public String getJndiConnectionFactoryName() {
+        return jndiConnectionFactoryName;
     }
     /**
      * @param jndiName The jndiName to set.
      */
-    public void setJndiName(String jndiName) {
-        this.jndiName = jndiName;
+    public void setJndiConnectionFactoryName(String jndiName) {
+        this.jndiConnectionFactoryName = jndiName;
+        save();
     }
     /**
      * @return Returns the jndiInitialContextFactory.
@@ -70,6 +76,7 @@ public class JmsConfiguration implements JmsConfigurationMBean {
      */
     public void setJndiInitialContextFactory(String jndiInitialContextFactory) {
         this.jndiInitialContextFactory = jndiInitialContextFactory;
+        save();
     }
     /**
      * @return Returns the jndiProviderUrl.
@@ -82,8 +89,56 @@ public class JmsConfiguration implements JmsConfigurationMBean {
      */
     public void setJndiProviderUrl(String jndiProviderUrl) {
         this.jndiProviderUrl = jndiProviderUrl;
+        save();
+    }
+    /**
+     * @return Returns the processorName.
+     */
+    public String getProcessorName() {
+        return processorName;
+    }
+    /**
+     * @param processorName The processorName to set.
+     */
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
+        save();
     }
     
+    public void save() {
+        properties.setProperty("userName", userName);
+        properties.setProperty("password", password);
+        properties.setProperty("jndiInitialContextFactory", jndiInitialContextFactory);
+        properties.setProperty("jndiProviderUrl", jndiProviderUrl);
+        properties.setProperty("jndiName", jndiConnectionFactoryName);
+        properties.setProperty("processorName", processorName);
+        super.save();
+    }
     
-    
+    public boolean load() {
+        if (super.load()) {
+            if (properties.getProperty("userName") != null) {
+                userName = properties.getProperty("userName");
+            }
+            if (properties.getProperty("password") != null) {
+                password = properties.getProperty("password");
+            }
+            if (properties.getProperty("jndiInitialContextFactory") != null) {
+                jndiInitialContextFactory = properties.getProperty("jndiInitialContextFactory");
+            }
+            if (properties.getProperty("jndiProviderUrl") != null) {
+                jndiProviderUrl = properties.getProperty("jndiProviderUrl");
+            }
+            if (properties.getProperty("jndiName") != null) {
+                jndiConnectionFactoryName = properties.getProperty("jndiName");
+            }
+            if (properties.getProperty("processorName") != null) {
+                processorName = properties.getProperty("processorName");
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

@@ -34,11 +34,35 @@ public interface JmsConfigurationMBean {
      */
     public void setUserName(String userName);
     /**
-     * @return Returns the jndiName.
+     * @return Returns the jndiConnectionFactoryName.
      */
-    public String getJndiName();
+    public String getJndiConnectionFactoryName();
     /**
-     * @param jndiName The jndiName to set.
+     * @param jndiConnectionFactoryName The jndiName to set.
      */
-    public void setJndiName(String jndiName);
+    public void setJndiConnectionFactoryName(String jndiConnectionFactoryName);
+    /**
+     * @return Returns the jndiInitialContextFactory.
+     */
+    public String getJndiInitialContextFactory();
+    /**
+     * @param jndiInitialContextFactory The jndiInitialContextFactory to set.
+     */
+    public void setJndiInitialContextFactory(String jndiInitialContextFactory);
+    /**
+     * @return Returns the jndiProviderUrl.
+     */
+    public String getJndiProviderUrl();
+    /**
+     * @param jndiProviderUrl The jndiProviderUrl to set.
+     */
+    public void setJndiProviderUrl(String jndiProviderUrl);
+    /**
+     * @return Returns the processName.
+     */
+    public String getProcessorName();
+    /**
+     * @param processorName The processorName to set.
+     */
+    public void setProcessorName(String processorName);
 }

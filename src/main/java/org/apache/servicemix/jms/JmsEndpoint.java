@@ -15,7 +15,10 @@
  */
 package org.apache.servicemix.jms;
 
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.ConnectionFactory;
@@ -49,6 +52,7 @@ public class JmsEndpoint extends SoapEndpoint {
     // Spring configuration
     protected ConnectionFactory connectionFactory;
     protected Destination destination;
+    protected String processorName;
     
     public JmsEndpoint() {
     }
@@ -187,11 +191,62 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     protected ExchangeProcessor createProviderProcessor() {
-        return new MultiplexingProviderProcessor(this);
+        return createProcessor("provider");
     }
 
     protected ExchangeProcessor createConsumerProcessor() {
-        return new MultiplexingConsumerProcessor(this);
+        return createProcessor("consumer");
+    }
+    
+    protected ExchangeProcessor createProcessor(String type) {
+        try {
+            String procName = processorName;
+            if (processorName == null) {
+                JmsLifeCycle lf = (JmsLifeCycle) getServiceUnit().getComponent().getLifeCycle();
+                procName = lf.getConfiguration().getProcessorName();
+            }
+            String uri = "META-INF/services/org/apache/servicemix/jms/" + procName;
+            InputStream in = loadResource(uri);
+            Properties props = new Properties();
+            props.load(in);
+            String className = props.getProperty(type);
+            Class cl = loadClass(className);
+            Constructor cns = cl.getConstructor(new Class[] { getClass() });
+            return (ExchangeProcessor) cns.newInstance(new Object[] { this });
+        } catch (Exception e) {
+            throw new RuntimeException("Could not create processor of type " + type + " and name " + processorName, e);
+        }
+    }
+
+    /**
+     * Attempts to load the class on the current thread context class loader or
+     * the class loader which loaded us
+     */
+    protected Class loadClass(String name) throws ClassNotFoundException {
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader != null) {
+            try {
+                return contextClassLoader.loadClass(name);
+            }
+            catch (ClassNotFoundException e) {
+            }
+        }
+        return getClass().getClassLoader().loadClass(name);
+    }
+
+    /**
+     * Loads the resource from the given URI
+     */
+    protected InputStream loadResource(String uri) {
+        // lets try the thread context class loader first
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri);
+        if (in == null) {
+            in = getClass().getClassLoader().getResourceAsStream(uri);
+            if (in == null) {
+                logger.debug("Could not find resource: " + uri);
+            }
+        }
+        return in;
     }
 
     protected ServiceEndpoint createExternalEndpoint() {
@@ -248,6 +303,20 @@ public class JmsEndpoint extends SoapEndpoint {
                 "endpoint: " + endpoint + ", " + 
                 "address: " + jndiDestinationName + "(" + destinationStyle + "), " + 
                 "soap: " + soap + "]";
+    }
+
+    /**
+     * @return Returns the processorName.
+     */
+    public String getProcessorName() {
+        return processorName;
+    }
+
+    /**
+     * @param processorName The processorName to set.
+     */
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
     }
 
 }

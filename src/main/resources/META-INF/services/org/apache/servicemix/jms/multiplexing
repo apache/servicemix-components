@@ -1,0 +1,2 @@
+consumer=org.apache.servicemix.jms.multiplexing.MultiplexingConsumerProcessor
+provider=org.apache.servicemix.jms.multiplexing.MultiplexingProviderProcessor
