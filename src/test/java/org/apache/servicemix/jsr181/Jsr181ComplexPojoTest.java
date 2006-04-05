@@ -27,6 +27,10 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.EventListener;
+
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -36,6 +40,7 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.DOMUtil;
+import org.apache.servicemix.jbi.view.DotViewEndpointListener;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -49,15 +54,44 @@ public class Jsr181ComplexPojoTest extends TestCase {
     
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
+    private boolean useJmx;
+    protected EventListener[] listeners;
     
+
+    public static void main(String[] args) {
+        Jsr181ComplexPojoTest test = new Jsr181ComplexPojoTest();
+        test.useJmx = true;
+        test.listeners = new EventListener[] { new DotViewEndpointListener() };
+        
+        try {
+            test.setUp();
+            test.testComplexOneWay();
+            
+            // now lets wait for the user to terminate things
+            System.out.println("Press enter to terminate the program.");
+            System.out.println("In the meantime you can use your JMX console to view the current MBeans");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            reader.readLine();
+
+            
+            test.tearDown();
+        }
+        catch (Exception e) {
+            System.err.println("Caught: " + e);
+            e.printStackTrace();
+        }
+    }
     protected void setUp() throws Exception {
         container = new JBIContainer();
-        container.setUseMBeanServer(false);
-        container.setCreateMBeanServer(false);
+        container.setUseMBeanServer(useJmx);
+        container.setCreateMBeanServer(useJmx);
         container.setMonitorInstallationDirectory(false);
         container.setNamingContext(new InitialContext());
         container.setEmbedded(true);
         container.setFlowName("st");
+        if (listeners != null) {
+            container.setListeners(listeners);
+        }
         container.init();
     }
     
