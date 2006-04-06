@@ -63,6 +63,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     protected SoapMarshaler soapMarshaler;
     protected SoapHelper soapHelper;
     protected Map locks;
+    protected Map exchanges;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
@@ -73,11 +74,13 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         this.soapHelper = new SoapHelper(endpoint);
         this.soapHelper.addPolicy(new AddressingHandler());
         this.locks = new ConcurrentHashMap();
+        this.exchanges = new ConcurrentHashMap();
     }
     
     public void process(MessageExchange exchange) throws Exception {
         Continuation cont = (Continuation) locks.remove(exchange.getExchangeId());
         if (cont != null) {
+            exchanges.put(exchange.getExchangeId(), exchange);
             cont.resume();
         } else {
             throw new IllegalStateException("Exchange not found");
@@ -138,7 +141,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 NormalizedMessage inMessage = exchange.getMessage("in");
                 inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
                 locks.put(exchange.getExchangeId(), cont);
-                request.setAttribute(MessageExchange.class.getName(), exchange);
+                request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
                 // TODO: make this timeout configurable
                 boolean result = cont.suspend(1000 * 60); // 60 s
@@ -150,7 +153,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 return;
             }
         } else {
-            exchange = (MessageExchange) request.getAttribute(MessageExchange.class.getName());
+            String id = (String) request.getAttribute(MessageExchange.class.getName());
+            exchange = (MessageExchange) exchanges.get(id);
             request.removeAttribute(MessageExchange.class.getName());
             boolean result = cont.suspend(0); 
             // Check if this is a timeout
