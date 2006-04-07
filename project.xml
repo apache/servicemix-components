@@ -184,8 +184,8 @@
       <version>${activemq_version}</version>
     </dependency>
     <dependency>
-      <groupId>activeio</groupId>
-      <artifactId>activeio</artifactId>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activeio-core</artifactId>
       <version>${activeio_version}</version>
     </dependency>
     
