@@ -70,21 +70,21 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 	@Override
 	public void activate() throws Exception {
         logger = this.serviceUnit.getComponent().getLogger();
+        WebService ws = getWebServiceAnnotation(pojo.getClass());
+        if (ws == null) {
+            throw new IllegalStateException("Unable to find WebService annotation");
+        }
+        endpointInterface = Class.forName(ws.endpointInterface());
+        jaxbContext = createJAXBContext(endpointInterface);
+        ws = getWebServiceAnnotation(endpointInterface);
+        if (ws != null) {
+            interfaceName = new QName(ws.targetNamespace(), ws.name());
+        }
         ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
         activated = ctx.activateEndpoint(service, endpoint);
         channel = ctx.getDeliveryChannel();
-        jaxbContext = createJAXBContext();
 	}
 	
-	protected JAXBContext createJAXBContext() throws Exception {
-		WebService ws = getWebServiceAnnotation();
-		if (ws == null) {
-			throw new IllegalStateException("Unable to find WebService annotation");
-		}
-		endpointInterface = Class.forName(ws.endpointInterface());
-        return createJAXBContext(endpointInterface);
-	}
-    
     public static JAXBContext createJAXBContext(Class interfaceClass) throws JAXBException {
         List<Class> classes = new ArrayList<Class>();
         classes.add(JbiFault.class);
@@ -186,7 +186,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 	}
 	
 	protected Method getWebServiceMethod(QName interfaceName, QName operation) throws Exception {
-		WebService ws = getWebServiceAnnotation();
+		WebService ws = getWebServiceAnnotation(pojo.getClass());
 		if (ws == null) {
 			throw new IllegalStateException("Unable to find WebService annotation");
 		}
@@ -201,8 +201,8 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected WebService getWebServiceAnnotation() {
-		for (Class cl = pojo.getClass(); cl != null; cl = cl.getSuperclass()) {
+	protected WebService getWebServiceAnnotation(Class clazz) {
+		for (Class cl = clazz; cl != null; cl = cl.getSuperclass()) {
 			WebService ws = (WebService) cl.getAnnotation(WebService.class);
 			if (ws != null) {
 				return ws;

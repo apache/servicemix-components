@@ -118,29 +118,25 @@ public class WSNLifeCycle extends BaseLifeCycle {
 	public class WSNEndpointManager implements EndpointManager {
 
 		public Object register(String address, Object service) throws EndpointRegistrationException {
-			component.getRegistry().unregisterServiceUnit(serviceUnit);
 			try {
 				WSNEndpoint endpoint = new WSNEndpoint(address, service);
 				endpoint.setServiceUnit(serviceUnit);
-				endpoint.activate();
 				serviceUnit.addEndpoint(endpoint);
+                component.getRegistry().registerEndpoint(endpoint);
+                endpoint.activate();
 				return endpoint;
 			} catch (Exception e) {
 				throw new EndpointRegistrationException("Unable to activate endpoint", e);
-			} finally {
-				component.getRegistry().registerServiceUnit(serviceUnit);
 			}
 		}
 
 		public void unregister(Object endpoint) throws EndpointRegistrationException {
-			component.getRegistry().unregisterServiceUnit(serviceUnit);
 			try {
+                serviceUnit.getEndpoints().remove(endpoint);
+                component.getRegistry().unregisterEndpoint((WSNEndpoint) endpoint);
 				((WSNEndpoint) endpoint).deactivate();
 			} catch (Exception e) {
 				throw new EndpointRegistrationException("Unable to activate endpoint", e);
-			} finally {
-				serviceUnit.getEndpoints().remove(endpoint);
-				component.getRegistry().registerServiceUnit(serviceUnit);
 			}
 		}
 

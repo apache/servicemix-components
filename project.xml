@@ -43,6 +43,9 @@
       <groupId>servicemix</groupId>
       <artifactId>jsr181-api</artifactId>
       <version>${jaxws_rt_version}</version>
+      <properties>
+        <jbi.bundle>true</jbi.bundle>
+      </properties>
     </dependency>
     <dependency>
       <groupId>servicemix</groupId>
@@ -58,11 +61,17 @@
       <groupId>servicemix</groupId>
       <artifactId>jaxb-api</artifactId>
       <version>${jaxws_rt_version}</version>
+      <properties>
+        <jbi.bundle>true</jbi.bundle>
+      </properties>
     </dependency>
     <dependency>
       <groupId>servicemix</groupId>
       <artifactId>jaxb-impl</artifactId>
       <version>${jaxws_rt_version}</version>
+      <properties>
+        <jbi.bundle>true</jbi.bundle>
+      </properties>
     </dependency>
     <dependency>
       <groupId>servicemix</groupId>

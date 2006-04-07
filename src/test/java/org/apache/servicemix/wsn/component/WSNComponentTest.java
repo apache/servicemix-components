@@ -27,6 +27,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.bind.JAXBContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -103,6 +104,13 @@ public class WSNComponentTest extends TestCase {
 			jmsBroker.stop();
 		}
 	}
+    
+    public void testWSDL() throws Exception {
+        ServiceEndpoint[] ses = jbi.getRegistry().getEndpointsForInterface(
+                new QName("http://docs.oasis-open.org/wsn/brw-2", "NotificationBroker"));
+        assertNotNull(ses);
+        assertEquals(1, ses.length);
+    }
 	
 	public void testInvalidSubscribription() throws Exception {
 		try {
