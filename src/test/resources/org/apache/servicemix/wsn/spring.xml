@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:amq="http://activemq.org/config/1.0"
+	   xmlns:test="http://servicemix.org/test">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true">
+    <sm:activationSpecs>
+
+      <sm:activationSpec id="receiver" service="test:service" endpoint="endpoint">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent">
+          </bean>
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec>
+      	<sm:component>
+      	  <bean class="org.apache.servicemix.wsn.spring.WSNSpringComponent">
+      	    <property name="requests">
+      	      <list>
+      	        <bean class="org.apache.servicemix.wsn.spring.SubscribeFactoryBean">
+      	          <property name="consumer" value="http://servicemix.org/test/service/endpoint" />
+      	          <property name="topic" value="myTopic" />
+      	        </bean>
+      	      </list>
+      	    </property>
+      	    <property name="connectionFactory" ref="connectionFactory" />
+      	  </bean>
+        </sm:component>
+      </sm:activationSpec>
+      
+      <sm:activationSpec service="test:publisher" endpoint="endpoint">
+        <sm:component>
+          <bean class="org.apache.servicemix.wsn.spring.PublisherComponent">
+    	    <property name="topic" value="myTopic" />
+          </bean>
+        </sm:component>
+      </sm:activationSpec>
+      
+      <sm:activationSpec destinationService="test:publisher" destinationEndpoint="endpoint">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.quartz.QuartzComponent">
+            <property name="triggers">
+              <map>
+                <entry>
+                  <key>
+                    <bean class="org.quartz.SimpleTrigger">
+                      <property name="repeatInterval" value="2000"/>
+                      <property name="repeatCount" value="20"/>
+                    </bean>
+                  </key>
+                    <bean class="org.quartz.JobDetail">
+                      <property name="name" value="My Example Job"/>
+                      <property name="group" value="ServiceMix"/>
+                    </bean>
+                </entry>
+              </map>
+            </property>
+          </bean>
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+
+  <bean id="connectionFactory" 
+        class="org.apache.activemq.ActiveMQConnectionFactory"
+        depends-on="broker">
+    <property name="brokerURL" value="tcp://localhost:61216" />
+  </bean>
+  
+  <amq:broker id="broker" persistent="false">
+
+    <amq:transportConnectors>
+      <amq:transportConnector uri="tcp://localhost:61216" />
+    </amq:transportConnectors>
+
+  </amq:broker>
+
+
+</beans>

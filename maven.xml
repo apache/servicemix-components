@@ -23,10 +23,32 @@
          xmlns:maven="jelly:maven"
          xmlns:artifact="artifact">
 
-	 <preGoal name="java:compile">
+  <preGoal name="java:compile">
+    <!--
+    <attainGoal name="xbean:generate" />
+    -->
            <attainGoal name="jaxws:compile"/>
          </preGoal>
 
+  <goal name="xbean:generate" description="Generates the XBean XSD, documentation and META-INF/services files.">
+    <path id="test.classpath">
+      <pathelement path="${maven.build.dest}" />
+      <pathelement path="${basedir}/target/classes" />
+      <pathelement path="${basedir}/target/test-classes" />
+      <path refid="maven.dependency.classpath" />
+    </path>
+
+    <taskdef name="xsdGenerate" classname="org.apache.xbean.spring.generator.MappingGeneratorTask">
+      <classpath refid="test.classpath" />
+    </taskdef>
+    <xsdGenerate
+    destFile="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" namespace="http://servicemix.apache.org/wsn2005/1.0"
+    		classpathref="test.classpath" srcdir="${basedir}/src/main/java"  metaInfDir="${basedir}/target/generated/"/>
+  	<copy file="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" todir="${basedir}/target/generated/"/>
+  	<copy file="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" todir="${basedir}/../xdocs"/>    
+    <copy file="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd.html" todir="${basedir}/../xdocs"/>
+  </goal>
+  
          <goal name="jaxws:compile" prereqs="setclasspath" description="generate JAX-WS POJOS from WSDL">
            <mkdir dir="${jaxws.compiled.java.dir}"/>
            <mkdir dir="${jaxws.compiled.classes.dir}"/>

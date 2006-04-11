@@ -17,6 +17,8 @@ package org.apache.servicemix.wsn.component;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -75,7 +77,15 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
         su.setName(serviceUnitName);
         su.setRootPath(serviceUnitRootPath);
         for (int i = 0; i < xmls.length; i++) {
-            Endpoint ep = createEndpoint(xmls[i]);
+            Endpoint ep;
+            URL url;
+            try {
+                url = xmls[i].toURL();
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                throw new DeploymentException("Error deploying xml file", e); 
+            }
+            ep = createEndpoint(url);
             ep.setServiceUnit(su);
             su.addEndpoint(ep);
         }
@@ -85,13 +95,17 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
         return su;
     }
 
-    protected Endpoint createEndpoint(File file) throws DeploymentException {
+    public Endpoint createEndpoint(URL url) throws DeploymentException {
         Object request = null;
         try {
-            request = context.createUnmarshaller().unmarshal(file);
+            request = context.createUnmarshaller().unmarshal(url);
         } catch (JAXBException e) {
             throw failure("deploy", "Invalid xml", e);
         }
+        return createEndpoint(request);
+    }
+    
+    public Endpoint createEndpoint(Object request) throws DeploymentException {
         if (request instanceof Subscribe) {
             return new WSNSubscriptionEndpoint((Subscribe) request);
         } else if (request instanceof CreatePullPoint) {

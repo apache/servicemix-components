@@ -238,7 +238,56 @@
       <id>log4j</id>
       <version>${log4j_version}</version>
     </dependency>
+
+      <dependency>
+        <groupId>annogen</groupId>
+        <artifactId>annogen</artifactId>
+        <version>${annogen_version}</version>
+        <properties>
+          <scope>compile</scope>
+        </properties>
+      </dependency>
+      <dependency>
+        <groupId>qdox</groupId>
+        <artifactId>qdox</artifactId>
+        <version>${qdox_version}</version>
+        <properties>
+          <scope>compile</scope>
+        </properties>
+      </dependency>
+
   </dependencies>
 
+    <build>
+        <unitTest>
+            <resources>
+              <resource>
+                  <directory>src/test/resources</directory>
+                <includes>
+                  <include>**/*</include>
+                </includes>
+              </resource>
+            </resources>
+            <includes>
+                <include>**/*Test.*</include>
+            </includes>
+            <excludes>
+            </excludes>
+        </unitTest>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>target/generated</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 
 </project>
