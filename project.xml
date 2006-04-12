@@ -255,6 +255,10 @@
           <scope>compile</scope>
         </properties>
       </dependency>
+    <dependency>
+      <id>quartz</id>
+      <version>${quartz_version}</version>
+    </dependency>
 
   </dependencies>
 
