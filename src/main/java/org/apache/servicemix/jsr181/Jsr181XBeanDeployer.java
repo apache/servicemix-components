@@ -15,11 +15,12 @@
  */
 package org.apache.servicemix.jsr181;
 
+import javax.jbi.management.DeploymentException;
+
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
-
-import javax.jbi.management.DeploymentException;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 
 public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
 
@@ -35,10 +36,14 @@ public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
         if (ep.getPojo() == null && ep.getPojoClass() == null) {
             throw failure("deploy", "Endpoint must have a non-null pojo or a pojoClass", null);
         }
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(((XBeanServiceUnit)ep.getServiceUnit()).getConfigurationClassLoader());
             ep.registerService();
         } catch (Exception e) {
             throw failure("deploy", "Could not register endpoint", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
         return true;
     }
