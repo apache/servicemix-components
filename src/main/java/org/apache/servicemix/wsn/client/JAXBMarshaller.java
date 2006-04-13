@@ -18,6 +18,7 @@ package org.apache.servicemix.wsn.client;
 import java.io.StringWriter;
 
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.transform.Source;
@@ -59,4 +60,15 @@ public class JAXBMarshaller extends DefaultMarshaler {
         	throw new RuntimeException(e);
         }
     }
+
+	@Override
+	public void marshal(MessageExchange exchange, NormalizedMessage message, Object body) throws MessagingException {
+		if (body instanceof Source) {
+            message.setContent((Source) body);
+        }
+        else {
+            Source content = asContent(message, body);
+            message.setContent(content);
+    	}
+	}
 }
