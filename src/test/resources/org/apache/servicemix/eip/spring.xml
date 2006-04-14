@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+  xmlns:eip="http://servicemix.apache.org/eip/1.0" xmlns:test="http://test">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true">
+    <sm:activationSpecs>
+
+      <!-- output using a POJO -->
+      <sm:activationSpec>
+        <sm:component>
+          <eip:component>
+            <eip:endpoints>
+
+              <eip:wire-tap service="test:wireTap" endpoint="myConsumer">
+                <eip:target>
+                  <eip:exchange-target service="test:xpathSplitter" />
+                </eip:target>
+                <eip:inListener>
+                  <eip:exchange-target service="test:trace1" />
+                </eip:inListener>
+              </eip:wire-tap>
+
+              <eip:xpath-splitter service="test:xpathSplitter" endpoint="myConsumer" xpath="/*/*">
+                <eip:target>
+                  <eip:exchange-target service="test:router" />
+                </eip:target>
+              </eip:xpath-splitter>
+
+              <eip:content-based-router service="test:router" endpoint="myConsumer">
+                <eip:rules>
+                  <eip:routing-rule>
+                    <eip:predicate>
+                      <eip:xpath-predicate xpath="count(/echo) = 1" />
+                    </eip:predicate>
+                    <eip:target>
+                      <eip:exchange-target service="test:trace2" />
+                    </eip:target>
+                  </eip:routing-rule>
+                  <eip:routing-rule>
+                    <eip:target>
+                      <eip:exchange-target service="test:trace3" />
+                    </eip:target>
+                  </eip:routing-rule>
+                </eip:rules>
+              </eip:content-based-router>
+
+            </eip:endpoints>
+          </eip:component>
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec id="trace1" service="test:trace1">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace2" service="test:trace2">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace3" service="test:trace3">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+
+</beans>
