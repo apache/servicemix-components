@@ -108,7 +108,7 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
             if (storeFactory == null) {
                 storeFactory = new MemoryStoreFactory();
             }
-            store = storeFactory.get(getService().toString() + getEndpoint());
+            store = storeFactory.open(getService().toString() + getEndpoint());
         }
         start();
     }
