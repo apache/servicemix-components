@@ -38,6 +38,7 @@ public class SpringConfigurationTest extends SpringTestSupport {
         ((Receiver) getBean("trace1")).getMessageList().assertMessagesReceived(1);
         ((Receiver) getBean("trace2")).getMessageList().assertMessagesReceived(1);
         ((Receiver) getBean("trace3")).getMessageList().assertMessagesReceived(1);
+        ((Receiver) getBean("trace4")).getMessageList().assertMessagesReceived(1);
         
         // Wait for all messages to be processed
         Thread.sleep(50);

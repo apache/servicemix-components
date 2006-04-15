@@ -12,7 +12,8 @@
           <eip:component>
             <eip:endpoints>
 
-              <eip:wire-tap service="test:wireTap" endpoint="myConsumer">
+              <!-- START SNIPPET: wire-tap -->
+              <eip:wire-tap service="test:wireTap" endpoint="endpoint">
                 <eip:target>
                   <eip:exchange-target service="test:xpathSplitter" />
                 </eip:target>
@@ -20,33 +21,74 @@
                   <eip:exchange-target service="test:trace1" />
                 </eip:inListener>
               </eip:wire-tap>
-
-              <eip:xpath-splitter service="test:xpathSplitter" endpoint="myConsumer" xpath="/*/*">
+              <!-- END SNIPPET: wire-tap -->
+              
+              <!-- START SNIPPET: xpath-splitter -->
+              <eip:xpath-splitter service="test:xpathSplitter" endpoint="endpoint" xpath="/*/*">
                 <eip:target>
                   <eip:exchange-target service="test:router" />
                 </eip:target>
               </eip:xpath-splitter>
-
-              <eip:content-based-router service="test:router" endpoint="myConsumer">
+              <!-- END SNIPPET: xpath-splitter -->
+              
+              <!-- START SNIPPET: content-based-router -->
+              <eip:content-based-router service="test:router" endpoint="endpoint">
                 <eip:rules>
                   <eip:routing-rule>
                     <eip:predicate>
                       <eip:xpath-predicate xpath="count(/echo) = 1" />
                     </eip:predicate>
                     <eip:target>
-                      <eip:exchange-target service="test:trace2" />
+                      <eip:exchange-target service="test:pipeline" />
                     </eip:target>
                   </eip:routing-rule>
                   <eip:routing-rule>
+                    <!-- there is no predicate, so this is the default destination -->
                     <eip:target>
-                      <eip:exchange-target service="test:trace3" />
+                      <eip:exchange-target service="test:recipients" />
                     </eip:target>
                   </eip:routing-rule>
                 </eip:rules>
               </eip:content-based-router>
-
+              <!-- END SNIPPET: content-based-router -->
+              
+              <!-- START SNIPPET: pipeline -->
+              <eip:pipeline service="test:pipeline" endpoint="endpoint">
+                <eip:transformer>
+                  <eip:exchange-target service="test:routingSlip" />
+                </eip:transformer>
+                <eip:target>
+                  <eip:exchange-target service="test:trace2" />
+                </eip:target>
+              </eip:pipeline>
+              <!-- END SNIPPET: pipeline -->
+              
+              <!-- START SNIPPET: static-recipient-list -->
+              <eip:static-recipient-list service="test:recipients" endpoint="endpoint">
+                <eip:recipients>
+                  <eip:exchange-target service="test:trace3" />
+                  <eip:exchange-target service="test:trace4" />
+                </eip:recipients>
+              </eip:static-recipient-list>
+              <!-- END SNIPPET: static-recipient-list -->
+              
+              <!-- START SNIPPET: static-routing-slip -->
+              <eip:static-routing-slip service="test:routingSlip" endpoint="endpoint">
+                <eip:targets>
+                  <eip:exchange-target service="test:echo" />
+                  <eip:exchange-target service="test:echo" />
+                </eip:targets>
+              </eip:static-routing-slip>
+              <!-- END SNIPPET: static-routing-slip -->
+              
             </eip:endpoints>
           </eip:component>
+        </sm:component>
+      </sm:activationSpec>
+      
+      <sm:activationSpec id="echo" service="test:echo">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent"/>
         </sm:component>
       </sm:activationSpec>
 
@@ -65,7 +107,12 @@
           <bean class="org.apache.servicemix.tck.ReceiverComponent" />
         </sm:component>
       </sm:activationSpec>
-
+      <sm:activationSpec id="trace4" service="test:trace4">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      
     </sm:activationSpecs>
   </sm:container>
 
