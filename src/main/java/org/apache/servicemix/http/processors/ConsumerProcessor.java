@@ -142,7 +142,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
-                ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, this);
+                ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, endpoint);
                 // TODO: make this timeout configurable
                 boolean result = cont.suspend(1000 * 60); // 60 s
                 if (!result) {

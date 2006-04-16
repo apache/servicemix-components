@@ -58,7 +58,7 @@ public class HttpWsdlTest extends TestCase {
     public void testWithNonStandaloneWsdl() throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
-        container.activateComponent(component, "HTTPComponent");
+        container.activateComponent(component, "HttpWsdlTest");
         
         // Add a receiver component
         ActivationSpec asEcho = new ActivationSpec("echo", new EchoComponent() {
@@ -99,6 +99,10 @@ public class HttpWsdlTest extends TestCase {
         assertNotNull(def);
         assertNotNull(def.getImports());
         assertEquals(1, def.getImports().size());
+
+        component.getServiceUnitManager().stop("xbean");
+        component.getServiceUnitManager().shutDown("xbean");
+        component.getServiceUnitManager().undeploy("xbean", path.getAbsolutePath());
     }
     
 }

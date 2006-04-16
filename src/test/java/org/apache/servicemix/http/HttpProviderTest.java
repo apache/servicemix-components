@@ -61,7 +61,7 @@ public class HttpProviderTest extends TestCase {
         // HTTP Component
         HttpComponent component = new HttpComponent();
         ((HttpLifeCycle) component.getLifeCycle()).getConfiguration().setStreamingEnabled(streaming);
-        container.activateComponent(component, "HTTPComponent");
+        container.activateComponent(component, "HttpProviderTest");
         
         // Add a receiver component
         Receiver receiver = new ReceiverComponent();
@@ -99,6 +99,10 @@ public class HttpProviderTest extends TestCase {
         
         // Check we received the message
         receiver.getMessageList().assertMessagesReceived(1);
+        
+        component.getServiceUnitManager().stop("provider");
+        component.getServiceUnitManager().shutDown("provider");
+        component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
         
         return t1 - t0;
     }
@@ -147,6 +151,10 @@ public class HttpProviderTest extends TestCase {
         assertNotNull(inout.getOutMessage());
         assertNotNull(inout.getOutMessage().getContent());
         System.out.println(new SourceTransformer().toString(inout.getOutMessage().getContent()));
+
+        component.getServiceUnitManager().stop("provider");
+        component.getServiceUnitManager().shutDown("provider");
+        component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
         
         return t1 - t0;
     }
