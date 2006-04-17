@@ -4,10 +4,15 @@
 
   <!-- the JBI container -->
   <sm:container id="jbi" embedded="true">
+    
+    <sm:listeners>
+      <bean class="org.apache.servicemix.jbi.view.DotViewFlowListener" />
+    </sm:listeners>
+    
     <sm:activationSpecs>
 
       <!-- output using a POJO -->
-      <sm:activationSpec>
+      <sm:activationSpec id="servicemix-eip">
         <sm:component>
           <eip:component>
             <eip:endpoints>

@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -29,7 +30,9 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class SpringConfigurationTest extends SpringTestSupport {
 
     public void testConfig() throws Exception {
-        ServiceMixClient client = new DefaultServiceMixClient(jbi);
+        ActivationSpec as = new ActivationSpec();
+        as.setComponentName("client");
+        ServiceMixClient client = new DefaultServiceMixClient(jbi, as);
         InOnly me = client.createInOnlyExchange();
         me.setService(new QName("http://test", "wireTap"));
         me.getInMessage().setContent(new StringSource("<test><echo/><world/></test>"));
