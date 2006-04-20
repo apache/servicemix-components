@@ -16,227 +16,126 @@
     limitations under the License.
 -->
 <!-- $Rev$ $Date$ -->
-<project 
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://maven.apache.org/POM/4.0.0">
-    
-    <parent>
-        <groupId>incubator-servicemix</groupId>
-        <artifactId>servicemix</artifactId>
-        <version>3.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>incubator-servicemix</groupId>
-    <artifactId>servicemix-jsr181</artifactId>
-    <packaging>jbi-component</packaging>
-    <name>ServiceMix :: JSR-181 Service Engine</name>
-    <description>JSR-181 service engine</description>
-    
-    <dependencies>
-        <dependency>
-	          <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-common</artifactId>
-        </dependency>
-        <dependency>
-	          <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.xfire</groupId>
-            <artifactId>xfire-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jdom</groupId>
-            <artifactId>jdom</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-attributes</groupId>
-            <artifactId>commons-attributes-api</artifactId>
-            <exclusions>
-              <exclusion>
-                <groupId>ant</groupId>
-                <artifactId>ant</artifactId>
-              </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>beehive</groupId>
-          <artifactId>wsm</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.ws.commons</groupId>
-          <artifactId>XmlSchema</artifactId>
-        </dependency>
-        <dependency>
-	  <groupId>org.apache.xbean</groupId>
-	  <artifactId>xbean-spring</artifactId>
-        </dependency>
-        <dependency>
-	  <groupId>commons-logging</groupId>
-	  <artifactId>commons-logging</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>xfire</groupId>
-          <artifactId>jaxb-api</artifactId>
-          <scope>test</scope>
-	</dependency>
-<!--    
-        <dependency>
-            <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-common</artifactId>
-        </dependency>        
-        <dependency>
-            <groupId>backport-util-concurrent</groupId>
-            <artifactId>backport-util-concurrent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>wsdl4j</groupId>
-            <artifactId>wsdl4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>stax</groupId>
-            <artifactId>stax-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jdom</groupId>
-            <artifactId>jdom</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xbean</groupId>
-            <artifactId>xbean-kernel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>woodstox</groupId>
-            <artifactId>wstx-asl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>xmlbeans</groupId>
-            <artifactId>xbean</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-attributes</groupId>
-            <artifactId>commons-attributes-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-attributes</groupId>
-            <artifactId>commons-attributes-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>backport175</groupId>
-            <artifactId>backport175</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-jbi</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-components</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>annogen</groupId>
-            <artifactId>annogen</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>servicemix</artifactId>
+    <version>3.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>servicemix-jsr181</artifactId>
+  <packaging>jbi-component</packaging>
+  <name>ServiceMix :: JSR-181 Service Engine</name>
+  <description>JSR-181 service engine</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.xfire</groupId>
+      <artifactId>xfire-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jdom</groupId>
+      <artifactId>jdom</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-attributes</groupId>
+      <artifactId>commons-attributes-api</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>ant</groupId>
+          <artifactId>ant</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>beehive</groupId>
+      <artifactId>wsm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons</groupId>
+      <artifactId>XmlSchema</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xfire</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>target/generated</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <configuration>
+              <tasks>
+                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
+                  name="mapping">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes" />
+                    <path refid="maven.test.classpath" />
+                  </classpath>
+                </taskdef>
+                <mapping destFile="${basedir}/target/servicemix-jsr181-${version}.xsd"
+                  namespace="http://servicemix.apache.org/jsr181/1.0"
+                  srcdir="${basedir}/src/main/java" metaInfDir="${basedir}/target/generated/" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
             <groupId>qdox</groupId>
             <artifactId>qdox</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>beehive</groupId>
-            <artifactId>wsm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ws-commons</groupId>
-            <artifactId>XmlSchema</artifactId>
-        </dependency>
-        -->
-    </dependencies>
+            <version>1.5</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.servicemix.plugins</groupId>
+        <artifactId>maven2-jbi-plugin</artifactId>
+        <configuration>
+          <type>service-engine</type>
+          <bootstrap>org.apache.servicemix.jsr181.Jsr181Bootstrap</bootstrap>
+          <component>org.apache.servicemix.jsr181.Jsr181Component</component>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.xml</include>
-                    <include>**/*</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>target/generated</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <tasks>
-                                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
-                                    <classpath>
-                                        <pathelement path="${basedir}/target/classes"></pathelement>
-                                        <path refid="maven.test.classpath"></path>
-                                    </classpath>
-                                </taskdef>
-                                <mapping destFile="${basedir}/target/servicemix-jsr181-${version}.xsd" namespace="http://servicemix.apache.org/jsr181/1.0"
-                                    srcdir="${basedir}/src/main/java" metaInfDir="${basedir}/target/generated/"/>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.servicemix.plugins</groupId>
-                <artifactId>maven2-jbi-plugin</artifactId>
-                <configuration>
-                   <type>service-engine</type>
-                   <bootstrap>org.apache.servicemix.jsr181.Jsr181Bootstrap</bootstrap>
-                   <component>org.apache.servicemix.jsr181.Jsr181Component</component>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    
 </project>
