@@ -3,14 +3,16 @@
 	   xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0">
 
   <!-- the JBI container -->
+  
+  <!-- START SNIPPET: dot -->
   <sm:container id="jbi" embedded="true">
     <sm:listeners>
         <sm:dotViewEndpointListener file="target/ServiceMixComponents.dot"/>
     </sm:listeners>
     
     <sm:activationSpecs>
+  <!-- END SNIPPET: dot -->
 
-      <!-- output using a POJO -->
       <sm:activationSpec>
       	<sm:component>
             <jsr181:component>
