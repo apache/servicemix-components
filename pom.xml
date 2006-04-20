@@ -39,48 +39,84 @@
       <artifactId>servicemix-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>${pom.groupId}</groupId>
-      <artifactId>servicemix-core</artifactId>
-      <scope>provided</scope>
+      <groupId>org.codehaus.xfire</groupId>
+      <artifactId>xfire-jaxb2</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>httpunit</groupId>
+          <artifactId>httpunit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jetty</groupId>
+          <artifactId>org.mortbay.jetty</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-httpclient</groupId>
+          <artifactId>commons-httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.mail</groupId>
+          <artifactId>mail</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.activation</groupId>
+          <artifactId>activation</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ant</groupId>
+          <artifactId>ant</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>qdox</groupId>
+          <artifactId>qdox</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.codehaus.xfire</groupId>
-      <artifactId>xfire-all</artifactId>
+      <artifactId>xfire-jaxb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.xfire</groupId>
+      <artifactId>xfire-xmlbeans</artifactId>
     </dependency>
     <dependency>
       <groupId>jdom</groupId>
       <artifactId>jdom</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-attributes</groupId>
-      <artifactId>commons-attributes-api</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>ant</groupId>
-          <artifactId>ant</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>beehive</groupId>
-      <artifactId>wsm</artifactId>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.ws.commons</groupId>
-      <artifactId>XmlSchema</artifactId>
+      <groupId>xerces</groupId>
+      <artifactId>xmlParserAPIs</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.xbean</groupId>
-      <artifactId>xbean-spring</artifactId>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>wsdl4j</groupId>
+      <artifactId>wsdl4j</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>xfire</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
