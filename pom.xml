@@ -16,178 +16,146 @@
     limitations under the License.
 -->
 <!-- $Rev: 356052 $ $Date: 2005-12-11 14:41:20 -0800 (dim., 11 déc. 2005) $ -->
-<project 
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://maven.apache.org/POM/4.0.0">
-    
-    <parent>
-        <groupId>incubator-servicemix</groupId>
-        <artifactId>servicemix</artifactId>
-        <version>3.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>incubator-servicemix</groupId>
-    <artifactId>servicemix-wsn2005</artifactId>
-    <packaging>jbi-component</packaging>
-    <name>ServiceMix :: WS-Notification Service Engine</name>
-    <description>WS-Notification Service Engine</description>
-    <dependencies>
-        
-        <dependency>
-	          <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-common</artifactId>
-        </dependency>
-        <dependency>
-	          <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-	          <groupId>incubator-servicemix</groupId>
-            <artifactId>servicemix-components</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>incubator-activemq</groupId>
-            <artifactId>activemq-core</artifactId>
-        </dependency>
-        
-        
-        <dependency>
-            <groupId>com.sun.xml</groupId>
-            <artifactId>jaxws-tools</artifactId>
-            <version>2.0-JAXWS-2.0-EA3</version>
-        </dependency>
-        <!--
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jsr181-api</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jaxws-api</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jaxws-rt</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jaxb-impl</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jaxb-xjc</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>saaj-api</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>saaj-impl</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jsr181-api</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>jsr250-api</artifactId>
-      <version>20051215</version>
-    </dependency>
-    <dependency>
-      <groupId>servicemix</groupId>
-      <artifactId>sjsxp</artifactId>
-      <version>20051215</version>
-    </dependency>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
 
-        <dependency>
-            <groupId>servicemix</groupId>
-            <artifactId>jaxws-tools</artifactId>
-            <version>20051215</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-activation_1.0.2_spec</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>stax</groupId>
-            <artifactId>stax-api</artifactId>
-            <scope>compile</scope>
-        </dependency>
--->
+  <modelVersion>4.0.0</modelVersion>
 
-    </dependencies>
+  <parent>
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>servicemix</artifactId>
+    <version>3.0-SNAPSHOT</version>
+  </parent>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <tasks>
-							    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-							      <classpath refid="maven.test.classpath"/>
-							    </taskdef>
-							    <mkdir dir="${basedir}/target/generated" />
-							    <mkdir dir="${basedir}/target/generated-classes" />
-							    <wsimport
-							            fork="true"
-							            debug="false"
-							            verbose="false"
-							            keep="true"
-							            destdir="${basedir}/target/generated-classes"
-							            sourcedestdir="${basedir}/target/generated"
-							            wsdl="${basedir}/src/main/wsdl/wsn.wsdl">
-							    </wsimport>
-                            </tasks>
-                            <sourceRoot>${basedir}/target/generated</sourceRoot>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.servicemix.plugins</groupId>
-                <artifactId>maven2-jbi-plugin</artifactId>
-                <configuration>
-                   <type>service-engine</type>
-                   <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
-                   <component>org.apache.servicemix.wsn.component.WSNComponent</component>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    
+  <artifactId>servicemix-wsn2005</artifactId>
+  <packaging>jbi-component</packaging>
+  <name>ServiceMix :: WS-Notification Service Engine</name>
+  <description>WS-Notification Service Engine</description>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-components</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>quartz</groupId>
+      <artifactId>quartz</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activemq-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml</groupId>
+      <artifactId>jaxws-tools</artifactId>
+      <version>2.0-JAXWS-2.0-EA3</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration>
+              <tasks>
+                <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+                  <classpath refid="maven.test.classpath" />
+                </taskdef>
+                <mkdir dir="${basedir}/target/generated" />
+                <mkdir dir="${basedir}/target/generated-classes" />
+                <wsimport fork="true" debug="false" verbose="false" keep="true"
+                  destdir="${basedir}/target/generated-classes"
+                  sourcedestdir="${basedir}/target/generated"
+                  wsdl="${basedir}/src/main/resources/org/apache/servicemix/wsn/wsn.wsdl"> </wsimport>
+
+                <!--
+                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
+                  name="mapping">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes" />
+                    <path refid="maven.test.classpath" />
+                  </classpath>
+                </taskdef>
+                <mkdir dir="${basedir}/target/qdox"/>
+                <copy todir="${basedir}/target/qdox">
+                  <fileset dir="${basedir}/src/main/java" />
+                </copy>
+                <copy todir="${basedir}/target/qdox">
+                  <fileset dir="${basedir}/target/generated" />
+                </copy>
+                <mapping destFile="${basedir}/target/${pom.artifactId}-${version}.xsd"
+                  namespace="http://servicemix.apache.org/wsn/1.0"
+                  srcdir="${basedir}/target/qdox" metaInfDir="${basedir}/target/generated/" />
+                  -->
+              </tasks>
+              <sourceRoot>${basedir}/target/generated</sourceRoot>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <!-- Need qdox 1.6-SNAPSHOT to handle java5 annotations -->
+          <!--
+          <dependency>
+            <groupId>qdox</groupId>
+            <artifactId>qdox</artifactId>
+            <version>1.6-SNAPSHOT</version>
+          </dependency>
+          -->
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*Test*</include>
+          </includes>
+          <excludes>
+            <!--  exclude abstract tests -->
+            <exclude>**/Abstract*.*</exclude>
+
+            <!-- while does this one fail in multiproject builds ? -->
+            <exclude>**/WSNComponentTest.*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.servicemix.plugins</groupId>
+        <artifactId>maven2-jbi-plugin</artifactId>
+        <configuration>
+          <type>service-engine</type>
+          <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
+          <component>org.apache.servicemix.wsn.component.WSNComponent</component>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
