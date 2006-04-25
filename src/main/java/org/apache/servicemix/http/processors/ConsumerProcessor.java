@@ -37,6 +37,7 @@ import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.ServerManager;
+import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
@@ -75,6 +76,10 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         this.soapHelper.addPolicy(new AddressingHandler());
         this.locks = new ConcurrentHashMap();
         this.exchanges = new ConcurrentHashMap();
+    }
+    
+    public SslParameters getSsl() {
+        return this.endpoint.getSsl();
     }
     
     public void process(MessageExchange exchange) throws Exception {

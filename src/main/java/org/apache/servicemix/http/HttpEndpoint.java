@@ -49,7 +49,22 @@ public class HttpEndpoint extends SoapEndpoint {
     protected ExtensibilityElement binding;
     protected String locationURI;
     protected Map wsdls = new HashMap();
+    protected SslParameters ssl;
     
+    /**
+     * @return Returns the ssl.
+     */
+    public SslParameters getSsl() {
+        return ssl;
+    }
+
+    /**
+     * @param ssl The ssl to set.
+     */
+    public void setSsl(SslParameters ssl) {
+        this.ssl = ssl;
+    }
+
     public ExtensibilityElement getBinding() {
         return binding;
     }

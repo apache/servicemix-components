@@ -36,13 +36,15 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.HttpEndpoint;
@@ -68,18 +70,12 @@ public class ProviderProcessor implements ExchangeProcessor {
     protected DeliveryChannel channel;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
-        try {
-            this.endpoint = endpoint;
-            this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
-            if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
-                this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
-            }
-            this.jbiMarshaler = new JBIMarshaler();
-            this.host = new HostConfiguration();
-            this.host.setHost(new URI(endpoint.getLocationURI(), false));
-        } catch (URIException e) {
-            throw new RuntimeException(e);
+        this.endpoint = endpoint;
+        this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
+        if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
+            this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
         }
+        this.jbiMarshaler = new JBIMarshaler();
     }
 
     public void process(MessageExchange exchange) throws Exception {
@@ -162,6 +158,17 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 
     public void start() throws Exception {
+        URI uri = new URI(endpoint.getLocationURI(), false);
+        if (uri.getScheme().equals("https")) {
+            ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(endpoint.getSsl());
+            Protocol protocol = new Protocol("https", sf, 443);
+            HttpHost host = new HttpHost(uri.getHost(), uri.getPort(), protocol);
+            this.host = new HostConfiguration();
+            this.host.setHost(host);
+        } else {
+            this.host = new HostConfiguration();
+            this.host.setHost(uri.getHost(), uri.getPort());
+        }
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
     }
 

@@ -42,6 +42,11 @@ public class HttpSpringTest extends SpringTestSupport {
 
     private static Log logger =  LogFactory.getLog(HttpSpringTest.class);
 
+    protected void setUp() throws Exception {
+        System.setProperty("javax.net.debug", "all");
+        super.setUp();
+    }
+    
     public void test() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -60,6 +65,30 @@ public class HttpSpringTest extends SpringTestSupport {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
     }
+
+    /*
+     * TODO: this test should be successfull, but an exception is thrown saying
+     *   unable to find valid certifaction path to requested target
+     * 
+    public void testSsl() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://test/ssl", "MyProviderService"));
+        me.getInMessage().setContent(new StringSource("<echo xmlns='http://test'><echoin0>world</echoin0></echo>"));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getFault() != null) {
+                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            } else if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else {
+            logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        }
+    }
+    */
 
     public void testMimeWithHttpClient() throws Exception {
         File f = new File(getClass().getResource("servicemix.jpg").getFile());

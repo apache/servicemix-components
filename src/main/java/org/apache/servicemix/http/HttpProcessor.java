@@ -20,5 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface HttpProcessor {
 
+    SslParameters getSsl();
+    
     void process(HttpServletRequest request, HttpServletResponse response) throws Exception;
 }

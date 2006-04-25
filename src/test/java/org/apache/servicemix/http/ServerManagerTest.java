@@ -172,6 +172,9 @@ public class ServerManagerTest extends TestCase {
     }
 
     public static class TestHttpProcessor implements HttpProcessor {
+        public SslParameters getSsl() {
+            return null;
+        }
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
             System.out.println(request);
         }

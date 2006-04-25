@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jbi.JBIException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,6 +41,7 @@ import org.mortbay.jetty.MimeTypes;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.ContextHandler;
+import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
@@ -47,6 +49,7 @@ import org.mortbay.thread.BoundedThreadPool;
 import org.mortbay.thread.ThreadPool;
 import org.mortbay.util.ByteArrayISO8859Writer;
 import org.mortbay.util.StringUtil;
+import org.springframework.core.io.ClassPathResource;
 
 public class ServerManager {
 
@@ -55,12 +58,14 @@ public class ServerManager {
     private Map servers;
     private HttpConfiguration configuration;
     private ThreadPool threadPool;
+    private Map sslParams;
     
     protected void init() throws Exception {
         if (configuration == null) {
             configuration = new HttpConfiguration();
         }
         servers = new HashMap();
+        sslParams = new HashMap();
         BoundedThreadPool btp = new BoundedThreadPool();
         btp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
         threadPool = btp;
@@ -90,7 +95,13 @@ public class ServerManager {
         URL url = new URL(strUrl);
         Server server = getServer(url);
         if (server == null) {
-            server = createServer(url);
+            server = createServer(url, processor.getSsl());
+        } else {
+            // Check ssl params
+            SslParameters ssl = (SslParameters) sslParams.get(getKey(url));
+            if (ssl != null && !ssl.equals(processor.getSsl())) {
+                throw new Exception("An https server is already created on port " + url.getPort() + " but SSL parameters do not match");
+            }
         }
         String path = url.getPath();
         if (!path.startsWith("/")) {
@@ -160,27 +171,75 @@ public class ServerManager {
     }
 
     protected Server getServer(URL url) {
-        String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
-        Server server = (Server) servers.get(key);
+        Server server = (Server) servers.get(getKey(url));
         return server;
     }
     
-    protected Server createServer(URL url) throws Exception {
-        if (!url.getProtocol().equals("http")) {
+    protected String getKey(URL url) {
+        String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        return key;
+    }
+    
+    protected Server createServer(URL url, SslParameters ssl) throws Exception {
+        boolean isSsl = false;
+        if (url.getProtocol().equals("https")) {
+            // TODO: put ssl default information on HttpConfiguration
+            if (ssl == null) {
+                throw new IllegalArgumentException("https protocol required but no ssl parameters found");
+            }
+            isSsl = true;
+        } else if (!url.getProtocol().equals("http")) {
             // TODO: handle https ?
             throw new UnsupportedOperationException("Protocol " + url.getProtocol() + " is not supported");
         }
         // Create a new server
-        String connectorClassName = configuration.getJettyConnectorClassName();
         Connector connector;
-        try {
-            connector = (Connector) Class.forName(connectorClassName).newInstance();
-        } catch (Exception e) {
-            logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to " + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Reason: " + e.getMessage(), e);
+        if (isSsl) {
+            String keyStore = ssl.getKeyStore();
+            if (keyStore == null) {
+                keyStore = System.getProperty("javax.net.ssl.keyStore", "");
+                if (keyStore == null) {
+                    throw new IllegalArgumentException("keyStore or system property javax.net.ssl.keyStore must be set");
+                }
             }
-            connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME).newInstance();
+            if (keyStore.startsWith("classpath:")) {
+                try {
+                    String res = keyStore.substring(10);
+                    URL resurl = new ClassPathResource(res).getURL();
+                    keyStore = resurl.toString();
+                } catch (IOException e) {
+                    throw new JBIException("Unable to find keystore " + keyStore, e);
+                }
+            }
+            String keyStorePassword = ssl.getKeyStorePassword();
+            if (keyStorePassword == null) {
+                keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+                if (keyStorePassword == null) {
+                    throw new IllegalArgumentException("keyStorePassword or system property javax.net.ssl.keyStorePassword must be set");
+                }
+            }
+            SslSocketConnector sslConnector = new SslSocketConnector();
+            sslConnector.setAlgorithm(ssl.getAlgorithm());
+            sslConnector.setProtocol(ssl.getProtocol());
+            sslConnector.setConfidentialPort(url.getPort());
+            sslConnector.setPassword(ssl.getKeyStorePassword());
+            sslConnector.setKeyPassword(ssl.getKeyPassword() != null ? ssl.getKeyPassword() : keyStorePassword);
+            sslConnector.setKeystore(keyStore);
+            sslConnector.setKeystoreType(ssl.getKeyStoreType());
+            sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
+            sslConnector.setWantClientAuth(ssl.isWantClientAuth());
+            connector = sslConnector;
+        } else {
+            String connectorClassName = configuration.getJettyConnectorClassName();
+            try {
+                connector = (Connector) Class.forName(connectorClassName).newInstance();
+            } catch (Exception e) {
+                logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to " + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Reason: " + e.getMessage(), e);
+                }
+                connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME).newInstance();
+            }
         }
         connector.setHost(url.getHost());
         connector.setPort(url.getPort());
@@ -190,8 +249,8 @@ public class ServerManager {
         server.setNotFoundHandler(new DisplayServiceHandler());
         connector.start();
         server.start();
-        String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
-        servers.put(key, server);
+        servers.put(getKey(url), server);
+        sslParams.put(getKey(url), isSsl ? ssl : null);
         return server;
     }
 
