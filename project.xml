@@ -298,6 +298,15 @@
         </unitTest>
         <resources>
             <resource>
+                <directory>..</directory>
+                <targetPath>META-INF</targetPath>
+                <includes>
+                    <include>LICENSE</include>
+                    <include>DISCLAIMER</include>
+                    <include>NOTICE</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*</include>
