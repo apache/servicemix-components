@@ -121,14 +121,6 @@
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>target/generated</directory>
-        <includes>
-          <include>**/*</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
