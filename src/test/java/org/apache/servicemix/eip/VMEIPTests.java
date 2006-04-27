@@ -14,6 +14,7 @@ public class VMEIPTests {
         suite.addTestSuite(ContentBasedRouterTest.class);
         suite.addTestSuite(WireTapTest.class);
         suite.addTestSuite(StaticRecipientListTest.class);
+        suite.addTestSuite(MessageFilterTest.class);
         //$JUnit-END$
         return suite;
     }

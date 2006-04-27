@@ -24,8 +24,38 @@ import org.apache.servicemix.common.BaseLifeCycle;
  */
 public class EIPLifeCycle extends BaseLifeCycle {
 
+    protected EIPConfiguration configuration;
+
     public EIPLifeCycle(BaseComponent component) {
         super(component);
+        configuration = new EIPConfiguration();
+    }
+
+    /**
+     * @return Returns the configuration.
+     */
+    public EIPConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    /**
+     * @param configuration The configuration to set.
+     */
+    public void setConfiguration(EIPConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    /* (non-Javadoc)
+     * @see org.servicemix.common.BaseComponentLifeCycle#getExtensionMBean()
+     */
+    protected Object getExtensionMBean() throws Exception {
+        return configuration;
+    }
+
+    protected void doInit() throws Exception {
+        super.doInit();
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.load();
     }
 
 }

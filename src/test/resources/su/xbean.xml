@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:eip="http://servicemix.apache.org/eip/1.0"
+  xmlns:test="urn:test">
+
+  <eip:wire-tap service="test:wireTap" endpoint="endpoint">
+    <eip:target>
+      <eip:exchange-target service="test:target" />
+    </eip:target>
+    <eip:inListener>
+      <eip:exchange-target service="test:listener" />
+    </eip:inListener>
+  </eip:wire-tap>
+
+</beans>

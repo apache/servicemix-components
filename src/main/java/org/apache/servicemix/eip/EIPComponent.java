@@ -16,11 +16,29 @@
 package org.apache.servicemix.eip;
 
 import org.apache.servicemix.common.BaseComponent;
+import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.common.BaseServiceUnitManager;
+import org.apache.servicemix.common.Deployer;
 
 /**
  * @author gnodet
  * @version $Revision: 376451 $
  */
 public class EIPComponent extends BaseComponent {
+
+    /* (non-Javadoc)
+     * @see org.servicemix.common.BaseComponent#createLifeCycle()
+     */
+    protected BaseLifeCycle createLifeCycle() {
+        return new EIPLifeCycle(this);
+    }
+
+    /* (non-Javadoc)
+     * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
+     */
+    public BaseServiceUnitManager createServiceUnitManager() {
+        Deployer[] deployers = new Deployer[] { new EIPDeployer(this) };
+        return new BaseServiceUnitManager(this, deployers);
+    }
 
 }
