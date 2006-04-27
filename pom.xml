@@ -76,7 +76,7 @@
           <dependency>
             <groupId>qdox</groupId>
             <artifactId>qdox</artifactId>
-            <version>1.5</version>
+            <version>${qdox.version}</version>
           </dependency>
         </dependencies>
       </plugin>
