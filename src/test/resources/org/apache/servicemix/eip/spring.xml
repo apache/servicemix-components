@@ -71,7 +71,7 @@
               <!-- START SNIPPET: static-recipient-list -->
               <eip:static-recipient-list service="test:recipients" endpoint="endpoint">
                 <eip:recipients>
-                  <eip:exchange-target service="test:trace3" />
+                  <eip:exchange-target service="test:messageFilter" />
                   <eip:exchange-target service="test:trace4" />
                 </eip:recipients>
               </eip:static-recipient-list>
@@ -85,6 +85,17 @@
                 </eip:targets>
               </eip:static-routing-slip>
               <!-- END SNIPPET: static-routing-slip -->
+              
+              <!-- START SNIPPET: message-filter -->
+              <eip:message-filter service="test:messageFilter" endpoint="endpoint">
+                <eip:target>
+                  <eip:exchange-target service="test:trace3" />
+                </eip:target>
+                <eip:filter>
+                  <eip:xpath-predicate xpath="count(/world) = 1" />
+                </eip:filter>
+              </eip:message-filter>
+              <!-- END SNIPPET: message-filter -->
               
             </eip:endpoints>
           </eip:component>
