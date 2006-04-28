@@ -29,7 +29,8 @@
               <!-- END SNIPPET: wire-tap -->
               
               <!-- START SNIPPET: xpath-splitter -->
-              <eip:xpath-splitter service="test:xpathSplitter" endpoint="endpoint" xpath="/*/*">
+              <eip:xpath-splitter service="test:xpathSplitter" endpoint="endpoint" 
+                                  xpath="/*/*" namespaceContext="#nsContext">
                 <eip:target>
                   <eip:exchange-target service="test:router" />
                 </eip:target>
@@ -41,7 +42,7 @@
                 <eip:rules>
                   <eip:routing-rule>
                     <eip:predicate>
-                      <eip:xpath-predicate xpath="count(/echo) = 1" />
+                      <eip:xpath-predicate xpath="count(/test:echo) = 1" namespaceContext="#nsContext" />
                     </eip:predicate>
                     <eip:target>
                       <eip:exchange-target service="test:pipeline" />
@@ -92,7 +93,7 @@
                   <eip:exchange-target service="test:trace3" />
                 </eip:target>
                 <eip:filter>
-                  <eip:xpath-predicate xpath="count(/world) = 1" />
+                  <eip:xpath-predicate xpath="count(/test:world) = 1" namespaceContext="#nsContext"/>
                 </eip:filter>
               </eip:message-filter>
               <!-- END SNIPPET: message-filter -->
@@ -131,5 +132,13 @@
       
     </sm:activationSpecs>
   </sm:container>
+  
+  <!-- START SNIPPET: namespace-context -->
+  <eip:namespace-context id="nsContext">
+    <eip:namespaces>
+      <eip:namespace prefix="test">http://test</eip:namespace>
+    </eip:namespaces>
+  </eip:namespace-context>
+  <!-- END SNIPPET: namespace-context -->
 
 </beans>

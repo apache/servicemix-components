@@ -35,7 +35,7 @@ public class SpringConfigurationTest extends SpringTestSupport {
         ServiceMixClient client = new DefaultServiceMixClient(jbi, as);
         InOnly me = client.createInOnlyExchange();
         me.setService(new QName("http://test", "wireTap"));
-        me.getInMessage().setContent(new StringSource("<test><echo/><world/><earth/></test>"));
+        me.getInMessage().setContent(new StringSource("<test xmlns=\"http://test\"><echo/><world/><earth/></test>"));
         client.sendSync(me);
         
         ((Receiver) getBean("trace1")).getMessageList().assertMessagesReceived(1);

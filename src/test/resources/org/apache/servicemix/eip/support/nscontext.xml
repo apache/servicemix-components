@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:eip="http://servicemix.apache.org/eip/1.0">
+
+  <eip:namespace-context id="nsContext">
+    <eip:namespaces>
+      <eip:namespace prefix="test">urn:test</eip:namespace>
+    </eip:namespaces>
+  </eip:namespace-context>
+
+</beans>
