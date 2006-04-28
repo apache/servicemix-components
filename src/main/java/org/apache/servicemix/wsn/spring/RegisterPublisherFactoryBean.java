@@ -20,6 +20,12 @@ import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.springframework.beans.factory.FactoryBean;
 
+/**
+ * 
+ * @author gnodet
+ * @version $Revision: 376451 $
+ * @org.apache.xbean.XBean element="register-publisher"
+ */
 public class RegisterPublisherFactoryBean implements FactoryBean {
 
     private String publisher;

@@ -23,6 +23,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
+/**
+ * 
+ * @author gnodet
+ * @version $Revision: 376451 $
+ * @org.apache.xbean.XBean element="create-pull-point"
+ */
 public class CreatePullPointFactoryBean implements FactoryBean {
 
     private String address;

@@ -17,46 +17,33 @@ package org.apache.servicemix.wsn.component;
 
 import java.io.File;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
 import javax.jbi.JBIException;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.bind.JAXBContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.transform.Source;
 
 import junit.framework.TestCase;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
-import org.apache.servicemix.MessageExchangeListener;
-import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.CreatePullPoint;
 import org.apache.servicemix.wsn.client.NotificationBroker;
-import org.apache.servicemix.wsn.client.Publisher;
 import org.apache.servicemix.wsn.client.PullPoint;
 import org.apache.servicemix.wsn.client.Subscription;
+import org.apache.servicemix.wsn.spring.PublisherComponent;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
-import org.oasis_open.docs.wsn.b_2.Subscribe;
-import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
-import org.oasis_open.docs.wsn.b_2.Unsubscribe;
-import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
 import org.w3._2005._08.addressing.AttributedURIType;
 import org.w3._2005._08.addressing.EndpointReferenceType;
 import org.w3c.dom.Document;
@@ -266,11 +253,11 @@ public class WSNComponentTest extends TestCase {
 	
 	public void testDemandBasedPublisher() throws Exception {
 		PublisherComponent publisherComponent = new PublisherComponent();
+        publisherComponent.setService(new QName("http://servicemix.org/example", "publisher"));
+        publisherComponent.setEndpoint("publisher");
+        publisherComponent.setTopic("myTopic");
+        publisherComponent.setDemand(true);
 		jbi.activateComponent(publisherComponent, "publisher");
-		
-		Publisher publisher = wsnBroker.registerPublisher(
-									AbstractWSAClient.createWSA(PublisherComponent.SERVICE.getNamespaceURI() + "/" + PublisherComponent.SERVICE.getLocalPart() + "/" + PublisherComponent.ENDPOINT), 
-									"myTopic", true);
 		
 		Thread.sleep(50);
 		assertNull(publisherComponent.getSubscription());
@@ -285,8 +272,6 @@ public class WSNComponentTest extends TestCase {
 		
 		Thread.sleep(500);
 		assertNull(publisherComponent.getSubscription());
-		
-		publisher.destroy();
 		
 		Thread.sleep(50);
 	}
@@ -355,53 +340,5 @@ public class WSNComponentTest extends TestCase {
 		epr.getAddress().setValue(service.getNamespaceURI() + "/" + service.getLocalPart() + "/" + endpoint);
 		return epr;
 	}
-	
-	public static class PublisherComponent extends ComponentSupport implements MessageExchangeListener {
-	    public static final QName SERVICE = new QName("http://servicemix.org/example", "publisher");
-	    public static final String ENDPOINT = "publisher";
-	    private Object subscription;
-	    public PublisherComponent() {
-	    	super(SERVICE, ENDPOINT);
-	    }
-		public Object getSubscription() {
-			return subscription;
-		}
-		public void onMessageExchange(MessageExchange exchange) throws MessagingException {
-			if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-				try {
-					JAXBContext jaxbContext = JAXBContext.newInstance(Subscribe.class);
-					Source src = exchange.getMessage("in").getContent();
-					Object input = jaxbContext.createUnmarshaller().unmarshal(src);
-					if (input instanceof Subscribe) {
-						subscription = input;
-						SubscribeResponse response = new SubscribeResponse();
-						response.setSubscriptionReference(AbstractWSAClient.createWSA(PublisherComponent.SERVICE.getNamespaceURI() + "/" + PublisherComponent.SERVICE.getLocalPart() + "/" + PublisherComponent.ENDPOINT));
-						StringWriter writer = new StringWriter();
-						jaxbContext.createMarshaller().marshal(response, writer);
-						NormalizedMessage out = exchange.createMessage();
-						out.setContent(new StringSource(writer.toString()));
-						exchange.setMessage(out, "out");
-						send(exchange);
-					} else if (input instanceof Unsubscribe) {
-						subscription = null;
-						UnsubscribeResponse response = new UnsubscribeResponse();
-						StringWriter writer = new StringWriter();
-						jaxbContext.createMarshaller().marshal(response, writer);
-						NormalizedMessage out = exchange.createMessage();
-						out.setContent(new StringSource(writer.toString()));
-						exchange.setMessage(out, "out");
-						send(exchange);
-					} else {
-						throw new Exception("Unkown request");
-					}
-				} catch (Exception e) {
-					exchange.setError(e);
-					send(exchange);
-				}
-			} else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-				exchange.setStatus(ExchangeStatus.DONE);
-				send(exchange);
-			}
-		}
-	}
+
 }

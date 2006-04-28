@@ -26,6 +26,12 @@ import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.oasis_open.docs.wsn.b_2.UseRaw;
 import org.springframework.beans.factory.FactoryBean;
 
+/**
+ * 
+ * @author gnodet
+ * @version $Revision: 376451 $
+ * @org.apache.xbean.XBean element="subscribe"
+ */
 public class SubscribeFactoryBean implements FactoryBean {
 
     private String consumer;

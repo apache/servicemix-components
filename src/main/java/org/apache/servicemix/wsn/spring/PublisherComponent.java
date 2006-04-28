@@ -40,6 +40,12 @@ import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+/**
+ * 
+ * @author gnodet
+ * @version $Revision: 376451 $
+ * @org.apache.xbean.XBean element="publisher"
+ */
 public class PublisherComponent extends ComponentSupport implements MessageExchangeListener {
 
     private static final Log log = LogFactory.getLog(PublisherComponent.class);
@@ -78,11 +84,24 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
         this.topic = topic;
     }
 
+    /**
+     * @return Returns the subscription.
+     */
+    public Subscribe getSubscription() {
+        return subscription;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.jbi.management.BaseLifeCycle#init()
+     */
     public void init() throws JBIException {
         super.init();
         getContext().activateEndpoint(getService(), subscriptionEndpoint);
     }
     
+    /* (non-Javadoc)
+     * @see javax.jbi.management.LifeCycleMBean#start()
+     */
     public void start() throws JBIException {
         new Thread() {
             public void run() {
@@ -99,10 +118,16 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
         }.start();
     }
     
+    /* (non-Javadoc)
+     * @see javax.jbi.management.LifeCycleMBean#shutDown()
+     */
     public void shutDown() throws JBIException {
         super.shutDown();
     }
     
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.MessageExchangeListener#onMessageExchange(javax.jbi.messaging.MessageExchange)
+     */
     public void onMessageExchange(MessageExchange exchange) throws MessagingException {
         if (exchange.getStatus() != ExchangeStatus.ACTIVE) {
             return;
