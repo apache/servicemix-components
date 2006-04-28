@@ -24,9 +24,7 @@
          xmlns:artifact="artifact">
 
   <preGoal name="java:compile">
-    <!--
     <attainGoal name="xbean:generate" />
-    -->
            <attainGoal name="jaxws:compile"/>
          </preGoal>
 
@@ -42,8 +40,8 @@
       <classpath refid="test.classpath" />
     </taskdef>
     <xsdGenerate
-    destFile="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" namespace="http://servicemix.apache.org/wsn2005/1.0"
-    		classpathref="test.classpath" srcdir="${basedir}/src/main/java"  metaInfDir="${basedir}/target/generated/"/>
+    destFile="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" namespace="http://servicemix.apache.org/wsn/1.0"
+    		classpathref="test.classpath" srcdir="${basedir}/src/main/java/org/apache/servicemix/wsn/spring"  metaInfDir="${basedir}/target/generated/"/>
   	<copy file="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" todir="${basedir}/target/generated/"/>
   	<copy file="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd" todir="${basedir}/../xdocs"/>    
     <copy file="${basedir}/target/servicemix-wsn2005-${pom.currentVersion}.xsd.html" todir="${basedir}/../xdocs"/>
