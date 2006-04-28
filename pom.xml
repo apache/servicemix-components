@@ -92,7 +92,6 @@
                   sourcedestdir="${basedir}/target/generated"
                   wsdl="${basedir}/src/main/resources/org/apache/servicemix/wsn/wsn.wsdl"> </wsimport>
 
-                <!--
                 <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
                   name="mapping">
                   <classpath>
@@ -100,17 +99,9 @@
                     <path refid="maven.test.classpath" />
                   </classpath>
                 </taskdef>
-                <mkdir dir="${basedir}/target/qdox"/>
-                <copy todir="${basedir}/target/qdox">
-                  <fileset dir="${basedir}/src/main/java" />
-                </copy>
-                <copy todir="${basedir}/target/qdox">
-                  <fileset dir="${basedir}/target/generated" />
-                </copy>
                 <mapping destFile="${basedir}/target/${pom.artifactId}-${version}.xsd"
                   namespace="http://servicemix.apache.org/wsn/1.0"
-                  srcdir="${basedir}/target/qdox" metaInfDir="${basedir}/target/generated/" />
-                  -->
+                  srcdir="${basedir}/src/main/java/org/apache/servicemix/wsn/spring" metaInfDir="${basedir}/target/generated/" />
               </tasks>
               <sourceRoot>${basedir}/target/generated</sourceRoot>
             </configuration>
@@ -120,14 +111,11 @@
           </execution>
         </executions>
         <dependencies>
-          <!-- Need qdox 1.6-SNAPSHOT to handle java5 annotations -->
-          <!--
           <dependency>
             <groupId>qdox</groupId>
             <artifactId>qdox</artifactId>
-            <version>1.6-SNAPSHOT</version>
+            <version>${qdox.version}</version>
           </dependency>
-          -->
         </dependencies>
       </plugin>
       <plugin>
