@@ -6,7 +6,7 @@
   <sm:container id="jbi" embedded="true">
     
     <sm:listeners>
-      <bean class="org.apache.servicemix.jbi.view.DotViewFlowListener" />
+      <sm:dotViewFlowListener />
     </sm:listeners>
     
     <sm:activationSpecs>
