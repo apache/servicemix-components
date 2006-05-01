@@ -52,6 +52,8 @@ public class WSNLifeCycle extends BaseLifeCycle {
 	@Override
 	protected void doInit() throws Exception {
 		super.doInit();
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.load();
         // Notification Broker
         notificationBroker = new JbiNotificationBroker(configuration.getBrokerName());
         notificationBroker.setLifeCycle(this);
