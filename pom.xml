@@ -96,7 +96,7 @@
         <configuration>
           <type>service-engine</type>
           <bootstrap>org.apache.servicemix.jms.JmsBootstrap</bootstrap>
-          <component>org.apache.servicemix.Jms.JmsComponent</component>
+          <component>org.apache.servicemix.jms.JmsComponent</component>
         </configuration>
       </plugin>
     </plugins>
