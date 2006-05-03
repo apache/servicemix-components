@@ -240,7 +240,7 @@
         </properties>
       </dependency>
       <dependency>
-        <groupId>servicemix</groupId>
+        <groupId>stax-utils</groupId>
         <artifactId>stax-utils</artifactId>
         <version>${stax_utils_version}</version>
         <properties>
