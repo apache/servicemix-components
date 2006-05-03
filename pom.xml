@@ -59,38 +59,6 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-resources</phase>
-            <configuration>
-              <tasks>
-                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
-                  name="mapping">
-                  <classpath>
-                    <pathelement path="${basedir}/target/classes" />
-                    <path refid="maven.test.classpath" />
-                  </classpath>
-                </taskdef>
-                <mapping destFile="${basedir}/target/${pom.artifactId}-${version}.xsd"
-                  namespace="http://servicemix.apache.org/jms/1.0" srcdir="${basedir}/src/main/java"
-                  metaInfDir="${basedir}/target/generated/" />
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>qdox</groupId>
-            <artifactId>qdox</artifactId>
-            <version>${qdox.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
         <groupId>org.apache.servicemix.plugins</groupId>
         <artifactId>maven2-jbi-plugin</artifactId>
         <configuration>
@@ -98,6 +66,20 @@
           <bootstrap>org.apache.servicemix.jms.JmsBootstrap</bootstrap>
           <component>org.apache.servicemix.jms.JmsComponent</component>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>maven-xbean-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <namespace>http://servicemix.apache.org/jms/1.0</namespace>
+            </configuration>
+            <goals>
+              <goal>mapping</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
