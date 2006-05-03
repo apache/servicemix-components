@@ -61,7 +61,16 @@
     <dependency>
       <groupId>com.sun.xml</groupId>
       <artifactId>jaxws-tools</artifactId>
-      <version>2.0-JAXWS-2.0-EA3</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.jws</groupId>
+          <artifactId>jsr181-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>xfire</groupId>
+      <artifactId>xfire-jsr181-api</artifactId>
     </dependency>
   </dependencies>
 
@@ -76,47 +85,44 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.apache.servicemix.plugins</groupId>
+        <artifactId>maven2-jbi-plugin</artifactId>
+        <configuration>
+          <type>service-engine</type>
+          <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
+          <component>org.apache.servicemix.wsn.component.WSNComponent</component>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>maven-xbean-plugin</artifactId>
         <executions>
           <execution>
-            <phase>generate-sources</phase>
             <configuration>
-              <tasks>
-                <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                  <classpath refid="maven.test.classpath" />
-                </taskdef>
-                <mkdir dir="${basedir}/target/generated" />
-                <mkdir dir="${basedir}/target/generated-classes" />
-                <wsimport fork="true" debug="false" verbose="false" keep="true"
-                  destdir="${basedir}/target/generated-classes"
-                  sourcedestdir="${basedir}/target/generated"
-                  wsdl="${basedir}/src/main/resources/org/apache/servicemix/wsn/wsn.wsdl"> </wsimport>
-
-                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
-                  name="mapping">
-                  <classpath>
-                    <pathelement path="${basedir}/target/classes" />
-                    <path refid="maven.test.classpath" />
-                  </classpath>
-                </taskdef>
-                <mapping destFile="${basedir}/target/${pom.artifactId}-${version}.xsd"
-                  namespace="http://servicemix.apache.org/wsn/1.0"
-                  srcdir="${basedir}/src/main/java/org/apache/servicemix/wsn/spring" metaInfDir="${basedir}/target/generated/" />
-              </tasks>
-              <sourceRoot>${basedir}/target/generated</sourceRoot>
+              <namespace>http://servicemix.apache.org/wsn/1.0</namespace>
+              <srcDir>${basedir}/src/main/java/org/apache/servicemix/wsn/spring</srcDir>
             </configuration>
             <goals>
-              <goal>run</goal>
+              <goal>mapping</goal>
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>qdox</groupId>
-            <artifactId>qdox</artifactId>
-            <version>${qdox.version}</version>
-          </dependency>
-        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jaxws-maven-plugin</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>wsimport</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <wsdlDirectory>${basedir}/src/main/resources/org/apache/servicemix/wsn</wsdlDirectory>
+          <wsdlFiles>wsn.wsdl</wsdlFiles>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -132,15 +138,6 @@
             <!-- while does this one fail in multiproject builds ? -->
             <exclude>**/WSNComponentTest.*</exclude>
           </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.servicemix.plugins</groupId>
-        <artifactId>maven2-jbi-plugin</artifactId>
-        <configuration>
-          <type>service-engine</type>
-          <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
-          <component>org.apache.servicemix.wsn.component.WSNComponent</component>
         </configuration>
       </plugin>
     </plugins>
