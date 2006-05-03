@@ -67,64 +67,6 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-resources</phase>
-            <configuration>
-              <tasks>
-                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
-                  name="mapping">
-                  <classpath>
-                    <pathelement path="${basedir}/target/classes" />
-                    <path refid="maven.test.classpath" />
-                  </classpath>
-                </taskdef>
-                <mapping destFile="${basedir}/target/${pom.artifactId}-${version}.xsd"
-                  namespace="http://servicemix.apache.org/http/1.0"
-                  srcdir="${basedir}/src/main/java" metaInfDir="${basedir}/target/generated/" />
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>qdox</groupId>
-            <artifactId>qdox</artifactId>
-            <version>${qdox.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <!--
-      <plugin>
-        <groupId>org.apache.xbean</groupId>
-        <artifactId>maven-xbean-plugin</artifactId>
-        <version>2.3-SNAPSHOT</version>
-        <executions>
-          <execution>
-            <id>first-phase</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>mapping</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>second-phase</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>mapping</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <namespace>http://servicemix.apache.org/http/1.0</namespace>
-        </configuration>
-      </plugin>
-      -->
-      <plugin>
         <groupId>org.apache.servicemix.plugins</groupId>
         <artifactId>maven2-jbi-plugin</artifactId>
         <configuration>
@@ -132,6 +74,20 @@
           <bootstrap>org.apache.servicemix.http.HttpBootstrap</bootstrap>
           <component>org.apache.servicemix.http.HttpComponent</component>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>maven-xbean-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <namespace>http://servicemix.apache.org/http/1.0</namespace>
+            </configuration>
+            <goals>
+              <goal>mapping</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
