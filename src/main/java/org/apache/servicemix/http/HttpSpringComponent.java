@@ -20,10 +20,7 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.jbi.util.DOMUtil;
 import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * 
@@ -47,18 +44,7 @@ public class HttpSpringComponent extends BaseComponent {
      * @see javax.jbi.component.Component#resolveEndpointReference(org.w3c.dom.DocumentFragment)
      */
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        if (epr.getChildNodes().getLength() == 1) {
-            Node child = epr.getFirstChild();
-            if (child instanceof Element) {
-                Element elem = (Element) child;
-                String nsUri = elem.getNamespaceURI();
-                String name = elem.getLocalName();
-                if (HttpResolvedEndpoint.EPR_URI.equals(nsUri) && HttpResolvedEndpoint.EPR_NAME.equals(name)) {
-                    return new HttpResolvedEndpoint(epr, DOMUtil.getElementText(elem));
-                }
-            }
-        }
-        return null;
+        return HttpResolvedEndpoint.resolveEndpoint(epr);
     }
     
     public HttpEndpoint[] getEndpoints() {

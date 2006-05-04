@@ -18,11 +18,16 @@ package org.apache.servicemix.http;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.jbi.util.DOMUtil;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class HttpResolvedEndpoint implements ServiceEndpoint {
 
     public final static String EPR_URI = "urn:servicemix:http";
+    public final static QName EPR_SERVICE = new QName(EPR_URI, "HttpComponent");
     public final static String EPR_NAME = "epr";
     
     private DocumentFragment reference;
@@ -30,6 +35,7 @@ public class HttpResolvedEndpoint implements ServiceEndpoint {
     
     public HttpResolvedEndpoint(DocumentFragment epr, String epName) {
         this.reference = epr;
+        this.epName = epName;
     }
 
     public DocumentFragment getAsReference(QName operationName) {
@@ -45,7 +51,36 @@ public class HttpResolvedEndpoint implements ServiceEndpoint {
     }
 
     public QName getServiceName() {
-        return new QName("urn:servicemix:http", "HttpComponent");
+        return EPR_SERVICE;
+    }
+    
+    public static ServiceEndpoint resolveEndpoint(DocumentFragment epr) {
+        if (epr.getChildNodes().getLength() == 1) {
+            Node child = epr.getFirstChild();
+            if (child instanceof Element) {
+                Element elem = (Element) child;
+                String nsUri = elem.getNamespaceURI();
+                String name = elem.getLocalName();
+                // Check simple endpoints
+                if (HttpResolvedEndpoint.EPR_URI.equals(nsUri) && HttpResolvedEndpoint.EPR_NAME.equals(name)) {
+                    return new HttpResolvedEndpoint(epr, DOMUtil.getElementText(elem));
+                // Check WSA endpoints
+                } else {
+                    NodeList nl = elem.getElementsByTagNameNS("http://www.w3.org/2005/08/addressing", "Address");
+                    if (nl.getLength() == 1) {
+                        Element address = (Element) nl.item(0);
+                        String uri = DOMUtil.getElementText(address);
+                        if (uri != null) {
+                            uri = uri.trim();
+                            if (uri.startsWith("http://") || uri.startsWith("https://")) {
+                                return new HttpResolvedEndpoint(epr, uri);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
     
 }
