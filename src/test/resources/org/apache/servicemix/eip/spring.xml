@@ -32,7 +32,7 @@
               <eip:xpath-splitter service="test:xpathSplitter" endpoint="endpoint" 
                                   xpath="/*/*" namespaceContext="#nsContext">
                 <eip:target>
-                  <eip:exchange-target service="test:router" />
+                  <eip:exchange-target uri="service:http://test/router" />
                 </eip:target>
               </eip:xpath-splitter>
               <!-- END SNIPPET: xpath-splitter -->
@@ -45,7 +45,7 @@
                       <eip:xpath-predicate xpath="count(/test:echo) = 1" namespaceContext="#nsContext" />
                     </eip:predicate>
                     <eip:target>
-                      <eip:exchange-target service="test:pipeline" />
+                      <eip:exchange-target uri="endpoint:http://test/pipeline/endpoint" />
                     </eip:target>
                   </eip:routing-rule>
                   <eip:routing-rule>

@@ -6,7 +6,9 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.springframework.beans.factory.InitializingBean;
+import org.w3c.dom.DocumentFragment;
 
 /**
  * An ExchangeTarget may be used to specify the target of an exchange,
@@ -26,20 +28,22 @@ public class ExchangeTarget implements InitializingBean {
     private QName service;
 
     private String endpoint;
+    
+    private String uri;
 
     /**
-     * @return Returns the endpointName.
+     * @return Returns the endpoint.
      */
     public String getEndpoint() {
         return endpoint;
     }
 
     /**
-     * @param endpointName
-     *            The endpointName to set.
+     * @param endpoint
+     *            The endpoint to set.
      */
-    public void setEndpoint(String endpointName) {
-        this.endpoint = endpointName;
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 
     /**
@@ -73,18 +77,32 @@ public class ExchangeTarget implements InitializingBean {
     }
 
     /**
-     * @return Returns the serviceName.
+     * @return Returns the service.
      */
     public QName getService() {
         return service;
     }
 
     /**
-     * @param serviceName
-     *            The serviceName to set.
+     * @param service
+     *            The service to set.
      */
-    public void setService(QName serviceName) {
-        this.service = serviceName;
+    public void setService(QName service) {
+        this.service = service;
+    }
+
+    /**
+     * @return the uri
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    /**
+     * @param uri the uri to set
+     */
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     /**
@@ -93,8 +111,33 @@ public class ExchangeTarget implements InitializingBean {
      * @throws MessagingException if the target could not be configured
      */
     public void configureTarget(MessageExchange exchange, ComponentContext context) throws MessagingException {
-        if (_interface == null && service == null) {
-            throw new MessagingException("interfaceName or serviceName should be specified");
+        if (_interface == null && service == null && uri == null) {
+            throw new MessagingException("interface, service or uri should be specified");
+        }
+        if (uri != null) {
+            if (uri.startsWith("interface:")) {
+                String uri = this.uri.substring(10);
+                String[] parts = URIResolver.split2(uri);
+                exchange.setInterfaceName(new QName(parts[0], parts[1]));
+            } else if (uri.startsWith("operation:")) {
+                String uri = this.uri.substring(10);
+                String[] parts = URIResolver.split3(uri);
+                exchange.setInterfaceName(new QName(parts[0], parts[1]));
+                exchange.setOperation(new QName(parts[0], parts[2]));
+            } else if (uri.startsWith("service:")) {
+                String uri = this.uri.substring(8);
+                String[] parts = URIResolver.split2(uri);
+                exchange.setService(new QName(parts[0], parts[1]));
+            } else if (uri.startsWith("endpoint:")) {
+                String uri = this.uri.substring(9);
+                String[] parts = URIResolver.split3(uri);
+                ServiceEndpoint se = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+                exchange.setEndpoint(se);
+            } else {
+                DocumentFragment epr = URIResolver.createWSAEPR(uri);
+                ServiceEndpoint se = context.resolveEndpointReference(epr);
+                exchange.setEndpoint(se);
+            }
         }
         if (_interface != null) {
             exchange.setInterfaceName(_interface);
@@ -115,8 +158,8 @@ public class ExchangeTarget implements InitializingBean {
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception {
-        if (_interface == null && service == null) {
-            throw new MessagingException("interfaceName or serviceName should be specified");
+        if (_interface == null && service == null && uri == null) {
+            throw new MessagingException("interface, service or uri should be specified");
         }
     }
 
