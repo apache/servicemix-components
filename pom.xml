@@ -50,6 +50,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>${pom.groupId}</groupId>
+      <artifactId>servicemix-http</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>quartz</groupId>
       <artifactId>quartz</artifactId>
       <scope>test</scope>

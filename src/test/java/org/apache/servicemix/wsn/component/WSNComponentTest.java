@@ -31,9 +31,12 @@ import junit.framework.TestCase;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
+import org.apache.servicemix.http.HttpEndpoint;
+import org.apache.servicemix.http.HttpSpringComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
@@ -325,6 +328,40 @@ public class WSNComponentTest extends TestCase {
         Thread.sleep(50);
         receiver.getMessageList().assertMessagesReceived(1);
         receiver.getMessageList().flushMessages();
+    }
+    
+    public void testDynamicSubscription() throws Exception {
+        HttpSpringComponent httpComponent = new HttpSpringComponent();
+        
+        HttpEndpoint httpWSNBroker = new HttpEndpoint();
+        httpWSNBroker.setService(new QName("http://servicemix.org/wsnotification", "NotificationBroker"));
+        httpWSNBroker.setEndpoint("Broker");
+        httpWSNBroker.setRoleAsString("consumer");
+        httpWSNBroker.setLocationURI("http://localhost:8192/WSNBroker/");
+        httpWSNBroker.setSoap(true);
+        
+        HttpEndpoint httpReceiver = new HttpEndpoint();
+        httpReceiver.setService(new QName("receiver"));
+        httpReceiver.setEndpoint("endpoint");
+        httpReceiver.setLocationURI("http://localhost:8192/Receiver/");
+        httpReceiver.setDefaultMep(SoapHelper.IN_ONLY);
+        httpReceiver.setSoap(true);
+        
+        httpComponent.setEndpoints(new HttpEndpoint[] { httpWSNBroker, httpReceiver });
+        jbi.activateComponent(new ActivationSpec("servicemix-http", httpComponent));
+        
+        ReceiverComponent receiver = new ReceiverComponent();
+        receiver.setService(new QName("receiver"));
+        receiver.setEndpoint("endpoint");
+        jbi.activateComponent(new ActivationSpec("receiver", receiver));
+        
+        EndpointReferenceType epr = new EndpointReferenceType();
+        epr.setAddress(new AttributedURIType());
+        epr.getAddress().setValue("http://localhost:8192/Receiver/?http.soap=true");
+        wsnBroker.subscribe(epr, "myTopic", null);
+        wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+        
+        receiver.getMessageList().assertMessagesReceived(1);
     }
 	
 	protected Element parse(String txt) throws Exception {

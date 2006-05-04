@@ -23,7 +23,10 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.bind.JAXBContext;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.logging.Log;
@@ -41,7 +44,10 @@ import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.apache.servicemix.wsn.jms.JmsSubscription;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class JbiSubscription extends JmsSubscription {
 
@@ -64,13 +70,40 @@ public class JbiSubscription extends JmsSubscription {
 	@Override
 	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
 		super.validateSubscription(subscribeRequest);
-        String[] parts = split(consumerReference.getAddress().getValue().trim());
-        endpoint = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+        try {
+            endpoint = resolveConsumer(subscribeRequest);
+        } catch (Exception e) {
+            SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
+            throw new SubscribeCreationFailedFault("Unable to resolve consumer reference endpoint", fault, e);
+        }
         if (endpoint == null) {
             SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
             throw new SubscribeCreationFailedFault("Unable to resolve consumer reference endpoint", fault);
         }
 	}
+    
+    protected ServiceEndpoint resolveConsumer(Subscribe subscribeRequest) throws Exception {
+        // Try to resolve the WSA endpoint
+        JAXBContext ctx = JAXBContext.newInstance(Subscribe.class);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.newDocument();
+        ctx.createMarshaller().marshal(subscribeRequest, doc);
+        NodeList nl = doc.getDocumentElement().getElementsByTagNameNS("http://docs.oasis-open.org/wsn/b-2", "ConsumerReference");
+        if (nl.getLength() != 1) {
+            throw new Exception("Subscribe request must have exactly one ConsumerReference node");
+        }
+        Element el = (Element) nl.item(0);
+        DocumentFragment epr = doc.createDocumentFragment();
+        epr.appendChild(el);
+        ServiceEndpoint endpoint = getContext().resolveEndpointReference(epr);
+        if (endpoint == null) {
+            String[] parts = split(subscribeRequest.getConsumerReference().getAddress().getValue().trim());
+            endpoint = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+        }
+        return endpoint;
+    }
 
     protected String[] split(String uri) {
 		char sep;
