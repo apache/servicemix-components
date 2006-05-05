@@ -72,13 +72,15 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
         if (trustStore == null) {
             trustStore = System.getProperty("javax.net.ssl.trustStore");
         }
-        if (trustStore != null && trustStore.startsWith("classpath:")) {
-            try {
-                String res = trustStore.substring(10);
-                URL url = new ClassPathResource(res).getURL();
-                trustStore = url.toString();
-            } catch (IOException e) {
-                throw new JBIException("Unable to find trustStore " + trustStore, e);
+        if (trustStore != null) {
+            if (trustStore.startsWith("classpath:")) {
+                try {
+                    String res = trustStore.substring(10);
+                    URL url = new ClassPathResource(res).getURL();
+                    trustStore = url.toString();
+                } catch (IOException e) {
+                    throw new JBIException("Unable to find trustStore " + trustStore, e);
+                }
             }
             trustStorePassword = ssl.getTrustStorePassword();
             if (trustStorePassword == null) {

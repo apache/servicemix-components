@@ -66,10 +66,6 @@ public class HttpSpringTest extends SpringTestSupport {
         }
     }
 
-    /*
-     * TODO: this test should be successfull, but an exception is thrown saying
-     *   unable to find valid certifaction path to requested target
-     * 
     public void testSsl() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -88,7 +84,6 @@ public class HttpSpringTest extends SpringTestSupport {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
     }
-    */
 
     public void testMimeWithHttpClient() throws Exception {
         File f = new File(getClass().getResource("servicemix.jpg").getFile());

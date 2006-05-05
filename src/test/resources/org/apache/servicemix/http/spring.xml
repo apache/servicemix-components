@@ -59,6 +59,12 @@
         </sm:component>
       </sm:activationSpec>
 
+      <sm:activationSpec service="testSsl:MyConsumerService" endpoint="myConsumer">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
     </sm:activationSpecs>
   </sm:container>
 

@@ -68,6 +68,7 @@ public class ProviderProcessor implements ExchangeProcessor {
     protected SoapMarshaler soapMarshaler;
     protected JBIMarshaler jbiMarshaler;
     protected DeliveryChannel channel;
+    private String relUri;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
@@ -76,6 +77,17 @@ public class ProviderProcessor implements ExchangeProcessor {
             this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
         }
         this.jbiMarshaler = new JBIMarshaler();
+        java.net.URI uri = java.net.URI.create(endpoint.getLocationURI());
+        relUri = uri.getPath();
+        if (!relUri.startsWith("/")) {
+            relUri = "/" + relUri;
+        }
+        if (uri.getQuery() != null) {
+            relUri += "?" + uri.getQuery();
+        }
+        if (uri.getFragment() != null) {
+            relUri += "#" + uri.getFragment();
+        }
     }
 
     public void process(MessageExchange exchange) throws Exception {
@@ -84,7 +96,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
-        PostMethod method = new PostMethod(endpoint.getLocationURI());
+        PostMethod method = new PostMethod(relUri);
         SoapMessage soapMessage = new SoapMessage();
         NormalizedMessage nm = exchange.getMessage("in");
         jbiMarshaler.fromNMS(soapMessage, nm);
