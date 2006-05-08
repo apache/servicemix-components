@@ -25,6 +25,7 @@
             	    role="provider" 
             	    locationURI="http://localhost:8192/Service/" />
             	  
+                  <!-- START SNIPPET: ssl -->
             	  <http:endpoint service="testSsl:MyConsumerService"
             	    endpoint="myConsumer"
             	    role="consumer" 
@@ -47,6 +48,7 @@
             	        trustStorePassword="password"/>
             	    </http:ssl>
             	  </http:endpoint>
+                  <!-- END SNIPPET: ssl -->
             	  
             	</http:endpoints>
             </http:component>
