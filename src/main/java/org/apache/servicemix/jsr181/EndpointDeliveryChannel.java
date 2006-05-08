@@ -82,7 +82,7 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
             }
         }
         BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-        lf.sendConsumerExchange(exchange, endpoint.getProcessor());
+        lf.sendConsumerExchange(exchange, endpoint);
     }
 
     public boolean sendSync(MessageExchange exchange, long timeout) throws MessagingException {
