@@ -135,7 +135,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                         //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
                         pendingMessages.put(exchange.getExchangeId(), context);
                         BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-                        lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this);
+                        lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this.endpoint);
                     } catch (Throwable e) {
                         log.error("Error while handling jms message", e);
                     }

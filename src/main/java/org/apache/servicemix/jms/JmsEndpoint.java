@@ -318,5 +318,10 @@ public class JmsEndpoint extends SoapEndpoint {
     public void setProcessorName(String processorName) {
         this.processorName = processorName;
     }
+    
+    public JmsConfiguration getConfiguration() {
+        JmsLifeCycle lifeCycle = (JmsLifeCycle) getServiceUnit().getComponent().getLifeCycle();
+        return lifeCycle.getConfiguration();
+    }
 
 }

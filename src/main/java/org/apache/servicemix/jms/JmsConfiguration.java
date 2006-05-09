@@ -15,8 +15,14 @@
  */
 package org.apache.servicemix.jms;
 
+import javax.jms.ConnectionFactory;
+
 import org.apache.servicemix.common.PersistentConfiguration;
 
+/**
+ * @author gnodet
+ *
+ */
 public class JmsConfiguration extends PersistentConfiguration implements JmsConfigurationMBean {
 
     private String userName;
@@ -25,6 +31,7 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
     private String jndiProviderUrl;
     private String jndiConnectionFactoryName;
     private String processorName = "multiplexing";
+    private ConnectionFactory connectionFactory;
     
     /**
      * @return Returns the password.
@@ -104,6 +111,20 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
         this.processorName = processorName;
         save();
     }
+    /**
+     * @return Returns the connectionFactory.
+     */
+    public ConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
+    /**
+     * Default ConnectionFactory to use in a spring configuration.
+     * @param connectionFactory the connectionFactory to set.
+     */
+    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
     
     public void save() {
         properties.setProperty("userName", userName);
@@ -140,5 +161,4 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
             return false;
         }
     }
-
 }

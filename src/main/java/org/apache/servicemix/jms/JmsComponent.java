@@ -47,18 +47,7 @@ public class JmsComponent extends BaseComponent {
      * @see javax.jbi.component.Component#resolveEndpointReference(org.w3c.dom.DocumentFragment)
      */
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        if (epr.getChildNodes().getLength() == 1) {
-            Node child = epr.getFirstChild();
-            if (child instanceof Element) {
-                Element elem = (Element) child;
-                String nsUri = elem.getNamespaceURI();
-                String name = elem.getLocalName();
-                if (JmsResolvedEndpoint.EPR_URI.equals(nsUri) && JmsResolvedEndpoint.EPR_NAME.equals(name)) {
-                    return new JmsResolvedEndpoint(epr, DOMUtil.getElementText(elem));
-                }
-            }
-        }
-        return null;
+        return JmsResolvedEndpoint.resolveEndpoint(epr);
     }
     
 }

@@ -15,8 +15,19 @@
  */
 package org.apache.servicemix.jms;
 
+import java.net.URI;
+import java.util.Map;
+
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
+
+import org.apache.activemq.util.IntrospectionSupport;
+import org.apache.activemq.util.URISupport;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ServiceUnit;
 
 public class JmsLifeCycle extends BaseLifeCycle {
 
@@ -55,6 +66,42 @@ public class JmsLifeCycle extends BaseLifeCycle {
      */
     public void setConfiguration(JmsConfiguration configuration) {
         this.configuration = configuration;
+    }
+
+    protected QName getEPRServiceName() {
+        return JmsResolvedEndpoint.EPR_SERVICE;
+    }
+    
+    protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
+        // We receive an exchange for an EPR that has not been used yet.
+        // Register a provider endpoint and restart processing.
+        JmsEndpoint jmsEp = new JmsEndpoint();
+        jmsEp.setServiceUnit(new ServiceUnit(component));
+        jmsEp.setService(ep.getServiceName());
+        jmsEp.setEndpoint(ep.getEndpointName());
+        jmsEp.setRole(MessageExchange.Role.PROVIDER);
+        URI uri = new URI(ep.getEndpointName());
+        Map map = URISupport.parseQuery(uri.getQuery());
+        if( IntrospectionSupport.setProperties(jmsEp, map, "jms.") ) {
+            uri = URISupport.createRemainingURI(uri, map);
+        }
+        if (uri.getPath() != null) {
+            String path = uri.getSchemeSpecificPart();
+            while (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            if (path.startsWith(AbstractJmsProcessor.STYLE_QUEUE + "/")) {
+                jmsEp.setDestinationStyle(AbstractJmsProcessor.STYLE_QUEUE);
+                jmsEp.setJmsProviderDestinationName(path.substring(AbstractJmsProcessor.STYLE_QUEUE.length() + 1));
+            } else if (path.startsWith(AbstractJmsProcessor.STYLE_TOPIC + "/")) {
+                jmsEp.setDestinationStyle(AbstractJmsProcessor.STYLE_TOPIC);
+                jmsEp.setJmsProviderDestinationName(path.substring(AbstractJmsProcessor.STYLE_TOPIC.length() + 1));
+            }
+        }
+        jmsEp.activateDynamic();
+        // TODO: need to find some usefull syntax for jms
+        // jms://
+        return jmsEp;
     }
 
 }

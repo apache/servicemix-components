@@ -40,15 +40,39 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         InitialContext ctx = null;
         ConnectionFactory connectionFactory = null;
         try {
+            // First check configured connectionFactory on the endpoint
             connectionFactory = endpoint.getConnectionFactory();
-            if (connectionFactory == null) {
+            // Then, check for jndi connection factory name on the endpoint
+            if (connectionFactory == null && endpoint.getJndiConnectionFactoryName() != null) {
                 Hashtable props = new Hashtable();
                 if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
                     props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
                     props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
+                } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null && 
+                           endpoint.getConfiguration().getJndiProviderUrl() != null) {
+                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getConfiguration().getJndiInitialContextFactory());
+                    props.put(Context.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
                 }
                 ctx = new InitialContext(props);
                 connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
+            }
+            // Check for a configured connectionFactory on the configuration
+            if (connectionFactory == null && endpoint.getConfiguration().getConnectionFactory() != null) {
+                connectionFactory = endpoint.getConfiguration().getConnectionFactory();
+            }
+            // Check for jndi connection factory name on the configuration
+            if (connectionFactory == null && endpoint.getConfiguration().getJndiConnectionFactoryName() != null) {
+                Hashtable props = new Hashtable();
+                if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
+                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
+                    props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
+                } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null && 
+                           endpoint.getConfiguration().getJndiProviderUrl() != null) {
+                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getConfiguration().getJndiInitialContextFactory());
+                    props.put(Context.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
+                }
+                ctx = new InitialContext(props);
+                connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getConfiguration().getJndiConnectionFactoryName());
             }
             connection = connectionFactory.createConnection();
             connection.start();

@@ -190,6 +190,8 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
             synchronized (producer) {
                 producer.send(msg);
             }
+            exchange.setStatus(ExchangeStatus.DONE);
+            channel.send(exchange);
         } else if (exchange instanceof InOut) {
             msg.setJMSCorrelationID(exchange.getExchangeId());
             msg.setJMSReplyTo(replyToDestination);
