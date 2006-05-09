@@ -70,9 +70,11 @@ public class HttpSpringComponent extends BaseComponent {
             super.doInit();
             su = new ServiceUnit();
             su.setComponent(HttpSpringComponent.this);
-            for (int i = 0; i < endpoints.length; i++) {
-                endpoints[i].setServiceUnit(su);
-                su.addEndpoint(endpoints[i]);
+            if (endpoints != null) {
+	            for (int i = 0; i < endpoints.length; i++) {
+	                endpoints[i].setServiceUnit(su);
+	                su.addEndpoint(endpoints[i]);
+	            }
             }
             getRegistry().registerServiceUnit(su);
         }
