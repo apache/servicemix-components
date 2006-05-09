@@ -85,7 +85,7 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
             trustStorePassword = ssl.getTrustStorePassword();
             if (trustStorePassword == null) {
                 trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-                if (keyStorePassword == null) {
+                if (trustStorePassword == null) {
                     throw new IllegalArgumentException("trustStorePassword or system property javax.net.ssl.trustStorePassword must be set");
                 }
             }
