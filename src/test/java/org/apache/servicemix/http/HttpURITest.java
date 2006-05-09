@@ -37,49 +37,52 @@ import org.w3c.dom.DocumentFragment;
 
 public class HttpURITest extends TestCase {
 
-	private JBIContainer jbi;
-	
-	protected void setUp() throws Exception {
-		jbi = new JBIContainer();
-		jbi.setEmbedded(true);
-		jbi.setUseMBeanServer(false);
-		jbi.init();
-		jbi.start();
-	}
-	
-	public void testResolveEndpoint() throws Exception {
-		HttpSpringComponent http = new HttpSpringComponent();
-		HttpEndpoint ep = new HttpEndpoint();
-		ep.setRole(MessageExchange.Role.CONSUMER);
-		ep.setService(ReceiverComponent.SERVICE);
-		ep.setEndpoint(ReceiverComponent.ENDPOINT);
-		ep.setLocationURI("http://localhost:8192/");
-		ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
-		http.setEndpoints(new HttpEndpoint[] { ep });
-		jbi.activateComponent(http, "servicemix-http");
-		
-		ReceiverComponent receiver = new ReceiverComponent();
-		jbi.activateComponent(receiver, "receiver");
-		
-		DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-		DocumentFragment epr = URIResolver.createWSAEPR("http://localhost:8192?http.soap=true");
-		ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
-		assertNotNull(se);
-		
-		InOnly inonly = client.createInOnlyExchange();
-		inonly.setEndpoint(se);
-		inonly.getInMessage().setContent(new StringSource("<hello>world</hello>"));
-		client.sendSync(inonly);
-		
-		assertEquals(ExchangeStatus.DONE, inonly.getStatus());
-		receiver.getMessageList().assertMessagesReceived(1);
-		List msgs = receiver.getMessageList().flushMessages();
-		NormalizedMessage msg = (NormalizedMessage) msgs.get(0);
-		Document doc = (Document) new SourceTransformer().toDOMNode(msg);
-		assertEquals("http://www.w3.org/2003/05/soap-envelope", doc.getDocumentElement().getNamespaceURI());
-		assertEquals("env:Envelope", doc.getDocumentElement().getNodeName());
-		System.out.println(new SourceTransformer().contentToString(msg));
-		
-	}
-	
+    private JBIContainer jbi;
+
+    protected void setUp() throws Exception {
+        jbi = new JBIContainer();
+        jbi.setEmbedded(true);
+        jbi.setUseMBeanServer(false);
+        jbi.init();
+        jbi.start();
+    }
+
+    protected void tearDown() throws Exception {
+        jbi.shutDown();
+    }
+
+    public void testResolveEndpoint() throws Exception {
+        HttpSpringComponent http = new HttpSpringComponent();
+        HttpEndpoint ep = new HttpEndpoint();
+        ep.setRole(MessageExchange.Role.CONSUMER);
+        ep.setService(ReceiverComponent.SERVICE);
+        ep.setEndpoint(ReceiverComponent.ENDPOINT);
+        ep.setLocationURI("http://localhost:8192/");
+        ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
+        http.setEndpoints(new HttpEndpoint[] { ep });
+        jbi.activateComponent(http, "servicemix-http");
+
+        ReceiverComponent receiver = new ReceiverComponent();
+        jbi.activateComponent(receiver, "receiver");
+
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        DocumentFragment epr = URIResolver.createWSAEPR("http://localhost:8192?http.soap=true");
+        ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
+        assertNotNull(se);
+
+        InOnly inonly = client.createInOnlyExchange();
+        inonly.setEndpoint(se);
+        inonly.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(inonly);
+
+        assertEquals(ExchangeStatus.DONE, inonly.getStatus());
+        receiver.getMessageList().assertMessagesReceived(1);
+        List msgs = receiver.getMessageList().flushMessages();
+        NormalizedMessage msg = (NormalizedMessage) msgs.get(0);
+        Document doc = (Document) new SourceTransformer().toDOMNode(msg);
+        assertEquals("http://www.w3.org/2003/05/soap-envelope", doc.getDocumentElement().getNamespaceURI());
+        assertEquals("env:Envelope", doc.getDocumentElement().getNodeName());
+        System.out.println(new SourceTransformer().contentToString(msg));
+    }
+
 }
