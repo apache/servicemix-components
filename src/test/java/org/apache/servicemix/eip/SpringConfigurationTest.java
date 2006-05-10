@@ -34,7 +34,7 @@ public class SpringConfigurationTest extends SpringTestSupport {
         as.setComponentName("client");
         ServiceMixClient client = new DefaultServiceMixClient(jbi, as);
         InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("http://test", "wireTap"));
+        me.setService(new QName("http://test", "entryPoint"));
         me.getInMessage().setContent(new StringSource("<test xmlns=\"http://test\"><echo/><world/><earth/></test>"));
         client.sendSync(me);
         
@@ -42,6 +42,7 @@ public class SpringConfigurationTest extends SpringTestSupport {
         ((Receiver) getBean("trace2")).getMessageList().assertMessagesReceived(1);
         ((Receiver) getBean("trace3")).getMessageList().assertMessagesReceived(1);
         ((Receiver) getBean("trace4")).getMessageList().assertMessagesReceived(2);
+        ((Receiver) getBean("trace5")).getMessageList().assertMessagesReceived(1);
         
         // Wait for all messages to be processed
         Thread.sleep(50);

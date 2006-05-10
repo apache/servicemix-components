@@ -15,6 +15,7 @@ public class VMEIPTests {
         suite.addTestSuite(WireTapTest.class);
         suite.addTestSuite(StaticRecipientListTest.class);
         suite.addTestSuite(MessageFilterTest.class);
+        suite.addTestSuite(SplitAggregatorTest.class);
         //$JUnit-END$
         return suite;
     }

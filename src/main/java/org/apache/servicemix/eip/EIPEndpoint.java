@@ -25,12 +25,17 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.apache.geronimo.commonj.timers.TimerManagerImpl;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.locks.LockManager;
+import org.apache.servicemix.locks.impl.SimpleLockManager;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
+
+import commonj.timers.TimerManager;
 
 /**
  * @author gnodet
@@ -49,6 +54,14 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
      * The store factory.
      */
     protected StoreFactory storeFactory;
+    /**
+     * The lock manager.
+     */
+    protected LockManager lockManager;
+    /**
+     * The timer manager.
+     */
+    protected TimerManager timerManager;
     /**
      * The exchange factory
      */
@@ -90,6 +103,30 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
     public void setStoreFactory(StoreFactory storeFactory) {
         this.storeFactory = storeFactory;
     }
+    /**
+     * @return the lockManager
+     */
+    public LockManager getLockManager() {
+        return lockManager;
+    }
+    /**
+     * @param lockManager the lockManager to set
+     */
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
+    }
+    /**
+     * @return the timerManager
+     */
+    public TimerManager getTimerManager() {
+        return timerManager;
+    }
+    /**
+     * @param timerManager the timerManager to set
+     */
+    public void setTimerManager(TimerManager timerManager) {
+        this.timerManager = timerManager;
+    }
 
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.Endpoint#getRole()
@@ -110,10 +147,19 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
             }
             store = storeFactory.open(getService().toString() + getEndpoint());
         }
+        if (lockManager == null) {
+            lockManager = new SimpleLockManager();
+        }
+        if (timerManager == null) {
+            timerManager = new TimerManagerImpl();
+        }
         start();
     }
 
     public void deactivate() throws Exception {
+        if (timerManager != null) {
+            timerManager.stop();
+        }
         stop();
         ServiceEndpoint ep = activated;
         activated = null;

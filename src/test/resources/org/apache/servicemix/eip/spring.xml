@@ -17,6 +17,30 @@
           <eip:component>
             <eip:endpoints>
 
+			  <!-- main test entry point -->
+              <eip:static-recipient-list service="test:entryPoint" endpoint="endpoint">
+                <eip:recipients>
+                  <eip:exchange-target service="test:wireTap" />
+                  <eip:exchange-target service="test:aggregatorSplitter" />
+                </eip:recipients>
+              </eip:static-recipient-list>
+
+			  <!-- splitter used to test the aggregator -->
+              <eip:xpath-splitter service="test:aggregatorSplitter" endpoint="endpoint" 
+                                  xpath="/*/*" namespaceContext="#nsContext">
+                <eip:target>
+                  <eip:exchange-target service="test:aggregator" />
+                </eip:target>
+              </eip:xpath-splitter>
+              
+              <!-- START SNIPPET: split-aggregator -->
+              <eip:split-aggregator service="test:aggregator" endpoint="endpoint">
+                <eip:target>
+                  <eip:exchange-target service="test:trace5" />
+                </eip:target>
+              </eip:split-aggregator>
+              <!-- END SNIPPET: split-aggregator -->
+
               <!-- START SNIPPET: wire-tap -->
               <eip:wire-tap service="test:wireTap" endpoint="endpoint">
                 <eip:target>
@@ -125,6 +149,11 @@
         </sm:component>
       </sm:activationSpec>
       <sm:activationSpec id="trace4" service="test:trace4">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace5" service="test:trace5">
         <sm:component>
           <bean class="org.apache.servicemix.tck.ReceiverComponent" />
         </sm:component>

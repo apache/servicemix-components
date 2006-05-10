@@ -42,6 +42,10 @@ import org.apache.servicemix.eip.EIPEndpoint;
  * @version $Revision: 376451 $
  */
 public abstract class AbstractSplitter extends EIPEndpoint {
+    
+    public static final String SPLITTER_COUNT = "org.apache.servicemix.eip.splitter.count";
+    public static final String SPLITTER_INDEX = "org.apache.servicemix.eip.splitter.index";
+    public static final String SPLITTER_CORRID = "org.apache.servicemix.eip.splitter.corrid";
 
     private static final Log log = LogFactory.getLog(AbstractSplitter.class);
 
@@ -190,6 +194,10 @@ public abstract class AbstractSplitter extends EIPEndpoint {
         MessageExchange[] parts = new MessageExchange[srcParts.length];
         for (int i = 0; i < srcParts.length; i++) {
             parts[i] = createPart(exchange.getPattern(), in, srcParts[i]);
+            NormalizedMessage msg = parts[i].getMessage("in");
+            msg.setProperty(SPLITTER_COUNT, new Integer(srcParts.length));
+            msg.setProperty(SPLITTER_INDEX, new Integer(i));
+            msg.setProperty(SPLITTER_CORRID, exchange.getExchangeId());
         }
         return parts;
     }

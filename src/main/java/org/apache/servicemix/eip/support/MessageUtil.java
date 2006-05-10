@@ -16,6 +16,7 @@
 package org.apache.servicemix.eip.support;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -119,8 +120,10 @@ public class MessageUtil {
         dest.setMessage(destMsg, name);
     }
     
-    private static class NormalizedMessageImpl implements NormalizedMessage {
+    private static class NormalizedMessageImpl implements NormalizedMessage, Serializable {
 
+        private static final long serialVersionUID = -5813947566001096708L;
+        
         private Subject subject;
         private Source content;
         private Map properties = new HashMap();
@@ -195,6 +198,8 @@ public class MessageUtil {
     }
     
     private static class FaultImpl extends NormalizedMessageImpl implements Fault {
+        private static final long serialVersionUID = -6076815664102825860L;
+
         public FaultImpl(Fault fault) throws Exception {
             super(fault);
         }
