@@ -16,6 +16,9 @@
 package org.apache.servicemix.eip;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -32,7 +35,9 @@ import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.eip.support.ExchangeTarget;
+import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.tck.ReceiverComponent;
 
@@ -65,6 +70,16 @@ public abstract class AbstractEIPTest extends TestCase {
     
     protected void configureContainer() throws Exception {
         jbi.setFlowName("st");
+    }
+    
+    protected void configurePattern(EIPEndpoint endpoint) {
+        endpoint.setStore(new MemoryStore(new IdGenerator()) {
+            public void store(String id, Object exchange) throws IOException {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                new ObjectOutputStream(baos).writeObject(exchange);
+                super.store(id, exchange);
+            }
+        });
     }
     
     protected ExchangeTarget createServiceExchangeTarget(QName name) {

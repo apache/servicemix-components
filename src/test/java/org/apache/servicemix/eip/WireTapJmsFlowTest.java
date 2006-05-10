@@ -15,13 +15,7 @@
  */
 package org.apache.servicemix.eip;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.util.IdGenerator;
-import org.apache.servicemix.store.memory.MemoryStore;
 
 
 public class WireTapJmsFlowTest extends WireTapTest {
@@ -40,16 +34,6 @@ public class WireTapJmsFlowTest extends WireTapTest {
     protected void tearDown() throws Exception {
         super.tearDown();
         broker.stop();
-    }
-    
-    protected void configureWireTap() throws Exception {
-        wireTap.setStore(new MemoryStore(new IdGenerator()) {
-            public void store(String id, Object exchange) throws IOException {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                new ObjectOutputStream(baos).writeObject(exchange);
-                super.store(id, exchange);
-            }
-        });
     }
     
     protected void configureContainer() throws Exception {

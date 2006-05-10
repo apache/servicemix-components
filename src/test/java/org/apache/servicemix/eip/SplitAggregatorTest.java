@@ -15,18 +15,12 @@
  */
 package org.apache.servicemix.eip;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.servicemix.eip.patterns.SplitAggregator;
 import org.apache.servicemix.eip.support.AbstractSplitter;
-import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class SplitAggregatorTest extends AbstractEIPTest {
@@ -38,18 +32,8 @@ public class SplitAggregatorTest extends AbstractEIPTest {
 
         aggregator = new SplitAggregator();
         aggregator.setTarget(createServiceExchangeTarget(new QName("target")));
-        configureAggregator();
+        configurePattern(aggregator);
         activateComponent(aggregator, "aggregator");
-    }
-    
-    protected void configureAggregator() throws Exception {
-        aggregator.setStore(new MemoryStore(new IdGenerator()) {
-            public void store(String id, Object exchange) throws IOException {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                new ObjectOutputStream(baos).writeObject(exchange);
-                super.store(id, exchange);
-            }
-        });
     }
     
     protected NormalizedMessage testRun(boolean[] msgs) throws Exception {

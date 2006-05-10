@@ -15,19 +15,13 @@
  */
 package org.apache.servicemix.eip;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.servicemix.eip.patterns.MessageFilter;
 import org.apache.servicemix.eip.support.XPathPredicate;
-import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class MessageFilterTest extends AbstractEIPTest {
@@ -40,20 +34,10 @@ public class MessageFilterTest extends AbstractEIPTest {
         messageFilter = new MessageFilter();
         messageFilter.setFilter(new XPathPredicate("/hello/@id = '1'"));
         messageFilter.setTarget(createServiceExchangeTarget(new QName("target")));
-        configureMessageFilter();
+        configurePattern(messageFilter);
         activateComponent(messageFilter, "messageFilter");
     }
     
-    protected void configureMessageFilter() throws Exception {
-        messageFilter.setStore(new MemoryStore(new IdGenerator()) {
-            public void store(String id, Object exchange) throws IOException {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                new ObjectOutputStream(baos).writeObject(exchange);
-                super.store(id, exchange);
-            }
-        });
-    }
-
     public void testInOnly() throws Exception {
         ReceiverComponent rec = activateReceiver("target");
         

@@ -15,10 +15,6 @@
  */
 package org.apache.servicemix.eip;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
@@ -27,9 +23,7 @@ import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.servicemix.eip.patterns.WireTap;
-import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class WireTapTest extends AbstractEIPTest {
@@ -50,18 +44,8 @@ public class WireTapTest extends AbstractEIPTest {
         wireTap.setOutListener(createServiceExchangeTarget(new QName("out")));
         wireTap.setFaultListener(createServiceExchangeTarget(new QName("fault")));
         wireTap.setTarget(createServiceExchangeTarget(new QName("target")));
-        configureWireTap();
+        configurePattern(wireTap);
         activateComponent(wireTap, "wireTap");
-    }
-    
-    protected void configureWireTap() throws Exception {
-        wireTap.setStore(new MemoryStore(new IdGenerator()) {
-            public void store(String id, Object exchange) throws IOException {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                new ObjectOutputStream(baos).writeObject(exchange);
-                super.store(id, exchange);
-            }
-        });
     }
     
     public void testInOnly() throws Exception {

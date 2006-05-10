@@ -15,10 +15,6 @@
  */
 package org.apache.servicemix.eip;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOptionalOut;
@@ -26,10 +22,8 @@ import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.servicemix.eip.patterns.StaticRecipientList;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class StaticRecipientListTest extends AbstractEIPTest {
@@ -46,20 +40,10 @@ public class StaticRecipientListTest extends AbstractEIPTest {
                         createServiceExchangeTarget(new QName("recipient2")),
                         createServiceExchangeTarget(new QName("recipient3"))
                 });
-        configureRecipientList();
+        configurePattern(recipientList);
         activateComponent(recipientList, "recipientList");
     }
 
-    protected void configureRecipientList() {
-        recipientList.setStore(new MemoryStore(new IdGenerator()) {
-            public void store(String id, Object exchange) throws IOException {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                new ObjectOutputStream(baos).writeObject(exchange);
-                super.store(id, exchange);
-            }
-        });
-    }
-    
     public void testInOut() throws Exception {
         InOut me = client.createInOutExchange();
         me.setService(new QName("recipientList"));
