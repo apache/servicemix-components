@@ -49,15 +49,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-commonj_1.1_spec</artifactId>
-    </dependency>
-    <dependency>        
-      <groupId>org.apache.geronimo.modules</groupId>
-      <artifactId>geronimo-commonj</artifactId>
-      <version>1.2-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <scope>test</scope>

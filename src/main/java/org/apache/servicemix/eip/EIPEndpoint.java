@@ -25,7 +25,6 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
-import org.apache.geronimo.commonj.timers.TimerManagerImpl;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -34,8 +33,8 @@ import org.apache.servicemix.locks.impl.SimpleLockManager;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
-
-import commonj.timers.TimerManager;
+import org.apache.servicemix.timers.TimerManager;
+import org.apache.servicemix.timers.impl.TimerManagerImpl;
 
 /**
  * @author gnodet

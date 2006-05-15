@@ -26,9 +26,8 @@ import javax.jbi.messaging.RobustInOnly;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
-
-import commonj.timers.Timer;
-import commonj.timers.TimerListener;
+import org.apache.servicemix.timers.Timer;
+import org.apache.servicemix.timers.TimerListener;
 
 import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 
