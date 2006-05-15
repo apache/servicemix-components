@@ -59,8 +59,8 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.servicemix.plugins</groupId>
-        <artifactId>maven2-jbi-plugin</artifactId>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>jbi-maven-plugin</artifactId>
         <configuration>
           <type>service-engine</type>
           <bootstrap>org.apache.servicemix.jms.JmsBootstrap</bootstrap>
