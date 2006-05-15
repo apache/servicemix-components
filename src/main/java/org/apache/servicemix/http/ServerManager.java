@@ -36,11 +36,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
+import org.mortbay.jetty.HttpConnection;
 import org.mortbay.jetty.HttpMethods;
 import org.mortbay.jetty.MimeTypes;
+import org.mortbay.jetty.Response;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.ContextHandler;
+import org.mortbay.jetty.handler.ContextHandlerCollection;
+import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -140,6 +144,7 @@ public class ServerManager {
         // add context
         handlers = (Handler[]) add(handlers, context, Handler.class);
         server.setHandlers(handlers);
+        context.stop();
         return context;
     }
     
@@ -246,7 +251,7 @@ public class ServerManager {
         Server server = new Server();
         server.setThreadPool(threadPool);
         server.setConnectors(new Connector[] { connector });
-        server.setNotFoundHandler(new DisplayServiceHandler());
+        server.setHandler(new DisplayServiceHandler());
         connector.start();
         server.start();
         servers.put(getKey(url), server);
@@ -266,14 +271,19 @@ public class ServerManager {
         return threadPool;
     }
     
-    protected class DisplayServiceHandler extends AbstractHandler {
+    protected class DisplayServiceHandler extends ContextHandlerCollection {
 
-        public boolean handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
+        public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
+            super.handle(target, request, response, dispatch);
+            Response base_response = HttpConnection.getCurrentConnection().getResponse();
+            if (response.isCommitted() || base_response.getStatus()!=-1)
+                return;
+            
             String method = request.getMethod();
             
             if (!method.equals(HttpMethods.GET) || !request.getRequestURI().equals("/")) {
                 response.sendError(404);
-                return true;   
+                return;   
             }
 
             response.setStatus(404);
@@ -294,7 +304,7 @@ public class ServerManager {
             for (Iterator iter = servers.iterator(); iter.hasNext();) {
                 String serverUri = (String) iter.next();
                 Server server = (Server) ServerManager.this.servers.get(serverUri);
-                Handler[] handlers = server.getAllHandlers();
+                Handler[] handlers = server.getChildHandlersByClass(ContextHandler.class);
                 for (int i = 0; handlers != null && i < handlers.length; i++)
                 {
                     if (!(handlers[i] instanceof ContextHandler)) {
@@ -327,8 +337,6 @@ public class ServerManager {
             OutputStream out = response.getOutputStream();
             writer.writeTo(out);
             out.close();
-            
-            return true;
         }
         
     }
