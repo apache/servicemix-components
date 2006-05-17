@@ -37,6 +37,7 @@ import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.wsdl.extensions.soap.SOAPBody;
 import javax.wsdl.extensions.soap.SOAPFault;
+import javax.wsdl.extensions.soap.SOAPOperation;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
@@ -44,6 +45,7 @@ import com.ibm.wsdl.extensions.soap.SOAPAddressImpl;
 import com.ibm.wsdl.extensions.soap.SOAPBindingImpl;
 import com.ibm.wsdl.extensions.soap.SOAPBodyImpl;
 import com.ibm.wsdl.extensions.soap.SOAPFaultImpl;
+import com.ibm.wsdl.extensions.soap.SOAPOperationImpl;
 
 public class PortTypeDecorator {
 
@@ -107,6 +109,9 @@ public class PortTypeDecorator {
             Operation operation = (Operation) iter.next();
             BindingOperation bindingOp = def.createBindingOperation();
             bindingOp.setName(operation.getName());
+            SOAPOperation op = new SOAPOperationImpl();
+            op.setSoapActionURI("");
+            bindingOp.addExtensibilityElement(op);
             if (operation.getInput() != null) {
                 BindingInput in = def.createBindingInput();
                 in.setName(operation.getInput().getName());
