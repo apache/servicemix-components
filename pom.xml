@@ -41,40 +41,6 @@
     <dependency>
       <groupId>org.codehaus.xfire</groupId>
       <artifactId>xfire-jaxb2</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>httpunit</groupId>
-          <artifactId>httpunit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jetty</groupId>
-          <artifactId>org.mortbay.jetty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-httpclient</groupId>
-          <artifactId>commons-httpclient</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.mail</groupId>
-          <artifactId>mail</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.activation</groupId>
-          <artifactId>activation</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>ant</groupId>
-          <artifactId>ant</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-beanutils</groupId>
-          <artifactId>commons-beanutils</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>qdox</groupId>
-          <artifactId>qdox</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.codehaus.xfire</groupId>
