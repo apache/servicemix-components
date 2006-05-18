@@ -37,9 +37,17 @@ import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.TransformComponentSupport;
 import org.apache.servicemix.jbi.FaultException;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
+import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.util.FileUtil;
+import org.apache.servicemix.soap.marshalers.SoapMarshaler;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import com.ibm.wsdl.util.xml.DOMUtils;
 
 public class HttpSoapTest extends TestCase {
 
@@ -114,11 +122,11 @@ public class HttpSoapTest extends TestCase {
         
     }
 
-    public void testSoapFault() throws Exception {
+    public void testSoapFault12() throws Exception {
         TransformComponentSupport echo = new TransformComponentSupport() {
             protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
                 Fault f = exchange.createFault();
-                f.setContent(new StringSource("<hello>this is a fault</hello>"));
+                f.setContent(new StringSource("<hello xmlns='myuri'>this is a fault</hello>"));
                 throw new FaultException(null, exchange, f);
             }
         };
@@ -126,27 +134,117 @@ public class HttpSoapTest extends TestCase {
         echo.setEndpoint("echo");
         container.activateComponent(echo, "echo");
         
-        HttpSpringComponent http = new HttpSpringComponent();
-        
         HttpEndpoint ep1 = new HttpEndpoint();
-        ep1.setService(new QName("urn:test", "echo"));
-        ep1.setEndpoint("echo");
-        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setService(new QName("urn:test", "http"));
+        ep1.setEndpoint("ep1");
+        ep1.setTargetService(new QName("urn:test", "echo"));
+        ep1.setTargetEndpoint("echo");
+        ep1.setLocationURI("http://localhost:8193/ep1/");
         ep1.setRoleAsString("consumer");
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep1.setSoap(true);
         
-        http.setEndpoints(new HttpEndpoint[] { ep1 });
+        HttpEndpoint ep2 = new HttpEndpoint();
+        ep2.setService(new QName("urn:test", "http"));
+        ep2.setEndpoint("ep2");
+        ep2.setTargetService(new QName("urn:test", "http"));
+        ep2.setTargetEndpoint("ep3");
+        ep2.setLocationURI("http://localhost:8193/ep2/");
+        ep2.setRoleAsString("consumer");
+        ep2.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep2.setSoap(true);
         
-        container.activateComponent(http, "http");
+        HttpEndpoint ep3 = new HttpEndpoint();
+        ep3.setService(new QName("urn:test", "http"));
+        ep3.setEndpoint("ep3");
+        ep3.setLocationURI("http://localhost:8193/ep1/");
+        ep3.setRoleAsString("provider");
+        ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep3.setSoap(true);
+        
+        HttpSpringComponent http = new HttpSpringComponent();
+        http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
+        container.activateComponent(http, "http1");
         
         container.start();
         
-        PostMethod method = new PostMethod("http://localhost:8192/ep1/");
-        method.setRequestEntity(new InputStreamRequestEntity(getClass().getResourceAsStream("soap-request.xml")));
+        PostMethod method = new PostMethod("http://localhost:8193/ep2/");
+        method.setRequestEntity(new InputStreamRequestEntity(getClass().getResourceAsStream("soap-request-12.xml")));
         int state = new HttpClient().executeMethod(method);
         assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
-        FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+        SourceTransformer st = new SourceTransformer();
+        Node node = st.toDOMNode(new StreamSource(method.getResponseBodyAsStream()));
+        System.err.println(st.toString(node));
+
+        Element e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
+    }
+    
+    public void testSoapFault11() throws Exception {
+        TransformComponentSupport echo = new TransformComponentSupport() {
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+                Fault f = exchange.createFault();
+                f.setContent(new StringSource("<hello xmlns='myuri'>this is a fault</hello>"));
+                throw new FaultException(null, exchange, f);
+            }
+        };
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("echo");
+        container.activateComponent(echo, "echo");
+        
+        HttpEndpoint ep1 = new HttpEndpoint();
+        ep1.setService(new QName("urn:test", "http"));
+        ep1.setEndpoint("ep1");
+        ep1.setTargetService(new QName("urn:test", "echo"));
+        ep1.setTargetEndpoint("echo");
+        ep1.setLocationURI("http://localhost:8194/ep1/");
+        ep1.setRoleAsString("consumer");
+        ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep1.setSoap(true);
+        
+        HttpEndpoint ep2 = new HttpEndpoint();
+        ep2.setService(new QName("urn:test", "http"));
+        ep2.setEndpoint("ep2");
+        ep2.setTargetService(new QName("urn:test", "http"));
+        ep2.setTargetEndpoint("ep3");
+        ep2.setLocationURI("http://localhost:8194/ep2/");
+        ep2.setRoleAsString("consumer");
+        ep2.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep2.setSoap(true);
+        
+        HttpEndpoint ep3 = new HttpEndpoint();
+        ep3.setService(new QName("urn:test", "http"));
+        ep3.setEndpoint("ep3");
+        ep3.setLocationURI("http://localhost:8194/ep1/");
+        ep3.setRoleAsString("provider");
+        ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep3.setSoap(true);
+        
+        HttpSpringComponent http = new HttpSpringComponent();
+        http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
+        container.activateComponent(http, "http1");
+        
+        container.start();
+        
+        PostMethod method = new PostMethod("http://localhost:8194/ep2/");
+        method.setRequestEntity(new InputStreamRequestEntity(getClass().getResourceAsStream("soap-request.xml")));
+        int state = new HttpClient().executeMethod(method);
+        String str = method.getResponseBodyAsString();
+        System.err.println(str);
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        SourceTransformer st = new SourceTransformer();
+        Node node = st.toDOMNode(new StringSource(str));
+
+        Element e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
     }
 
 }

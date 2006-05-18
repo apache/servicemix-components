@@ -121,15 +121,14 @@ public class ProviderProcessor implements ExchangeProcessor {
             int response = getClient().executeMethod(host, method);
             if (response != HttpStatus.SC_OK) {
                 if (exchange instanceof InOnly == false) {
-                    Fault fault = exchange.createFault();
                     SoapReader reader = soapMarshaler.createReader();
                     Header contentType = method.getResponseHeader("Content-Type");
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
+                    Fault fault = exchange.createFault();
                     fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                     jbiMarshaler.toNMS(fault, soapMessage);
                     exchange.setFault(fault);
-                    exchange.setStatus(ExchangeStatus.ERROR);
                     channel.send(exchange);
                     return;
                 } else {

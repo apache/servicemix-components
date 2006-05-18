@@ -31,7 +31,9 @@
       
       <sm:activationSpec service="test:MyConsumerService" endpoint="myConsumer">
         <sm:component>
-          <bean class="org.apache.servicemix.components.util.EchoComponent" />
+          <bean class="org.apache.servicemix.components.util.EchoComponent">
+            <property name="copyProperties" value="false" />
+          </bean>
         </sm:component>
       </sm:activationSpec>
 

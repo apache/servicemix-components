@@ -93,25 +93,43 @@ public class HttpEndpoint extends SoapEndpoint {
         PortType portType = null;
         // If the WSDL description only contain one PortType, use it
         if (def.getServices().size() == 0 && def.getPortTypes().size() == 1) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("WSDL only defines a PortType, using this one");
+            }
             portType = (PortType) def.getPortTypes().values().iterator().next();
         } else if (targetInterfaceName != null) {
             portType = def.getPortType(targetInterfaceName);
+            if (portType == null && logger.isDebugEnabled()) {
+                logger.debug("PortType for targetInterfaceName could not be found");
+            }
         } else if (targetService != null && targetEndpoint != null) {
             Service svc = def.getService(targetService);
             Port port = (svc != null) ? svc.getPort(targetEndpoint) : null;
             portType = (port != null) ? port.getBinding().getPortType() : null;
+            if (portType == null && logger.isDebugEnabled()) {
+                logger.debug("PortType for targetService/targetEndpoint could not be found");
+            }
         } else if (targetService != null) {
             Service svc = def.getService(targetService);
             if (svc != null && svc.getPorts().size() == 1) {
                 Port port = (Port) svc.getPorts().values().iterator().next();
                 portType = (port != null) ? port.getBinding().getPortType() : null;
             }
+            if (portType == null && logger.isDebugEnabled()) {
+                logger.debug("Service for targetService could not be found");
+            }
         } else if (interfaceName != null) {
             portType = def.getPortType(interfaceName);
+            if (portType == null && logger.isDebugEnabled()) {
+                logger.debug("Service for targetInterfaceName could not be found");
+            }
         } else {
             Service svc = def.getService(service);
             Port port = (svc != null) ? svc.getPort(endpoint) : null;
             portType = (port != null && port.getBinding() != null) ? port.getBinding().getPortType() : null;
+            if (portType == null && logger.isDebugEnabled()) {
+                logger.debug("Port for service/endpoint could not be found");
+            }
         }
         return portType;
     }
