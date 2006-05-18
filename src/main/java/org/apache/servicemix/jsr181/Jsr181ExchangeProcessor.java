@@ -73,6 +73,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         ctx.setExchange(new org.codehaus.xfire.exchange.MessageExchange(ctx));
         InMessage msg = new InMessage();
         ctx.getExchange().setInMessage(msg);
+        ctx.setCurrentMessage(msg);
         NormalizedMessage in = exchange.getMessage("in");
         msg.setXMLStreamReader(getXMLStreamReader(in.getContent()));
         c.receive(ctx, msg);

@@ -50,7 +50,7 @@ import org.codehaus.xfire.annotations.WebAnnotations;
 import org.codehaus.xfire.annotations.commons.CommonsWebAttributes;
 import org.codehaus.xfire.annotations.jsr181.Jsr181WebAnnotations;
 import org.codehaus.xfire.service.Service;
-import org.codehaus.xfire.service.binding.BeanInvoker;
+import org.codehaus.xfire.service.invoker.BeanInvoker;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.soap.SoapConstants;
 import org.codehaus.xfire.transport.TransportManager;
