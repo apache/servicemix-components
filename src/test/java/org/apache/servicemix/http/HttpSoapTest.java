@@ -43,6 +43,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.util.FileUtil;
+import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.w3c.dom.Document;
@@ -129,6 +130,7 @@ public class HttpSoapTest extends TestCase {
             protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
                 Fault f = exchange.createFault();
                 f.setContent(new StringSource("<hello xmlns='myuri'>this is a fault</hello>"));
+                f.setProperty(JBIMarshaler.SOAP_FAULT_REASON, "My reason");
                 throw new FaultException(null, exchange, f);
             }
         };
@@ -191,6 +193,7 @@ public class HttpSoapTest extends TestCase {
             protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
                 Fault f = exchange.createFault();
                 f.setContent(new StringSource("<hello xmlns='myuri'>this is a fault</hello>"));
+                f.setProperty(JBIMarshaler.SOAP_FAULT_REASON, "My reason");
                 throw new FaultException(null, exchange, f);
             }
         };

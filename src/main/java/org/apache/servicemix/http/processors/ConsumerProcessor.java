@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
+import javax.xml.namespace.QName;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
@@ -42,6 +43,7 @@ import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.handlers.AddressingHandler;
+import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
@@ -141,6 +143,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
                                                                         request.getHeader("Content-Type"));
                 Context context = soapHelper.createContext(message);
+                if (request.getUserPrincipal() != null) {
+                    context.getInMessage().addPrincipal(request.getUserPrincipal());
+                }
                 request.setAttribute(Context.class.getName(), context);
                 exchange = soapHelper.onReceive(context);
                 NormalizedMessage inMessage = exchange.getMessage("in");
@@ -179,7 +184,13 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             try {
                 if (exchange.getFault() != null) {
-                    SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
+                    SoapFault fault = new SoapFault(
+                                    (QName) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_CODE), 
+                                    (QName) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_SUBCODE), 
+                                    (String) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_REASON), 
+                                    (URI) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_NODE), 
+                                    (URI) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_ROLE), 
+                                    exchange.getFault().getContent());
                     sendFault(fault, request, response);
                 } else {
                     NormalizedMessage outMsg = exchange.getMessage("out");
