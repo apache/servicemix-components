@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:ws="http://ws.location.services.cardinal.com/">
+	<soapenv:Body>
+		<listAllProvider
+			xmlns="http://ws.location.services.cardinal.com/"
+			xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<clientSessionGuid xmlns="">
+				RkZGRiAgICAgICAgICAgIA==
+			</clientSessionGuid>
+		</listAllProvider>
+	</soapenv:Body>
+</soapenv:Envelope>

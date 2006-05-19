@@ -16,6 +16,7 @@
 package org.apache.servicemix.http;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
@@ -43,6 +44,7 @@ import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
+import org.apache.servicemix.tck.ReceiverComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -247,4 +249,66 @@ public class HttpSoapTest extends TestCase {
         assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
     }
 
+    public void testSoapXml() throws Exception {
+        ReceiverComponent echo = new ReceiverComponent();
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("echo");
+        container.activateComponent(echo, "echo");
+        
+        HttpEndpoint ep1 = new HttpEndpoint();
+        ep1.setService(new QName("urn:test", "http"));
+        ep1.setEndpoint("ep1");
+        ep1.setTargetService(new QName("urn:test", "echo"));
+        ep1.setTargetEndpoint("echo");
+        ep1.setLocationURI("http://localhost:8193/ep1/");
+        ep1.setRoleAsString("consumer");
+        ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-only"));
+        ep1.setSoap(false);
+        
+        HttpEndpoint ep2 = new HttpEndpoint();
+        ep2.setService(new QName("urn:test", "http"));
+        ep2.setEndpoint("ep2");
+        ep2.setTargetService(new QName("urn:test", "http"));
+        ep2.setTargetEndpoint("ep3");
+        ep2.setLocationURI("http://localhost:8193/ep2/");
+        ep2.setRoleAsString("consumer");
+        ep2.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-only"));
+        ep2.setSoap(true);
+        
+        HttpEndpoint ep3 = new HttpEndpoint();
+        ep3.setService(new QName("urn:test", "http"));
+        ep3.setEndpoint("ep3");
+        ep3.setLocationURI("http://localhost:8193/ep1/");
+        ep3.setRoleAsString("provider");
+        ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-only"));
+        ep3.setSoap(true);
+        
+        HttpSpringComponent http = new HttpSpringComponent();
+        http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
+        container.activateComponent(http, "http1");
+        
+        container.start();
+        
+        PostMethod method = new PostMethod("http://localhost:8193/ep2/");
+        method.setRequestEntity(new InputStreamRequestEntity(getClass().getResourceAsStream("request.xml")));
+        new HttpClient().executeMethod(method);
+        
+        echo.getMessageList().assertMessagesReceived(1);
+        List msgs = echo.getMessageList().flushMessages();
+        NormalizedMessage msg = (NormalizedMessage) msgs.get(0);
+        SourceTransformer st = new SourceTransformer();
+        Node node = st.toDOMNode(msg);
+        String strMsg = DOMUtil.asXML(node);
+        System.err.println(strMsg);
+
+        Element e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName("http://ws.location.services.cardinal.com/", "listAllProvider"), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName("", "clientSessionGuid"), DOMUtil.getQName(e));
+    }
+    
 }
