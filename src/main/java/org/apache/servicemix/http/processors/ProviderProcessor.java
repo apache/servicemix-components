@@ -116,6 +116,9 @@ public class ProviderProcessor implements ExchangeProcessor {
         } else {
             method.setRequestHeader("Content-Length", Long.toString(entity.getContentLength()));
         }
+        if (endpoint.isSoap() && method.getRequestHeader("SOAPAction") == null) {
+            method.setRequestHeader("SOAPAction", "\"\"");
+        }
         method.setRequestEntity(entity);
         try {
             int response = getClient().executeMethod(host, method);
