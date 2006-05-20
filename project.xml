@@ -47,7 +47,7 @@
         <version>${pom.currentVersion}</version>
         <type>plugin</type>
       </dependency>
-    
+      
       <!-- JBI bundled dependencies -->
       <dependency>
         <groupId>${pom.groupId}</groupId>
@@ -58,6 +58,11 @@
           <jbi.bundle>true</jbi.bundle>
           <jbi.bootstrap>true</jbi.bootstrap>
         </properties>
+      </dependency>
+      <dependency>
+        <groupId>${pom.groupId}</groupId>
+        <artifactId>servicemix-services</artifactId>
+        <version>${pom.currentVersion}</version>
       </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
