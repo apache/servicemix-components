@@ -29,6 +29,8 @@ import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentMap;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 
 /**
@@ -50,6 +52,24 @@ public abstract class AbstractAggregator extends EIPEndpoint {
 
     private ExchangeTarget target;
     
+    private boolean rescheduleTimeouts;
+
+    private ConcurrentMap closedAggregates = new ConcurrentHashMap();
+    
+    /**
+     * @return the rescheduleTimeouts
+     */
+    public boolean isRescheduleTimeouts() {
+        return rescheduleTimeouts;
+    }
+
+    /**
+     * @param rescheduleTimeouts the rescheduleTimeouts to set
+     */
+    public void setRescheduleTimeouts(boolean rescheduleTimeouts) {
+        this.rescheduleTimeouts = rescheduleTimeouts;
+    }
+
     /**
      * @return the target
      */
@@ -91,22 +111,36 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                     lock.lock();
                     try {
                         Object aggregation = store.load(correlationId);
+                        Date timeout = null;
                         // Create a new aggregate
                         if (aggregation == null) {
-                            aggregation = createAggregation(correlationId);
-                            Date timeout = getTimeout(aggregation);
-                            if (timeout != null) {
-                                getTimerManager().schedule(new TimerListener() {
-                                    public void timerExpired(Timer timer) {
-                                        AbstractAggregator.this.onTimeout(correlationId);
-                                    }
-                                }, timeout);
+                            if (isAggregationClosed(correlationId)) {
+                                // TODO: should we return an error here ?
+                            } else {
+                                aggregation = createAggregation(correlationId);
+                                timeout = getTimeout(aggregation);
                             }
+                        } else if (isRescheduleTimeouts()) {
+                            timeout = getTimeout(aggregation);
+                            
                         }
-                        if (addMessage(aggregation, MessageUtil.copyIn(exchange), exchange)) {
-                            sendAggregate(aggregation, false);
-                        } else {
-                            store.store(correlationId, aggregation);
+                        // If the aggregation is not closed
+                        if (aggregation != null) {
+                            if (addMessage(aggregation, MessageUtil.copyIn(exchange), exchange)) {
+                                sendAggregate(correlationId, aggregation, false);
+                            } else {
+                                store.store(correlationId, aggregation);
+                                if (timeout != null) {
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
+                                    }
+                                    getTimerManager().schedule(new TimerListener() {
+                                        public void timerExpired(Timer timer) {
+                                            AbstractAggregator.this.onTimeout(correlationId);
+                                        }
+                                    }, timeout);
+                                }
+                            }
                         }
                         done(exchange);
                     } finally {
@@ -127,27 +161,61 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         }
     }
     
-    protected void sendAggregate(Object aggregation,
+    protected void sendAggregate(String correlationId,
+                                 Object aggregation,
                                  boolean timeout) throws Exception {
         InOnly me = exchangeFactory.createInOnlyExchange();
         target.configureTarget(me, getContext());
         NormalizedMessage nm = me.createMessage();
         me.setInMessage(nm);
         buildAggregate(aggregation, nm, me, timeout);
+        closeAggregation(correlationId);
         send(me);
     }
 
     protected void onTimeout(String correlationId) {
+        if (log.isDebugEnabled()) {
+            log.debug("Timeout expired for aggregate " + correlationId);
+        }
         Lock lock = getLockManager().getLock(correlationId);
         lock.lock();
         try {
             Object aggregation = store.load(correlationId);
-            sendAggregate(aggregation, true);
+            if (aggregation != null) {
+                sendAggregate(correlationId, aggregation, true);
+            } else if (!isAggregationClosed(correlationId)) {
+                throw new IllegalStateException("Aggregation is not closed, but can not be retrieved from the store");
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Aggregate " + correlationId + " is closed");
+                }
+            }
         } catch (Exception e) {
             log.info("Caught exception while processing timeout aggregation", e);
         } finally {
             lock.unlock();
         }
+    }
+    
+    /**
+     * Check if the aggregation with the given correlation id is closed or not.
+     * Called when the aggregation has not been found in the store.
+     * 
+     * @param correlationId
+     * @return
+     */
+    protected boolean isAggregationClosed(String correlationId) {
+        // TODO: implement this using a persistent / cached behavior
+        return closedAggregates.containsKey(correlationId);
+    }
+    
+    /**
+     * Mark an aggregation as closed
+     * @param correlationId
+     */
+    protected void closeAggregation(String correlationId) {
+        // TODO: implement this using a persistent / cached behavior
+        closedAggregates.put(correlationId, Boolean.TRUE);
     }
     
     /**

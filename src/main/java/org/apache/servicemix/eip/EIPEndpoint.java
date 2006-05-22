@@ -152,6 +152,7 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
         if (timerManager == null) {
             timerManager = new TimerManagerImpl();
         }
+        timerManager.start();
         start();
     }
 

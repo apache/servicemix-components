@@ -40,6 +40,7 @@ public class SplitAggregatorTest extends AbstractEIPTest {
         ReceiverComponent rec = activateReceiver("target");
         
         int nbMessages = 3;
+        String corrId = Long.toString(System.currentTimeMillis());
         for (int i = 0; i < 3; i++) {
             if (msgs == null || msgs[i]) {
                 InOnly me = client.createInOnlyExchange();
@@ -47,7 +48,7 @@ public class SplitAggregatorTest extends AbstractEIPTest {
                 me.getInMessage().setContent(createSource("<hello id='" + i + "' />"));
                 me.getInMessage().setProperty(AbstractSplitter.SPLITTER_COUNT, new Integer(nbMessages));
                 me.getInMessage().setProperty(AbstractSplitter.SPLITTER_INDEX, new Integer(i));
-                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_CORRID, "corrId");
+                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_CORRID, corrId);
                 client.send(me);
             }
         }        
@@ -57,6 +58,7 @@ public class SplitAggregatorTest extends AbstractEIPTest {
     }
     
     public void testSimple() throws Exception {
+        aggregator.setTimeout(500);
         testRun(null);
     }
     
