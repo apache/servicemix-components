@@ -124,22 +124,6 @@
           <wsdlFiles>wsn.wsdl</wsdlFiles>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/*Test*</include>
-          </includes>
-          <excludes>
-            <!--  exclude abstract tests -->
-            <exclude>**/Abstract*.*</exclude>
-
-            <!-- while does this one fail in multiproject builds ? -->
-            <exclude>**/WSNComponentTest.*</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 

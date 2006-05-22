@@ -21,17 +21,12 @@ import java.io.InputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import junit.framework.TestCase;
 
 import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
 import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
-import org.apache.servicemix.wsn.jaxws.PauseFailedFault;
-import org.apache.servicemix.wsn.jaxws.ResumeFailedFault;
-import org.apache.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
 import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
-import org.apache.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 
 public class SubscriptionTest extends TestCase {
@@ -111,30 +106,6 @@ public class SubscriptionTest extends TestCase {
 	public void testWithEPR() throws Exception {
 		Subscribe subscribe = getSubscription("subscribe-epr.xml");
 		subscription.validateSubscription(subscribe);
-	}
-	
-	public static class DummySubscription extends AbstractSubscription {
-
-		public DummySubscription(String name) {
-			super(name);
-		}
-
-		@Override
-		protected void start() throws SubscribeCreationFailedFault {
-		}
-
-		@Override
-		protected void pause() throws PauseFailedFault {
-		}
-
-		@Override
-		protected void resume() throws ResumeFailedFault {
-		}
-
-		@Override
-		protected void renew(XMLGregorianCalendar terminationTime) throws UnacceptableTerminationTimeFault {
-		}
-		
 	}
 	
 }
