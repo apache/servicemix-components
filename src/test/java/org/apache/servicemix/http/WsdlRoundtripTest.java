@@ -17,16 +17,23 @@ package org.apache.servicemix.http;
 
 import java.io.StringWriter;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.soap.SOAPOperation;
 import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.w3c.dom.Document;
 
 public class WsdlRoundtripTest extends SpringTestSupport {
 
@@ -35,10 +42,19 @@ public class WsdlRoundtripTest extends SpringTestSupport {
     }
     
     public void test() throws Exception {
-        WSDLFactory wsdlFactory = WSDLFactory.newInstance();
-        Definition def = wsdlFactory.newWSDLReader().readWSDL("http://localhost:8192/Service?wsdl");
+        GetMethod get = new GetMethod("http://localhost:8192/Service/?wsdl");
+        int state = new HttpClient().executeMethod(get);
+        assertEquals(HttpServletResponse.SC_OK, state);
+        Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
+        
+        // Test WSDL
+        WSDLFactory factory = WSDLFactory.newInstance();
+        WSDLReader reader = factory.newWSDLReader();
+        Definition def;
+        def = reader.readWSDL("http://localhost:8192/Service/?wsdl", doc);
+
         StringWriter writer = new StringWriter();
-        wsdlFactory.newWSDLWriter().writeWSDL(def, writer);
+        factory.newWSDLWriter().writeWSDL(def, writer);
         System.err.println(writer.toString());
         Binding b = (Binding) def.getBindings().values().iterator().next();
         BindingOperation bop = (BindingOperation) b.getBindingOperations().iterator().next();

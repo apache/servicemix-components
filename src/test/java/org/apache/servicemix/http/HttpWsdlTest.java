@@ -33,7 +33,6 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 public class HttpWsdlTest extends TestCase {
 
