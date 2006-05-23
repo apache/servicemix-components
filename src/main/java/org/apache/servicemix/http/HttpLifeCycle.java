@@ -37,11 +37,10 @@ public class HttpLifeCycle extends BaseLifeCycle {
     protected ServerManager server;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
-    protected HttpConfiguration configuration;
+    protected HttpConfiguration configuration = new HttpConfiguration();
     
     public HttpLifeCycle(BaseComponent component) {
         super(component);
-        configuration = new HttpConfiguration();
     }
 
     public ServerManager getServer() {
@@ -65,6 +64,10 @@ public class HttpLifeCycle extends BaseLifeCycle {
      */
     public HttpConfiguration getConfiguration() {
         return configuration;
+    }
+    
+    public void setConfiguration(HttpConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     /* (non-Javadoc)

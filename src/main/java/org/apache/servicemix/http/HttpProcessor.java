@@ -22,5 +22,7 @@ public interface HttpProcessor {
 
     SslParameters getSsl();
     
+    String getAuthMethod();
+    
     void process(HttpServletRequest request, HttpServletResponse response) throws Exception;
 }

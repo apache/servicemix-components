@@ -50,7 +50,22 @@ public class HttpEndpoint extends SoapEndpoint {
     protected String locationURI;
     protected Map wsdls = new HashMap();
     protected SslParameters ssl;
+    protected String authMethod;
     
+    /**
+     * @return the authMethod
+     */
+    public String getAuthMethod() {
+        return authMethod;
+    }
+
+    /**
+     * @param authMethod the authMethod to set
+     */
+    public void setAuthMethod(String authMethod) {
+        this.authMethod = authMethod;
+    }
+
     /**
      * @return Returns the ssl.
      */

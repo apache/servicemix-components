@@ -104,4 +104,19 @@ public class HttpSpringComponent extends BaseComponent {
         }
     }
 
+    /**
+     * @return the configuration
+     * @org.apache.xbean.Flat
+     */
+    public HttpConfiguration getConfiguration() {
+        return ((HttpLifeCycle) getLifeCycle()).getConfiguration();
+    }
+
+    /**
+     * @param configuration the configuration to set
+     */
+    public void setConfiguration(HttpConfiguration configuration) {
+        ((HttpLifeCycle) getLifeCycle()).setConfiguration(configuration);
+    }
+
 }

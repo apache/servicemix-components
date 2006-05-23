@@ -16,13 +16,13 @@
                              endpoint="dummy"
                              role="consumer" 
                              soap="true"
-                             locationURI="http://localhost:8192/"
+                             locationURI="http://localhost:8192/Service/"
                              defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
 
               <http:endpoint service="test:MyProviderService"
                              endpoint="myProvider"
                              role="provider" 
-                             locationURI="http://localhost:8192/" />
+                             locationURI="http://localhost:8192/Service/" />
             </http:endpoints>
           </http:component>
         </sm:component>

@@ -18,6 +18,11 @@ package org.apache.servicemix.http;
 import org.apache.servicemix.common.PersistentConfiguration;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
+/**
+ * 
+ * @author gnodet
+ * @org.apache.xbean.XBean element="configuration"
+ */
 public class HttpConfiguration extends PersistentConfiguration implements HttpConfigurationMBean {
 
     public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = SelectChannelConnector.class.getName();

@@ -25,6 +25,7 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Definition;
@@ -39,6 +40,7 @@ import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.ServerManager;
 import org.apache.servicemix.http.SslParameters;
+import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
@@ -82,6 +84,10 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     
     public SslParameters getSsl() {
         return this.endpoint.getSsl();
+    }
+    
+    public String getAuthMethod() {
+        return this.endpoint.getAuthMethod();
     }
     
     public void process(MessageExchange exchange) throws Exception {
@@ -144,7 +150,12 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                                                                         request.getHeader("Content-Type"));
                 Context context = soapHelper.createContext(message);
                 if (request.getUserPrincipal() != null) {
-                    context.getInMessage().addPrincipal(request.getUserPrincipal());
+                    if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
+                        Subject subject = ((JaasJettyPrincipal) request.getUserPrincipal()).getSubject();
+                        context.getInMessage().setSubject(subject);
+                    } else {
+                        context.getInMessage().addPrincipal(request.getUserPrincipal());
+                    }
                 }
                 request.setAttribute(Context.class.getName(), context);
                 exchange = soapHelper.onReceive(context);

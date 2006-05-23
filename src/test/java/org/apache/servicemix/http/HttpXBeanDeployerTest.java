@@ -139,6 +139,7 @@ public class HttpXBeanDeployerTest extends TestCase {
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
+        client.done(me);
     }
     
 }

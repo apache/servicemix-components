@@ -17,13 +17,9 @@ package org.apache.servicemix.http;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.http.jetty.JaasUserRealm;
+import org.mortbay.component.AbstractLifeCycle;
+import org.mortbay.jetty.AbstractConnector;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.HttpConnection;
@@ -45,6 +44,9 @@ import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.HandlerCollection;
+import org.mortbay.jetty.security.Constraint;
+import org.mortbay.jetty.security.ConstraintMapping;
+import org.mortbay.jetty.security.SecurityHandler;
 import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -52,6 +54,7 @@ import org.mortbay.jetty.servlet.ServletMapping;
 import org.mortbay.thread.BoundedThreadPool;
 import org.mortbay.thread.ThreadPool;
 import org.mortbay.util.ByteArrayISO8859Writer;
+import org.mortbay.util.LazyList;
 import org.mortbay.util.StringUtil;
 import org.springframework.core.io.ClassPathResource;
 
@@ -92,10 +95,21 @@ public class ServerManager {
             Server server = (Server) it.next();
             server.stop();
         }
+        for (Iterator it = servers.values().iterator(); it.hasNext();) {
+            Server server = (Server) it.next();
+            server.join();
+            Connector[] connectors = server.getConnectors();
+            for (int i = 0; i < connectors.length; i++) {
+                if (connectors[i] instanceof AbstractConnector) {
+                    ((AbstractConnector) connectors[i]).join();
+                }
+            }
+        }
         threadPool.stop();
     }
     
-    public synchronized ContextHandler createContext(String strUrl, HttpProcessor processor) throws Exception {
+    public synchronized ContextHandler createContext(String strUrl, 
+                                                     HttpProcessor processor) throws Exception {
         URL url = new URL(strUrl);
         Server server = getServer(url);
         if (server == null) {
@@ -115,7 +129,9 @@ public class ServerManager {
             path = path.substring(0, path.length() - 1);
         }
         // Check that context does not exist yet
-        Handler[] handlers = server.getHandlers();
+        HandlerCollection handlerCollection = (HandlerCollection) server.getHandler();
+        ContextHandlerCollection contexts = (ContextHandlerCollection) handlerCollection.getHandlers()[0];
+        Handler[] handlers = contexts.getHandlers();
         if (handlers != null) {
             for (int i = 0; i < handlers.length; i++) {
                 if (handlers[i] instanceof ContextHandler) {
@@ -139,39 +155,37 @@ public class ServerManager {
         mapping.setServletName("jbiServlet");
         mapping.setPathSpec("/*");
         handler.setServletMappings(new ServletMapping[] { mapping });
-        context.setHandler(handler);
+        if (processor.getAuthMethod() != null) {
+            SecurityHandler secHandler = new SecurityHandler();
+            ConstraintMapping constraintMapping = new ConstraintMapping();
+            Constraint constraint = new Constraint();
+            constraint.setAuthenticate(true);
+            constraint.setRoles(new String[] { "*" });
+            constraintMapping.setConstraint(constraint);
+            constraintMapping.setPathSpec("/");
+            secHandler.setConstraintMappings(new ConstraintMapping[] { constraintMapping });
+            secHandler.setHandler(handler);
+            secHandler.setAuthMethod(processor.getAuthMethod());
+            secHandler.setUserRealm(new JaasUserRealm());
+            context.setHandler(secHandler);
+        } else {
+            context.setHandler(handler);
+        }
         context.setAttribute("processor", processor);
         // add context
-        handlers = (Handler[]) add(handlers, context, Handler.class);
-        server.setHandlers(handlers);
-        context.stop();
+        contexts.addHandler(context);
         return context;
-    }
-    
-    private Object[] add(Object[] array, Object obj, Class type) {
-        List l = new ArrayList();
-        if (array != null) {
-            l.addAll(Arrays.asList(array));
-        }
-        l.add(obj);
-        return l.toArray((Object[]) Array.newInstance(type, l.size()));
-    }
-    
-    private Object[] remove(Object[] array, Object obj, Class type) {
-        List l = new ArrayList();
-        if (array != null) {
-            l.addAll(Arrays.asList(array));
-        }
-        l.remove(obj);
-        return l.toArray((Object[]) Array.newInstance(type, l.size()));
     }
     
     public synchronized void remove(ContextHandler context) {
         for (Iterator it = servers.values().iterator(); it.hasNext();) {
             Server server = (Server) it.next();
-            Handler[] handlers = server.getHandlers();
-            handlers = (Handler[]) remove(handlers, context, Handler.class);
-            server.setHandlers(handlers);
+            HandlerCollection handlerCollection = (HandlerCollection) server.getHandler();
+            ContextHandlerCollection contexts = (ContextHandlerCollection) handlerCollection.getHandlers()[0];
+            Handler[] handlers = contexts.getHandlers();
+            if (handlers != null && handlers.length > 0) {
+                contexts.setHandlers((Handler[])LazyList.removeFromArray(handlers, context));
+            }
         }
     }
 
@@ -249,10 +263,12 @@ public class ServerManager {
         connector.setHost(url.getHost());
         connector.setPort(url.getPort());
         Server server = new Server();
-        server.setThreadPool(threadPool);
+        server.setThreadPool(new ThreadPoolWrapper());
         server.setConnectors(new Connector[] { connector });
-        server.setHandler(new DisplayServiceHandler());
-        connector.start();
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        HandlerCollection handlers = new HandlerCollection();
+        handlers.setHandlers(new Handler[] { contexts, new DisplayServiceHandler() });
+        server.setHandler(handlers);
         server.start();
         servers.put(getKey(url), server);
         sslParams.put(getKey(url), isSsl ? ssl : null);
@@ -271,10 +287,9 @@ public class ServerManager {
         return threadPool;
     }
     
-    protected class DisplayServiceHandler extends ContextHandlerCollection {
+    protected class DisplayServiceHandler extends AbstractHandler {
 
         public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
-            super.handle(target, request, response, dispatch);
             Response base_response = HttpConnection.getCurrentConnection().getResponse();
             if (response.isCommitted() || base_response.getStatus()!=-1)
                 return;
@@ -305,12 +320,12 @@ public class ServerManager {
                 String serverUri = (String) iter.next();
                 Server server = (Server) ServerManager.this.servers.get(serverUri);
                 Handler[] handlers = server.getChildHandlersByClass(ContextHandler.class);
-                for (int i = 0; handlers != null && i < handlers.length; i++)
-                {
+                for (int i = 0; handlers != null && i < handlers.length; i++) {
                     if (!(handlers[i] instanceof ContextHandler)) {
                         continue;
                     }
-                    ContextHandler context = (ContextHandler)handlers[i];
+                    ContextHandler context = (ContextHandler) handlers[i];
+                    if (context.isStarted()) {
                         writer.write("<li><a href=\"");
                         writer.write(serverUri);
                         if (!context.getContextPath().startsWith("/")) {
@@ -324,6 +339,12 @@ public class ServerManager {
                         writer.write(serverUri);
                         writer.write(context.getContextPath());
                         writer.write("</a></li>\n");
+                    } else {
+                        writer.write("<li>");
+                        writer.write(serverUri);
+                        writer.write(context.getContextPath());
+                        writer.write(" [Stopped]</li>\n");
+                    }
                 }
             }
             
@@ -339,6 +360,27 @@ public class ServerManager {
             out.close();
         }
         
+    }
+    
+    protected class ThreadPoolWrapper extends AbstractLifeCycle implements ThreadPool {
+
+        public boolean dispatch(Runnable job) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Dispatching job: " + job);
+            }
+            return threadPool.dispatch(job);
+        }
+
+        public int getIdleThreads() {
+            return threadPool.getIdleThreads();
+        }
+
+        public int getThreads() {
+            return threadPool.getThreads();
+        }
+
+        public void join() throws InterruptedException {
+        }
     }
 
 }

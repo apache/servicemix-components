@@ -60,15 +60,13 @@ public class ServerManagerTest extends TestCase {
         // Test first context 
         checkFail("http://localhost:8192/Service1/echo", null);
         ContextHandler ctx1 = server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
-        checkFail("http://localhost:8192/Service1/echo", null);
-        ctx1.start();
         request("http://localhost:8192/Service1/echo", null);
+        ctx1.stop();
+        checkFail("http://localhost:8192/Service1/echo", null);
         
         // Test second context on the same host/port
         checkFail("http://localhost:8192/Service2/echo", null);
         ContextHandler ctx2 = server.createContext("http://localhost:8192/Service2", new TestHttpProcessor());
-        checkFail("http://localhost:8192/Service2/echo", null);
-        ctx2.start();
         request("http://localhost:8192/Service2/echo", null);
         ctx2.stop();
         checkFail("http://localhost:8192/Service2/echo", null);
@@ -76,9 +74,9 @@ public class ServerManagerTest extends TestCase {
         // Test third context on another port
         checkFail("http://localhost:8193/echo", null);
         ContextHandler ctx3 = server.createContext("http://localhost:8193", new TestHttpProcessor());
-        checkFail("http://localhost:8193/echo", null);
-        ctx3.start();
         request("http://localhost:8193/echo", null);
+        ctx3.stop();
+        checkFail("http://localhost:8193/echo", null);
     }
     
     public void testOverlappingPath() throws Exception {
@@ -123,7 +121,7 @@ public class ServerManagerTest extends TestCase {
             request(url, content);
             fail("Request should have failed: " + url);
         } catch (Exception e) {
-            System.out.println(e);
+            //System.out.println(e);
         }
     }
     
@@ -173,6 +171,9 @@ public class ServerManagerTest extends TestCase {
 
     public static class TestHttpProcessor implements HttpProcessor {
         public SslParameters getSsl() {
+            return null;
+        }
+        public String getAuthMethod() {
             return null;
         }
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {

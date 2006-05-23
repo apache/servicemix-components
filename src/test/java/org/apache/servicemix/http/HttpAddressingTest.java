@@ -64,7 +64,7 @@ public class HttpAddressingTest extends SpringTestSupport {
     }
     
     public void testOkFromUrl() throws Exception {
-        URLConnection connection = new URL("http://localhost:8192/").openConnection();
+        URLConnection connection = new URL("http://localhost:8192/Service/").openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         OutputStream os = connection.getOutputStream();
