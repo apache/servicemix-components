@@ -72,6 +72,11 @@
       <groupId>xfire</groupId>
       <artifactId>xfire-jsr181-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
