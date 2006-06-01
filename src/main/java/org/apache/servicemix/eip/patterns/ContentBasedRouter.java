@@ -19,6 +19,7 @@ import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,22 +89,26 @@ public class ContentBasedRouter extends EIPEndpoint {
         try {
             if (exchange.getRole() == MessageExchange.Role.PROVIDER &&
                 exchange.getProperty(correlation) == null) {
-                // Retrieve target
-                ExchangeTarget target = getDestination(exchange);
                 // Create exchange for target
                 MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
                 if (store.hasFeature(Store.CLUSTERED)) {
                     exchange.setProperty(JbiConstants.STATELESS_PROVIDER, Boolean.TRUE);
                     tme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
                 }
-                target.configureTarget(tme, getContext());
                 // Set correlations
-                exchange.setProperty(correlation, tme.getExchangeId());
                 tme.setProperty(correlation, exchange.getExchangeId());
+                exchange.setProperty(correlation, tme.getExchangeId());
                 // Put exchange to store
                 store.store(exchange.getExchangeId(), exchange);
-                // Send in to listener and target
-                MessageUtil.transferTo(exchange, tme, "in"); 
+                // Now copy input to new exchange
+                // We need to read the message once for finding routing target
+                // so ensure we have a re-readable source
+                NormalizedMessage in = MessageUtil.copyIn(exchange);
+                MessageUtil.transferToIn(in, tme); 
+                // Retrieve target
+                ExchangeTarget target = getDestination(tme);
+                target.configureTarget(tme, getContext());
+                // Send in to target
                 send(tme);
             // Mimic the exchange on the other side and send to needed listener
             } else {

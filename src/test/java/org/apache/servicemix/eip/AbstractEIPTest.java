@@ -51,6 +51,7 @@ public abstract class AbstractEIPTest extends TestCase {
         jbi = new JBIContainer();
         jbi.setEmbedded(true);
         jbi.setUseMBeanServer(false);
+        jbi.setCreateMBeanServer(false);
         configureContainer();
         listener = new ExchangeCompletedListener();
         jbi.addListener(listener);

@@ -126,7 +126,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                         }
                         // If the aggregation is not closed
                         if (aggregation != null) {
-                            if (addMessage(aggregation, MessageUtil.copyIn(exchange), exchange)) {
+                            if (addMessage(aggregation, in, exchange)) {
                                 sendAggregate(correlationId, aggregation, false);
                             } else {
                                 store.store(correlationId, aggregation);
