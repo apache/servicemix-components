@@ -3,7 +3,7 @@
 
   <!-- START SNIPPET: embedded -->
   <jsr181:endpoint endpoint="endpoint1"
-  				   typeMapping="xmlbeans">
+                   typeMapping="xmlbeans">
     <jsr181:pojo>
       <bean class="test.EchoService" />
     </jsr181:pojo>
@@ -17,7 +17,7 @@
 
   <!-- START SNIPPET: byclass -->
   <jsr181:endpoint pojoClass="test.EchoService2"
-  				   annotations="none" />
+                   annotations="none" />
   <!-- END SNIPPET: byclass -->
   				   
 </beans>
