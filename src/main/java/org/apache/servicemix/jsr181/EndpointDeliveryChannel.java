@@ -75,11 +75,8 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
     }
 
     public void send(MessageExchange exchange) throws MessagingException {
-        if (exchange instanceof InOut || exchange instanceof InOptionalOut) {
-            // Done status can only be send asynchronously
-            if (exchange.getStatus() != ExchangeStatus.DONE) {
-                throw new UnsupportedOperationException("Asynchonous in-out are not supported");
-            }
+        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            throw new UnsupportedOperationException("Asynchonous send of active exchanges are not supported");
         }
         BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
         lf.sendConsumerExchange(exchange, endpoint);
