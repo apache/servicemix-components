@@ -13,6 +13,7 @@
     <sm:activationSpecs>
   <!-- END SNIPPET: dot -->
 
+      <!-- START SNIPPET: lightweight -->  
       <sm:activationSpec>
       	<sm:component>
             <jsr181:component>
@@ -23,6 +24,7 @@
             </jsr181:component>
         </sm:component>
       </sm:activationSpec>
+      <!-- END SNIPPET: lightweight -->  
 
     </sm:activationSpecs>
   </sm:container>

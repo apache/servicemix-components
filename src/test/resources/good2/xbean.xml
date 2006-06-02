@@ -1,14 +1,23 @@
 <?xml version="1.0"?>
 <beans xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0">
 
+  <!-- START SNIPPET: embedded -->
   <jsr181:endpoint endpoint="endpoint1"
   				   typeMapping="xmlbeans">
     <jsr181:pojo>
       <bean class="test.EchoService" />
     </jsr181:pojo>
   </jsr181:endpoint>
+  <!-- END SNIPPET: embedded -->
+  
+  <!-- START SNIPPET: reference -->
+  <bean id="myPojo" class="test.EchoService" />
+  <jsr181:endpoint pojo="#myPojo" />
+  <!-- END SNIPPET: reference -->
 
+  <!-- START SNIPPET: byclass -->
   <jsr181:endpoint pojoClass="test.EchoService2"
   				   annotations="none" />
+  <!-- END SNIPPET: byclass -->
   				   
 </beans>
