@@ -275,7 +275,7 @@
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="Unsubscribe">
-			<wsdl:input name="UsubscribeRequest">
+			<wsdl:input name="UnsubscribeRequest">
 				<soap:body use="literal" />
 			</wsdl:input>
 			<wsdl:output name="UnsubscribeResponse">
@@ -317,7 +317,7 @@
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="Unsubscribe">
-			<wsdl:input name="UsubscribeRequest">
+			<wsdl:input name="UnsubscribeRequest">
 				<soap:body use="literal" />
 			</wsdl:input>
 			<wsdl:output name="UnsubscribeResponse">
@@ -437,10 +437,10 @@
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="DestroyPullPoint">
-			<wsdl:input name="DestroyRequest">
+			<wsdl:input name="DestroyPullPointRequest">
 				<soap:body use="literal" />
 			</wsdl:input>
-			<wsdl:output name="DestroyResponse">
+			<wsdl:output name="DestroyPullPointResponse">
 				<soap:body use="literal" />
 			</wsdl:output>
 			<wsdl:fault name="UnableToDestroyPullPointFault">
