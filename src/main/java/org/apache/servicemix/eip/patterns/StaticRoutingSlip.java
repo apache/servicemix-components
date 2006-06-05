@@ -17,12 +17,10 @@ package org.apache.servicemix.eip.patterns;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.eip.support.MessageUtil;
@@ -44,8 +42,6 @@ import org.apache.servicemix.eip.support.MessageUtil;
  *                  description="A static Routing Slip"
  */
 public class StaticRoutingSlip extends EIPEndpoint {
-
-    private static final Log log = LogFactory.getLog(Pipeline.class);
 
     /**
      * List of target components used in the RoutingSlip
@@ -94,114 +90,146 @@ public class StaticRoutingSlip extends EIPEndpoint {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging.MessageExchange)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
-    public void process(MessageExchange exchange) throws MessagingException {
-        try {
-            // This exchange comes from the consumer
-            if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
-                if (exchange.getStatus() == ExchangeStatus.DONE) {
-                    String correlationId = (String) exchange.getProperty(correlation);
-                    if (correlationId == null) {
-                        throw new IllegalStateException(correlation + " property not found");
-                    }
-                    // Ack last target hit
-                    MessageExchange me = (MessageExchange) store.load(correlationId);
-                    done(me);
-                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                    String correlationId = (String) exchange.getProperty(correlation);
-                    if (correlationId == null) {
-                        throw new IllegalStateException(correlation + " property not found");
-                    }
-                    // Ack last target hit
-                    MessageExchange me = (MessageExchange) store.load(correlationId);
-                    done(me);
-                } else if (exchange instanceof InOut == false) {
-                    throw new IllegalStateException("Use an InOut MEP");
-                } else {
-                    MessageExchange me = exchangeFactory.createInOutExchange();
-                    me.setProperty(correlation, exchange.getExchangeId());
-                    me.setProperty(index, new Integer(0));
-                    targets[0].configureTarget(me, getContext());
-                    store.store(exchange.getExchangeId(), exchange);
-                    MessageUtil.transferInToIn(exchange, me);
-                    send(me);
-                }
-            // The exchange comes from a target
+    protected void processSync(MessageExchange exchange) throws Exception {
+        if (exchange instanceof InOut == false) {
+            throw new IllegalStateException("Use an InOut MEP");
+        }
+        MessageExchange current = exchange;
+        for (int i = 0; i < targets.length; i++) {
+            InOut me = exchangeFactory.createInOutExchange();
+            targets[i].configureTarget(me, getContext());
+            if (i == 0) {
+                MessageUtil.transferInToIn(current, me);
             } else {
+                MessageUtil.transferOutToIn(current, me);
+            }
+            sendSync(me);
+            if (i != 0) {
+                done(current);
+            }
+            if (me.getStatus() == ExchangeStatus.DONE) {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.DONE);
+            } else if (me.getStatus() == ExchangeStatus.ERROR) {
+                fail(exchange, me.getError());
+                return;
+            } else if (me.getFault() != null) {
+                Fault fault = MessageUtil.copyFault(me);
+                MessageUtil.transferToFault(fault, exchange);
+                done(me);
+                sendSync(exchange);
+                return;
+            } else if (me.getOutMessage() == null) {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
+            }
+            current = me;
+        }
+        MessageUtil.transferToOut(MessageUtil.copyOut(current), exchange);
+        done(current);
+        sendSync(exchange);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
+     */
+    protected void processAsync(MessageExchange exchange) throws Exception {
+        // This exchange comes from the consumer
+        if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
                 String correlationId = (String) exchange.getProperty(correlation);
-                String previousId = (String) exchange.getProperty(previous);
-                Integer prevIndex = (Integer) exchange.getProperty(index);
                 if (correlationId == null) {
                     throw new IllegalStateException(correlation + " property not found");
                 }
-                if (prevIndex == null) {
-                    throw new IllegalStateException(previous + " property not found");
+                // Ack last target hit
+                MessageExchange me = (MessageExchange) store.load(correlationId);
+                done(me);
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                String correlationId = (String) exchange.getProperty(correlation);
+                if (correlationId == null) {
+                    throw new IllegalStateException(correlation + " property not found");
                 }
-                // This should never happen, as we can only send DONE
-                if (exchange.getStatus() == ExchangeStatus.DONE) {
-                    throw new IllegalStateException("Exchange status is " + ExchangeStatus.DONE);
-                // ERROR are sent back to the consumer
-                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                    MessageExchange me = (MessageExchange) store.load(correlationId);
-                    fail(me, exchange.getError());
-                    // Ack the previous target
-                    if (previousId != null) {
-                        me = (MessageExchange) store.load(previousId);
-                        done(me);
-                    }
-                // Faults are sent back to the consumer
-                } else if (exchange.getFault() != null) {
+                // Ack last target hit
+                MessageExchange me = (MessageExchange) store.load(correlationId);
+                done(me);
+            } else if (exchange instanceof InOut == false) {
+                throw new IllegalStateException("Use an InOut MEP");
+            } else {
+                MessageExchange me = exchangeFactory.createInOutExchange();
+                me.setProperty(correlation, exchange.getExchangeId());
+                me.setProperty(index, new Integer(0));
+                targets[0].configureTarget(me, getContext());
+                store.store(exchange.getExchangeId(), exchange);
+                MessageUtil.transferInToIn(exchange, me);
+                send(me);
+            }
+        // The exchange comes from a target
+        } else {
+            String correlationId = (String) exchange.getProperty(correlation);
+            String previousId = (String) exchange.getProperty(previous);
+            Integer prevIndex = (Integer) exchange.getProperty(index);
+            if (correlationId == null) {
+                throw new IllegalStateException(correlation + " property not found");
+            }
+            if (prevIndex == null) {
+                throw new IllegalStateException(previous + " property not found");
+            }
+            // This should never happen, as we can only send DONE
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.DONE);
+            // ERROR are sent back to the consumer
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                MessageExchange me = (MessageExchange) store.load(correlationId);
+                fail(me, exchange.getError());
+                // Ack the previous target
+                if (previousId != null) {
+                    me = (MessageExchange) store.load(previousId);
+                    done(me);
+                }
+            // Faults are sent back to the consumer
+            } else if (exchange.getFault() != null) {
+                MessageExchange me = (MessageExchange) store.load(correlationId);
+                me.setProperty(correlation, exchange.getExchangeId());
+                store.store(exchange.getExchangeId(), exchange);
+                MessageUtil.transferFaultToFault(exchange, me);
+                send(me);
+                // Ack the previous target
+                if (previousId != null) {
+                    me = (MessageExchange) store.load(previousId);
+                    done(me);
+                }
+            // Out message, give it to next target or back to consumer
+            } else if (exchange.getMessage("out") != null) {
+                // This is the answer from the last target
+                if (prevIndex.intValue() == targets.length - 1) {
                     MessageExchange me = (MessageExchange) store.load(correlationId);
                     me.setProperty(correlation, exchange.getExchangeId());
                     store.store(exchange.getExchangeId(), exchange);
-                    MessageUtil.transferFaultToFault(exchange, me);
+                    MessageUtil.transferOutToOut(exchange, me);
                     send(me);
-                    // Ack the previous target
                     if (previousId != null) {
                         me = (MessageExchange) store.load(previousId);
                         done(me);
                     }
-                // Out message, give it to next target or back to consumer
-                } else if (exchange.getMessage("out") != null) {
-                    // This is the answer from the last target
-                    if (prevIndex.intValue() == targets.length - 1) {
-                        MessageExchange me = (MessageExchange) store.load(correlationId);
-                        me.setProperty(correlation, exchange.getExchangeId());
-                        store.store(exchange.getExchangeId(), exchange);
-                        MessageUtil.transferOutToOut(exchange, me);
-                        send(me);
-                        if (previousId != null) {
-                            me = (MessageExchange) store.load(previousId);
-                            done(me);
-                        }
-                    // We still have a target to hit
-                    } else {
-                        MessageExchange me = exchangeFactory.createInOutExchange();
-                        Integer curIndex = new Integer(prevIndex.intValue() + 1);
-                        me.setProperty(correlation, correlationId);
-                        me.setProperty(index, curIndex);
-                        me.setProperty(previous, exchange.getExchangeId());
-                        targets[curIndex.intValue()].configureTarget(me, getContext());
-                        store.store(exchange.getExchangeId(), exchange);
-                        MessageUtil.transferOutToIn(exchange, me);
-                        send(me);
-                        if (previousId != null) {
-                            me = (MessageExchange) store.load(previousId);
-                            done(me);
-                        }
-                    }
-                // This should not happen
+                // We still have a target to hit
                 } else {
-                    throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
+                    MessageExchange me = exchangeFactory.createInOutExchange();
+                    Integer curIndex = new Integer(prevIndex.intValue() + 1);
+                    me.setProperty(correlation, correlationId);
+                    me.setProperty(index, curIndex);
+                    me.setProperty(previous, exchange.getExchangeId());
+                    targets[curIndex.intValue()].configureTarget(me, getContext());
+                    store.store(exchange.getExchangeId(), exchange);
+                    MessageUtil.transferOutToIn(exchange, me);
+                    send(me);
+                    if (previousId != null) {
+                        me = (MessageExchange) store.load(previousId);
+                        done(me);
+                    }
                 }
-            }
-        // If an error occurs, log it and report the error back to the sender
-        // if the exchange is still ACTIVE 
-        } catch (Exception e) {
-            log.error("An exception occured while processing exchange", e);
-            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                fail(exchange, e);
+            // This should not happen
+            } else {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
             }
         }
     }

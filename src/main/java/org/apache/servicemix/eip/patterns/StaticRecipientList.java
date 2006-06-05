@@ -19,12 +19,9 @@ import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.eip.support.MessageUtil;
@@ -42,8 +39,6 @@ import org.apache.servicemix.eip.support.MessageUtil;
  *                  description="A static Recipient List"
  */
 public class StaticRecipientList extends EIPEndpoint {
-
-    private static final Log log = LogFactory.getLog(WireTap.class);
 
     /**
      * List of recipients
@@ -106,46 +101,60 @@ public class StaticRecipientList extends EIPEndpoint {
     }
     
     /* (non-Javadoc)
-     * @see org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging.MessageExchange)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
-    public void process(MessageExchange exchange) throws MessagingException {
-        try {
-            // If we need to report errors, the behavior is really different,
-            // as we need to keep the incoming exchange in the store until
-            // all acks have been received
-            if (reportErrors) {
-                // TODO: implement this
-                throw new UnsupportedOperationException("Not implemented");
-            // We are in a simple fire-and-forget behaviour.
-            // This implementation is really efficient as we do not use
-            // the store at all.
-            } else {
-                if (exchange.getStatus() == ExchangeStatus.DONE) {
-                    return;
-                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                    return;
-                } else if (exchange instanceof InOnly == false &&
-                           exchange instanceof RobustInOnly == false) {
-                    fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
-                } else if (exchange.getFault() != null) {
-                    done(exchange);
-                } else {
-                    NormalizedMessage in = MessageUtil.copyIn(exchange);
-                    for (int i = 0; i < recipients.length; i++) {
-                        MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
-                        recipients[i].configureTarget(me, getContext());
-                        MessageUtil.transferToIn(in, me);
-                        send(me);
-                    }
-                    done(exchange);
-                }
+    protected void processSync(MessageExchange exchange) throws Exception {
+        if (exchange instanceof InOnly == false &&
+            exchange instanceof RobustInOnly == false) {
+            fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
+            return;
+        }
+        NormalizedMessage in = MessageUtil.copyIn(exchange);
+        for (int i = 0; i < recipients.length; i++) {
+            MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+            recipients[i].configureTarget(me, getContext());
+            MessageUtil.transferToIn(in, me);
+            sendSync(me);
+            if (me.getStatus() == ExchangeStatus.ERROR && reportErrors) {
+                fail(exchange, me.getError());
+                return;
             }
-        // If an error occurs, log it and report the error back to the sender
-        // if the exchange is still ACTIVE 
-        } catch (Exception e) {
-            log.error("An exception occured while processing exchange", e);
-            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                fail(exchange, e);
+        }
+        done(exchange);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
+     */
+    protected void processAsync(MessageExchange exchange) throws Exception {
+        // If we need to report errors, the behavior is really different,
+        // as we need to keep the incoming exchange in the store until
+        // all acks have been received
+        if (reportErrors) {
+            // TODO: implement this
+            throw new UnsupportedOperationException("Not implemented");
+        // We are in a simple fire-and-forget behaviour.
+        // This implementation is really efficient as we do not use
+        // the store at all.
+        } else {
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                return;
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                return;
+            } else if (exchange instanceof InOnly == false &&
+                       exchange instanceof RobustInOnly == false) {
+                fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
+            } else if (exchange.getFault() != null) {
+                done(exchange);
+            } else {
+                NormalizedMessage in = MessageUtil.copyIn(exchange);
+                for (int i = 0; i < recipients.length; i++) {
+                    MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+                    recipients[i].configureTarget(me, getContext());
+                    MessageUtil.transferToIn(in, me);
+                    send(me);
+                }
+                done(exchange);
             }
         }
     }

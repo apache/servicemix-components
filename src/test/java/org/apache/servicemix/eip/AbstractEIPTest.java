@@ -31,6 +31,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.ComponentSupport;
@@ -116,14 +117,25 @@ public abstract class AbstractEIPTest extends TestCase {
     protected static class ReturnOutComponent extends ComponentSupport implements MessageExchangeListener {
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
                 if (exchange.getMessage("out") == null) {
                     NormalizedMessage out = exchange.createMessage();
                     out.setContent(createSource("<outMsg/>"));
-                    answer(exchange, out);
+                    exchange.setMessage(out, "out");
+                    if (txSync) {
+                        sendSync(exchange);
+                    } else {
+                        send(exchange);
+                    }
                 } else if (exchange.getFault() == null) {
                     Fault fault = exchange.createFault();
                     fault.setContent(createSource("<fault/>"));
-                    fail(exchange, fault);
+                    exchange.setMessage(fault, "fault");
+                    if (txSync) {
+                        sendSync(exchange);
+                    } else {
+                        send(exchange);
+                    }
                 } else {
                     done(exchange);
                 }
@@ -138,9 +150,15 @@ public abstract class AbstractEIPTest extends TestCase {
         }
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
                 NormalizedMessage out = exchange.createMessage();
                 out.setContent(createSource(response));
-                answer(exchange, out);
+                exchange.setMessage(out, "out");
+                if (txSync) {
+                    sendSync(exchange);
+                } else {
+                    send(exchange);
+                }
             }
         }
     }
@@ -149,9 +167,15 @@ public abstract class AbstractEIPTest extends TestCase {
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                 if (exchange.getMessage("out") == null) {
+                    boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
                     NormalizedMessage out = exchange.createMessage();
                     out.setContent(createSource("<outMsg/>"));
-                    answer(exchange, out);
+                    exchange.setMessage(out, "out");
+                    if (txSync) {
+                        sendSync(exchange);
+                    } else {
+                        send(exchange);
+                    }
                 } else {
                     fail(exchange, new Exception("Dummy error"));
                 }

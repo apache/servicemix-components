@@ -53,9 +53,25 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     private ExchangeTarget target;
     
     private boolean rescheduleTimeouts;
+    
+    private boolean synchronous;
 
     private ConcurrentMap closedAggregates = new ConcurrentHashMap();
     
+    /**
+     * @return the synchronous
+     */
+    public boolean isSynchronous() {
+        return synchronous;
+    }
+
+    /**
+     * @param synchronous the synchronous to set
+     */
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
+    }
+
     /**
      * @return the rescheduleTimeouts
      */
@@ -84,80 +100,84 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         this.target = target;
     }
     
-    /*(non-Javadoc)
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
+     */
+    protected void processSync(MessageExchange exchange) throws Exception {
+        throw new IllegalStateException();
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
+     */
+    protected void processAsync(MessageExchange exchange) throws Exception {
+        throw new IllegalStateException();
+    }
+    
+    /* (non-Javadoc)
      * @see org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging.MessageExchange)
      */
     public void process(MessageExchange exchange) throws Exception {
-        try {
-            // Skip DONE
-            if (exchange.getStatus() == ExchangeStatus.DONE) {
-                return;
-            // Skip ERROR
-            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                return;
-            // Handle an ACTIVE exchange as a PROVIDER
-            } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
-                if (exchange instanceof InOnly == false &&
-                    exchange instanceof RobustInOnly == false) {
-                    fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
-                } else {
-                    NormalizedMessage in = MessageUtil.copyIn(exchange);
-                    final String correlationId = getCorrelationID(exchange, in);
-                    if (correlationId == null || correlationId.length() == 0) {
-                        throw new IllegalArgumentException("Could not retrieve correlation id for incoming exchange");
-                    }
-                    // Load existing aggregation
-                    Lock lock = getLockManager().getLock(correlationId);
-                    lock.lock();
-                    try {
-                        Object aggregation = store.load(correlationId);
-                        Date timeout = null;
-                        // Create a new aggregate
-                        if (aggregation == null) {
-                            if (isAggregationClosed(correlationId)) {
-                                // TODO: should we return an error here ?
-                            } else {
-                                aggregation = createAggregation(correlationId);
-                                timeout = getTimeout(aggregation);
-                            }
-                        } else if (isRescheduleTimeouts()) {
-                            timeout = getTimeout(aggregation);
-                            
-                        }
-                        // If the aggregation is not closed
-                        if (aggregation != null) {
-                            if (addMessage(aggregation, in, exchange)) {
-                                sendAggregate(correlationId, aggregation, false);
-                            } else {
-                                store.store(correlationId, aggregation);
-                                if (timeout != null) {
-                                    if (log.isDebugEnabled()) {
-                                        log.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
-                                    }
-                                    getTimerManager().schedule(new TimerListener() {
-                                        public void timerExpired(Timer timer) {
-                                            AbstractAggregator.this.onTimeout(correlationId);
-                                        }
-                                    }, timeout);
-                                }
-                            }
-                        }
-                        done(exchange);
-                    } finally {
-                        lock.unlock();
-                    }
+        // Skip DONE
+        if (exchange.getStatus() == ExchangeStatus.DONE) {
+            return;
+        // Skip ERROR
+        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            return;
+        // Handle an ACTIVE exchange as a PROVIDER
+        } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+            if (exchange instanceof InOnly == false &&
+                exchange instanceof RobustInOnly == false) {
+                fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
+            } else {
+                NormalizedMessage in = MessageUtil.copyIn(exchange);
+                final String correlationId = getCorrelationID(exchange, in);
+                if (correlationId == null || correlationId.length() == 0) {
+                    throw new IllegalArgumentException("Could not retrieve correlation id for incoming exchange");
                 }
-            // Handle an ACTIVE exchange as a CONSUMER
-            } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                done(exchange);
+                // Load existing aggregation
+                Lock lock = getLockManager().getLock(correlationId);
+                lock.lock();
+                try {
+                    Object aggregation = store.load(correlationId);
+                    Date timeout = null;
+                    // Create a new aggregate
+                    if (aggregation == null) {
+                        if (isAggregationClosed(correlationId)) {
+                            // TODO: should we return an error here ?
+                        } else {
+                            aggregation = createAggregation(correlationId);
+                            timeout = getTimeout(aggregation);
+                        }
+                    } else if (isRescheduleTimeouts()) {
+                        timeout = getTimeout(aggregation);
+                    }
+                    // If the aggregation is not closed
+                    if (aggregation != null) {
+                        if (addMessage(aggregation, in, exchange)) {
+                            sendAggregate(correlationId, aggregation, false);
+                        } else {
+                            store.store(correlationId, aggregation);
+                            if (timeout != null) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
+                                }
+                                getTimerManager().schedule(new TimerListener() {
+                                    public void timerExpired(Timer timer) {
+                                        AbstractAggregator.this.onTimeout(correlationId);
+                                    }
+                                }, timeout);
+                            }
+                        }
+                    }
+                    done(exchange);
+                } finally {
+                    lock.unlock();
+                }
             }
-        // If an error occurs, log it and report the error back to the sender
-        // if the exchange is still ACTIVE 
-        } catch (Exception e) {
-            log.error("An exception occured while processing exchange", e);
-            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                fail(exchange, e);
-            }
+        // Handle an ACTIVE exchange as a CONSUMER
+        } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            done(exchange);
         }
     }
     
@@ -170,7 +190,11 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         me.setInMessage(nm);
         buildAggregate(aggregation, nm, me, timeout);
         closeAggregation(correlationId);
-        send(me);
+        if (isSynchronous()) {
+            sendSync(me);
+        } else {
+            send(me);
+        }
     }
 
     protected void onTimeout(String correlationId) {

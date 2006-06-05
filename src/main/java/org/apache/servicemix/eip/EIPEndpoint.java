@@ -25,6 +25,7 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -188,6 +189,12 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
         }
     }
     
+    protected void sendSync(MessageExchange me) throws MessagingException {
+        if (!channel.sendSync(me)) {
+            throw new MessagingException("SendSync failed");
+        }
+    }
+    
     protected void done(MessageExchange me) throws MessagingException {
         me.setStatus(ExchangeStatus.DONE);
         send(me);
@@ -203,5 +210,21 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
     
     public void stop() {
     }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging.MessageExchange)
+     */
+    public void process(MessageExchange exchange) throws Exception {
+        boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+        if (txSync && exchange.getRole() == Role.PROVIDER && exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            processSync(exchange);
+        } else {
+            processAsync(exchange);
+        }
+    }
+    
+    protected abstract void processAsync(MessageExchange exchange) throws Exception;
+
+    protected abstract void processSync(MessageExchange exchange) throws Exception;
 
 }
