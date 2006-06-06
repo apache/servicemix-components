@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
-	   xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0">
+	   xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0"
+       xmlns:test="http://test">
 
   <!-- the JBI container -->
   
@@ -19,6 +20,7 @@
             <jsr181:component>
             	<jsr181:endpoints>
             		<jsr181:endpoint pojoClass="test.EchoService2"
+                                     serviceInterface="test.Echo"
   				   					 annotations="none" />
             	</jsr181:endpoints>
             </jsr181:component>
@@ -28,5 +30,12 @@
 
     </sm:activationSpecs>
   </sm:container>
+  
+  <!-- START SNIPPET: proxy -->
+  <jsr181:proxy id="proxy"
+                container="#jbi" 
+                interfaceName="test:EchoPortType"
+                type="test.Echo" />
+  <!-- END SNIPPET: proxy -->
 
 </beans>

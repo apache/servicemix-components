@@ -28,6 +28,8 @@ import org.apache.servicemix.tck.SpringTestSupport;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 
+import test.Echo;
+
 public class Jsr181SpringTest extends SpringTestSupport {
 
     private static Log logger =  LogFactory.getLog(Jsr181ComponentTest.class);
@@ -35,7 +37,7 @@ public class Jsr181SpringTest extends SpringTestSupport {
     public void test() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
-        me.setInterfaceName(new QName("http://test", "EchoService2PortType"));
+        me.setInterfaceName(new QName("http://test", "EchoPortType"));
         me.getInMessage().setContent(new StringSource("<echo xmlns='http://test'><echoin0>world</echoin0></echo>"));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
@@ -49,6 +51,12 @@ public class Jsr181SpringTest extends SpringTestSupport {
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         }
+    }
+    
+    public void testProxy() throws Exception {
+        Echo echo = (Echo) context.getBean("proxy");
+        String result = echo.echo("world");
+        assertEquals("world", result);
     }
     
     protected AbstractXmlApplicationContext createBeanFactory() {

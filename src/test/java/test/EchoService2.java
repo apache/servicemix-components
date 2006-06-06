@@ -15,7 +15,7 @@
  */
 package test;
 
-public class EchoService2 {
+public class EchoService2 implements Echo {
     
     public EchoService2() {
     }
