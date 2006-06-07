@@ -24,6 +24,7 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.RobustInOnly;
+import javax.wsdl.Definition;
 
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
@@ -333,6 +334,15 @@ public class Pipeline extends EIPEndpoint {
                 throw new IllegalStateException("Exchange from target has a " + ExchangeStatus.ACTIVE + " status but has no Fault message");
             }
         }
+    }
+    
+    protected Definition getDefinitionFromWsdlExchangeTarget() {
+        Definition rc = super.getDefinitionFromWsdlExchangeTarget();
+        if( rc !=null ) {
+            // TODO: This components wsdl is == transformer wsdl without the out message.
+            // need to massage the result wsdl so that it described an in only exchange
+        }
+        return rc;
     }
 
 }

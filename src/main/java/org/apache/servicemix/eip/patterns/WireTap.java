@@ -15,6 +15,7 @@
  */
 package org.apache.servicemix.eip.patterns;
 
+import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -26,6 +27,7 @@ import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.eip.support.MessageUtil;
 import org.apache.servicemix.store.Store;
+import org.w3c.dom.Document;
 
 /**
  *
@@ -77,6 +79,7 @@ public class WireTap extends EIPEndpoint {
      */
     public void setTarget(ExchangeTarget target) {
         this.target = target;
+        this.wsdlExchangeTarget = target;
     }
 
     /**
@@ -254,5 +257,5 @@ public class WireTap extends EIPEndpoint {
             sendSync(dest);
         }
     }
-
+    
 }

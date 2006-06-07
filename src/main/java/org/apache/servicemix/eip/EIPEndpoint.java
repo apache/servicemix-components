@@ -15,6 +15,9 @@
  */
 package org.apache.servicemix.eip;
 
+import java.net.URL;
+
+import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.DeliveryChannel;
@@ -24,11 +27,16 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.Definition;
+import javax.wsdl.WSDLException;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
 import org.apache.servicemix.store.Store;
@@ -36,6 +44,8 @@ import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
 import org.apache.servicemix.timers.TimerManager;
 import org.apache.servicemix.timers.impl.TimerManagerImpl;
+import org.springframework.core.io.Resource;
+import org.w3c.dom.Document;
 
 /**
  * @author gnodet
@@ -45,6 +55,7 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
 
     private ServiceEndpoint activated;
     private DeliveryChannel channel;
+    private Resource wsdlResource;
     
     /**
      * The store to keep pending exchanges
@@ -66,6 +77,11 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
      * The exchange factory
      */
     protected MessageExchangeFactory exchangeFactory;
+    
+    /**
+     * The ExchangeTarget to use to get the WSDL
+     */
+    protected ExchangeTarget wsdlExchangeTarget;
     
     /**
      * @return Returns the exchangeFactory.
@@ -223,8 +239,141 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
         }
     }
     
+    /**
+     * @return Returns the description.
+     */
+    public Document getDescription() {
+        if( description == null ) {
+            definition = getDefinition();
+            if( definition!=null ) {
+                try {
+                    description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+                } catch (WSDLException e) {
+                }
+            }
+        }
+        return description;
+    }
+    
+    /**
+     * If the definition is not currently set, it tries to set it using 
+     * the following sources in the order:
+     * description, wsdlResource, wsdlExchangeTarget
+     * 
+     * @return Returns the definition.
+     */
+    public Definition getDefinition() {
+        if( definition == null ) {
+            definition = getDefinitionFromDescription();
+            if( definition == null ) {
+                definition = getDefinitionFromWsdlResource();
+                if( definition == null ) {
+                    definition = getDefinitionFromWsdlExchangeTarget();
+                }
+            }
+        }
+        return definition;
+    }
+    
+    protected Definition getDefinitionFromDescription() {
+        if( description!=null ) {
+            try {
+                return WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+            } catch (WSDLException ignore) {
+            }
+        }
+        return null;
+    }
+
+    protected Definition getDefinitionFromWsdlResource() {
+        if( wsdlResource!=null ) {
+            try {
+                URL resource = wsdlResource.getURL();
+                WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+                return reader.readWSDL(null, resource.toString());
+            } catch (Throwable ignore) {
+            }
+        }
+        return null;
+    }
+        
+    protected Definition getDefinitionFromWsdlExchangeTarget() {
+        if( wsdlExchangeTarget != null ) {
+            try {
+                Document description = getDescriptionForExchangeTarget(wsdlExchangeTarget);
+                return WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+            } catch (Throwable ignore) {
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * @return Returns the wsdl's Resource.
+     */
+    public Resource getWsdlResource() {
+        return wsdlResource;
+    }
+    public void setWsdlResource(Resource wsdlResource) {
+        this.wsdlResource = wsdlResource;
+    }
+    
+    protected Document getDescriptionForExchangeTarget(ExchangeTarget match) throws JBIException {
+        ServiceEndpoint[] endpoints = getEndpointsForExchangeTarget(match);
+        if (endpoints == null || endpoints.length == 0) {
+            return null;
+        }
+        ServiceEndpoint endpoint = chooseFirstEndpointWithDescriptor(endpoints);
+        if (endpoint == null) {
+            return null;
+        }
+        return getContext().getEndpointDescriptor(endpoint);
+    }
+    
+    /**
+     * 
+     * @param match
+     * @return an ServiceEndpoint[] of all the endpoints that matched.
+     * @throws JBIException
+     */
+    protected ServiceEndpoint[] getEndpointsForExchangeTarget(ExchangeTarget match) throws JBIException {
+        ServiceEndpoint[] endpoints;
+        if (match.getEndpoint() != null && match.getService() != null) {
+            ServiceEndpoint endpoint = getContext().getEndpoint(match.getService(), match.getEndpoint());
+            if (endpoint == null) {
+                endpoints = new ServiceEndpoint[0];
+            } else {
+                endpoints = new ServiceEndpoint[] { endpoint };
+            }
+        } else if (match.getService() != null) {
+            endpoints = getContext().getEndpointsForService(match.getService());
+        } else if (interfaceName != null) {
+            endpoints = getContext().getEndpoints(interfaceName);
+        } else {
+            throw new IllegalStateException("One of interfaceName or serviceName should be provided");
+        }
+        return endpoints;
+    }
+    
+    protected ServiceEndpoint chooseFirstEndpointWithDescriptor(ServiceEndpoint[] endpoints) throws JBIException {
+        for (int i = 0; i < endpoints.length; i++) {
+            if (getContext().getEndpointDescriptor(endpoints[i]) != null) {
+                return endpoints[i];
+            }
+        }
+        return null;
+    }
+
+
     protected abstract void processAsync(MessageExchange exchange) throws Exception;
 
     protected abstract void processSync(MessageExchange exchange) throws Exception;
-
+    
+    public ExchangeTarget getWsdlExchangeTarget() {
+        return wsdlExchangeTarget;
+    }
+    public void setWsdlExchangeTarget(ExchangeTarget wsdlExchangeTarget) {
+        this.wsdlExchangeTarget = wsdlExchangeTarget;
+    }
+    
 }
