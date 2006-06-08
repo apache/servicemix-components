@@ -15,6 +15,7 @@
  */
 package org.apache.servicemix.http.security;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URL;
 
@@ -85,6 +86,25 @@ public class HttpSecurityTest extends SpringTestSupport {
         try {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
+            int state = client.executeMethod(method);
+            if (state != HttpServletResponse.SC_OK) {
+                throw new IllegalStateException("Http status: " + state);
+            }
+            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+        } finally {
+            method.releaseConnection();
+        }
+    }
+    
+    public void testWSSec() throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(getClass().getResourceAsStream("request.xml"), out);
+        String request = out.toString();
+        HttpClient client = new HttpClient();
+        PostMethod method = new PostMethod("http://localhost:8192/WSSec/");
+        try {
+            method.setDoAuthentication(true);
+            method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             if (state != HttpServletResponse.SC_OK) {
                 throw new IllegalStateException("Http status: " + state);

@@ -32,6 +32,7 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.springframework.core.io.UrlResource;
 import org.w3c.dom.Document;
 
 public class HttpWsdlTest extends TestCase {
@@ -98,6 +99,36 @@ public class HttpWsdlTest extends TestCase {
         WSDLReader reader = factory.newWSDLReader();
         Definition def;
         def = reader.readWSDL("http://localhost:8195/Service/?wsdl", doc);
+        assertNotNull(def);
+        assertNotNull(def.getImports());
+        assertEquals(1, def.getImports().size());
+    }
+    
+    public void testExternalNonStandaloneWsdl() throws Exception {
+        // HTTP Component
+        HttpEndpoint ep = new HttpEndpoint();
+        ep.setService(new QName("http://test", "MyConsumerService"));
+        ep.setEndpoint("myConsumer");
+        ep.setRoleAsString("consumer");
+        ep.setLocationURI("http://localhost:8196/Service/");
+        ep.setWsdlResource(new UrlResource("http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl"));
+        HttpSpringComponent http = new HttpSpringComponent();
+        http.setEndpoints(new HttpEndpoint[] { ep });
+        container.activateComponent(http, "HttpWsdlTest");
+        
+        // Start container
+        container.start();
+
+        GetMethod get = new GetMethod("http://localhost:8196/Service/?wsdl");
+        int state = new HttpClient().executeMethod(get);
+        assertEquals(HttpServletResponse.SC_OK, state);
+        Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
+        
+        // Test WSDL
+        WSDLFactory factory = WSDLFactory.newInstance();
+        WSDLReader reader = factory.newWSDLReader();
+        Definition def;
+        def = reader.readWSDL("http://localhost:8196/Service/?wsdl", doc);
         assertNotNull(def);
         assertNotNull(def.getImports());
         assertEquals(1, def.getImports().size());

@@ -1,5 +1,6 @@
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
        xmlns:http="http://servicemix.apache.org/http/1.0"
+       xmlns:soap="http://servicemix.apache.org/soap/1.0"
        xmlns:ex="http://servicemix.org/example">
 
   <sm:container id="jbi" embedded="true" useMBeanServer="false">
@@ -29,7 +30,20 @@
 	                         role="consumer"
 	                         locationURI="http://localhost:8192/Service/"
 	          				 authMethod="basic" 
-	          				 defaultMep="http://www.w3.org/2004/08/wsdl/in-only" />
+	          				 defaultMep="http://www.w3.org/2004/08/wsdl/in-only">
+              </http:endpoint>
+              <http:endpoint service="ex:receiver"
+                             endpoint="http-wssec"
+                             targetService="ex:receiver"
+                             role="consumer"
+                             locationURI="http://localhost:8192/WSSec/"
+                             defaultMep="http://www.w3.org/2004/08/wsdl/in-only"
+                             soap="true">
+                 <http:policies>
+                   <soap:ws-addressing />
+                   <soap:ws-security receiveAction="UsernameToken" />
+                 </http:policies>
+              </http:endpoint>
 	        </http:endpoints>
 	      </http:component>
 	    </sm:component>

@@ -49,8 +49,7 @@ import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.http.HttpLifeCycle;
-import org.apache.servicemix.soap.marshalers.JBIMarshaler;
-import org.apache.servicemix.soap.marshalers.SoapMarshaler;
+import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
@@ -65,18 +64,13 @@ public class ProviderProcessor implements ExchangeProcessor {
 
     protected HttpEndpoint endpoint;
     protected HostConfiguration host;
-    protected SoapMarshaler soapMarshaler;
-    protected JBIMarshaler jbiMarshaler;
+    protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
     private String relUri;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
-        this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
-        if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
-            this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
-        }
-        this.jbiMarshaler = new JBIMarshaler();
+        this.soapHelper = new SoapHelper(endpoint);
         java.net.URI uri = java.net.URI.create(endpoint.getLocationURI());
         relUri = uri.getPath();
         if (!relUri.startsWith("/")) {
@@ -99,8 +93,8 @@ public class ProviderProcessor implements ExchangeProcessor {
         PostMethod method = new PostMethod(relUri);
         SoapMessage soapMessage = new SoapMessage();
         NormalizedMessage nm = exchange.getMessage("in");
-        jbiMarshaler.fromNMS(soapMessage, nm);
-        SoapWriter writer = soapMarshaler.createWriter(soapMessage);
+        soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
+        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapMessage);
         Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
         if (headers != null) {
             for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
@@ -124,13 +118,13 @@ public class ProviderProcessor implements ExchangeProcessor {
             int response = getClient().executeMethod(host, method);
             if (response != HttpStatus.SC_OK) {
                 if (exchange instanceof InOnly == false) {
-                    SoapReader reader = soapMarshaler.createReader();
+                    SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                     Header contentType = method.getResponseHeader("Content-Type");
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
                     Fault fault = exchange.createFault();
                     fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-                    jbiMarshaler.toNMS(fault, soapMessage);
+                    soapHelper.getJBIMarshaler().toNMS(fault, soapMessage);
                     exchange.setFault(fault);
                     channel.send(exchange);
                     return;
@@ -140,12 +134,12 @@ public class ProviderProcessor implements ExchangeProcessor {
             }
             if (exchange instanceof InOut) {
                 NormalizedMessage msg = exchange.createMessage();
-                SoapReader reader = soapMarshaler.createReader();
+                SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                 Header contentType = method.getResponseHeader("Content-Type");
                 soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                           contentType != null ? contentType.getValue() : null);
                 msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-                jbiMarshaler.toNMS(msg, soapMessage);
+                soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                 ((InOut) exchange).setOutMessage(msg);
                 channel.sendSync(exchange);
             } else if (exchange instanceof InOptionalOut) {
@@ -154,11 +148,11 @@ public class ProviderProcessor implements ExchangeProcessor {
                     channel.send(exchange);
                 } else {
                     NormalizedMessage msg = exchange.createMessage();
-                    SoapReader reader = soapMarshaler.createReader();
+                    SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               method.getResponseHeader("Content-Type").getValue());
                     msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-                    jbiMarshaler.toNMS(msg, soapMessage);
+                    soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                     ((InOptionalOut) exchange).setOutMessage(msg);
                     channel.sendSync(exchange);
                 }

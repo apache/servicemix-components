@@ -15,17 +15,25 @@
  */
 package org.apache.servicemix.http;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
+import javax.wsdl.Import;
 import javax.wsdl.Port;
 import javax.wsdl.PortType;
 import javax.wsdl.Service;
+import javax.wsdl.Types;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
+import javax.wsdl.extensions.schema.Schema;
+import javax.wsdl.extensions.schema.SchemaImport;
+import javax.wsdl.extensions.schema.SchemaReference;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -208,6 +216,44 @@ public class HttpEndpoint extends SoapEndpoint {
                         endpoint);       
                 wsdls.put("main.wsdl", definition);
                 wsdls.put("porttypedef.wsdl", def);
+            }
+            mapImports(def);
+        }
+    }
+    
+    protected void mapImports(Definition def) {
+        // Add other imports to mapping
+        Map imports = def.getImports();
+        for (Iterator iter = imports.values().iterator(); iter.hasNext();) {
+            List imps = (List) iter.next();
+            for (Iterator iterator = imps.iterator(); iterator.hasNext();) {
+                Import imp = (Import) iterator.next();
+                Definition impDef = imp.getDefinition();
+                String impLoc = imp.getLocationURI();
+                if (impDef != null && impLoc != null && !URI.create(impLoc).isAbsolute()) {
+                    wsdls.put(impLoc, impDef);
+                    mapImports(impDef);
+                }
+            }
+        }
+        // Add schemas to mapping
+        Types types = def.getTypes();
+        for (Iterator it = types.getExtensibilityElements().iterator(); it.hasNext();) {
+            ExtensibilityElement ee = (ExtensibilityElement) it.next();
+            if (ee instanceof Schema) {
+                Schema schema = (Schema) ee;
+                Map schemaImports = schema.getImports();
+                for (Iterator iter = schemaImports.values().iterator(); iter.hasNext();) {
+                    List imps = (List) iter.next();
+                    for (Iterator iterator = imps.iterator(); iterator.hasNext();) {
+                        SchemaImport schemaImport = (SchemaImport) iterator.next();
+                        Schema schemaImp = schemaImport.getReferencedSchema();
+                        String schemaLoc = schemaImport.getSchemaLocationURI();
+                        if (schemaLoc != null && schemaImp != null && schemaImp.getElement() != null && !URI.create(schemaLoc).isAbsolute()) {
+                            wsdls.put(schemaLoc, schemaImp.getElement());
+                        }
+                    }
+                }
             }
         }
     }

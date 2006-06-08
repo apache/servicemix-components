@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
@@ -41,17 +43,17 @@ import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.ServerManager;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.handlers.AddressingHandler;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
-import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
+import org.w3c.dom.Element;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -65,19 +67,13 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     protected ContextHandler httpContext;
     protected ComponentContext context;
     protected DeliveryChannel channel;
-    protected SoapMarshaler soapMarshaler;
     protected SoapHelper soapHelper;
     protected Map locks;
     protected Map exchanges;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
-        this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
-        if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
-            this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
-        }
         this.soapHelper = new SoapHelper(endpoint);
-        this.soapHelper.addPolicy(new AddressingHandler());
         this.locks = new ConcurrentHashMap();
         this.exchanges = new ConcurrentHashMap();
     }
@@ -134,6 +130,10 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 Definition def = (Definition) endpoint.getWsdls().get(path);
                 generateWSDL(response, def);
                 return;
+            } else if (path.endsWith(".xsd")) {
+                Element el = (Element) endpoint.getWsdls().get(path);
+                generateXSD(response, el);
+                return;
             }
         }
         if (!"POST".equals(request.getMethod())) {
@@ -146,8 +146,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         // If the continuation is not a retry
         if (!cont.isPending()) {
             try {
-                SoapMessage message = soapMarshaler.createReader().read(request.getInputStream(), 
-                                                                        request.getHeader("Content-Type"));
+                SoapMessage message = soapHelper.getSoapMarshaler().createReader().read(
+                                            request.getInputStream(), 
+                                            request.getHeader("Content-Type"));
                 Context context = soapHelper.createContext(message);
                 if (request.getUserPrincipal() != null) {
                     if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
@@ -208,7 +209,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                     if (outMsg != null) {
                         Context context = (Context) request.getAttribute(Context.class.getName());
                         SoapMessage out = soapHelper.onReply(context, outMsg);
-                        SoapWriter writer = soapMarshaler.createWriter(out);
+                        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
                         response.setContentType(writer.getContentType());
                         writer.write(response.getOutputStream());
                     }
@@ -228,7 +229,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         }
         Context context = (Context) request.getAttribute(Context.class.getName());
         SoapMessage soapFault = soapHelper.onFault(context, fault);
-        SoapWriter writer = soapMarshaler.createWriter(soapFault);
+        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapFault);
         response.setContentType(writer.getContentType());
         writer.write(response.getOutputStream());
     }
@@ -257,6 +258,16 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         response.setStatus(200);
         response.setContentType("text/xml");
         WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, response.getOutputStream());
+    }
+    
+    protected void generateXSD(HttpServletResponse response, Element element) throws Exception {
+        if (element == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Unable to find requested resource");
+            return;
+        }
+        response.setStatus(200);
+        response.setContentType("text/xml");
+        new SourceTransformer().toResult(new DOMSource(element), new StreamResult(response.getOutputStream()));
     }
 
 }
