@@ -21,10 +21,7 @@ import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.Deployer;
-import org.apache.servicemix.jbi.util.DOMUtil;
 import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class JmsComponent extends BaseComponent {
 

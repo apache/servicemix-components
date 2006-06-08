@@ -44,8 +44,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
-import org.apache.servicemix.soap.marshalers.JBIMarshaler;
-import org.apache.servicemix.soap.marshalers.SoapMarshaler;
+import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 
@@ -59,13 +58,11 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
     protected MessageConsumer consumer;
     protected MessageProducer producer;
     protected DeliveryChannel channel;
-    protected SoapMarshaler soapMarshaler;
-    protected JBIMarshaler jbiMarshaler;
+    protected SoapHelper soapHelper;
     
     public StandardProviderProcessor(JmsEndpoint endpoint) {
         super(endpoint);
-        this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
-        this.jbiMarshaler = new JBIMarshaler();
+        this.soapHelper = new SoapHelper(endpoint);
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
@@ -108,8 +105,8 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
             
             SoapMessage soapMessage = new SoapMessage();
             NormalizedMessage nm = exchange.getMessage("in");
-            jbiMarshaler.fromNMS(soapMessage, nm);
-            SoapWriter writer = soapMarshaler.createWriter(soapMessage);
+            soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
+            SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapMessage);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             writer.write(baos);
             Message msg = session.createTextMessage(baos.toString());
@@ -156,9 +153,9 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
                         throw new IllegalArgumentException("JMS message should be a text or bytes message");
                     }
                     String contentType = message.getStringProperty("Content-Type");
-                    SoapMessage soap = soapMarshaler.createReader().read(is, contentType);
+                    SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
                     NormalizedMessage out = exchange.createMessage();
-                    jbiMarshaler.toNMS(out, soap);
+                    soapHelper.getJBIMarshaler().toNMS(out, soap);
                     ((InOut) exchange).setOutMessage(out);
                 }
                 channel.send(exchange);

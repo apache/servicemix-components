@@ -44,8 +44,6 @@ import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.handlers.AddressingHandler;
-import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 
@@ -61,16 +59,10 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
     protected SoapHelper soapHelper;
-    protected SoapMarshaler soapMarshaler;
     
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
-        this.soapMarshaler = new SoapMarshaler(endpoint.isSoap());
-        if (endpoint.isSoap() && "1.1".equals(endpoint.getSoapVersion())) {
-            this.soapMarshaler.setSoapUri(SoapMarshaler.SOAP_11_URI);
-        }
         this.soapHelper = new SoapHelper(endpoint);
-        this.soapHelper.addPolicy(new AddressingHandler());
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
@@ -127,7 +119,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                             throw new IllegalArgumentException("JMS message should be a text or bytes message");
                         }
                         String contentType = message.getStringProperty("Content-Type");
-                        SoapMessage soap = soapMarshaler.createReader().read(is, contentType);
+                        SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
                         Context context = soapHelper.createContext(soap);
                         MessageExchange exchange = soapHelper.onReceive(context);
                         context.setProperty(Message.class.getName(), message);
@@ -163,7 +155,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                     SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
                     SoapMessage soapFault = soapHelper.onFault(context, fault);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    SoapWriter writer = soapMarshaler.createWriter(soapFault);
+                    SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapFault);
                     writer.write(baos);
                     response = session.createTextMessage(baos.toString());
                     response.setStringProperty("Content-Type", writer.getContentType());
@@ -173,7 +165,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                     if (outMsg != null) {
                         SoapMessage out = soapHelper.onReply(context, outMsg);
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        SoapWriter writer = soapMarshaler.createWriter(out);
+                        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
                         writer.write(baos);
                         response = session.createTextMessage(baos.toString());
                         response.setStringProperty("Content-Type", writer.getContentType());
