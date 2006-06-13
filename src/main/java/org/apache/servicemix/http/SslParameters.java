@@ -24,6 +24,8 @@ package org.apache.servicemix.http;
  */
 public class SslParameters {
 
+    private boolean managed;
+    private String keyAlias;
     private String keyPassword;
     private String keyStore;
     private String keyStorePassword;
@@ -33,9 +35,46 @@ public class SslParameters {
     private String trustStoreType = "JKS";
     private String protocol = "TLS";
     private String algorithm = "SunX509"; // cert algorithm
+    private String provider = null;
     private boolean wantClientAuth = false;
     private boolean needClientAuth = false;
     
+    /**
+     * @return the provider
+     */
+    public String getProvider() {
+        return provider;
+    }
+    /**
+     * @param provider the provider to set
+     */
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+    /**
+     * @return the managed
+     */
+    public boolean isManaged() {
+        return managed;
+    }
+    /**
+     * @param managed the managed to set
+     */
+    public void setManaged(boolean managed) {
+        this.managed = managed;
+    }
+    /**
+     * @return the keyAlias
+     */
+    public String getKeyAlias() {
+        return keyAlias;
+    }
+    /**
+     * @param keyAlias the keyAlias to set
+     */
+    public void setKeyAlias(String keyAlias) {
+        this.keyAlias = keyAlias;
+    }
     /**
      * @return Returns the algorithm.
      */
@@ -177,7 +216,9 @@ public class SslParameters {
             return false;
         }
         SslParameters s = (SslParameters) o;
-        return eq(algorithm, s.algorithm) &&
+        return managed == s.managed &&
+               eq(keyAlias, s.keyAlias) &&
+               eq(algorithm, s.algorithm) &&
                eq(keyPassword, s.keyPassword) &&
                eq(keyStore, s.keyStore) &&
                eq(keyStorePassword, s.keyStorePassword) &&
@@ -192,7 +233,9 @@ public class SslParameters {
     }
     
     public int hashCode() {
-        return hash(algorithm) ^
+        return Boolean.valueOf(managed).hashCode() ^
+               hash(keyAlias) ^
+               hash(algorithm) ^
                hash(keyPassword) ^
                hash(keyStore) ^
                hash(keyStorePassword) ^

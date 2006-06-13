@@ -34,6 +34,7 @@ import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.servicemix.http.SslParameters;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.mortbay.resource.Resource;
 import org.springframework.core.io.ClassPathResource;
 
@@ -41,8 +42,31 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
 
     private SSLSocketFactory factory;
     
-    public CommonsHttpSSLSocketFactory(SslParameters ssl) throws Exception {
-        SSLContext context = SSLContext.getInstance(ssl.getProtocol());
+    public CommonsHttpSSLSocketFactory(SslParameters ssl, KeystoreManager keystoreManager) throws Exception {
+        if (ssl.isManaged()) {
+            createManagedFactory(ssl, keystoreManager);
+        } else {
+            createUnmanagedFactory(ssl);
+        }
+    }
+    
+    protected void createManagedFactory(SslParameters ssl, KeystoreManager keystoreManager) throws Exception {
+        factory = keystoreManager.createSSLFactory(
+                        ssl.getProvider(), 
+                        ssl.getProtocol(), 
+                        ssl.getAlgorithm(), 
+                        ssl.getKeyStore(), 
+                        ssl.getKeyAlias(), 
+                        ssl.getTrustStore());
+    }
+    
+    protected void createUnmanagedFactory(SslParameters ssl) throws Exception {
+        SSLContext context;
+        if (ssl.getProvider() == null) {
+            context = SSLContext.getInstance(ssl.getProtocol());
+        } else {
+            context = SSLContext.getInstance(ssl.getProtocol(), ssl.getProvider());
+        }
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(ssl.getAlgorithm());
         String keyStore = ssl.getKeyStore();
         if (keyStore == null) {

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.http.jetty.JaasUserRealm;
+import org.apache.servicemix.http.jetty.ServiceMixSslSocketConnector;
 import org.mortbay.component.AbstractLifeCycle;
 import org.mortbay.jetty.AbstractConnector;
 import org.mortbay.jetty.Connector;
@@ -213,7 +214,23 @@ public class ServerManager {
         }
         // Create a new server
         Connector connector;
-        if (isSsl) {
+        if (isSsl && ssl.isManaged()) {
+            String keyStore = ssl.getKeyStore();
+            if (keyStore == null) {
+                throw new IllegalArgumentException("keyStore must be set");
+            }
+            ServiceMixSslSocketConnector sslConnector = new ServiceMixSslSocketConnector();
+            sslConnector.setAlgorithm(ssl.getAlgorithm());
+            sslConnector.setProtocol(ssl.getProtocol());
+            sslConnector.setConfidentialPort(url.getPort());
+            sslConnector.setKeystore(keyStore);
+            sslConnector.setKeyAlias(ssl.getKeyAlias());
+            sslConnector.setTrustStore(ssl.getTrustStore());
+            sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
+            sslConnector.setWantClientAuth(ssl.isWantClientAuth());
+            sslConnector.setKeystoreManager(getConfiguration().getKeystoreManager());
+            connector = sslConnector;
+        } else if (isSsl) {
             String keyStore = ssl.getKeyStore();
             if (keyStore == null) {
                 keyStore = System.getProperty("javax.net.ssl.keyStore", "");

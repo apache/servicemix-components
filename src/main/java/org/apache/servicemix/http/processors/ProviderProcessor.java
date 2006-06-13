@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -47,8 +48,10 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.http.HttpConfiguration;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.http.HttpLifeCycle;
+import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
@@ -94,6 +97,8 @@ public class ProviderProcessor implements ExchangeProcessor {
         SoapMessage soapMessage = new SoapMessage();
         NormalizedMessage nm = exchange.getMessage("in");
         soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
+        Context context = soapHelper.createContext(soapMessage);
+        soapHelper.onSend(context);
         SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapMessage);
         Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
         if (headers != null) {
@@ -122,6 +127,8 @@ public class ProviderProcessor implements ExchangeProcessor {
                     Header contentType = method.getResponseHeader("Content-Type");
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
+                    context.setFaultMessage(soapMessage);
+                    soapHelper.onAnswer(context);
                     Fault fault = exchange.createFault();
                     fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                     soapHelper.getJBIMarshaler().toNMS(fault, soapMessage);
@@ -138,6 +145,8 @@ public class ProviderProcessor implements ExchangeProcessor {
                 Header contentType = method.getResponseHeader("Content-Type");
                 soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                           contentType != null ? contentType.getValue() : null);
+                context.setOutMessage(soapMessage);
+                soapHelper.onAnswer(context);
                 msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                 soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                 ((InOut) exchange).setOutMessage(msg);
@@ -151,6 +160,8 @@ public class ProviderProcessor implements ExchangeProcessor {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               method.getResponseHeader("Content-Type").getValue());
+                    context.setOutMessage(soapMessage);
+                    soapHelper.onAnswer(context);
                     msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                     soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                     ((InOptionalOut) exchange).setOutMessage(msg);
@@ -168,7 +179,9 @@ public class ProviderProcessor implements ExchangeProcessor {
     public void start() throws Exception {
         URI uri = new URI(endpoint.getLocationURI(), false);
         if (uri.getScheme().equals("https")) {
-            ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(endpoint.getSsl());
+            ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(
+                            endpoint.getSsl(),
+                            endpoint.getKeystoreManager());
             Protocol protocol = new Protocol("https", sf, 443);
             HttpHost host = new HttpHost(uri.getHost(), uri.getPort(), protocol);
             this.host = new HostConfiguration();
@@ -178,6 +191,11 @@ public class ProviderProcessor implements ExchangeProcessor {
             this.host.setHost(uri.getHost(), uri.getPort());
         }
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
+    }
+    
+    protected HttpConfiguration getConfiguration(HttpEndpoint endpoint) {
+        ComponentLifeCycle lf = endpoint.getServiceUnit().getComponent().getLifeCycle();
+        return ((HttpLifeCycle) lf).getConfiguration();
     }
 
     public void stop() throws Exception {

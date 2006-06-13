@@ -31,6 +31,9 @@ import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 
 public class HttpLifeCycle extends BaseLifeCycle {
 
@@ -79,13 +82,29 @@ public class HttpLifeCycle extends BaseLifeCycle {
 
     protected void doInit() throws Exception {
         super.doInit();
+        // Load configuration
         configuration.setRootDir(context.getWorkspaceRoot());
         configuration.load();
-        if (server == null) {
-            server = new ServerManager();
-            server.setConfiguration(configuration);
-            server.init();
+        // Lookup keystoreManager and authenticationService
+        if (configuration.getKeystoreManager() == null) {
+            try {
+                String name = configuration.getKeystoreManagerName();
+                Object km =  context.getNamingContext().lookup(name);
+                configuration.setKeystoreManager((KeystoreManager) km); 
+            } catch (Exception e) {
+                // ignore
+            }
         }
+        if (configuration.getAuthenticationService() == null) {
+            try {
+                String name = configuration.getAuthenticationServiceName();
+                Object as =  context.getNamingContext().lookup(name);
+                configuration.setAuthenticationService((AuthenticationService) as); 
+            } catch (Exception e) {
+                configuration.setAuthenticationService(new JAASAuthenticationService());
+            }
+        }
+        // Create client
         if (client == null) {
             connectionManager = new MultiThreadedHttpConnectionManager();
             HttpConnectionManagerParams params = new HttpConnectionManagerParams();
@@ -93,6 +112,12 @@ public class HttpLifeCycle extends BaseLifeCycle {
             params.setMaxTotalConnections(configuration.getMaxTotalConnections());
             connectionManager.setParams(params);
             client = new HttpClient(connectionManager);
+        }
+        // Create serverManager
+        if (server == null) {
+            server = new ServerManager();
+            server.setConfiguration(configuration);
+            server.init();
         }
     }
 
@@ -140,6 +165,34 @@ public class HttpLifeCycle extends BaseLifeCycle {
         }
         httpEp.activateDynamic();
         return httpEp;
+    }
+
+    /**
+     * @return the keystoreManager
+     */
+    public KeystoreManager getKeystoreManager() {
+        return configuration.getKeystoreManager();
+    }
+
+    /**
+     * @param keystoreManager the keystoreManager to set
+     */
+    public void setKeystoreManager(KeystoreManager keystoreManager) {
+        this.configuration.setKeystoreManager(keystoreManager);
+    }
+
+    /**
+     * @return the authenticationService
+     */
+    public AuthenticationService getAuthenticationService() {
+        return configuration.getAuthenticationService();
+    }
+
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.configuration.setAuthenticationService(authenticationService);
     }
 
 }

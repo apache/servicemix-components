@@ -37,4 +37,12 @@ public interface HttpConfigurationMBean {
     
     public void setMaxTotalConnections(int maxTotalConnections);
     
+    public String getKeystoreManagerName();
+    
+    public void setKeystoreManagerName(String name);
+    
+    public String getAuthenticationServiceName();
+    
+    public void setAuthenticationServiceName(String name);
+    
 }

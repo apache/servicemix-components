@@ -15,21 +15,16 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Map;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.security.UserRealm;
 
@@ -46,7 +41,22 @@ public class JaasUserRealm implements UserRealm {
     
     private String name = getClass().getName();
     private String domain = "servicemix-domain";
+    private AuthenticationService authenticationService = new JAASAuthenticationService();
     private final Map userMap = new ConcurrentHashMap();
+
+    /**
+     * @return the authenticationService
+     */
+    public AuthenticationService getAuthenticationService() {
+        return authenticationService;
+    }
+
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
 
     /**
      * @return the domain
@@ -89,27 +99,8 @@ public class JaasUserRealm implements UserRealm {
                 }
 
                 //set up the login context
-                LoginContext loginContext = new LoginContext(domain, new CallbackHandler() {
-                    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                        for (int i = 0; i < callbacks.length; i++) {
-                            if (callbacks[i] instanceof NameCallback) {
-                                ((NameCallback) callbacks[i]).setName(username);
-                            } else if (callbacks[i] instanceof PasswordCallback) {
-                                if (credentials instanceof char[]) {
-                                    ((PasswordCallback) callbacks[i]).setPassword((char[]) credentials);
-                                } else {
-                                    ((PasswordCallback) callbacks[i]).setPassword(credentials.toString().toCharArray());
-                                }
-                            } else {
-                                throw new UnsupportedCallbackException(callbacks[i]);
-                            }
-                        }
-                    }
-                });
-                loginContext.login();
-
-                Subject subject = loginContext.getSubject();
-
+                Subject subject = new Subject();
+                authenticationService.authenticate(subject, domain, username, credentials);
                 //login success
                 userPrincipal = new JaasJettyPrincipal(username);
                 userPrincipal.setSubject(subject);
@@ -122,7 +113,7 @@ public class JaasUserRealm implements UserRealm {
                 return null;
             }
 
-        } catch (LoginException e) {
+        } catch (GeneralSecurityException e) {
             log.debug("Login Failed", e);
             return null;
         }

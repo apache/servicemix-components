@@ -1,0 +1,14 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+  <soap:Header>
+    <wsse:Security soap:mustUnderstand="1">
+      <wsse:UsernameToken>
+        <wsse:Username>user1</wsse:Username>
+        <wsse:Password>user1</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soap:Header>
+  <soap:Body>
+    <hello>world</hello>
+  </soap:Body>
+</soap:Envelope>

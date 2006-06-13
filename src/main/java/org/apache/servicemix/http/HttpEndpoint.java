@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
@@ -33,13 +34,14 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
 import javax.wsdl.extensions.schema.Schema;
 import javax.wsdl.extensions.schema.SchemaImport;
-import javax.wsdl.extensions.schema.SchemaReference;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
 import org.apache.servicemix.http.tools.PortTypeDecorator;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
 
 import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
@@ -275,6 +277,16 @@ public class HttpEndpoint extends SoapEndpoint {
      */
     public Map getWsdls() {
         return wsdls;
+    }
+
+    public AuthenticationService getAuthenticationService() {
+        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
+        return ((HttpLifeCycle) lf).getAuthenticationService();
+    }
+
+    public KeystoreManager getKeystoreManager() {
+        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
+        return ((HttpLifeCycle) lf).getKeystoreManager();
     }
 
 }

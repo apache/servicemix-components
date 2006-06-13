@@ -16,6 +16,8 @@
 package org.apache.servicemix.http;
 
 import org.apache.servicemix.common.PersistentConfiguration;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
 /**
@@ -29,6 +31,19 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
     
     private boolean streamingEnabled = false;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
+
+    private transient KeystoreManager keystoreManager;
+    private transient AuthenticationService authenticationService;
+    
+    /**
+     * The JNDI name of the AuthenticationService object
+     */
+    private String authenticationServiceName = "java:comp/env/smx/AuthenticationService";
+    
+    /**
+     * The JNDI name of the KeystoreManager object
+     */
+    private String keystoreManagerName = "java:comp/env/smx/KeystoreManager";
 
     /**
      * The maximum number of threads for the Jetty thread pool. It's set 
@@ -45,6 +60,64 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
      * Maximum number of concurrent requests.
      */
     private int maxTotalConnections = 256;
+
+    /**
+     * @return the authenticationService
+     */
+    public AuthenticationService getAuthenticationService() {
+        return authenticationService;
+    }
+
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
+
+    /**
+     * @return the authenticationServiceName
+     */
+    public String getAuthenticationServiceName() {
+        return authenticationServiceName;
+    }
+
+    /**
+     * @param authenticationServiceName the authenticationServiceName to set
+     */
+    public void setAuthenticationServiceName(String authenticationServiceName) {
+        this.authenticationServiceName = authenticationServiceName;
+        save();
+    }
+
+    /**
+     * @return the keystoreManager
+     */
+    public KeystoreManager getKeystoreManager() {
+        return keystoreManager;
+    }
+
+    /**
+     * @param keystoreManager the keystoreManager to set
+     */
+    public void setKeystoreManager(KeystoreManager keystoreManager) {
+        this.keystoreManager = keystoreManager;
+    }
+
+    /**
+     * @return the keystoreManagerName
+     */
+    public String getKeystoreManagerName() {
+        return keystoreManagerName;
+    }
+
+    /**
+     * @param keystoreManagerName the keystoreManagerName to set
+     */
+    public void setKeystoreManagerName(String keystoreManagerName) {
+        this.keystoreManagerName = keystoreManagerName;
+        save();
+    }
 
     public boolean isStreamingEnabled() {
         return streamingEnabled;
@@ -97,6 +170,8 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
         properties.setProperty("streamingEnabled", Boolean.toString(streamingEnabled));
         properties.setProperty("maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
         properties.setProperty("maxTotalConnections", Integer.toString(maxTotalConnections));
+        properties.setProperty("keystoreManagerName", keystoreManagerName);
+        properties.setProperty("authenticationServiceName", authenticationServiceName);
         super.save();
     }
     
@@ -116,6 +191,12 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
             }
             if (properties.getProperty("maxTotalConnections") != null) {
                 maxTotalConnections = Integer.parseInt(properties.getProperty("maxTotalConnections"));
+            }
+            if (properties.getProperty("keystoreManagerName") != null) {
+                keystoreManagerName = properties.getProperty("keystoreManagerName");
+            }
+            if (properties.getProperty("authenticationServiceName") != null) {
+                authenticationServiceName = properties.getProperty("authenticationServiceName");
             }
             return true;
         } else {
