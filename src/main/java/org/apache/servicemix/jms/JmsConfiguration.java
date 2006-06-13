@@ -18,6 +18,8 @@ package org.apache.servicemix.jms;
 import javax.jms.ConnectionFactory;
 
 import org.apache.servicemix.common.PersistentConfiguration;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 
 /**
  * @author gnodet
@@ -31,8 +33,71 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
     private String jndiProviderUrl;
     private String jndiConnectionFactoryName;
     private String processorName = "multiplexing";
-    private ConnectionFactory connectionFactory;
+    private transient ConnectionFactory connectionFactory;
+    private transient KeystoreManager keystoreManager;
+    private transient AuthenticationService authenticationService;
     
+    /**
+     * The JNDI name of the AuthenticationService object
+     */
+    private String authenticationServiceName = "java:comp/env/smx/AuthenticationService";
+    
+    /**
+     * The JNDI name of the KeystoreManager object
+     */
+    private String keystoreManagerName = "java:comp/env/smx/KeystoreManager";
+
+    
+    /**
+     * @return the authenticationService
+     */
+    public AuthenticationService getAuthenticationService() {
+        return authenticationService;
+    }
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
+    /**
+     * @return the authenticationServiceName
+     */
+    public String getAuthenticationServiceName() {
+        return authenticationServiceName;
+    }
+    /**
+     * @param authenticationServiceName the authenticationServiceName to set
+     */
+    public void setAuthenticationServiceName(String authenticationServiceName) {
+        this.authenticationServiceName = authenticationServiceName;
+    }
+    /**
+     * @return the keystoreManager
+     */
+    public KeystoreManager getKeystoreManager() {
+        return keystoreManager;
+    }
+    /**
+     * @param keystoreManager the keystoreManager to set
+     */
+    public void setKeystoreManager(KeystoreManager keystoreManager) {
+        this.keystoreManager = keystoreManager;
+        save();
+    }
+    /**
+     * @return the keystoreManagerName
+     */
+    public String getKeystoreManagerName() {
+        return keystoreManagerName;
+    }
+    /**
+     * @param keystoreManagerName the keystoreManagerName to set
+     */
+    public void setKeystoreManagerName(String keystoreManagerName) {
+        this.keystoreManagerName = keystoreManagerName;
+        save();
+    }
     /**
      * @return Returns the password.
      */
@@ -133,6 +198,8 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
         properties.setProperty("jndiProviderUrl", jndiProviderUrl);
         properties.setProperty("jndiName", jndiConnectionFactoryName);
         properties.setProperty("processorName", processorName);
+        properties.setProperty("keystoreManagerName", keystoreManagerName);
+        properties.setProperty("authenticationServiceName", authenticationServiceName);
         super.save();
     }
     
@@ -155,6 +222,12 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
             }
             if (properties.getProperty("processorName") != null) {
                 processorName = properties.getProperty("processorName");
+            }
+            if (properties.getProperty("keystoreManagerName") != null) {
+                keystoreManagerName = properties.getProperty("keystoreManagerName");
+            }
+            if (properties.getProperty("authenticationServiceName") != null) {
+                authenticationServiceName = properties.getProperty("authenticationServiceName");
             }
             return true;
         } else {

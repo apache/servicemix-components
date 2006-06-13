@@ -28,6 +28,9 @@ import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 
 public class JmsLifeCycle extends BaseLifeCycle {
 
@@ -52,6 +55,25 @@ public class JmsLifeCycle extends BaseLifeCycle {
         super.doInit();
         configuration.setRootDir(context.getWorkspaceRoot());
         configuration.load();
+        // Lookup keystoreManager and authenticationService
+        if (configuration.getKeystoreManager() == null) {
+            try {
+                String name = configuration.getKeystoreManagerName();
+                Object km =  context.getNamingContext().lookup(name);
+                configuration.setKeystoreManager((KeystoreManager) km); 
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        if (configuration.getAuthenticationService() == null) {
+            try {
+                String name = configuration.getAuthenticationServiceName();
+                Object as =  context.getNamingContext().lookup(name);
+                configuration.setAuthenticationService((AuthenticationService) as); 
+            } catch (Exception e) {
+                configuration.setAuthenticationService(new JAASAuthenticationService());
+            }
+        }
     }
     
     /**
@@ -102,6 +124,34 @@ public class JmsLifeCycle extends BaseLifeCycle {
         // TODO: need to find some usefull syntax for jms
         // jms://
         return jmsEp;
+    }
+
+    /**
+     * @return the keystoreManager
+     */
+    public KeystoreManager getKeystoreManager() {
+        return configuration.getKeystoreManager();
+    }
+
+    /**
+     * @param keystoreManager the keystoreManager to set
+     */
+    public void setKeystoreManager(KeystoreManager keystoreManager) {
+        this.configuration.setKeystoreManager(keystoreManager);
+    }
+
+    /**
+     * @return the authenticationService
+     */
+    public AuthenticationService getAuthenticationService() {
+        return configuration.getAuthenticationService();
+    }
+
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.configuration.setAuthenticationService(authenticationService);
     }
 
 }

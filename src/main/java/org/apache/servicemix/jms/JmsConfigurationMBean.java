@@ -65,4 +65,13 @@ public interface JmsConfigurationMBean {
      * @param processorName The processorName to set.
      */
     public void setProcessorName(String processorName);
+
+    public String getKeystoreManagerName();
+    
+    public void setKeystoreManagerName(String name);
+    
+    public String getAuthenticationServiceName();
+    
+    public void setAuthenticationServiceName(String name);
+    
 }

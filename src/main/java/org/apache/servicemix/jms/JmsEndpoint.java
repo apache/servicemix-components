@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -28,6 +29,8 @@ import javax.wsdl.Port;
 import javax.wsdl.Service;
 
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.jms.wsdl.JmsBinding;
 import org.apache.servicemix.soap.SoapEndpoint;
 
@@ -322,6 +325,16 @@ public class JmsEndpoint extends SoapEndpoint {
     public JmsConfiguration getConfiguration() {
         JmsLifeCycle lifeCycle = (JmsLifeCycle) getServiceUnit().getComponent().getLifeCycle();
         return lifeCycle.getConfiguration();
+    }
+
+    public AuthenticationService getAuthenticationService() {
+        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
+        return ((JmsLifeCycle) lf).getAuthenticationService();
+    }
+
+    public KeystoreManager getKeystoreManager() {
+        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
+        return ((JmsLifeCycle) lf).getKeystoreManager();
     }
 
 }
