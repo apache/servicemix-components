@@ -77,6 +77,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         NormalizedMessage in = exchange.getMessage("in");
         msg.setXMLStreamReader(getXMLStreamReader(in.getContent()));
         c.receive(ctx, msg);
+        c.close();
         
         // Set response or DONE status
         if (isInAndOut(exchange)) {

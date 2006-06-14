@@ -123,9 +123,6 @@ public class JbiChannel extends AbstractChannel {
         }
     }
 
-    public void close() {
-    }
-    
     protected Source getContent(MessageContext context, OutMessage message) throws XMLStreamException, IOException, XFireException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         XMLStreamWriter writer = outputFactory.createXMLStreamWriter(outStream, message.getEncoding());
