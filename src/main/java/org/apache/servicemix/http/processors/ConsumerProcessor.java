@@ -164,11 +164,13 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
-                ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, endpoint);
-                // TODO: make this timeout configurable
-                boolean result = cont.suspend(1000 * 60); // 60 s
-                if (!result) {
-                    throw new Exception("Error sending exchange: aborted");
+                synchronized (cont) {
+                    ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, endpoint);
+                    // TODO: make this timeout configurable
+                    boolean result = cont.suspend(1000 * 60); // 60 s
+                    if (!result) {
+                        throw new Exception("Error sending exchange: aborted");
+                    }
                 }
             } catch (SoapFault fault) {
                 sendFault(fault, request, response);
