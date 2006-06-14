@@ -176,7 +176,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             }
         } else {
             String id = (String) request.getAttribute(MessageExchange.class.getName());
-            exchange = (MessageExchange) exchanges.get(id);
+            exchange = (MessageExchange) exchanges.remove(id);
             request.removeAttribute(MessageExchange.class.getName());
             boolean result = cont.suspend(0); 
             // Check if this is a timeout

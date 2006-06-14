@@ -398,6 +398,10 @@ public class ServerManager {
 
         public void join() throws InterruptedException {
         }
+
+        public boolean isLowOnThreads() {
+            return threadPool.isLowOnThreads();
+        }
     }
 
 }
