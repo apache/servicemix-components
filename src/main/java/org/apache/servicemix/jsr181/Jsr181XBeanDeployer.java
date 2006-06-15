@@ -38,7 +38,11 @@ public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
         }
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(((XBeanServiceUnit)ep.getServiceUnit()).getConfigurationClassLoader());
+            ClassLoader cl = ((XBeanServiceUnit)ep.getServiceUnit()).getConfigurationClassLoader();
+            Thread.currentThread().setContextClassLoader(cl);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Registering endpoint with context classloader " + cl);
+            }
             ep.registerService();
         } catch (Exception e) {
             throw failure("deploy", "Could not register endpoint", e);
