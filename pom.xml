@@ -57,16 +57,11 @@
     <dependency>
       <groupId>incubator-activemq</groupId>
       <artifactId>activemq-core</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.sun.xml</groupId>
+      <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.jws</groupId>
-          <artifactId>jsr181-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.xml</groupId>
@@ -117,6 +112,7 @@
           </execution>
         </executions>
       </plugin>
+      <!--
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxws-maven-plugin</artifactId>
@@ -132,6 +128,46 @@
           <wsdlDirectory>${basedir}/src/main/resources/org/apache/servicemix/wsn</wsdlDirectory>
           <wsdlFiles>wsn.wsdl</wsdlFiles>
         </configuration>
+      </plugin>
+      -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration>
+              <tasks>
+                <taskdef classname="org.codehaus.xfire.gen.WsGenTask" name="wsgen">
+                  <classpath>
+                    <pathelement path="${basedir}/target/classes" />
+                    <path refid="maven.test.classpath" />
+                  </classpath>
+                </taskdef>
+                <wsgen 
+                  wsdl="${basedir}/src/main/resources/org/apache/servicemix/wsn/wsn.wsdl"
+                  outputDirectory="${basedir}/target/jaxws" 
+                  profile="org.codehaus.xfire.jaxws.gen.JAXWSProfile"
+                  explicitAnnotation="true" />
+              </tasks>
+              <sourceRoot>${basedir}/target/jaxws</sourceRoot>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.xfire</groupId>
+            <artifactId>xfire-generator</artifactId>
+            <version>1.1.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.xfire</groupId>
+            <artifactId>xfire-jaxws</artifactId>
+            <version>1.1.1</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
