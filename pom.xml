@@ -43,6 +43,10 @@
       <artifactId>xfire-jaxb2</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.codehaus.xfire</groupId>
       <artifactId>xfire-xmlbeans</artifactId>
     </dependency>
@@ -84,6 +88,7 @@
 
   <build>
     <plugins>
+      <!--
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
@@ -115,6 +120,21 @@
             <version>${qdox.version}</version>
           </dependency>
         </dependencies>
+      </plugin>
+      -->
+      <plugin>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>maven-xbean-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <namespace>http://servicemix.apache.org/jsr181/1.0</namespace>
+            </configuration>
+            <goals>
+              <goal>mapping</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.servicemix.tooling</groupId>
