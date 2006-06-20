@@ -93,9 +93,12 @@ public class ProviderProcessor implements ExchangeProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
+        NormalizedMessage nm = exchange.getMessage("in");
+        if (nm == null) {
+            throw new IllegalStateException("Exchange has no input message");
+        }
         PostMethod method = new PostMethod(relUri);
         SoapMessage soapMessage = new SoapMessage();
-        NormalizedMessage nm = exchange.getMessage("in");
         soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
         Context context = soapHelper.createContext(soapMessage);
         soapHelper.onSend(context);
