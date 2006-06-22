@@ -15,6 +15,12 @@
  */
 package org.apache.servicemix.jms;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import javax.jms.ConnectionFactory;
 
 import org.apache.servicemix.common.PersistentConfiguration;
@@ -25,8 +31,12 @@ import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
  * @author gnodet
  *
  */
-public class JmsConfiguration extends PersistentConfiguration implements JmsConfigurationMBean {
+public class JmsConfiguration implements JmsConfigurationMBean {
 
+    public final static String CONFIG_FILE = "component.properties"; 
+    
+    private String rootDir;
+    private Properties properties = new Properties();
     private String userName;
     private String password;
     private String jndiInitialContextFactory;
@@ -48,6 +58,20 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
     private String keystoreManagerName = "java:comp/env/smx/KeystoreManager";
 
     
+    /**
+     * @return Returns the rootDir.
+     */
+    public String getRootDir() {
+        return rootDir;
+    }
+
+    /**
+     * @param rootDir The rootDir to set.
+     */
+    public void setRootDir(String rootDir) {
+        this.rootDir = rootDir;
+    }
+
     /**
      * @return the authenticationService
      */
@@ -200,38 +224,53 @@ public class JmsConfiguration extends PersistentConfiguration implements JmsConf
         properties.setProperty("processorName", processorName);
         properties.setProperty("keystoreManagerName", keystoreManagerName);
         properties.setProperty("authenticationServiceName", authenticationServiceName);
-        super.save();
+        if (rootDir != null) {
+            File f = new File(rootDir, CONFIG_FILE);
+            try {
+                this.properties.store(new FileOutputStream(f), null);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not store component configuration", e);
+            }
+        }
     }
     
     public boolean load() {
-        if (super.load()) {
-            if (properties.getProperty("userName") != null) {
-                userName = properties.getProperty("userName");
-            }
-            if (properties.getProperty("password") != null) {
-                password = properties.getProperty("password");
-            }
-            if (properties.getProperty("jndiInitialContextFactory") != null) {
-                jndiInitialContextFactory = properties.getProperty("jndiInitialContextFactory");
-            }
-            if (properties.getProperty("jndiProviderUrl") != null) {
-                jndiProviderUrl = properties.getProperty("jndiProviderUrl");
-            }
-            if (properties.getProperty("jndiName") != null) {
-                jndiConnectionFactoryName = properties.getProperty("jndiName");
-            }
-            if (properties.getProperty("processorName") != null) {
-                processorName = properties.getProperty("processorName");
-            }
-            if (properties.getProperty("keystoreManagerName") != null) {
-                keystoreManagerName = properties.getProperty("keystoreManagerName");
-            }
-            if (properties.getProperty("authenticationServiceName") != null) {
-                authenticationServiceName = properties.getProperty("authenticationServiceName");
-            }
-            return true;
-        } else {
+        if (rootDir == null) {
             return false;
         }
+        File f = new File(rootDir, CONFIG_FILE);
+        if (!f.exists()) {
+            return false;
+        }
+        try {
+            properties.load(new FileInputStream(f));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load component configuration", e);
+        }
+        if (properties.getProperty("userName") != null) {
+            userName = properties.getProperty("userName");
+        }
+        if (properties.getProperty("password") != null) {
+            password = properties.getProperty("password");
+        }
+        if (properties.getProperty("jndiInitialContextFactory") != null) {
+            jndiInitialContextFactory = properties.getProperty("jndiInitialContextFactory");
+        }
+        if (properties.getProperty("jndiProviderUrl") != null) {
+            jndiProviderUrl = properties.getProperty("jndiProviderUrl");
+        }
+        if (properties.getProperty("jndiName") != null) {
+            jndiConnectionFactoryName = properties.getProperty("jndiName");
+        }
+        if (properties.getProperty("processorName") != null) {
+            processorName = properties.getProperty("processorName");
+        }
+        if (properties.getProperty("keystoreManagerName") != null) {
+            keystoreManagerName = properties.getProperty("keystoreManagerName");
+        }
+        if (properties.getProperty("authenticationServiceName") != null) {
+            authenticationServiceName = properties.getProperty("authenticationServiceName");
+        }
+        return true;
     }
 }

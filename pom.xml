@@ -41,10 +41,6 @@
     </dependency>
     <dependency>
       <groupId>${pom.groupId}</groupId>
-      <artifactId>servicemix-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${pom.groupId}</groupId>
       <artifactId>servicemix-core</artifactId>
       <scope>provided</scope>
     </dependency>
