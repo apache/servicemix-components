@@ -148,7 +148,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             try {
                 SoapMessage message = soapHelper.getSoapMarshaler().createReader().read(
                                             request.getInputStream(), 
-                                            request.getHeader("Content-Type"));
+                                            request.getHeader(Constants.HEADER_CONTENT_TYPE));
                 Context context = soapHelper.createContext(message);
                 if (request.getUserPrincipal() != null) {
                     if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {

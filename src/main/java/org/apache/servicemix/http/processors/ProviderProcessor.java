@@ -112,14 +112,18 @@ public class ProviderProcessor implements ExchangeProcessor {
             }
         }
         RequestEntity entity = writeMessage(writer);
-        method.addRequestHeader("Content-Type", entity.getContentType());
+        method.addRequestHeader(Constants.HEADER_CONTENT_TYPE, entity.getContentType());
         if (entity.getContentLength() < 0) {
-            method.removeRequestHeader("Content-Length");
+            method.removeRequestHeader(Constants.HEADER_CONTENT_LENGTH);
         } else {
-            method.setRequestHeader("Content-Length", Long.toString(entity.getContentLength()));
+            method.setRequestHeader(Constants.HEADER_CONTENT_LENGTH, Long.toString(entity.getContentLength()));
         }
-        if (endpoint.isSoap() && method.getRequestHeader("SOAPAction") == null) {
-            method.setRequestHeader("SOAPAction", "\"\"");
+        if (endpoint.isSoap() && method.getRequestHeader(Constants.HEADER_SOAP_ACTION) == null) {
+            if (endpoint.getSoapAction() != null) {
+                method.setRequestHeader(Constants.HEADER_SOAP_ACTION, endpoint.getSoapAction());
+            } else {
+                method.setRequestHeader(Constants.HEADER_SOAP_ACTION, "\"\"");
+            }
         }
         method.setRequestEntity(entity);
         try {
@@ -127,7 +131,7 @@ public class ProviderProcessor implements ExchangeProcessor {
             if (response != HttpStatus.SC_OK) {
                 if (exchange instanceof InOnly == false) {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                    Header contentType = method.getResponseHeader("Content-Type");
+                    Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
                     context.setFaultMessage(soapMessage);
@@ -145,7 +149,7 @@ public class ProviderProcessor implements ExchangeProcessor {
             if (exchange instanceof InOut) {
                 NormalizedMessage msg = exchange.createMessage();
                 SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                Header contentType = method.getResponseHeader("Content-Type");
+                Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);
                 soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                           contentType != null ? contentType.getValue() : null);
                 context.setOutMessage(soapMessage);
@@ -162,7 +166,7 @@ public class ProviderProcessor implements ExchangeProcessor {
                     NormalizedMessage msg = exchange.createMessage();
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                                              method.getResponseHeader("Content-Type").getValue());
+                                              method.getResponseHeader(Constants.HEADER_CONTENT_TYPE).getValue());
                     context.setOutMessage(soapMessage);
                     soapHelper.onAnswer(context);
                     msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));

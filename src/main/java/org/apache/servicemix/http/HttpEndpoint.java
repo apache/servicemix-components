@@ -61,7 +61,22 @@ public class HttpEndpoint extends SoapEndpoint {
     protected Map wsdls = new HashMap();
     protected SslParameters ssl;
     protected String authMethod;
+    protected String soapAction;
     
+    /**
+     * @return the soapAction
+     */
+    public String getSoapAction() {
+        return soapAction;
+    }
+
+    /**
+     * @param soapAction the soapAction to set
+     */
+    public void setSoapAction(String soapAction) {
+        this.soapAction = soapAction;
+    }
+
     /**
      * @return the authMethod
      */
