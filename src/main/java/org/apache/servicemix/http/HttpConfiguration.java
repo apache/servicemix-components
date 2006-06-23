@@ -60,6 +60,25 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
      * Maximum number of concurrent requests.
      */
     private int maxTotalConnections = 256;
+    
+    /**
+     * If true, use register jetty mbeans
+     */
+    private boolean jettyManagement;
+
+    /**
+     * @return the jettyManagement
+     */
+    public boolean isJettyManagement() {
+        return jettyManagement;
+    }
+
+    /**
+     * @param jettyManagement the jettyManagement to set
+     */
+    public void setJettyManagement(boolean jettyManagement) {
+        this.jettyManagement = jettyManagement;
+    }
 
     /**
      * @return the authenticationService
@@ -172,6 +191,7 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
         properties.setProperty("maxTotalConnections", Integer.toString(maxTotalConnections));
         properties.setProperty("keystoreManagerName", keystoreManagerName);
         properties.setProperty("authenticationServiceName", authenticationServiceName);
+        properties.setProperty("jettyManagement", Boolean.toString(jettyManagement));
         super.save();
     }
     
@@ -197,6 +217,9 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
             }
             if (properties.getProperty("authenticationServiceName") != null) {
                 authenticationServiceName = properties.getProperty("authenticationServiceName");
+            }
+            if (properties.getProperty("jettyManagement") != null) {
+                jettyManagement = Boolean.valueOf(properties.getProperty("jettyManagement")).booleanValue();
             }
             return true;
         } else {

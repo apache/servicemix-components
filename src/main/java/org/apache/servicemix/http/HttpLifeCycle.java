@@ -36,7 +36,7 @@ import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 
 public class HttpLifeCycle extends BaseLifeCycle {
-
+    
     protected ServerManager server;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
@@ -116,6 +116,7 @@ public class HttpLifeCycle extends BaseLifeCycle {
         // Create serverManager
         if (server == null) {
             server = new ServerManager();
+            server.setMBeanServer(context.getMBeanServer());
             server.setConfiguration(configuration);
             server.init();
         }

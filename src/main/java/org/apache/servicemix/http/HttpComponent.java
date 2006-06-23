@@ -21,10 +21,15 @@ import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.Deployer;
+import org.apache.servicemix.http.jetty.JCLLogger;
 import org.w3c.dom.DocumentFragment;
 
 public class HttpComponent extends BaseComponent {
 
+    static {
+        JCLLogger.init();
+    }
+    
     /* (non-Javadoc)
      * @see org.servicemix.common.BaseComponent#createLifeCycle()
      */

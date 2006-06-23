@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jbi.JBIException;
+import javax.management.MBeanServer;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,6 +52,7 @@ import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
+import org.mortbay.management.MBeanContainer;
 import org.mortbay.thread.BoundedThreadPool;
 import org.mortbay.thread.ThreadPool;
 import org.mortbay.util.ByteArrayISO8859Writer;
@@ -66,10 +68,29 @@ public class ServerManager {
     private HttpConfiguration configuration;
     private ThreadPool threadPool;
     private Map sslParams;
+    private MBeanServer mbeanServer;
+    private MBeanContainer mbeanContainer;
     
+    /**
+     * @return the mbeanServer
+     */
+    public MBeanServer getMBeanServer() {
+        return mbeanServer;
+    }
+
+    /**
+     * @param mbeanServer the mbeanServer to set
+     */
+    public void setMBeanServer(MBeanServer mbeanServer) {
+        this.mbeanServer = mbeanServer;
+    }
+
     protected void init() throws Exception {
         if (configuration == null) {
             configuration = new HttpConfiguration();
+        }
+        if (mbeanServer != null && configuration.isJettyManagement()) {
+            mbeanContainer = new MBeanContainer(mbeanServer);
         }
         servers = new HashMap();
         sslParams = new HashMap();
@@ -288,6 +309,9 @@ public class ServerManager {
         server.start();
         servers.put(getKey(url), server);
         sslParams.put(getKey(url), isSsl ? ssl : null);
+        if (mbeanContainer != null) {
+            server.getContainer().addEventListener(mbeanContainer);
+        }
         return server;
     }
 

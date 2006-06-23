@@ -45,4 +45,8 @@ public interface HttpConfigurationMBean {
     
     public void setAuthenticationServiceName(String name);
     
+    public boolean isJettyManagement();
+    
+    public void setJettyManagement(boolean jettyManagement);
+    
 }

@@ -20,6 +20,7 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.http.jetty.JCLLogger;
 import org.w3c.dom.DocumentFragment;
 
 /**
@@ -32,6 +33,10 @@ import org.w3c.dom.DocumentFragment;
 public class HttpSpringComponent extends BaseComponent {
 
     private HttpEndpoint[] endpoints;
+    
+    static {
+        JCLLogger.init();
+    }
     
     /* (non-Javadoc)
      * @see org.servicemix.common.BaseComponent#createLifeCycle()
