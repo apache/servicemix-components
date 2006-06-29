@@ -29,6 +29,8 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
 
     public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = SelectChannelConnector.class.getName();
     
+    public static final String MAPPING_DEFAULT = "/jbi";
+    
     private boolean streamingEnabled = false;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
 
@@ -65,6 +67,52 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
      * If true, use register jetty mbeans
      */
     private boolean jettyManagement;
+    
+    /**
+     * If the component is deployed in a web container and uses
+     * a servlet instead of starting its own web server.
+     */
+    private boolean managed = false;
+    
+    /**
+     * When managed is true, this is the servlet mapping used
+     * to access the component.
+     */
+    private transient String mapping = MAPPING_DEFAULT;
+
+    /**
+     * @return the mapping
+     */
+    public String getMapping() {
+        return mapping;
+    }
+
+    /**
+     * @param mapping the mapping to set
+     */
+    public void setMapping(String mapping) {
+        if (!mapping.startsWith("/")) {
+            mapping = "/" + mapping;
+        }
+        if (mapping.endsWith("/")) {
+            mapping = mapping.substring(0, mapping.length() - 1);
+        }
+        this.mapping = mapping;
+    }
+
+    /**
+     * @return the managed
+     */
+    public boolean isManaged() {
+        return managed;
+    }
+
+    /**
+     * @param managed the managed to set
+     */
+    public void setManaged(boolean managed) {
+        this.managed = managed;
+    }
 
     /**
      * @return the jettyManagement

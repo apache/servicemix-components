@@ -191,12 +191,18 @@ public class HttpEndpoint extends SoapEndpoint {
             for (int i = 0; i < names.length; i++) {
                 def.removeBinding(names[i]);
             }
+            String location = getLocationURI();
+            HttpLifeCycle lf = (HttpLifeCycle) getServiceUnit().getComponent().getLifeCycle();
+            if (lf.getConfiguration().isManaged()) {
+                // TODO: need to find the port of the web server
+                location = "http://localhost" + lf.getConfiguration().getMapping() + new URI(location).getPath();
+            }
             if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
                 if (isSoap()) {
                     PortTypeDecorator.decorate(
                             def, 
                             portType, 
-                            getLocationURI(), 
+                            location, 
                             endpoint + "Binding",
                             service.getLocalPart(),
                             endpoint);       
@@ -212,7 +218,7 @@ public class HttpEndpoint extends SoapEndpoint {
                     port.setName(endpoint);
                     port.setBinding(binding);
                     HTTPAddress address = new HTTPAddressImpl();
-                    address.setLocationURI(getLocationURI());
+                    address.setLocationURI(location);
                     port.addExtensibilityElement(address);
                     def.addNamespace("http", "http://schemas.xmlsoap.org/wsdl/http/");
                     Service svc = def.createService();
@@ -227,7 +233,7 @@ public class HttpEndpoint extends SoapEndpoint {
                 PortTypeDecorator.decorate(
                         definition, 
                         portType, 
-                        getLocationURI(), 
+                        location, 
                         endpoint + "Binding",
                         service.getLocalPart(),
                         endpoint);       

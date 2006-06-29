@@ -18,7 +18,9 @@ package org.apache.servicemix.http.processors;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
@@ -40,7 +42,7 @@ import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.http.HttpProcessor;
-import org.apache.servicemix.http.ServerManager;
+import org.apache.servicemix.http.ContextManager;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -50,7 +52,6 @@ import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
-import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 import org.w3c.dom.Element;
@@ -64,7 +65,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public static final URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
     
     protected HttpEndpoint endpoint;
-    protected ContextHandler httpContext;
+    protected Object httpContext;
     protected ComponentContext context;
     protected DeliveryChannel channel;
     protected SoapHelper soapHelper;
@@ -99,14 +100,12 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public void start() throws Exception {
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         String url = endpoint.getLocationURI();
-        httpContext = getServerManager().createContext(url, this);
-        httpContext.start();
         context = endpoint.getServiceUnit().getComponent().getComponentContext();
         channel = context.getDeliveryChannel();
+        httpContext = getServerManager().createContext(url, this);
     }
 
     public void stop() throws Exception {
-        httpContext.stop();
         getServerManager().remove(httpContext);
     }
 
@@ -123,8 +122,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 return;
             }
             String path = request.getPathInfo();
-            if (path.startsWith("/")) {
-                path = path.substring(1);
+            if (path.lastIndexOf('/') >= 0) {
+                path = path.substring(path.lastIndexOf('/') + 1);
             }
             if (path.endsWith(".wsdl")) {
                 Definition def = (Definition) endpoint.getWsdls().get(path);
@@ -247,7 +246,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         return headers;
     }
     
-    protected ServerManager getServerManager() {
+    protected ContextManager getServerManager() {
         HttpLifeCycle lf =  (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
         return lf.getServer();
     }

@@ -124,4 +124,8 @@ public class HttpSpringComponent extends BaseComponent {
         ((HttpLifeCycle) getLifeCycle()).setConfiguration(configuration);
     }
 
+    public HttpProcessor getMainProcessor() {
+        return ((HttpLifeCycle) getLifeCycle()).getMainProcessor();
+    }
+
 }

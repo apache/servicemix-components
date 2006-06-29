@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:http="http://servicemix.apache.org/http/1.0"
+	   xmlns:test="http://servicemix.org/test/">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true">
+    <sm:activationSpecs>
+
+      <!-- output using a POJO -->
+      <sm:activationSpec componentName="servicemix-http">
+      	<sm:component>
+          <http:component>
+            <http:configuration managed="true" />
+        	<http:endpoints>
+        	  
+        	  <http:endpoint service="test:Hello"
+        	                 endpoint="testService"
+        	                 role="consumer" 
+        	                 locationURI="http://localhost:8193/Service/"
+                             defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
+                             wsdlResource="classpath:org/apache/servicemix/http/test.wsdl"
+                             soap="true" />
+
+        	</http:endpoints>
+          </http:component>
+        </sm:component>
+      </sm:activationSpec>
+      
+      <sm:activationSpec service="test:Hello" endpoint="testService">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+
+</beans>

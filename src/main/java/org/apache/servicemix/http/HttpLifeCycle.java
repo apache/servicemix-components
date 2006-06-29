@@ -31,13 +31,14 @@ import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 
 public class HttpLifeCycle extends BaseLifeCycle {
     
-    protected ServerManager server;
+    protected ContextManager server;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
     protected HttpConfiguration configuration = new HttpConfiguration();
@@ -46,11 +47,11 @@ public class HttpLifeCycle extends BaseLifeCycle {
         super(component);
     }
 
-    public ServerManager getServer() {
+    public ContextManager getServer() {
         return server;
     }
 
-    public void setServer(ServerManager server) {
+    public void setServer(ContextManager server) {
         this.server = server;
     }
 
@@ -114,18 +115,21 @@ public class HttpLifeCycle extends BaseLifeCycle {
             client = new HttpClient(connectionManager);
         }
         // Create serverManager
-        if (server == null) {
-            server = new ServerManager();
+        if (configuration.isManaged()) {
+            server = new ManagedContextManager();
+        } else {
+            JettyContextManager server = new JettyContextManager();
             server.setMBeanServer(context.getMBeanServer());
-            server.setConfiguration(configuration);
-            server.init();
+            this.server = server;
         }
+        server.setConfiguration(configuration);
+        server.init();
     }
 
     protected void doShutDown() throws Exception {
         super.doShutDown();
         if (server != null) {
-            ServerManager s = server;
+            ContextManager s = server;
             server = null;
             s.shutDown();
         }
@@ -194,6 +198,16 @@ public class HttpLifeCycle extends BaseLifeCycle {
      */
     public void setAuthenticationService(AuthenticationService authenticationService) {
         this.configuration.setAuthenticationService(authenticationService);
+    }
+
+    /**
+     * When servicemix-http is embedded inside a web application and configured
+     * to reuse the existing servlet container, this method will create and
+     * return the HTTPProcessor which will handle all servlet calls
+     * @param mappings 
+     */
+    public HttpProcessor getMainProcessor() {
+        return server.getMainProcessor();
     }
 
 }

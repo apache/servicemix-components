@@ -32,20 +32,20 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
+import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.apache.servicemix.jbi.util.FileUtil;
-import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.thread.BoundedThreadPool;
 
 public class ServerManagerTest extends TestCase {
 
-    protected ServerManager server;
+    protected JettyContextManager server;
     protected HttpConfiguration configuration;
     
     protected void setUp() throws Exception {
         System.setProperty("DEBUG", "true");
         System.setProperty("java.protocol.handler.pkgs", "HTTPClient");
         configuration = new HttpConfiguration();
-        server = new ServerManager();
+        server = new JettyContextManager();
         server.setConfiguration(configuration);
     }
     
@@ -59,23 +59,23 @@ public class ServerManagerTest extends TestCase {
         
         // Test first context 
         checkFail("http://localhost:8192/Service1/echo", null);
-        ContextHandler ctx1 = server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
+        Object ctx1 = server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
         request("http://localhost:8192/Service1/echo", null);
-        ctx1.stop();
+        server.remove(ctx1);
         checkFail("http://localhost:8192/Service1/echo", null);
         
         // Test second context on the same host/port
         checkFail("http://localhost:8192/Service2/echo", null);
-        ContextHandler ctx2 = server.createContext("http://localhost:8192/Service2", new TestHttpProcessor());
+        Object ctx2 = server.createContext("http://localhost:8192/Service2", new TestHttpProcessor());
         request("http://localhost:8192/Service2/echo", null);
-        ctx2.stop();
+        server.remove(ctx2);
         checkFail("http://localhost:8192/Service2/echo", null);
 
         // Test third context on another port
         checkFail("http://localhost:8193/echo", null);
-        ContextHandler ctx3 = server.createContext("http://localhost:8193", new TestHttpProcessor());
+        Object ctx3 = server.createContext("http://localhost:8193", new TestHttpProcessor());
         request("http://localhost:8193/echo", null);
-        ctx3.stop();
+        server.remove(ctx3);
         checkFail("http://localhost:8193/echo", null);
     }
     
