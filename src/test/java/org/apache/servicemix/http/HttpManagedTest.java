@@ -62,7 +62,7 @@ public class HttpManagedTest extends TestCase {
         System.err.println("Started");
         
         PostMethod post = new PostMethod("http://localhost:8080/jbi/Service/");
-        post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
+        post.setRequestEntity(new StringRequestEntity("<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><hello>world</hello></soap:Body></soap:Envelope>"));
         new HttpClient().executeMethod(post);
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());

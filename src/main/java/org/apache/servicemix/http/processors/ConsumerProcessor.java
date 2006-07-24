@@ -219,6 +219,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 exchange.setStatus(ExchangeStatus.DONE);
                 channel.send(exchange);
             }
+        } else if (exchange.getStatus() == ExchangeStatus.DONE) {
+            // This happens when there is no response to send back
+            response.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
     }
     
