@@ -8,7 +8,6 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.springframework.beans.factory.InitializingBean;
-import org.w3c.dom.DocumentFragment;
 
 /**
  * An ExchangeTarget may be used to specify the target of an exchange,
@@ -115,29 +114,7 @@ public class ExchangeTarget implements InitializingBean {
             throw new MessagingException("interface, service or uri should be specified");
         }
         if (uri != null) {
-            if (uri.startsWith("interface:")) {
-                String uri = this.uri.substring(10);
-                String[] parts = URIResolver.split2(uri);
-                exchange.setInterfaceName(new QName(parts[0], parts[1]));
-            } else if (uri.startsWith("operation:")) {
-                String uri = this.uri.substring(10);
-                String[] parts = URIResolver.split3(uri);
-                exchange.setInterfaceName(new QName(parts[0], parts[1]));
-                exchange.setOperation(new QName(parts[0], parts[2]));
-            } else if (uri.startsWith("service:")) {
-                String uri = this.uri.substring(8);
-                String[] parts = URIResolver.split2(uri);
-                exchange.setService(new QName(parts[0], parts[1]));
-            } else if (uri.startsWith("endpoint:")) {
-                String uri = this.uri.substring(9);
-                String[] parts = URIResolver.split3(uri);
-                ServiceEndpoint se = context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
-                exchange.setEndpoint(se);
-            } else {
-                DocumentFragment epr = URIResolver.createWSAEPR(uri);
-                ServiceEndpoint se = context.resolveEndpointReference(epr);
-                exchange.setEndpoint(se);
-            }
+            URIResolver.configureExchange(exchange, context, uri);
         }
         if (_interface != null) {
             exchange.setInterfaceName(_interface);
