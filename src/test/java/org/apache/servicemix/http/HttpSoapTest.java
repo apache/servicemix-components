@@ -124,6 +124,52 @@ public class HttpSoapTest extends TestCase {
                        new StreamSource(getClass().getResourceAsStream("soap-request.xml")));
         
     }
+    
+    public void testSoapRoundtripConsumerProvider() throws Exception {
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("echo");
+        container.activateComponent(echo, "echo");
+        
+        HttpSpringComponent http = new HttpSpringComponent();
+        
+        HttpEndpoint ep1 = new HttpEndpoint();
+        ep1.setService(new QName("urn:test", "s1"));
+        ep1.setEndpoint("ep1");
+        ep1.setTargetService(new QName("urn:test", "s2"));
+        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setRoleAsString("consumer");
+        ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep1.setSoap(true);
+        
+        HttpEndpoint ep2 = new HttpEndpoint();
+        ep2.setService(new QName("urn:test", "s2"));
+        ep2.setEndpoint("ep2");
+        ep2.setLocationURI("http://localhost:8192/ep3/");
+        ep2.setRoleAsString("provider");
+        ep2.setSoap(true);
+        
+        HttpEndpoint ep3 = new HttpEndpoint();
+        ep3.setService(new QName("urn:test", "s3"));
+        ep3.setEndpoint("ep3");
+        ep3.setTargetService(new QName("urn:test", "echo"));
+        ep3.setLocationURI("http://localhost:8192/ep3/");
+        ep3.setRoleAsString("consumer");
+        ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep3.setSoap(true);
+        
+        http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
+        
+        container.activateComponent(http, "http");
+        
+        container.start();
+        
+        PostMethod method = new PostMethod("http://localhost:8192/ep3/");
+        method.setRequestEntity(new StringRequestEntity("<env:Envelope xmlns:env='http://www.w3.org/2003/05/soap-envelope'><env:Body><hello>world</hello></env:body</env:Envelope>"));
+        int state = new HttpClient().executeMethod(method);
+        assertEquals(HttpServletResponse.SC_OK, state);
+        FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+    }
 
     public void testSoapFault12() throws Exception {
         TransformComponentSupport echo = new TransformComponentSupport() {

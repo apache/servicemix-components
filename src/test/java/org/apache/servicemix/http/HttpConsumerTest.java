@@ -23,6 +23,8 @@ import java.net.URL;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.RobustInOnly;
+import javax.wsdl.Definition;
+import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
@@ -96,7 +98,7 @@ public class HttpConsumerTest extends TestCase {
         long t0 = System.currentTimeMillis();
         client.sendSync(in);
         long t1 = System.currentTimeMillis();
-        assertTrue(in.getStatus() == ExchangeStatus.DONE);
+        assertEquals(ExchangeStatus.DONE, in.getStatus());
         
         // Check we received the message
         receiver.getMessageList().assertMessagesReceived(1);
@@ -135,6 +137,10 @@ public class HttpConsumerTest extends TestCase {
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
 
+        // Retrieve WSDL
+        Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL("http://localhost:8192/InOut/?wsdl");
+        assertNotNull(def);
+        
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inout = client.createInOutExchange();

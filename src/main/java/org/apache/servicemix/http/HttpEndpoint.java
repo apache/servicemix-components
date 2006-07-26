@@ -16,24 +16,16 @@
 package org.apache.servicemix.http;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
-import javax.wsdl.Import;
 import javax.wsdl.Port;
 import javax.wsdl.PortType;
 import javax.wsdl.Service;
-import javax.wsdl.Types;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
-import javax.wsdl.extensions.schema.Schema;
-import javax.wsdl.extensions.schema.SchemaImport;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -58,7 +50,6 @@ public class HttpEndpoint extends SoapEndpoint {
 
     protected ExtensibilityElement binding;
     protected String locationURI;
-    protected Map wsdls = new HashMap();
     protected SslParameters ssl;
     protected String authMethod;
     protected String soapAction;
@@ -207,7 +198,6 @@ public class HttpEndpoint extends SoapEndpoint {
                             service.getLocalPart(),
                             endpoint);       
                     definition = def;
-                    wsdls.put("main.wsdl", def);
                 } else {
                     Binding binding = def.createBinding();
                     binding.setPortType(portType);
@@ -226,7 +216,6 @@ public class HttpEndpoint extends SoapEndpoint {
                     svc.addPort(port);
                     def.addService(svc);
                     definition = def;
-                    wsdls.put("main.wsdl", def);
                 }
             } else {
                 definition = PortTypeDecorator.createImportDef(def, service.getNamespaceURI(), "porttypedef.wsdl");
@@ -237,52 +226,10 @@ public class HttpEndpoint extends SoapEndpoint {
                         endpoint + "Binding",
                         service.getLocalPart(),
                         endpoint);       
-                wsdls.put("main.wsdl", definition);
-                wsdls.put("porttypedef.wsdl", def);
             }
-            mapImports(def);
         }
     }
     
-    protected void mapImports(Definition def) {
-        // Add other imports to mapping
-        Map imports = def.getImports();
-        for (Iterator iter = imports.values().iterator(); iter.hasNext();) {
-            List imps = (List) iter.next();
-            for (Iterator iterator = imps.iterator(); iterator.hasNext();) {
-                Import imp = (Import) iterator.next();
-                Definition impDef = imp.getDefinition();
-                String impLoc = imp.getLocationURI();
-                if (impDef != null && impLoc != null && !URI.create(impLoc).isAbsolute()) {
-                    wsdls.put(impLoc, impDef);
-                    mapImports(impDef);
-                }
-            }
-        }
-        // Add schemas to mapping
-        Types types = def.getTypes();
-        if (types != null) {
-            for (Iterator it = types.getExtensibilityElements().iterator(); it.hasNext();) {
-                ExtensibilityElement ee = (ExtensibilityElement) it.next();
-                if (ee instanceof Schema) {
-                    Schema schema = (Schema) ee;
-                    Map schemaImports = schema.getImports();
-                    for (Iterator iter = schemaImports.values().iterator(); iter.hasNext();) {
-                        List imps = (List) iter.next();
-                        for (Iterator iterator = imps.iterator(); iterator.hasNext();) {
-                            SchemaImport schemaImport = (SchemaImport) iterator.next();
-                            Schema schemaImp = schemaImport.getReferencedSchema();
-                            String schemaLoc = schemaImport.getSchemaLocationURI();
-                            if (schemaLoc != null && schemaImp != null && schemaImp.getElement() != null && !URI.create(schemaLoc).isAbsolute()) {
-                                wsdls.put(schemaLoc, schemaImp.getElement());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     protected ExchangeProcessor createProviderProcessor() {
         return new ProviderProcessor(this);
     }
@@ -293,13 +240,6 @@ public class HttpEndpoint extends SoapEndpoint {
 
     protected ServiceEndpoint createExternalEndpoint() {
         return new HttpExternalEndpoint(this);
-    }
-
-    /**
-     * @return Returns the wsdls.
-     */
-    public Map getWsdls() {
-        return wsdls;
     }
 
     public AuthenticationService getAuthenticationService() {

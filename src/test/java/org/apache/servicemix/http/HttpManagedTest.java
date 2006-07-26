@@ -7,7 +7,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;

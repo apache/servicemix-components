@@ -87,10 +87,10 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
             int state = client.executeMethod(method);
-            if (state != HttpServletResponse.SC_OK) {
+            if (state != HttpServletResponse.SC_OK && state != HttpServletResponse.SC_ACCEPTED) {
                 throw new IllegalStateException("Http status: " + state);
             }
-            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
         } finally {
             method.releaseConnection();
         }
@@ -106,10 +106,10 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
-            if (state != HttpServletResponse.SC_OK) {
+            if (state != HttpServletResponse.SC_OK && state != HttpServletResponse.SC_ACCEPTED) {
                 throw new IllegalStateException("Http status: " + state);
             }
-            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
         } finally {
             method.releaseConnection();
         }

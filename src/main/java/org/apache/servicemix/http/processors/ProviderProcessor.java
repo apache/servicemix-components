@@ -128,7 +128,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         method.setRequestEntity(entity);
         try {
             int response = getClient().executeMethod(host, method);
-            if (response != HttpStatus.SC_OK) {
+            if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (exchange instanceof InOnly == false) {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                     Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);

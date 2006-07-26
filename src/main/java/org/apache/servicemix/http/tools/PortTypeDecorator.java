@@ -70,6 +70,7 @@ public class PortTypeDecorator {
         Import imp = def.createImport();
         imp.setNamespaceURI(definition.getTargetNamespace());
         imp.setLocationURI(importUri);
+        imp.setDefinition(definition);
         def.addImport(imp);
         
         return def;

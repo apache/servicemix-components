@@ -55,6 +55,7 @@ import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -125,15 +126,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             if (path.lastIndexOf('/') >= 0) {
                 path = path.substring(path.lastIndexOf('/') + 1);
             }
-            if (path.endsWith(".wsdl")) {
-                Definition def = (Definition) endpoint.getWsdls().get(path);
-                generateWSDL(response, def);
-                return;
-            } else if (path.endsWith(".xsd")) {
-                Element el = (Element) endpoint.getWsdls().get(path);
-                generateXSD(response, el);
-                return;
-            }
+            Node node = (Node) endpoint.getWsdls().get(path);
+            generateDocument(response, node);
+            return;
         }
         if (!"POST".equals(request.getMethod())) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, request.getMethod() + " not supported");
@@ -254,24 +249,14 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         return lf.getServer();
     }
     
-    protected void generateWSDL(HttpServletResponse response, Definition def) throws Exception {
-        if (def == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "No wsdl is available for this service");
-            return;
-        }
-        response.setStatus(200);
-        response.setContentType("text/xml");
-        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, response.getOutputStream());
-    }
-    
-    protected void generateXSD(HttpServletResponse response, Element element) throws Exception {
-        if (element == null) {
+    protected void generateDocument(HttpServletResponse response, Node node) throws Exception {
+        if (node == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Unable to find requested resource");
             return;
         }
         response.setStatus(200);
         response.setContentType("text/xml");
-        new SourceTransformer().toResult(new DOMSource(element), new StreamResult(response.getOutputStream()));
+        new SourceTransformer().toResult(new DOMSource(node), new StreamResult(response.getOutputStream()));
     }
 
 }
