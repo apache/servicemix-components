@@ -77,7 +77,7 @@
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>jbi-maven-plugin</artifactId>
         <configuration>
-          <type>service-engine</type>
+          <type>binding-component</type>
           <bootstrap>org.apache.servicemix.jms.JmsBootstrap</bootstrap>
           <component>org.apache.servicemix.jms.JmsComponent</component>
         </configuration>
