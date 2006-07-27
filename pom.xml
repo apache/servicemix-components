@@ -15,7 +15,7 @@
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>jbi-maven-plugin</artifactId>
         <configuration>
-          <type>service-engine</type>
+          <type>binding-component</type>
           <bootstrap>org.apache.servicemix.http.HttpBootstrap</bootstrap>
           <component>org.apache.servicemix.http.HttpComponent</component>
         </configuration>
