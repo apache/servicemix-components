@@ -40,6 +40,7 @@ import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.exchange.InMessage;
+import org.codehaus.xfire.service.OperationInfo;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.transport.Channel;
 import org.codehaus.xfire.transport.Transport;
@@ -74,6 +75,12 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         ctx.setExchange(new org.codehaus.xfire.exchange.MessageExchange(ctx));
         InMessage msg = new InMessage();
         ctx.getExchange().setInMessage(msg);
+        if (exchange.getOperation() != null) {
+            OperationInfo op = service.getServiceInfo().getOperation(exchange.getOperation().getLocalPart());
+            if (op != null) {
+                ctx.getExchange().setOperation(op);
+            }
+        }
         ctx.setCurrentMessage(msg);
         NormalizedMessage in = exchange.getMessage("in");
         msg.setXMLStreamReader(getXMLStreamReader(in.getContent()));
@@ -86,7 +93,6 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
                 Fault fault = exchange.createFault();
                 fault.setContent(new StringSource(out.toString()));
                 exchange.setFault(fault);
-                exchange.setStatus(ExchangeStatus.ERROR);
             } else {
                 NormalizedMessage outMsg = exchange.createMessage();
                 outMsg.setContent(new StringSource(out.toString()));
