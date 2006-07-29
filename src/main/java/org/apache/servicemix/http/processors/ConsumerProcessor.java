@@ -37,6 +37,8 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -66,6 +68,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public static final URI IN_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-out");
     public static final URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
     
+    private static Log log = LogFactory.getLog(ConsumerProcessor.class);
+    
     protected HttpEndpoint endpoint;
     protected Object httpContext;
     protected ComponentContext context;
@@ -92,8 +96,13 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     public void process(MessageExchange exchange) throws Exception {
         Continuation cont = (Continuation) locks.remove(exchange.getExchangeId());
         if (cont != null) {
-            exchanges.put(exchange.getExchangeId(), exchange);
-            cont.resume();
+            synchronized (cont) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
+                }
+                exchanges.put(exchange.getExchangeId(), exchange);
+                cont.resume();
+            }
         } else {
             throw new IllegalStateException("Exchange not found");
         }
@@ -112,6 +121,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     }
 
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("Receiving HTTP request: " + request);
+        }
         if ("GET".equals(request.getMethod())) {
             String query = request.getQueryString();
             if (query != null && query.trim().equalsIgnoreCase("wsdl")) {
@@ -161,11 +173,17 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 synchronized (cont) {
                     ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, endpoint);
-                    // TODO: make this timeout configurable
-                    boolean result = cont.suspend(1000 * 60); // 60 s
-                    if (!result) {
-                        throw new Exception("Error sending exchange: aborted");
+                    if (exchanges.remove(exchange.getExchangeId()) == null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
+                        }
+                        // TODO: make this timeout configurable
+                        boolean result = cont.suspend(1000 * 60); // 60 s
+                        if (!result) {
+                            throw new Exception("Error sending exchange: aborted");
+                        }
                     }
+                    request.removeAttribute(MessageExchange.class.getName());
                 }
             } catch (SoapFault fault) {
                 sendFault(fault, request, response);
