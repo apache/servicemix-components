@@ -174,7 +174,6 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writer.write(baos);
         Message msg = session.createTextMessage(baos.toString());
-        msg.setStringProperty("Content-Type", writer.getContentType());
         Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
         if (headers != null) {
             for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
@@ -183,6 +182,9 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                 msg.setStringProperty(name, value);
             }
         }
+        // overwrite whatever content-type was passed on to us with the one
+        // the SoapWriter constructed
+        msg.setStringProperty("Content-Type", writer.getContentType());
 
         if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
             synchronized (producer) {
