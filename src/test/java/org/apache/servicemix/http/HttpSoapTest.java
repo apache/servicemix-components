@@ -16,10 +16,18 @@
  */
 package org.apache.servicemix.http;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -30,10 +38,14 @@ import javax.xml.transform.stream.StreamSource;
 import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.client.Destination;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.TransformComponentSupport;
@@ -42,6 +54,7 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
+import org.apache.servicemix.jbi.util.ByteArrayDataSource;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
@@ -150,6 +163,47 @@ public class HttpSoapTest extends TestCase {
         ep2.setRoleAsString("provider");
         ep2.setSoap(true);
         
+        http.setEndpoints(new HttpEndpoint[] { ep1, ep2 });
+        
+        container.activateComponent(http, "http");
+        
+        container.start();
+        
+        ServiceMixClient client = new DefaultServiceMixClient(container);
+        Destination dest = client.createDestination("service:urn:test:s2");
+        InOut me = dest.createInOutExchange();
+        me.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        String str = new SourceTransformer().contentToString(me.getOutMessage());
+        client.done(me);
+        System.err.println(str);
+    }
+
+    public void testSoapRoundtripProviderConsumerProvider() throws Exception {
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("echo");
+        container.activateComponent(echo, "echo");
+        
+        HttpSpringComponent http = new HttpSpringComponent();
+        
+        HttpEndpoint ep1 = new HttpEndpoint();
+        ep1.setService(new QName("urn:test", "s1"));
+        ep1.setEndpoint("ep1");
+        ep1.setTargetService(new QName("urn:test", "s2"));
+        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setRoleAsString("consumer");
+        ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep1.setSoap(true);
+        
+        HttpEndpoint ep2 = new HttpEndpoint();
+        ep2.setService(new QName("urn:test", "s2"));
+        ep2.setEndpoint("ep2");
+        ep2.setLocationURI("http://localhost:8192/ep3/");
+        ep2.setRoleAsString("provider");
+        ep2.setSoap(true);
+        
         HttpEndpoint ep3 = new HttpEndpoint();
         ep3.setService(new QName("urn:test", "s3"));
         ep3.setEndpoint("ep3");
@@ -165,11 +219,18 @@ public class HttpSoapTest extends TestCase {
         
         container.start();
         
-        PostMethod method = new PostMethod("http://localhost:8192/ep3/");
+        PostMethod method = new PostMethod("http://localhost:8192/ep1/");
+        method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new HttpMethodRetryHandler() {
+            public boolean retryMethod(HttpMethod method, IOException exception, int executionCount) {
+                return false;
+            }
+        });
         method.setRequestEntity(new StringRequestEntity("<env:Envelope xmlns:env='http://www.w3.org/2003/05/soap-envelope'><env:Body><hello>world</hello></env:body</env:Envelope>"));
         int state = new HttpClient().executeMethod(method);
         assertEquals(HttpServletResponse.SC_OK, state);
-        FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(method.getResponseBodyAsStream(), baos);
+        System.err.println(baos.toString());
     }
 
     public void testSoapFault12() throws Exception {
@@ -359,6 +420,68 @@ public class HttpSoapTest extends TestCase {
         assertEquals(new QName("http://ws.location.services.cardinal.com/", "listAllProvider"), DOMUtil.getQName(e));
         e = DOMUtil.getFirstChildElement(e);
         assertEquals(new QName("", "clientSessionGuid"), DOMUtil.getQName(e));
+    }
+    
+    public void testAttachments() throws Exception {
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("echo");
+        container.activateComponent(echo, "echo");
+        
+        HttpSpringComponent http = new HttpSpringComponent();
+        
+        HttpEndpoint ep0 = new HttpEndpoint();
+        ep0.setService(new QName("urn:test", "s0"));
+        ep0.setEndpoint("ep0");
+        ep0.setLocationURI("http://localhost:8192/ep1/");
+        ep0.setRoleAsString("provider");
+        ep0.setSoap(true);
+        
+        HttpEndpoint ep1 = new HttpEndpoint();
+        ep1.setService(new QName("urn:test", "s1"));
+        ep1.setEndpoint("ep1");
+        ep1.setTargetService(new QName("urn:test", "s2"));
+        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setRoleAsString("consumer");
+        ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep1.setSoap(true);
+        
+        HttpEndpoint ep2 = new HttpEndpoint();
+        ep2.setService(new QName("urn:test", "s2"));
+        ep2.setEndpoint("ep2");
+        ep2.setLocationURI("http://localhost:8192/ep3/");
+        ep2.setRoleAsString("provider");
+        ep2.setSoap(true);
+        
+        HttpEndpoint ep3 = new HttpEndpoint();
+        ep3.setService(new QName("urn:test", "s3"));
+        ep3.setEndpoint("ep3");
+        ep3.setTargetService(new QName("urn:test", "echo"));
+        ep3.setLocationURI("http://localhost:8192/ep3/");
+        ep3.setRoleAsString("consumer");
+        ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
+        ep3.setSoap(true);
+        
+        http.setEndpoints(new HttpEndpoint[] { ep0, ep1, ep2, ep3 });
+        
+        container.activateComponent(http, "http");
+        
+        container.start();
+        
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        Destination d = client.createDestination("service:urn:test:s0");
+        InOut me = d.createInOutExchange();
+        me.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        File f = new File(getClass().getResource("servicemix.jpg").getFile());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(new FileInputStream(f), baos);
+        DataSource ds = new ByteArrayDataSource(baos.toByteArray(), "image/jpeg");
+        DataHandler dh = new DataHandler(ds);
+        me.getInMessage().addAttachment("image", dh);
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        assertEquals(1, me.getOutMessage().getAttachmentNames().size());
+        client.done(me);
     }
     
 }

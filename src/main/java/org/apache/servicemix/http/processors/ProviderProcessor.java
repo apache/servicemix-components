@@ -113,6 +113,8 @@ public class ProviderProcessor implements ExchangeProcessor {
             }
         }
         RequestEntity entity = writeMessage(writer);
+        // remove content-type header that may have been part of the in message
+        method.removeRequestHeader(Constants.HEADER_CONTENT_TYPE);
         method.addRequestHeader(Constants.HEADER_CONTENT_TYPE, entity.getContentType());
         if (entity.getContentLength() < 0) {
             method.removeRequestHeader(Constants.HEADER_CONTENT_LENGTH);
@@ -128,6 +130,14 @@ public class ProviderProcessor implements ExchangeProcessor {
         }
         method.setRequestEntity(entity);
         try {
+            // Uncomment to avoid the http request being sent several times.
+            // Can be useful when debugging
+            //================================
+            //method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new HttpMethodRetryHandler() {
+            //    public boolean retryMethod(HttpMethod method, IOException exception, int executionCount) {
+            //        return false;
+            //    }
+            //});
             int response = getClient().executeMethod(host, method);
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (exchange instanceof InOnly == false) {
