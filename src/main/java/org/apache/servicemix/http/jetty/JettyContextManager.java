@@ -70,7 +70,7 @@ public class JettyContextManager implements ContextManager {
     
     private Map servers;
     private HttpConfiguration configuration;
-    private ThreadPool threadPool;
+    private BoundedThreadPool threadPool;
     private Map sslParams;
     private MBeanServer mbeanServer;
     private MBeanContainer mbeanContainer;
