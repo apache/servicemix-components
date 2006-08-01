@@ -26,6 +26,8 @@ import javax.xml.namespace.QName;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.client.Client;
 import org.codehaus.xfire.client.XFireProxyFactory;
+import org.codehaus.xfire.service.Service;
+import org.codehaus.xfire.service.ServiceFactory;
 import org.w3c.dom.Document;
 
 public class JbiProxy {
@@ -76,7 +78,9 @@ public class JbiProxy {
     
     public Object getProxy() throws Exception {
         if (proxy == null) {
-            JBIClient client = new JBIClient(xfire, getDescription(), serviceClass);
+            ServiceFactory factory = ServiceFactoryHelper.findServiceFactory(xfire, serviceClass, null, null);
+            Service service = factory.create(serviceClass, null, getDescription(), null);
+            JBIClient client = new JBIClient(xfire, service);
             if (interfaceName != null) {
                 client.getService().setProperty(JbiChannel.JBI_INTERFACE_NAME, interfaceName);
             }
@@ -142,10 +146,11 @@ public class JbiProxy {
     
     protected static class JBIClient extends Client {
 
-        public JBIClient(XFire xfire, Definition description, Class serviceClass) throws Exception {
-            super();
+        public JBIClient(XFire xfire, Service service) throws Exception {
+            super(xfire.getTransportManager().getTransport(JbiTransport.JBI_BINDING),
+                  service, 
+                  null);
             setXFire(xfire);
-            initFromDefinition(JbiTransport.JBI_BINDING, description, serviceClass);
         }
         
     }

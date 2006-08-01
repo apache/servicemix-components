@@ -175,12 +175,13 @@ public class Jsr181ComplexPojoTest extends TestCase {
         me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
         me.getInMessage().setContent(new StringSource("<hel lo>world</hello"));
         client.sendSync(me);
-        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
         assertNotNull(me.getFault());
         Node n = transformer.toDOMNode(me.getFault());
         System.err.println(transformer.toString(n));
         assertNotNull(textValueOfXPath(n, "//message"));
         assertNull(textValueOfXPath(n, "//stack"));
+        client.done(me);
         
         ((Jsr181LifeCycle) component.getLifeCycle()).getConfiguration().setPrintStackTraceInFaults(true);
         
@@ -188,12 +189,13 @@ public class Jsr181ComplexPojoTest extends TestCase {
         me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
         me.getInMessage().setContent(new StringSource("<hel lo>world</hello"));
         client.sendSync(me);
-        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
         assertNotNull(me.getFault());
         n = transformer.toDOMNode(me.getFault());
         System.err.println(transformer.toString(n));
         assertNotNull(textValueOfXPath(n, "//message"));
         assertNotNull(textValueOfXPath(n, "//stack"));
+        client.done(me);
         
         // Wait all acks being processed
         Thread.sleep(100);

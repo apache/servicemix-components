@@ -68,7 +68,7 @@ public class JbiChannel extends AbstractChannel {
     }
 
     public void send(MessageContext context, OutMessage message) throws XFireException {
-        if (message.getUri().equals(Channel.BACKCHANNEL_URI)) {
+        if (Channel.BACKCHANNEL_URI.equals(message.getUri())) {
             final OutputStream out = (OutputStream) context.getProperty(Channel.BACKCHANNEL_URI);
             if (out != null) {
                 try {
