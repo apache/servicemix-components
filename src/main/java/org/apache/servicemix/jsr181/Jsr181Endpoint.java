@@ -74,6 +74,7 @@ public class Jsr181Endpoint extends Endpoint {
     protected Service xfireService;
     protected ExchangeProcessor processor;
     protected Resource wsdlResource;
+    protected boolean mtomEnabled = false;
     
     public Jsr181Endpoint() {
         processor = new Jsr181ExchangeProcessor(this);
@@ -105,6 +106,20 @@ public class Jsr181Endpoint extends Endpoint {
      */
     public void setPojo(Object pojo) {
         this.pojo = pojo;
+    }
+
+    /**
+     * @return the mtomEnabled
+     */
+    public boolean isMtomEnabled() {
+        return mtomEnabled;
+    }
+
+    /**
+     * @param mtomEnabled the mtomEnabled to set
+     */
+    public void setMtomEnabled(boolean mtomEnabled) {
+        this.mtomEnabled = mtomEnabled;
     }
 
     /**
@@ -221,6 +236,7 @@ public class Jsr181Endpoint extends Endpoint {
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
         xfireService.setFaultSerializer(new JbiFaultSerializer(getConfiguration()));
+        xfireService.setProperty(SoapConstants.MTOM_ENABLED, Boolean.toString(mtomEnabled));
         xfire.getServiceRegistry().register(xfireService);
         
         // If the wsdl has not been provided,

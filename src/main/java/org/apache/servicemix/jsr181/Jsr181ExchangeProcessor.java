@@ -18,7 +18,9 @@ package org.apache.servicemix.jsr181;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Iterator;
 
+import javax.activation.DataHandler;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -39,6 +41,8 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFire;
+import org.codehaus.xfire.attachments.JavaMailAttachments;
+import org.codehaus.xfire.attachments.SimpleAttachment;
 import org.codehaus.xfire.exchange.InMessage;
 import org.codehaus.xfire.service.OperationInfo;
 import org.codehaus.xfire.service.Service;
@@ -84,6 +88,15 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         ctx.setCurrentMessage(msg);
         NormalizedMessage in = exchange.getMessage("in");
         msg.setXMLStreamReader(getXMLStreamReader(in.getContent()));
+        if (in.getAttachmentNames() != null && in.getAttachmentNames().size() > 0) {
+            JavaMailAttachments attachments = new JavaMailAttachments();
+            for (Iterator it = in.getAttachmentNames().iterator(); it.hasNext();) {
+                String name = (String) it.next();
+                DataHandler dh = in.getAttachment(name);
+                attachments.addPart(new SimpleAttachment(name, dh));
+            }
+            msg.setAttachments(attachments);
+        }
         c.receive(ctx, msg);
         c.close();
         
