@@ -58,13 +58,13 @@ public abstract class AbstractWSAClient {
     
     public static ServiceMixClient createJaxbClient(JBIContainer container) throws JBIException, JAXBException {
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-        client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+        client.setMarshaler(new JAXBMarshaler(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
         return client;
     }
     
     public static ServiceMixClient createJaxbClient(ComponentContext context) throws JAXBException {
         ServiceMixClientFacade client = new ServiceMixClientFacade(context); 
-        client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+        client.setMarshaler(new JAXBMarshaler(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
         return client;
     }
 	

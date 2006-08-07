@@ -53,7 +53,7 @@ public class NotificationBroker extends AbstractWSAClient {
 	
 	public NotificationBroker(ComponentContext context) throws JAXBException {
 		ServiceMixClientFacade client = new ServiceMixClientFacade(context); 
-		client.setMarshaler(new JAXBMarshaller(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
+		client.setMarshaler(new JAXBMarshaler(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
 		setClient(client);
 		setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
 	}
