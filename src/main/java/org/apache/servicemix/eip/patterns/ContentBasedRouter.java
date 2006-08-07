@@ -17,15 +17,11 @@
 package org.apache.servicemix.eip.patterns;
 
 import javax.jbi.management.DeploymentException;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.servicemix.eip.support.AbstractContentBasedRouter;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.eip.support.MessageUtil;
 import org.apache.servicemix.eip.support.RoutingRule;
 
 /**
@@ -68,43 +64,6 @@ public class ContentBasedRouter extends AbstractContentBasedRouter {
         // Check rules
         if (rules == null || rules.length == 0) {
             throw new IllegalArgumentException("rules should contain at least one RoutingRule");
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
-     */
-    protected void processSync(MessageExchange exchange) throws Exception {
-        // Create exchange for target
-        MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
-        // Now copy input to new exchange
-        // We need to read the message once for finding routing target
-        // so ensure we have a re-readable source
-        NormalizedMessage in = MessageUtil.copyIn(exchange);
-        MessageUtil.transferToIn(in, tme); 
-        // Retrieve target
-        ExchangeTarget target = getDestination(tme);
-        target.configureTarget(tme, getContext());
-        // Send in to target
-        sendSync(tme);
-        // Send back the result
-        if (tme.getStatus() == ExchangeStatus.DONE) {
-            done(exchange);
-        } else if (tme.getStatus() == ExchangeStatus.ERROR) {
-            fail(exchange, tme.getError());
-        } else if (tme.getFault() != null) {
-            Fault fault = MessageUtil.copyFault(tme);
-            done(tme);
-            MessageUtil.transferToFault(fault, exchange);
-            sendSync(exchange);
-        } else if (tme.getMessage("out") != null) {
-            NormalizedMessage out = MessageUtil.copyOut(tme);
-            done(tme);
-            MessageUtil.transferToOut(out, exchange);
-            sendSync(exchange);
-        } else {
-            done(tme);
-            throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
         }
     }
 
