@@ -23,12 +23,10 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.eip.EIPEndpoint;
+import org.apache.servicemix.eip.support.AbstractContentBasedRouter;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.eip.support.MessageUtil;
 import org.apache.servicemix.eip.support.RoutingRule;
-import org.apache.servicemix.store.Store;
 
 /**
  * ContentBasedRouter can be used for all kind of content-based routing.
@@ -41,16 +39,12 @@ import org.apache.servicemix.store.Store;
  * @org.apache.xbean.XBean element="content-based-router"
  *                  description="A Content-Based Router"
  */
-public class ContentBasedRouter extends EIPEndpoint {
+public class ContentBasedRouter extends AbstractContentBasedRouter {
 
     /**
      * Routing rules that are evaluated to find the target destination
      */
     private RoutingRule[] rules;
-    /**
-     * The correlation property used by this component
-     */
-    private String correlation;
     
     /**
      * @return Returns the rules.
@@ -75,8 +69,6 @@ public class ContentBasedRouter extends EIPEndpoint {
         if (rules == null || rules.length == 0) {
             throw new IllegalArgumentException("rules should contain at least one RoutingRule");
         }
-        // Create correlation property
-        correlation = "AbstractContentBasedRouter.Correlation." + getService() + "." + getEndpoint();
     }
 
     /* (non-Javadoc)
@@ -116,65 +108,6 @@ public class ContentBasedRouter extends EIPEndpoint {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
-     */
-    protected void processAsync(MessageExchange exchange) throws Exception {
-        if (exchange.getRole() == MessageExchange.Role.PROVIDER &&
-            exchange.getProperty(correlation) == null) {
-            // Create exchange for target
-            MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
-            if (store.hasFeature(Store.CLUSTERED)) {
-                exchange.setProperty(JbiConstants.STATELESS_PROVIDER, Boolean.TRUE);
-                tme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
-            }
-            // Set correlations
-            tme.setProperty(correlation, exchange.getExchangeId());
-            exchange.setProperty(correlation, tme.getExchangeId());
-            // Put exchange to store
-            store.store(exchange.getExchangeId(), exchange);
-            // Now copy input to new exchange
-            // We need to read the message once for finding routing target
-            // so ensure we have a re-readable source
-            NormalizedMessage in = MessageUtil.copyIn(exchange);
-            MessageUtil.transferToIn(in, tme); 
-            // Retrieve target
-            ExchangeTarget target = getDestination(tme);
-            target.configureTarget(tme, getContext());
-            // Send in to target
-            send(tme);
-        // Mimic the exchange on the other side and send to needed listener
-        } else {
-            String id = (String) exchange.getProperty(correlation);
-            if (id == null) {
-                throw new IllegalStateException(correlation + " property not found");
-            }
-            MessageExchange org = (MessageExchange) store.load(id);
-            if (org == null) {
-                throw new IllegalStateException("Could not load original exchange with id " + id);
-            }
-            // Reproduce DONE status to the other side
-            if (exchange.getStatus() == ExchangeStatus.DONE) {
-                done(org);
-            // Reproduce ERROR status to the other side
-            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                fail(org, exchange.getError());
-            // Reproduce faults to the other side and listeners
-            } else if (exchange.getFault() != null) {
-                store.store(exchange.getExchangeId(), exchange);
-                MessageUtil.transferTo(exchange, org, "fault"); 
-                send(org);
-            // Reproduce answers to the other side
-            } else if (exchange.getMessage("out") != null) {
-                store.store(exchange.getExchangeId(), exchange);
-                MessageUtil.transferTo(exchange, org, "out"); 
-                send(org);
-            } else {
-                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
-            }
-        }
-    }
-    
     /**
      * Find the target destination for the given JBI exchange
      * @param exchange
