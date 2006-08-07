@@ -131,7 +131,10 @@ public class MessageUtil {
         private Map attachments = new HashMap();
         
         public NormalizedMessageImpl(NormalizedMessage message) throws Exception {
-            this.content = new StringSource(new SourceTransformer().contentToString(message));
+            String str = new SourceTransformer().contentToString(message);
+            if (str != null) {
+                this.content = new StringSource(str);
+            }
             for (Iterator it = message.getPropertyNames().iterator(); it.hasNext();) {
                 String name = (String) it.next();
                 this.properties.put(name, message.getProperty(name));
