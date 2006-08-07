@@ -18,6 +18,7 @@
           <type>binding-component</type>
           <bootstrap>org.apache.servicemix.http.HttpBootstrap</bootstrap>
           <component>org.apache.servicemix.http.HttpComponent</component>
+          <serviceUnitAnalyzer>org.apache.servicemix.http.packaging.HttpServiceUnitAnalyzer</serviceUnitAnalyzer>
         </configuration>
       </plugin>
       <plugin>
@@ -54,7 +55,7 @@
   <dependencies>
     <dependency>
       <groupId>${pom.groupId}</groupId>
-      <artifactId>servicemix-soap</artifactId>
+      <artifactId>servicemix-shared</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
