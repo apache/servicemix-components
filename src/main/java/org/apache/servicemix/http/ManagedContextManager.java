@@ -111,7 +111,7 @@ public class ManagedContextManager implements ContextManager {
             Set urls = managedContexts.keySet();
             for (Iterator iter = urls.iterator(); iter.hasNext();) {
                 String url = (String) iter.next();
-                if (uri.startsWith(mapping + url)) {
+                if (uri.startsWith(request.getContextPath() + mapping + url)) {
                     HttpProcessor proc = (HttpProcessor) managedContexts.get(url);
                     proc.process(request, response);
                     return;
@@ -141,7 +141,7 @@ public class ManagedContextManager implements ContextManager {
                     context += "/";
                 }
                 String protocol = request.isSecure() ? "https" : "http";
-                context = protocol + "://" + request.getLocalName() + ":" + request.getLocalPort() + mapping + context; 
+                context = protocol + "://" + request.getLocalName() + ":" + request.getLocalPort() + request.getContextPath() + mapping + context; 
                 writer.write("<li><a href=\"");
                 writer.write(context);
                 writer.write("?wsdl\">");

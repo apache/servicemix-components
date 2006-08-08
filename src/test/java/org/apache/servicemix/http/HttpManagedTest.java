@@ -43,7 +43,7 @@ public class HttpManagedTest extends TestCase {
 
     public void test() throws Exception {
         ContextHandler context = new ContextHandler();
-        context.setContextPath("/");
+        context.setContextPath("/test");
         context.setEventListeners(new EventListener[] { new ContextLoaderListener() });
         Map initParams = new HashMap();
         initParams.put("contextConfigLocation", "classpath:org/apache/servicemix/http/spring-web.xml");
@@ -76,7 +76,7 @@ public class HttpManagedTest extends TestCase {
         
         System.err.println("Started");
         
-        PostMethod post = new PostMethod("http://localhost:8080/jbi/Service/");
+        PostMethod post = new PostMethod("http://localhost:8080/test/jbi/Service/");
         post.setRequestEntity(new StringRequestEntity("<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><hello>world</hello></soap:Body></soap:Envelope>"));
         new HttpClient().executeMethod(post);
         if (post.getStatusCode() != 200) {
