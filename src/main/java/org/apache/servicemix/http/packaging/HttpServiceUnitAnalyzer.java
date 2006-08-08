@@ -17,7 +17,6 @@
 package org.apache.servicemix.http.packaging;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.jbi.messaging.MessageExchange;
@@ -45,20 +44,21 @@ public class HttpServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 		Consumes consumes;
 		if (endpoint.getRole().equals(MessageExchange.Role.CONSUMER)) {
 			consumes = new Consumes();
-			consumes = new Consumes();
-			consumes.setEndpointName(endpoint.getEndpoint());
-			consumes.setInterfaceName(endpoint.getInterfaceName());
-			consumes.setServiceName(endpoint.getService());
-			consumesList.add(consumes);
-		}
-		HttpEndpoint httpEndpoint = (HttpEndpoint) endpoint;
-		consumes = new Consumes();
-		consumes.setEndpointName(httpEndpoint.getTargetEndpoint());
-		consumes.setInterfaceName(httpEndpoint.getTargetInterfaceName());
-		consumes.setServiceName(httpEndpoint.getTargetService());
-		if (consumes.isValid())
-			consumesList.add(consumes);
-		
+			HttpEndpoint httpEndpoint = (HttpEndpoint) endpoint;
+			consumes.setEndpointName(httpEndpoint.getTargetEndpoint());
+			consumes.setInterfaceName(httpEndpoint.getTargetInterfaceName());
+			consumes.setServiceName(httpEndpoint.getTargetService());
+			if (consumes.isValid())
+				consumesList.add(consumes);
+			else {
+				consumes = new Consumes();
+				consumes.setEndpointName(endpoint.getEndpoint());
+				consumes.setInterfaceName(endpoint.getInterfaceName());
+				consumes.setServiceName(endpoint.getService());
+				consumesList.add(consumes);
+			}
+		}		
+
 		return consumesList;
 	}
 
