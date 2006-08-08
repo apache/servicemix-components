@@ -91,6 +91,7 @@
           <type>service-engine</type>
           <bootstrap>org.apache.servicemix.eip.EIPBootstrap</bootstrap>
           <component>org.apache.servicemix.eip.EIPComponent</component>
+          <serviceUnitAnalyzer>org.apache.servicemix.eip.packaging.EipServiceUnitAnalyzer</serviceUnitAnalyzer>
         </configuration>
       </plugin>
       <plugin>
