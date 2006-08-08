@@ -81,6 +81,7 @@
           <type>binding-component</type>
           <bootstrap>org.apache.servicemix.jms.JmsBootstrap</bootstrap>
           <component>org.apache.servicemix.jms.JmsComponent</component>
+          <serviceUnitAnalyzer>org.apache.servicemix.jms.packaging.JmsServiceUnitAnalyzer</serviceUnitAnalyzer>
         </configuration>
       </plugin>
       <plugin>
