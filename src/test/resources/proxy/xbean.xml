@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<beans xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0"
+       xmlns:test="http://test">
+
+  <jsr181:endpoint serviceInterface="test.Echo">
+    <jsr181:pojo>
+      <bean class="test.EchoProxy">
+        <property name="echo">
+          <jsr181:proxy service="test:EchoService" context="#context" type="test.Echo" />
+        </property>
+      </bean>
+    </jsr181:pojo>
+  </jsr181:endpoint>
+
+</beans>

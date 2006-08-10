@@ -29,7 +29,6 @@ import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.common.Endpoint;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 
@@ -37,11 +36,9 @@ public class EndpointComponentContext implements ComponentContext {
 
     private ComponentContext context;
     private DeliveryChannel channel;
-    private Endpoint endpoint;
     
-    public EndpointComponentContext(ComponentContext context, Endpoint endpoint) {
+    public EndpointComponentContext(ComponentContext context) {
         this.context = context;
-        this.endpoint = endpoint;
     }
 
     public ServiceEndpoint activateEndpoint(QName serviceName, String endpointName) throws JBIException {
@@ -62,7 +59,7 @@ public class EndpointComponentContext implements ComponentContext {
 
     public DeliveryChannel getDeliveryChannel() throws MessagingException {
         if (this.channel == null) {
-            this.channel = new EndpointDeliveryChannel(context.getDeliveryChannel(), endpoint);
+            this.channel = new EndpointDeliveryChannel(context.getDeliveryChannel());
         }
         return this.channel;
     }

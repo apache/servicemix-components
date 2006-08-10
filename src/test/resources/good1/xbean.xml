@@ -3,7 +3,9 @@
   <bean name="endpoint1" class="org.apache.servicemix.jsr181.Jsr181Endpoint">
   	<property name="typeMapping" value="xmlbeans"/>
     <property name="pojo">
-      <bean class="test.EchoService" />
+      <bean class="test.EchoService">
+        <property name="context" ref="context" />
+      </bean>
     </property>
   </bean>
 </beans>

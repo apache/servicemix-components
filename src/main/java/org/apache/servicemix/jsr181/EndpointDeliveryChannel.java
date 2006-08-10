@@ -24,9 +24,6 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.common.BaseLifeCycle;
-import org.apache.servicemix.common.Endpoint;
-
 /**
  * This class is a wrapper around an existing DeliveryChannel
  * that will be given to service engine endpoints so that
@@ -37,12 +34,10 @@ import org.apache.servicemix.common.Endpoint;
  */
 public class EndpointDeliveryChannel implements DeliveryChannel {
 
-    private DeliveryChannel channel;
-    private Endpoint endpoint;
+    private final DeliveryChannel channel;
     
-    public EndpointDeliveryChannel(DeliveryChannel channel, Endpoint endpoint) {
+    public EndpointDeliveryChannel(DeliveryChannel channel) {
         this.channel = channel;
-        this.endpoint = endpoint;
     }
 
     public MessageExchange accept() throws MessagingException {
@@ -77,8 +72,7 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             throw new UnsupportedOperationException("Asynchonous send of active exchanges are not supported");
         }
-        BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-        lf.sendConsumerExchange(exchange, endpoint);
+        channel.send(exchange);
     }
 
     public boolean sendSync(MessageExchange exchange, long timeout) throws MessagingException {

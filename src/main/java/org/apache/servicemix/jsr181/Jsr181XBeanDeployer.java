@@ -16,12 +16,24 @@
  */
 package org.apache.servicemix.jsr181;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.jbi.management.DeploymentException;
 
 import org.apache.servicemix.common.BaseComponent;
+import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
 import org.apache.servicemix.common.xbean.XBeanServiceUnit;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
 
@@ -53,5 +65,61 @@ public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
         return true;
     }
 
+    protected List getBeanFactoryPostProcessors(String serviceUnitRootPath) {
+        List processors = new ArrayList(super.getBeanFactoryPostProcessors(serviceUnitRootPath));
+        processors.add(new BeanFactoryPostProcessor() {
+            public void postProcessBeanFactory(ConfigurableListableBeanFactory factory) throws BeansException {
+                Map beans = new HashMap();
+                beans.put("context", new EndpointComponentContext(((BaseLifeCycle) component.getLifeCycle()).getContext()));
+                BeanFactory parent = new SimpleBeanFactory(beans);
+                factory.setParentBeanFactory(parent);
+            }
+        });
+        return processors;
+    }
+    
+    private static class SimpleBeanFactory implements BeanFactory {
+        private final Map beans;
+        public SimpleBeanFactory(Map beans) {
+            this.beans = beans;
+        }
+        public boolean containsBean(String name) {
+            return beans.containsKey(name);
+        }
+        public String[] getAliases(String name) throws NoSuchBeanDefinitionException {
+            Object bean = beans.get(name);
+            if (bean == null) {
+                throw new NoSuchBeanDefinitionException(name);
+            }
+            return new String[0];
+        }
+        public Object getBean(String name) throws BeansException {
+            return getBean(name, null);
+        }
+        public Object getBean(String name, Class requiredType) throws BeansException {
+            Object bean = beans.get(name);
+            if (bean == null) {
+                throw new NoSuchBeanDefinitionException(name);
+            }
+            if (requiredType != null && !requiredType.isInstance(bean)) {
+                throw new BeanNotOfRequiredTypeException(name, requiredType, bean.getClass());
+            }
+            return bean;
+        }
+        public Class getType(String name) throws NoSuchBeanDefinitionException {
+            Object bean = beans.get(name);
+            if (bean == null) {
+                throw new NoSuchBeanDefinitionException(name);
+            }
+            return bean.getClass();
+        }
+        public boolean isSingleton(String name) throws NoSuchBeanDefinitionException {
+            Object bean = beans.get(name);
+            if (bean == null) {
+                throw new NoSuchBeanDefinitionException(name);
+            }
+            return true;
+        }
+    }
 
 }

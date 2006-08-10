@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<beans xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0"
+       xmlns:test="http://test">
+
+  <jsr181:endpoint serviceInterface="test.Echo" service="test:EchoService">
+    <jsr181:pojo>
+      <bean class="test.EchoService2" />
+    </jsr181:pojo>
+  </jsr181:endpoint>
+
+</beans>

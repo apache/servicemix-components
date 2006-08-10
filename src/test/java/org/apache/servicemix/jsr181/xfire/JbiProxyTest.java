@@ -24,15 +24,13 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
-import org.codehaus.xfire.XFire;
-import org.codehaus.xfire.XFireFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.Jsr181Endpoint;
 import org.apache.servicemix.jsr181.Jsr181LifeCycle;
 import org.apache.servicemix.jsr181.Jsr181SpringComponent;
-import org.apache.servicemix.jsr181.xfire.JbiProxy;
+import org.codehaus.xfire.XFire;
 
 public class JbiProxyTest extends TestCase {
 

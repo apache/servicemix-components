@@ -20,10 +20,15 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
+import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.client.ClientFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jsr181.Jsr181LifeCycle;
 import org.codehaus.xfire.XFire;
@@ -40,7 +45,10 @@ import org.springframework.beans.factory.FactoryBean;
  */
 public class JbiProxyFactoryBean implements FactoryBean {
 
+    private String name = ClientFactory.DEFAULT_JNDI_NAME;
     private JBIContainer container;
+    private ClientFactory factory;
+    private ComponentContext context;
     private Class type;
     private Object proxy;
     private InvocationHandler jbiInvocationHandler;
@@ -68,9 +76,7 @@ public class JbiProxyFactoryBean implements FactoryBean {
     
     synchronized private InvocationHandler getJBIInvocationHandler() throws Exception {
         if( jbiInvocationHandler == null ) {
-            DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-            ComponentContext context = client.getContext();
-            XFire xfire = Jsr181LifeCycle.createXFire(context);
+            XFire xfire = Jsr181LifeCycle.createXFire(getInternalContext());
             Object o = JbiProxy.create(xfire, context, interfaceName, service, endpoint, type);
             jbiInvocationHandler = Proxy.getInvocationHandler(o);
         }
@@ -84,13 +90,26 @@ public class JbiProxyFactoryBean implements FactoryBean {
     public boolean isSingleton() {
         return true;
     }
-
-    public JBIContainer getContainer() {
-        return container;
-    }
-
-    public void setContainer(JBIContainer container) {
-        this.container = container;
+    
+    protected ComponentContext getInternalContext() throws Exception {
+        if (context == null) {
+            if (factory == null) {
+                if (context != null) {
+                    factory = new ClientFactory() {
+                        public ServiceMixClient createClient() throws JBIException {
+                            return new ServiceMixClientFacade(context);
+                        }
+                    };
+                } else if (container != null) {
+                    factory = container.getClientFactory();
+                } else {
+                    factory = (ClientFactory) new InitialContext().lookup(name);
+                }
+            }
+            DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+            context = client.getContext();
+        }
+        return context;
     }
 
     public Class getType() {
@@ -123,6 +142,62 @@ public class JbiProxyFactoryBean implements FactoryBean {
 
     public void setService(QName service) {
         this.service = service;
+    }
+
+    /**
+     * @return the context
+     */
+    public ComponentContext getContext() {
+        return context;
+    }
+
+    /**
+     * @param context the context to set
+     */
+    public void setContext(ComponentContext context) {
+        this.context = context;
+    }
+
+    /**
+     * @return the container
+     */
+    public JBIContainer getContainer() {
+        return container;
+    }
+
+    /**
+     * @param container the container to set
+     */
+    public void setContainer(JBIContainer container) {
+        this.container = container;
+    }
+
+    /**
+     * @return the factory
+     */
+    public ClientFactory getFactory() {
+        return factory;
+    }
+
+    /**
+     * @param factory the factory to set
+     */
+    public void setFactory(ClientFactory factory) {
+        this.factory = factory;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

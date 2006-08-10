@@ -43,7 +43,6 @@ import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
-import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.service.Service;
@@ -144,7 +143,7 @@ public class Jsr181Endpoint extends Endpoint {
         logger = this.serviceUnit.getComponent().getLogger();
         ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
         activated = ctx.activateEndpoint(service, endpoint);
-        injectContext(new EndpointComponentContext(ctx, this));
+        injectContext(new EndpointComponentContext(ctx));
         processor.start();
     }
 
