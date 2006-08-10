@@ -2,6 +2,7 @@
 <beans xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0"
        xmlns:test="http://test">
 
+  <!-- START SNIPPET: proxy -->
   <jsr181:endpoint serviceInterface="test.Echo">
     <jsr181:pojo>
       <bean class="test.EchoProxy">
@@ -11,5 +12,6 @@
       </bean>
     </jsr181:pojo>
   </jsr181:endpoint>
+  <!-- END SNIPPET: proxy -->
 
 </beans>
