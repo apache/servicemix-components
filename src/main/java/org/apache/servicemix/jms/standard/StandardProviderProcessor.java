@@ -40,8 +40,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
@@ -51,8 +49,6 @@ import org.apache.servicemix.soap.marshalers.SoapWriter;
 
 public class StandardProviderProcessor extends AbstractJmsProcessor {
 
-    private static final Log log = LogFactory.getLog(StandardProviderProcessor.class);
-    
     protected Session session;
     protected Destination destination;
     protected Destination replyToDestination;
@@ -77,7 +73,6 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
             }
         }
     }
-
 
     protected void doStop() throws Exception {
         session = null;
@@ -172,5 +167,4 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
         }
     }
 
-    
 }

@@ -25,6 +25,9 @@ import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.BootstrapContext;
+import javax.resource.spi.ResourceAdapter;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.wsdl.Service;
@@ -32,7 +35,6 @@ import javax.wsdl.Service;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
-import org.apache.servicemix.jms.wsdl.JmsBinding;
 import org.apache.servicemix.soap.SoapEndpoint;
 
 /**
@@ -45,36 +47,98 @@ import org.apache.servicemix.soap.SoapEndpoint;
  */
 public class JmsEndpoint extends SoapEndpoint {
     
-    protected JmsBinding binding;
+    //
     // Jms informations
+    //
     protected String initialContextFactory;
     protected String jndiProviderURL;
     protected String destinationStyle;
     protected String jndiConnectionFactoryName;
     protected String jndiDestinationName;
     protected String jmsProviderDestinationName;
+    //
     // Spring configuration
+    //
     protected ConnectionFactory connectionFactory;
     protected Destination destination;
     protected String processorName;
-    
-    public JmsEndpoint() {
-    }
+    //
+    // JCA config
+    //
+    protected ResourceAdapter resourceAdapter;
+    protected ActivationSpec activationSpec;
+    protected BootstrapContext bootstrapContext;
+    protected boolean synchronous;
     
     /**
-     * @return Returns the binding.
+     * The BootstrapContext to use for a JCA consumer endpoint.
+     * 
+     * @return the bootstrapContext
      */
-    public JmsBinding getBinding() {
-        return binding;
-    }
-    /**
-     * @param binding The binding to set.
-     */
-    public void setBinding(JmsBinding binding) {
-        this.binding = binding;
+    public BootstrapContext getBootstrapContext() {
+        return bootstrapContext;
     }
 
     /**
+     * @param bootstrapContext the bootstrapContext to set
+     */
+    public void setBootstrapContext(BootstrapContext bootstrapContext) {
+        this.bootstrapContext = bootstrapContext;
+    }
+
+    /**
+     * For a JCA consumer endpoint, indicates if the JBI exchange
+     * should be sent synchronously or asynchronously.
+     * This changes the transaction boundary. 
+     * 
+     * @return the synchronous
+     */
+    public boolean isSynchronous() {
+        return synchronous;
+    }
+
+    /**
+     * @param synchronous the synchronous to set
+     */
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
+    }
+
+    /**
+     * The ActivatioSpec to use on this JCA consumer endpoint.
+     * 
+     * @return the activationSpec
+     */
+    public ActivationSpec getActivationSpec() {
+        return activationSpec;
+    }
+
+    /**
+     * @param activationSpec the activationSpec to set
+     */
+    public void setActivationSpec(ActivationSpec activationSpec) {
+        this.activationSpec = activationSpec;
+    }
+
+    /**
+     * The ResourceAdapter to use on this JCA consumer endpoint.
+     * 
+     * @return the resourceAdapter
+     */
+    public ResourceAdapter getResourceAdapter() {
+        return resourceAdapter;
+    }
+
+    /**
+     * @param resourceAdapter the resourceAdapter to set
+     */
+    public void setResourceAdapter(ResourceAdapter resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
+    }
+
+    /**
+     * The class name of the JNDI InitialContextFactory to use.
+     * 
      * @return Returns the initialContextFactory.
      */
     public String getInitialContextFactory() {
@@ -89,6 +153,12 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * The name of the destination create by a call to 
+     * <code>Session.createQueue</code> or <code>Session.createTopic</code>.
+     * This property is used when <code>destination</code> and 
+     * <code>jndiDestinationName</code> are
+     * both <code>null</code>.
+     * 
      * @return Returns the jmsProviderDestinationName.
      */
     public String getJmsProviderDestinationName() {
@@ -103,6 +173,9 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * The name of the JMS ConnectionFactory to lookup in JNDI.
+     * Used if <code>connectionFactory</code> is <code>null</code>
+     * 
      * @return Returns the jndiConnectionFactoryName.
      */
     public String getJndiConnectionFactoryName() {
@@ -117,6 +190,9 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * The name of the JMS Destination to lookup in JNDI.
+     * Used if <code>destination</code> is <code>null</code>.
+     * 
      * @return Returns the jndiDestinationName.
      */
     public String getJndiDestinationName() {
@@ -131,6 +207,8 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * The provider URL used to create the JNDI context. 
+     * 
      * @return Returns the jndiProviderURL.
      */
     public String getJndiProviderURL() {
@@ -145,6 +223,9 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * Used to select the destination type used with the jmsProviderDestinationName.
+     * Can be <code>queue</code> or <code>topic</code>.
+     * 
      * @return Returns the destinationStyle.
      */
     public String getDestinationStyle() {
@@ -159,6 +240,8 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * A configured ConnectionFactory to use on this endpoint.
+     * 
      * @return Returns the connectionFactory.
      */
     public ConnectionFactory getConnectionFactory() {
@@ -173,6 +256,8 @@ public class JmsEndpoint extends SoapEndpoint {
     }
     
     /**
+     * A configured Destination to use on this endpoint.
+     * 
      * @return Returns the destination.
      */
     public Destination getDestination() {
@@ -187,6 +272,9 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * The role of this endpoint.
+     * Must be <code>consumer</code> or <code>provider</code>.
+     * 
      * @org.apache.xbean.Property alias="role"
      * @param role
      */
@@ -310,6 +398,14 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     /**
+     * Specifies the processor family to use for this endpoint.
+     * Can be:
+     * <ul>
+     *   <li><code>multiplexing</code> (default)</li>
+     *   <li><code>standard</code></li>
+     *   <li><code>jca</code></li>
+     * </ul>
+     * 
      * @return Returns the processorName.
      */
     public String getProcessorName() {

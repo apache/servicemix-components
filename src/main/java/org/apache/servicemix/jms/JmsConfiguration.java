@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
 
-import org.apache.servicemix.common.PersistentConfiguration;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 

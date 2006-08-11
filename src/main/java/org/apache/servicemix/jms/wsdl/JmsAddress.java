@@ -22,12 +22,11 @@ import javax.xml.namespace.QName;
 import java.io.Serializable;
 
 /**
+ * A JMS extensibily element used to specify the parameters needed
+ * to retrieve the JMS ConnectionFactory and Destination to use. 
  * 
- * @author gnodet
+ * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
  * @version $Revision$
- * @org.apache.xbean.XBean element="address"
- *                  description="A jms address"
- * 
  */
 public class JmsAddress implements ExtensibilityElement, Serializable {
 

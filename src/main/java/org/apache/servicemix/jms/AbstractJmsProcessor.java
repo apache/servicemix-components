@@ -22,7 +22,11 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.ExchangeProcessor;
 
 public abstract class AbstractJmsProcessor implements ExchangeProcessor {
@@ -30,6 +34,8 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     public static final String STYLE_QUEUE = "queue";
     public static final String STYLE_TOPIC = "topic";
 
+    protected final transient Log log = LogFactory.getLog(getClass());
+    
     protected JmsEndpoint endpoint;
     protected Connection connection;
 
@@ -42,39 +48,7 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         ConnectionFactory connectionFactory = null;
         try {
             // First check configured connectionFactory on the endpoint
-            connectionFactory = endpoint.getConnectionFactory();
-            // Then, check for jndi connection factory name on the endpoint
-            if (connectionFactory == null && endpoint.getJndiConnectionFactoryName() != null) {
-                Hashtable props = new Hashtable();
-                if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
-                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
-                    props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
-                } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null && 
-                           endpoint.getConfiguration().getJndiProviderUrl() != null) {
-                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getConfiguration().getJndiInitialContextFactory());
-                    props.put(Context.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
-                }
-                ctx = new InitialContext(props);
-                connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
-            }
-            // Check for a configured connectionFactory on the configuration
-            if (connectionFactory == null && endpoint.getConfiguration().getConnectionFactory() != null) {
-                connectionFactory = endpoint.getConfiguration().getConnectionFactory();
-            }
-            // Check for jndi connection factory name on the configuration
-            if (connectionFactory == null && endpoint.getConfiguration().getJndiConnectionFactoryName() != null) {
-                Hashtable props = new Hashtable();
-                if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
-                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
-                    props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
-                } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null && 
-                           endpoint.getConfiguration().getJndiProviderUrl() != null) {
-                    props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getConfiguration().getJndiInitialContextFactory());
-                    props.put(Context.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
-                }
-                ctx = new InitialContext(props);
-                connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getConfiguration().getJndiConnectionFactoryName());
-            }
+            connectionFactory = getConnectionFactory();
             connection = connectionFactory.createConnection();
             connection.start();
             doStart(ctx);
@@ -91,7 +65,44 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             }
         }
     }
+    
+    protected ConnectionFactory getConnectionFactory() throws NamingException {
+        InitialContext ctx = null;
+        // First check configured connectionFactory on the endpoint
+        ConnectionFactory connectionFactory = endpoint.getConnectionFactory();
+        // Then, check for jndi connection factory name on the endpoint
+        if (connectionFactory == null && endpoint.getJndiConnectionFactoryName() != null) {
+            ctx = getInitialContext();
+            connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
+        }
+        // Check for a configured connectionFactory on the configuration
+        if (connectionFactory == null && endpoint.getConfiguration().getConnectionFactory() != null) {
+            connectionFactory = endpoint.getConfiguration().getConnectionFactory();
+        }
+        // Check for jndi connection factory name on the configuration
+        if (connectionFactory == null && endpoint.getConfiguration().getJndiConnectionFactoryName() != null) {
+            ctx = getInitialContext();
+            connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getConfiguration().getJndiConnectionFactoryName());
+        }
+        return connectionFactory;
+    }
 
+    protected InitialContext getInitialContext() throws NamingException {
+        Hashtable props = new Hashtable();
+        if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
+            props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
+            props.put(Context.PROVIDER_URL, endpoint.getJndiProviderURL());
+            return new InitialContext(props);
+        } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null && 
+                   endpoint.getConfiguration().getJndiProviderUrl() != null) {
+            props.put(Context.INITIAL_CONTEXT_FACTORY, endpoint.getConfiguration().getJndiInitialContextFactory());
+            props.put(Context.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
+            return new InitialContext(props);
+        } else {
+            BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
+            return lf.getContext().getNamingContext();
+        }
+    }
 
     protected void doStart(InitialContext ctx) throws Exception {
     }

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:jms="http://servicemix.apache.org/jms/1.0"
+	   xmlns:amq="http://activemq.org/config/1.0"
+	   xmlns:test="http://test">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" 
+                embedded="true" 
+                depends-on="jndi,broker"
+                autoEnlistInTransaction="true"
+                transactionManager="#transactionManager">
+    <sm:flows>
+      <sm:sedaFlow />
+      <sm:jcaFlow bootstrapContext="#bootstrapContext"
+                  connectionManager="#connectionManager"
+                  jmsURL="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true" />
+    </sm:flows>
+
+    <sm:activationSpecs>
+
+      <!-- START SNIPPET: lightweight -->
+      <sm:activationSpec>
+        <sm:component>
+          <jms:component>
+            <jms:endpoints>
+              <jms:endpoint service="test:MyConsumerService"
+                            endpoint="synchronous"
+                            targetService="test:MyConsumerService"
+                            role="consumer" 
+                            defaultMep="http://www.w3.org/2004/08/wsdl/in-only"
+                            processorName="jca"
+                            connectionFactory="#connectionFactory"
+                            resourceAdapter="#resourceAdapter"
+                            bootstrapContext="#bootstrapContext"
+                            synchronous="true">
+                <jms:activationSpec>
+                  <bean id="activationSpec" class="org.apache.activemq.ra.ActiveMQActivationSpec">
+                    <property name="destination" value="queue/synchronous"/>
+                    <property name="destinationType" value="javax.jms.Queue"/>
+                  </bean>
+                </jms:activationSpec>
+              </jms:endpoint>
+
+              <jms:endpoint service="test:MyProviderService"
+                            endpoint="synchronous"
+                            role="provider" 
+                            processorName="jca"
+                            connectionFactory="#connectionFactory"
+                            destinationStyle="queue"
+                            jmsProviderDestinationName="queue/synchronous" />
+
+              <jms:endpoint service="test:MyConsumerService"
+                            endpoint="async"
+                            targetService="test:MyConsumerService"
+                            role="consumer" 
+                            defaultMep="http://www.w3.org/2004/08/wsdl/in-only"
+                            processorName="jca"
+                            connectionFactory="#connectionFactory"
+                            resourceAdapter="#resourceAdapter"
+                            bootstrapContext="#bootstrapContext"
+                            synchronous="false">
+                <jms:activationSpec>
+                  <bean id="activationSpec" class="org.apache.activemq.ra.ActiveMQActivationSpec">
+                    <property name="destination" value="queue/async"/>
+                    <property name="destinationType" value="javax.jms.Queue"/>
+                  </bean>
+                </jms:activationSpec>
+              </jms:endpoint>
+
+              <jms:endpoint service="test:MyProviderService"
+                            endpoint="async"
+                            role="provider" 
+                            processorName="jca"
+                            connectionFactory="#connectionFactory"
+                            destinationStyle="queue"
+                            jmsProviderDestinationName="queue/async" />
+            </jms:endpoints>
+          </jms:component>
+        </sm:component>
+      </sm:activationSpec>
+      <!-- END SNIPPET: lightweight -->
+      
+      <sm:activationSpec id="receiver" service="test:MyConsumerService" endpoint="myConsumer">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+  
+  <bean id="jndi" 
+        class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" 
+        factory-method="makeInitialContext"
+        singleton="true">
+    <property name="entries">
+      <map>
+        <entry key="jms/ConnectionFactory" value-ref="connectionFactory" />
+      </map>
+    </property>
+  </bean>
+  
+  <!-- A managed JMS ConnectionFactory for ActiveMQ -->
+  <bean id="activemqMCF" class="org.apache.activemq.ra.ActiveMQManagedConnectionFactory">
+    <property name="resourceAdapter" ref="resourceAdapter" />
+  </bean>
+  <bean id="connectionFactory" class="org.springframework.jca.support.LocalConnectionFactoryBean">
+    <property name="managedConnectionFactory" ref="activemqMCF"/>
+    <property name="connectionManager" ref="connectionManager"/>
+  </bean>
+  <bean id="resourceAdapter" class="org.apache.activemq.ra.ActiveMQResourceAdapter">
+    <property name="serverUrl" value="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true"/>
+  </bean>
+  
+  <amq:broker id="broker" persistent="false">
+
+    <amq:transportConnectors>
+       <amq:transportConnector uri="tcp://localhost:61616" />
+    </amq:transportConnectors>
+
+  </amq:broker>
+
+  <!-- Transaction log -->
+  <bean id="transactionLog" class="org.apache.geronimo.transaction.log.UnrecoverableLog" />
+
+  <!-- Internal transaction manager -->
+  <bean id="extendedTransactionManager" class="org.jencks.factory.TransactionManagerFactoryBean">
+    <property name="transactionLog" ref="transactionLog" />
+    <property name="defaultTransactionTimeoutSeconds" value="600"/>
+  </bean>
+  
+  <!-- Transaction context manager -->
+  <bean id="transactionContextManager" class="org.jencks.factory.TransactionContextManagerFactoryBean">
+    <property name="transactionManager" ref="extendedTransactionManager"/>
+  </bean>
+  
+  <!-- Public transaction manager -->
+  <bean id="transactionManager" class="org.jencks.factory.GeronimoTransactionManagerFactoryBean">
+    <property name="transactionContextManager" ref="transactionContextManager"/>
+  </bean>
+  
+  <!-- Work manager -->
+  <bean id="workManager" class="org.jencks.factory.WorkManagerFactoryBean">
+    <property name="threadPoolSize" value="30"/>
+    <property name="transactionContextManager" ref="transactionContextManager"/>
+  </bean>
+  
+  <!-- Bootstrap context for JCA -->
+  <bean id="bootstrapContext" class="org.jencks.factory.BootstrapContextFactoryBean">
+    <property name="workManager" ref="workManager"/>
+  </bean>
+  
+  <!-- Connection manager for JCA -->
+  <bean id="connectionTracker" class="org.apache.geronimo.connector.outbound.connectiontracking.ConnectionTrackingCoordinator"/>
+  <bean id="poolingSupport" class="org.jencks.factory.SinglePoolFactoryBean">
+    <property name="maxSize" value="16"/>
+    <property name="minSize" value="1"/>
+    <property name="blockingTimeoutMilliseconds" value="60"/>
+    <property name="idleTimeoutMinutes" value="60"/>
+    <property name="matchOne" value="true"/>
+    <property name="matchAll" value="true"/>
+    <property name="selectOneAssumeMatch" value="true"/>
+  </bean>
+  <bean id="transactionSupport" class="org.jencks.factory.XATransactionFactoryBean">
+    <property name="useTransactionCaching" value="true"/>
+    <property name="useThreadCaching" value="true"/>
+  </bean>
+  <bean id="connectionManager" class="org.jencks.factory.ConnectionManagerFactoryBean">
+    <property name="containerManagedSecurity" value="false"/>
+    <property name="transactionContextManager" ref="transactionContextManager"/>
+    <property name="poolingSupport" ref="poolingSupport"/>
+    <property name="transactionSupport" ref="transactionSupport"/>
+    <property name="connectionTracker" ref="connectionTracker"/>
+  </bean>
+  
+
+</beans>

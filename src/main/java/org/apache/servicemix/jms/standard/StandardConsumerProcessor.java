@@ -34,8 +34,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
@@ -48,14 +46,12 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicBoolean;
 
 public class StandardConsumerProcessor extends AbstractJmsProcessor {
 
-    private static final Log log = LogFactory.getLog(StandardConsumerProcessor.class);
-    
     protected Session session;
     protected Destination destination;
     protected DeliveryChannel channel;
     protected SoapHelper soapHelper;
     protected AtomicBoolean running = new AtomicBoolean(false);
-    
+
     public StandardConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
         this.soapHelper = new SoapHelper(endpoint);
@@ -83,7 +79,6 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
         }
     }
 
-
     protected void doStop() throws Exception {
         if (running.get()) {
             synchronized (running) {
@@ -96,7 +91,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
         session = null;
         destination = null;
     }
-    
+
     protected void poll() {
         synchronized (running) {
             running.set(true);

@@ -16,14 +16,14 @@
  */
 package org.apache.servicemix.jms;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import javax.jbi.JBIException;
 import javax.jbi.component.Bootstrap;
 import javax.jbi.component.InstallationContext;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class JmsBootstrap implements Bootstrap {
 

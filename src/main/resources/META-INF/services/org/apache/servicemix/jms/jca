@@ -1,0 +1,2 @@
+consumer=org.apache.servicemix.jms.jca.JcaConsumerProcessor
+provider=org.apache.servicemix.jms.jca.JcaProviderProcessor

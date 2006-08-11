@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.jms;
 
+import javax.jbi.management.DeploymentException;
+
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
-
-import javax.jbi.management.DeploymentException;
 
 public class JmsXBeanDeployer extends AbstractXBeanDeployer {
 

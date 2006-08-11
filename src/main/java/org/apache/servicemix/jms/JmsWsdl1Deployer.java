@@ -53,7 +53,6 @@ public class JmsWsdl1Deployer extends AbstractWsdl1Deployer {
         endpoint.setJndiConnectionFactoryName(((JmsAddress) portElement).getJndiConnectionFactoryName());
         endpoint.setJndiDestinationName(((JmsAddress) portElement).getJndiDestinationName());
         endpoint.setJndiProviderURL(((JmsAddress) portElement).getJndiProviderURL());
-        endpoint.setBinding((JmsBinding) bindingElement);
         return endpoint;
     }
 

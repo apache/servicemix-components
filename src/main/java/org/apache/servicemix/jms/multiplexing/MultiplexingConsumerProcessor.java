@@ -37,8 +37,6 @@ import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
@@ -52,15 +50,13 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implements MessageListener {
 
-    private static final Log log = LogFactory.getLog(MultiplexingConsumerProcessor.class);
-    
     protected Session session;
     protected Destination destination;
     protected MessageConsumer consumer;
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
     protected SoapHelper soapHelper;
-    
+
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
         this.soapHelper = new SoapHelper(endpoint);
@@ -86,7 +82,6 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
         consumer.setMessageListener(this);
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
     }
-
 
     protected void doStop() throws Exception {
         session = null;
