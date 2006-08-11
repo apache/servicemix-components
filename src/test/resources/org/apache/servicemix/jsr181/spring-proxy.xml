@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:jsr181="http://servicemix.apache.org/jsr181/1.0"
+       xmlns:test="http://test">
+
+  <!-- the JBI container -->
+  
+  <!-- START SNIPPET: dot -->
+  <sm:container id="jbi" embedded="true">
+    <sm:listeners>
+        <sm:dotViewEndpointListener file="target/ServiceMixComponents.dot"/>
+    </sm:listeners>
+    
+    <sm:activationSpecs>
+  <!-- END SNIPPET: dot -->
+
+      <!-- START SNIPPET: lightweight -->  
+      <sm:activationSpec>
+      	<sm:component>
+            <jsr181:component>
+            	<jsr181:endpoints>
+            		<jsr181:endpoint serviceInterface="test.Echo"
+  				   					 annotations="jsr181"
+                                     pojo="#pojo" />
+            	</jsr181:endpoints>
+            </jsr181:component>
+        </sm:component>
+      </sm:activationSpec>
+      <!-- END SNIPPET: lightweight -->  
+
+    </sm:activationSpecs>
+  </sm:container>
+  
+  <bean id="transactionAttributeSource" class="org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource">
+    <property name="properties">
+      <props>
+        <prop key="*">PROPAGATION_REQUIRED, -Throwable</prop>
+      </props>
+    </property>
+  </bean>
+ 
+  <bean id="transactionContextManager" class="org.jencks.factory.TransactionContextManagerFactoryBean"/>
+  <bean id="userTransaction" class="org.jencks.factory.GeronimoTransactionManagerFactoryBean" />
+  <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+    <property name="userTransaction" ref="userTransaction"/>
+  </bean>
+ 
+  <bean id="transactionTemplate" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean" lazy-init="true">
+    <property name="transactionManager" ref="transactionManager" />
+    <property name="transactionAttributeSource" ref="transactionAttributeSource" />
+  </bean>
+ 
+  <bean id="pojo" parent="transactionTemplate">
+     <property name="target">
+        <bean class="test.EchoService2" />
+     </property>
+  </bean>
+
+  
+</beans>

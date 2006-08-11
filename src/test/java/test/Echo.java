@@ -16,6 +16,9 @@
  */
 package test;
 
+import javax.jws.WebService;
+
+@WebService
 public interface Echo {
 
     public String echo(String input);

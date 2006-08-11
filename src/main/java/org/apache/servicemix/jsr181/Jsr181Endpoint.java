@@ -232,6 +232,9 @@ public class Jsr181Endpoint extends Endpoint {
         props.put(ObjectServiceFactory.PORT_TYPE, interfaceName);
         props.put(ObjectServiceFactory.STYLE, SoapConstants.STYLE_WRAPPED);
         props.put(ObjectServiceFactory.USE, SoapConstants.USE_LITERAL);
+        if (serviceInterface != null) {
+            props.put("annotations.allow.interface", "true");
+        }
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
         xfireService.setFaultSerializer(new JbiFaultSerializer(getConfiguration()));
