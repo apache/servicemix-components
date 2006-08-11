@@ -26,7 +26,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
-import org.apache.servicemix.xbean.XmlWebApplicationContext;
+import org.apache.xbean.spring.context.XmlWebApplicationContext;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
