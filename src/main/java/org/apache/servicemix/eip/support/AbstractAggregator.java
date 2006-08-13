@@ -27,6 +27,7 @@ import javax.jbi.messaging.RobustInOnly;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
+import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
 

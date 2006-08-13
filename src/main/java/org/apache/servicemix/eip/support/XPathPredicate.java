@@ -6,6 +6,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
+import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * @author gnodet

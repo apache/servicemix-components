@@ -25,7 +25,7 @@ import javax.jbi.messaging.RobustInOnly;
 
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.eip.support.MessageUtil;
+import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * The StaticRecipientList component will forward an input In-Only or Robust-In-Only

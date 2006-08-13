@@ -29,9 +29,9 @@ import javax.wsdl.Definition;
 
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.eip.support.MessageUtil;
 import org.apache.servicemix.jbi.FaultException;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * The Pipeline component is a bridge between an In-Only (or Robust-In-Only) MEP and
