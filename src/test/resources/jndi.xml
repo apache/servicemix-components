@@ -1,0 +1,11 @@
+<beans>
+  <bean id="jndi" 
+        class="org.apache.xbean.spring.jndi.SpringInitialContextFactory" 
+        factory-method="makeInitialContext"
+        singleton="true">
+    <property name="entries">
+      <map>
+      </map>
+    </property>
+  </bean>
+</beans>    

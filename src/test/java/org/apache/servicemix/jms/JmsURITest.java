@@ -37,8 +37,8 @@ import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.core.io.ClassPathResource;
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 
 public class JmsURITest extends TestCase {
 
@@ -101,9 +101,9 @@ public class JmsURITest extends TestCase {
         receiver.getMessageList().assertMessagesReceived(1);
         List msgs = receiver.getMessageList().flushMessages();
         NormalizedMessage msg = (NormalizedMessage) msgs.get(0);
-        Document doc = (Document) new SourceTransformer().toDOMNode(msg);
-        assertEquals("http://www.w3.org/2003/05/soap-envelope", doc.getDocumentElement().getNamespaceURI());
-        assertEquals("env:Envelope", doc.getDocumentElement().getNodeName());
+        Element elem = new SourceTransformer().toDOMElement(msg);
+        assertEquals("http://www.w3.org/2003/05/soap-envelope", elem.getNamespaceURI());
+        assertEquals("env:Envelope", elem.getNodeName());
         System.out.println(new SourceTransformer().contentToString(msg));
 
         // Wait for DONE status
