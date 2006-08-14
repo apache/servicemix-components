@@ -237,15 +237,7 @@ public class SplitAggregator extends AbstractAggregator {
             if (messages[i] != null) {
                 Element msg = createChildElement(messageElementName, root);
                 msg.setAttribute(indexAttribute, Integer.toString(i));
-                Node node = st.toDOMNode(messages[i]);
-                Element elem;
-                if (node instanceof Document) {
-                    elem = ((Document) node).getDocumentElement();
-                } else if (node instanceof Element) {
-                    elem = (Element) node;
-                } else {
-                    throw new UnsupportedOperationException();
-                }
+                Element elem = st.toDOMElement(messages[i]);
                 msg.appendChild(doc.importNode(elem, true));
             }
         }
