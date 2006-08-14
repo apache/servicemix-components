@@ -54,6 +54,7 @@ public class HttpEndpoint extends SoapEndpoint {
     protected SslParameters ssl;
     protected String authMethod;
     protected String soapAction;
+    protected BasicAuthCredentials basicAuthentication;
     
     /**
      * @return the soapAction
@@ -113,6 +114,23 @@ public class HttpEndpoint extends SoapEndpoint {
         this.locationURI = locationUri;
     }
 
+	/**
+     * Authentication parameters used for provider endpoints using BASIC 
+     * authentication.
+     * 
+	 * @return Returns the basicAuthentication.
+	 */
+	public BasicAuthCredentials getBasicAuthentication() {
+		return basicAuthentication;
+	}
+
+	/**
+	 * @param basicAuthentication The basicAuthentication to set.
+	 */
+	public void setBasicAuthentication(BasicAuthCredentials basicAuthCredentials) {
+		this.basicAuthentication = basicAuthCredentials;
+	}
+	
     /**
      * @org.apache.xbean.Property alias="role"
      * @param role
@@ -252,5 +270,7 @@ public class HttpEndpoint extends SoapEndpoint {
         ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
         return ((HttpLifeCycle) lf).getKeystoreManager();
     }
+
+
 
 }

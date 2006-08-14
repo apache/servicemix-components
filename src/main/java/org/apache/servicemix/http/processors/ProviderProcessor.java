@@ -138,6 +138,9 @@ public class ProviderProcessor implements ExchangeProcessor {
             //        return false;
             //    }
             //});
+            if (endpoint.getBasicAuthentication() != null) {
+                endpoint.getBasicAuthentication().applyCredentials( getClient() );
+            }
             int response = getClient().executeMethod(host, method);
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (exchange instanceof InOnly == false) {
