@@ -38,8 +38,7 @@ import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 /**
  * 
@@ -169,11 +168,8 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
         } else {
             try {
                 if (!demand || subscription != null) {
-                    Node n = new SourceTransformer().toDOMNode(exchange.getMessage("in"));
-                    if (n instanceof Document) {
-                        n = ((Document) n).getDocumentElement();
-                    }
-                    wsnBroker.notify(topic, n);
+                    Element elem = new SourceTransformer().toDOMElement(exchange.getMessage("in"));
+                    wsnBroker.notify(topic, elem);
                     done(exchange);
                 } else {
                     log.info("Ingore notification as the publisher is no subscribers");
