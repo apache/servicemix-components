@@ -150,7 +150,7 @@ public class HttpSoapTest extends TestCase {
         HttpEndpoint ep1 = new HttpEndpoint();
         ep1.setService(new QName("urn:test", "s1"));
         ep1.setEndpoint("ep1");
-        ep1.setTargetService(new QName("urn:test", "s2"));
+        ep1.setTargetService(new QName("urn:test", "echo"));
         ep1.setLocationURI("http://localhost:8192/ep1/");
         ep1.setRoleAsString("consumer");
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
@@ -159,7 +159,7 @@ public class HttpSoapTest extends TestCase {
         HttpEndpoint ep2 = new HttpEndpoint();
         ep2.setService(new QName("urn:test", "s2"));
         ep2.setEndpoint("ep2");
-        ep2.setLocationURI("http://localhost:8192/ep3/");
+        ep2.setLocationURI("http://localhost:8192/ep1/");
         ep2.setRoleAsString("provider");
         ep2.setSoap(true);
         
@@ -408,11 +408,10 @@ public class HttpSoapTest extends TestCase {
         List msgs = echo.getMessageList().flushMessages();
         NormalizedMessage msg = (NormalizedMessage) msgs.get(0);
         SourceTransformer st = new SourceTransformer();
-        Node node = st.toDOMNode(msg);
-        String strMsg = DOMUtil.asXML(node);
+        Element e = st.toDOMElement(msg);
+        String strMsg = DOMUtil.asXML(e);
         System.err.println(strMsg);
 
-        Element e = ((Document) node).getDocumentElement();
         assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
         e = DOMUtil.getFirstChildElement(e);
         assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
