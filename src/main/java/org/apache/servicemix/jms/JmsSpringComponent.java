@@ -56,6 +56,21 @@ public class JmsSpringComponent extends BaseComponent {
         this.endpoints = endpoints;
     }
     
+    /**
+     * @return the configuration
+     * @org.apache.xbean.Flat
+     */
+    public JmsConfiguration getConfiguration() {
+        return ((JmsLifeCycle) getLifeCycle()).getConfiguration();
+    }
+
+    /**
+     * @param configuration the configuration to set
+     */
+    public void setConfiguration(JmsConfiguration configuration) {
+        ((JmsLifeCycle) getLifeCycle()).setConfiguration(configuration);
+    }
+
     public class LifeCycle extends JmsLifeCycle {
 
         protected ServiceUnit su;
