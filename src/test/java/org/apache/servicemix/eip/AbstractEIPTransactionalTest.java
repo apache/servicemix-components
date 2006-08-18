@@ -14,6 +14,7 @@ import org.apache.geronimo.connector.outbound.connectionmanagerconfig.XATransact
 import org.apache.geronimo.transaction.context.GeronimoTransactionManager;
 import org.apache.geronimo.transaction.context.TransactionContextManager;
 import org.apache.geronimo.transaction.manager.TransactionManagerImpl;
+import org.apache.geronimo.transaction.manager.XidFactoryImpl;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.nmr.flow.Flow;
@@ -40,7 +41,7 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         broker.addConnector("tcp://localhost:61616");
         broker.start();
         
-        TransactionManagerImpl exTransactionManager = new TransactionManagerImpl(600, null, null);
+        TransactionManagerImpl exTransactionManager = new TransactionManagerImpl(600, new XidFactoryImpl(), null, null);
         TransactionContextManager transactionContextManager = new TransactionContextManager(exTransactionManager, exTransactionManager);
         tm = (TransactionManager) new GeronimoTransactionManager(transactionContextManager);
         
