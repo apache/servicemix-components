@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.jsr181;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 
@@ -28,15 +27,14 @@ import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
+import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.MessageContext;
@@ -53,12 +51,25 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
 
     protected DeliveryChannel channel;
     protected Jsr181Endpoint endpoint;
+    protected StAXSourceTransformer transformer;
     
     public Jsr181ExchangeProcessor(Jsr181Endpoint endpoint) {
         this.endpoint = endpoint;
+        this.transformer = new StAXSourceTransformer();
     }
 
     public void process(MessageExchange exchange) throws Exception {
+        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+        try {
+            ClassLoader classLoader = ((XBeanServiceUnit) endpoint.getServiceUnit()).getConfigurationClassLoader();
+            Thread.currentThread().setContextClassLoader(classLoader);
+            doProcess(exchange);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldCl);
+        }
+    }    
+        
+    protected void doProcess(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.DONE) {
             return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
@@ -125,14 +136,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
     }
 
     protected XMLStreamReader getXMLStreamReader(Source source) throws TransformerException, XMLStreamException {
-        try {
-            return XMLInputFactory.newInstance().createXMLStreamReader(source);
-        } catch (Exception e) {
-            // ignore, as this method is not mandatory in stax
-        }
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        TransformerFactory.newInstance().newTransformer().transform(source, new StreamResult(buffer));
-        return XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(buffer.toByteArray()));
+        return transformer.toXMLStreamReader(source);
     }
     
     protected boolean isInAndOut(MessageExchange exchange) {
