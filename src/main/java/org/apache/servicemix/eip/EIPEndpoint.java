@@ -48,6 +48,8 @@ import org.apache.servicemix.timers.impl.TimerManagerImpl;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.Document;
 
+import com.ibm.wsdl.Constants;
+
 /**
  * @author gnodet
  * @version $Revision: 376451 $
@@ -279,7 +281,9 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
     protected Definition getDefinitionFromDescription() {
         if( description!=null ) {
             try {
-                return WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+                WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
+                reader.setFeature(Constants.FEATURE_VERBOSE, false);
+                return reader.readWSDL(null, description);
             } catch (WSDLException ignore) {
             }
         }
@@ -291,6 +295,7 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
             try {
                 URL resource = wsdlResource.getURL();
                 WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+                reader.setFeature(Constants.FEATURE_VERBOSE, false);
                 return reader.readWSDL(null, resource.toString());
             } catch (Throwable ignore) {
             }
@@ -302,7 +307,9 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
         if( wsdlExchangeTarget != null ) {
             try {
                 Document description = getDescriptionForExchangeTarget(wsdlExchangeTarget);
-                return WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+                WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
+                reader.setFeature(Constants.FEATURE_VERBOSE, false);
+                return reader.readWSDL(null, description);
             } catch (Throwable ignore) {
             }
         }
