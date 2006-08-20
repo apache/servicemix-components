@@ -53,6 +53,8 @@ import org.springframework.core.io.Resource;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import com.ibm.wsdl.Constants;
+
 /**
  * 
  * @author gnodet
@@ -251,7 +253,9 @@ public class Jsr181Endpoint extends Endpoint {
             if (this.service != null && interfaceName != null &&
                 !this.service.getNamespaceURI().equals(interfaceName.getNamespaceURI())) {
                 // Parse the WSDL
-                definition = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+                WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
+                reader.setFeature(Constants.FEATURE_VERBOSE, false);
+                definition = reader.readWSDL(null, description);
                 // Get the service and port definition
                 javax.wsdl.Service svc = definition.getService(new QName(this.interfaceName.getNamespaceURI(), this.service.getLocalPart()));
                 Port port = svc != null && svc.getPorts().size() == 1 ? (Port) svc.getPorts().values().iterator().next() : null;
@@ -317,6 +321,7 @@ public class Jsr181Endpoint extends Endpoint {
         if (wsdlResource != null) {
             URL resource = wsdlResource.getURL();
             WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+            reader.setFeature(Constants.FEATURE_VERBOSE, false);
             return reader.readWSDL(null, resource.toString());
         }
         return null;

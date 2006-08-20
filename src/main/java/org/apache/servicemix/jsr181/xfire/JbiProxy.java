@@ -21,6 +21,7 @@ import javax.jbi.component.ComponentContext;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 
 import org.codehaus.xfire.XFire;
@@ -29,6 +30,8 @@ import org.codehaus.xfire.client.XFireProxyFactory;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.ServiceFactory;
 import org.w3c.dom.Document;
+
+import com.ibm.wsdl.Constants;
 
 public class JbiProxy {
     
@@ -110,7 +113,9 @@ public class JbiProxy {
                 this.endpoint = endpoint;
             }
             Document doc = context.getEndpointDescriptor(endpoint);
-            this.description = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, doc);
+            WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
+            reader.setFeature(Constants.FEATURE_VERBOSE, false);
+            this.description = reader.readWSDL(null, doc);
         }
         return this.description;
     }
