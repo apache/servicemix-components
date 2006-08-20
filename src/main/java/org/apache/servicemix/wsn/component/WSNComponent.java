@@ -36,6 +36,8 @@ import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
 import org.w3c.dom.Document;
 
+import com.ibm.wsdl.Constants;
+
 public class WSNComponent extends BaseComponent {
 
     private WSDLFlattener flattener;
@@ -98,6 +100,7 @@ public class WSNComponent extends BaseComponent {
                 if (flattener == null) {
                     URL resource = getClass().getClassLoader().getResource("org/apache/servicemix/wsn/wsn.wsdl");
                     WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+                    reader.setFeature(Constants.FEATURE_VERBOSE, false);
                     Definition definition = reader.readWSDL(null, resource.toString());
                     flattener = new WSDLFlattener(definition);
                 }
