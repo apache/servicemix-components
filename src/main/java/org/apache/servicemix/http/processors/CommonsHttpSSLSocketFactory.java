@@ -55,7 +55,7 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
         factory = keystoreManager.createSSLFactory(
                         ssl.getProvider(), 
                         ssl.getProtocol(), 
-                        ssl.getAlgorithm(), 
+                        ssl.getKeyManagerFactoryAlgorithm(), 
                         ssl.getKeyStore(), 
                         ssl.getKeyAlias(), 
                         ssl.getTrustStore());
@@ -68,7 +68,7 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
         } else {
             context = SSLContext.getInstance(ssl.getProtocol(), ssl.getProvider());
         }
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(ssl.getAlgorithm());
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(ssl.getKeyManagerFactoryAlgorithm());
         String keyStore = ssl.getKeyStore();
         if (keyStore == null) {
             keyStore = System.getProperty("javax.net.ssl.keyStore");
@@ -121,7 +121,7 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
         if (trustStore != null) {
             KeyStore ts = KeyStore.getInstance(ssl.getTrustStoreType());
             ts.load(Resource.newResource(trustStore).getInputStream(), trustStorePassword.toCharArray());
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(ssl.getAlgorithm());
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(ssl.getTrustManagerFactoryAlgorithm());
             trustManagerFactory.init(ts);
             context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new java.security.SecureRandom());
         } else {

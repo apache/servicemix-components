@@ -245,7 +245,8 @@ public class JettyContextManager implements ContextManager {
                 throw new IllegalArgumentException("keyStore must be set");
             }
             ServiceMixSslSocketConnector sslConnector = new ServiceMixSslSocketConnector();
-            sslConnector.setAlgorithm(ssl.getAlgorithm());
+            sslConnector.setSslKeyManagerFactoryAlgorithm(ssl.getKeyManagerFactoryAlgorithm());
+            sslConnector.setSslTrustManagerFactoryAlgorithm(ssl.getTrustManagerFactoryAlgorithm());
             sslConnector.setProtocol(ssl.getProtocol());
             sslConnector.setConfidentialPort(url.getPort());
             sslConnector.setKeystore(keyStore);
@@ -280,7 +281,8 @@ public class JettyContextManager implements ContextManager {
                 }
             }
             SslSocketConnector sslConnector = new SslSocketConnector();
-            sslConnector.setAlgorithm(ssl.getAlgorithm());
+            sslConnector.setSslKeyManagerFactoryAlgorithm(ssl.getKeyManagerFactoryAlgorithm());
+            sslConnector.setSslTrustManagerFactoryAlgorithm(ssl.getTrustManagerFactoryAlgorithm());
             sslConnector.setProtocol(ssl.getProtocol());
             sslConnector.setConfidentialPort(url.getPort());
             sslConnector.setPassword(ssl.getKeyStorePassword());

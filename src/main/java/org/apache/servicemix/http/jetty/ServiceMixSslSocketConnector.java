@@ -75,7 +75,7 @@ public class ServiceMixSslSocketConnector extends SslSocketConnector {
         return keystoreManager.createSSLServerFactory(
                             getProvider(), 
                             getProtocol(), 
-                            getAlgorithm(), 
+                            getSslKeyManagerFactoryAlgorithm(), 
                             getKeystore(), 
                             getKeyAlias(), 
                             getTrustStore());

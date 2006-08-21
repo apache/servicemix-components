@@ -35,7 +35,8 @@ public class SslParameters {
     private String trustStorePassword;
     private String trustStoreType = "JKS";
     private String protocol = "TLS";
-    private String algorithm = "SunX509"; // cert algorithm
+    private String keyManagerFactoryAlgorithm = "SunX509"; // cert algorithm
+    private String trustManagerFactoryAlgorithm = "SunX509"; // cert algorithm
     private String provider = null;
     private boolean wantClientAuth = false;
     private boolean needClientAuth = false;
@@ -79,14 +80,26 @@ public class SslParameters {
     /**
      * @return Returns the algorithm.
      */
-    public String getAlgorithm() {
-        return algorithm;
+    public String getKeyManagerFactoryAlgorithm() {
+        return keyManagerFactoryAlgorithm;
     }
     /**
      * @param algorithm The algorithm to set.
      */
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
+    public void setKeyManagerFactoryAlgorithm(String algorithm) {
+        this.keyManagerFactoryAlgorithm = algorithm;
+    }
+    /**
+     * @return Returns the algorithm.
+     */
+    public String getTrustManagerFactoryAlgorithm() {
+        return trustManagerFactoryAlgorithm;
+    }
+    /**
+     * @param algorithm The algorithm to set.
+     */
+    public void setTrustManagerFactoryAlgorithm(String algorithm) {
+        this.trustManagerFactoryAlgorithm = algorithm;
     }
     /**
      * @return Returns the keyPassword.
@@ -219,7 +232,8 @@ public class SslParameters {
         SslParameters s = (SslParameters) o;
         return managed == s.managed &&
                eq(keyAlias, s.keyAlias) &&
-               eq(algorithm, s.algorithm) &&
+               eq(keyManagerFactoryAlgorithm, s.keyManagerFactoryAlgorithm) &&
+               eq(trustManagerFactoryAlgorithm, s.trustManagerFactoryAlgorithm) &&
                eq(keyPassword, s.keyPassword) &&
                eq(keyStore, s.keyStore) &&
                eq(keyStorePassword, s.keyStorePassword) &&
@@ -236,7 +250,8 @@ public class SslParameters {
     public int hashCode() {
         return Boolean.valueOf(managed).hashCode() ^
                hash(keyAlias) ^
-               hash(algorithm) ^
+               hash(keyManagerFactoryAlgorithm) ^
+               hash(trustManagerFactoryAlgorithm) ^
                hash(keyPassword) ^
                hash(keyStore) ^
                hash(keyStorePassword) ^
