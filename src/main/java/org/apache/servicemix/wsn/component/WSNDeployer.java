@@ -47,12 +47,14 @@ import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
 import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
 
 public class WSNDeployer extends AbstractDeployer implements Deployer {
 
     protected FilenameFilter filter;
     protected JAXBContext context;
-    
+
     public WSNDeployer(BaseComponent component) {
         super(component);
         filter = new XmlFilter();
@@ -105,29 +107,30 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
         }
         return createEndpoint(request);
     }
-    
+
     public Endpoint createEndpoint(Object request) throws DeploymentException {
         if (request instanceof Subscribe) {
             return new WSNSubscriptionEndpoint((Subscribe) request);
         } else if (request instanceof CreatePullPoint) {
             return new WSNPullPointEndpoint((CreatePullPoint) request);
-        //} else if (request instanceof RegisterPublisher) {
+        } else if (request instanceof RegisterPublisher) {
+            return new WSNPublisherEndpoint((RegisterPublisher) request);
         } else {
             throw failure("deploy", "Unsupported request " + request.getClass().getName(), null);
         }
     }
-    
+
     public class WSNSubscriptionEndpoint extends Endpoint implements EndpointManager {
 
         private Subscribe request;
         private SubscribeResponse response;
-        
+
         public WSNSubscriptionEndpoint(Subscribe request) throws DeploymentException {
             this.service = new QName("http://servicemix.org/wsnotification", "Subscription");
             this.endpoint = new IdGenerator().generateSanitizedId();
             this.request = request;
         }
-        
+
         @Override
         public Role getRole() {
             return Role.CONSUMER;
@@ -158,18 +161,18 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
         }
 
     }
-    
+
     public class WSNPullPointEndpoint extends Endpoint implements EndpointManager {
 
         private CreatePullPoint request;
         private CreatePullPointResponse response;
-        
+
         public WSNPullPointEndpoint(CreatePullPoint request) throws DeploymentException {
             this.service = new QName("http://servicemix.org/wsnotification", "Subscription");
             this.endpoint = new IdGenerator().generateSanitizedId();
             this.request = request;
         }
-        
+
         @Override
         public Role getRole() {
             return Role.PROVIDER;
@@ -200,7 +203,49 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
         }
 
     }
-    
+
+    public static class WSNPublisherEndpoint extends Endpoint implements EndpointManager {
+
+        private RegisterPublisher request;
+        private RegisterPublisherResponse response;
+        
+        public WSNPublisherEndpoint(RegisterPublisher request) {
+            this.service = new QName("http://servicemix.org/wsnotification", "Publisher");
+            this.endpoint = new IdGenerator().generateSanitizedId();
+            this.request = request;
+        }
+
+        @Override
+        public Role getRole() {
+            return Role.CONSUMER;
+        }
+
+        @Override
+        public void activate() throws Exception {
+            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
+            response = broker.handleRegisterPublisher(request, this);
+        }
+
+        @Override
+        public void deactivate() throws Exception {
+            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
+            broker.unsubscribe(response.getPublisherRegistrationReference().getAddress().getValue());
+        }
+
+        @Override
+        public ExchangeProcessor getProcessor() {
+            return null;
+        }
+
+        public Object register(String address, Object service) throws EndpointRegistrationException {
+            return null;
+        }
+
+        public void unregister(Object endpoint) throws EndpointRegistrationException {
+        }
+
+    }
+
     public static class WSNServiceUnit extends ServiceUnit {
         public void start() throws Exception {
             List<Endpoint> activated = new ArrayList<Endpoint>();
