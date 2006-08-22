@@ -16,10 +16,10 @@
  */
 package org.apache.servicemix.jms.wsdl;
 
+import java.io.Serializable;
+
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.xml.namespace.QName;
-
-import java.io.Serializable;
 
 public class JmsBinding implements ExtensibilityElement, Serializable {
 

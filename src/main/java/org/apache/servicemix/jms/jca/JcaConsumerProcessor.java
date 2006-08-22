@@ -16,24 +16,18 @@
  */
 package org.apache.servicemix.jms.jca;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Map;
 
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.ResourceAdapter;
@@ -47,10 +41,6 @@ import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
-import org.apache.servicemix.soap.SoapFault;
-import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.marshalers.SoapMessage;
-import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.jencks.SingletonEndpointFactory;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +55,6 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
 
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
-    protected SoapHelper soapHelper;
     protected ResourceAdapter resourceAdapter;
     protected MessageEndpointFactory endpointFactory;
     protected ActivationSpec activationSpec;
@@ -75,7 +64,6 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
     
     public JcaConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
-        this.soapHelper = new SoapHelper(endpoint);
     }
 
     public void start() throws Exception {
@@ -117,28 +105,12 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
             if (log.isDebugEnabled()) {
                 log.debug("Received jms message " + message);
             }
-            InputStream is = null;
-            if (message instanceof TextMessage) {
-                is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
-            } else if (message instanceof BytesMessage) {
-                int length = (int) ((BytesMessage) message).getBodyLength();
-                byte[] bytes = new byte[length];
-                ((BytesMessage) message).readBytes(bytes);
-                is = new ByteArrayInputStream(bytes);
-            } else {
-                throw new IllegalArgumentException("JMS message should be a text or bytes message");
-            }
-            String contentType = message.getStringProperty(CONTENT_TYPE);
-            SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
-            Context context = soapHelper.createContext(soap);
-            MessageExchange exchange = soapHelper.onReceive(context);
+            Context context = createContext();
+            MessageExchange exchange = toNMS(message, context);
             if (exchange instanceof InOnly == false) {
                 throw new UnsupportedOperationException("JCA consumer endpoints can only use InOnly MEP");
             }
             exchange.setProperty(MessageExchange.JTA_TRANSACTION_PROPERTY_NAME, transactionManager.getTransaction());
-            context.setProperty(Message.class.getName(), message);
-            // TODO: copy protocol messages
-            //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
             pendingMessages.put(exchange.getExchangeId(), context);
             if (endpoint.isSynchronous()) {
                 channel.sendSync(exchange);
@@ -163,35 +135,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
             }
             connection = connectionFactory.createConnection();
             Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-            if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                Exception e = exchange.getError();
-                if (e == null) {
-                    e = new Exception("Unkown error");
-                }
-                response = session.createObjectMessage(e);
-            } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                if (exchange.getFault() != null) {
-                    SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
-                    SoapMessage soapFault = soapHelper.onFault(context, fault);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapFault);
-                    writer.write(baos);
-                    response = session.createTextMessage(baos.toString());
-                    response.setStringProperty(CONTENT_TYPE, writer.getContentType());
-                    // TODO: Copy other properties from fault
-                } else {
-                    NormalizedMessage outMsg = exchange.getMessage("out");
-                    if (outMsg != null) {
-                        SoapMessage out = soapHelper.onReply(context, outMsg);
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
-                        writer.write(baos);
-                        response = session.createTextMessage(baos.toString());
-                        response.setStringProperty(CONTENT_TYPE, writer.getContentType());
-                        // TODO: Copy other properties from response
-                    }
-                }
-            }
+            response = fromNMSResponse(exchange, context, session);
             if (response != null) {
                 MessageProducer producer = session.createProducer(message.getJMSReplyTo());
                 response.setJMSCorrelationID(message.getJMSCorrelationID());

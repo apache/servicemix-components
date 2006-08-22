@@ -19,6 +19,7 @@ package org.apache.servicemix.jms;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.NormalizedMessage;
@@ -26,7 +27,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+
 import junit.framework.TestCase;
+
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
@@ -40,7 +43,6 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jms.JmsComponent;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.core.io.ClassPathResource;

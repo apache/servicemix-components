@@ -17,9 +17,7 @@
 package org.apache.servicemix.jms.multiplexing;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.jbi.messaging.DeliveryChannel;
@@ -43,12 +41,9 @@ import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 
-import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
-import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
-import org.apache.servicemix.soap.marshalers.SoapWriter;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -61,11 +56,9 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     protected MessageProducer producer;
     protected Map pendingExchanges = new ConcurrentHashMap();
     protected DeliveryChannel channel;
-    protected SoapHelper soapHelper;
 
     public MultiplexingProviderProcessor(JmsEndpoint endpoint) {
         super(endpoint);
-        this.soapHelper = new SoapHelper(endpoint);
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
@@ -162,24 +155,9 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
-        SoapMessage soapMessage = new SoapMessage();
+        TextMessage msg = session.createTextMessage();
         NormalizedMessage nm = exchange.getMessage("in");
-        soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
-        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapMessage);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        writer.write(baos);
-        Message msg = session.createTextMessage(baos.toString());
-        Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
-        if (headers != null) {
-            for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
-                String name = (String) it.next();
-                String value = (String) headers.get(name);
-                msg.setStringProperty(name, value);
-            }
-        }
-        // overwrite whatever content-type was passed on to us with the one
-        // the SoapWriter constructed
-        msg.setStringProperty(CONTENT_TYPE, writer.getContentType());
+        fromNMS(nm, msg);
 
         if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
             synchronized (producer) {

@@ -16,10 +16,10 @@
  */
 package org.apache.servicemix.jms.wsdl;
 
-import com.ibm.wsdl.Constants;
-
 import javax.wsdl.extensions.ExtensionRegistry;
 import javax.xml.namespace.QName;
+
+import com.ibm.wsdl.Constants;
 
 public class JmsExtension {
 

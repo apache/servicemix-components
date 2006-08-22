@@ -16,23 +16,17 @@
  */
 package org.apache.servicemix.jms.multiplexing;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Map;
 
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
@@ -41,10 +35,6 @@ import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
-import org.apache.servicemix.soap.SoapFault;
-import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.marshalers.SoapMessage;
-import org.apache.servicemix.soap.marshalers.SoapWriter;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
@@ -55,11 +45,9 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     protected MessageConsumer consumer;
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
-    protected SoapHelper soapHelper;
 
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) {
         super(endpoint);
-        this.soapHelper = new SoapHelper(endpoint);
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
@@ -103,22 +91,8 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                         if (log.isDebugEnabled()) {
                             log.debug("Handling jms message " + message);
                         }
-                        InputStream is = null;
-                        if (message instanceof TextMessage) {
-                            is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
-                        } else if (message instanceof BytesMessage) {
-                            int length = (int) ((BytesMessage) message).getBodyLength();
-                            byte[] bytes = new byte[length];
-                            ((BytesMessage) message).readBytes(bytes);
-                            is = new ByteArrayInputStream(bytes);
-                        } else {
-                            throw new IllegalArgumentException("JMS message should be a text or bytes message");
-                        }
-                        String contentType = message.getStringProperty(CONTENT_TYPE);
-                        SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
-                        Context context = soapHelper.createContext(soap);
-                        MessageExchange exchange = soapHelper.onReceive(context);
-                        context.setProperty(Message.class.getName(), message);
+                        Context context = createContext();
+                        MessageExchange exchange = toNMS(message, context);
                         // TODO: copy protocol messages
                         //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
                         pendingMessages.put(exchange.getExchangeId(), context);
@@ -140,35 +114,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
         MessageProducer producer = null;
         Message response = null;
         try {
-            if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                Exception e = exchange.getError();
-                if (e == null) {
-                    e = new Exception("Unkown error");
-                }
-                response = session.createObjectMessage(e);
-            } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                if (exchange.getFault() != null) {
-                    SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, exchange.getFault().getContent());
-                    SoapMessage soapFault = soapHelper.onFault(context, fault);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapFault);
-                    writer.write(baos);
-                    response = session.createTextMessage(baos.toString());
-                    response.setStringProperty(CONTENT_TYPE, writer.getContentType());
-                    // TODO: Copy other properties from fault
-                } else {
-                    NormalizedMessage outMsg = exchange.getMessage("out");
-                    if (outMsg != null) {
-                        SoapMessage out = soapHelper.onReply(context, outMsg);
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
-                        writer.write(baos);
-                        response = session.createTextMessage(baos.toString());
-                        response.setStringProperty(CONTENT_TYPE, writer.getContentType());
-                        // TODO: Copy other properties from response
-                    }
-                }
-            }
+            response = fromNMSResponse(exchange, context, session);
             if (response != null) {
                 producer = session.createProducer(message.getJMSReplyTo());
                 response.setJMSCorrelationID(message.getJMSCorrelationID());

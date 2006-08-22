@@ -16,10 +16,6 @@
  */
 package org.apache.servicemix.jms.jca;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Iterator;
-import java.util.Map;
-
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -29,17 +25,13 @@ import javax.jbi.messaging.RobustInOnly;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
-import org.apache.servicemix.soap.SoapHelper;
-import org.apache.servicemix.soap.marshalers.SoapMessage;
-import org.apache.servicemix.soap.marshalers.SoapWriter;
 
 /**
  * 
@@ -50,12 +42,10 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
     protected Destination destination;
     protected Destination replyToDestination;
     protected DeliveryChannel channel;
-    protected SoapHelper soapHelper;
     protected ConnectionFactory connectionFactory;
     
     public JcaProviderProcessor(JmsEndpoint endpoint) {
         super(endpoint);
-        this.soapHelper = new SoapHelper(endpoint);
     }
 
     public void start() throws Exception {
@@ -103,22 +93,9 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
             }
             MessageProducer producer = session.createProducer(destination);
             
-            SoapMessage soapMessage = new SoapMessage();
+            TextMessage msg = session.createTextMessage();
             NormalizedMessage nm = exchange.getMessage("in");
-            soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
-            SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapMessage);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            writer.write(baos);
-            Message msg = session.createTextMessage(baos.toString());
-            msg.setStringProperty(CONTENT_TYPE, writer.getContentType());
-            Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
-            if (headers != null) {
-                for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
-                    String name = (String) it.next();
-                    String value = (String) headers.get(name);
-                    msg.setStringProperty(name, value);
-                }
-            }
+            fromNMS(nm, msg);
             producer.send(msg);
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);

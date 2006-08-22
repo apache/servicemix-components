@@ -16,16 +16,16 @@
  */
 package org.apache.servicemix.jms.wsdl;
 
-import com.ibm.wsdl.util.xml.DOMUtils;
-
-import org.w3c.dom.Element;
-
 import javax.wsdl.Definition;
 import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.ExtensionDeserializer;
 import javax.wsdl.extensions.ExtensionRegistry;
 import javax.xml.namespace.QName;
+
+import org.w3c.dom.Element;
+
+import com.ibm.wsdl.util.xml.DOMUtils;
 
 public class JmsAddressDeserializer implements ExtensionDeserializer {
 

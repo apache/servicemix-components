@@ -69,6 +69,8 @@ public class JmsEndpoint extends SoapEndpoint {
     protected ActivationSpec activationSpec;
     protected BootstrapContext bootstrapContext;
     protected boolean synchronous;
+    // Other configuration flags
+    protected boolean needJavaIdentifiers;
     
     /**
      * The BootstrapContext to use for a JCA consumer endpoint.
@@ -269,6 +271,20 @@ public class JmsEndpoint extends SoapEndpoint {
      */
     public void setDestination(Destination destination) {
         this.destination = destination;
+    }
+    
+    /**
+     * @return if jms properties should be spec compliant
+     */
+    public boolean isNeedJavaIdentifiers() {
+        return needJavaIdentifiers;
+    }
+    
+    /**
+     * @param needJavaIdentifiers if jms properties should be spec compliant
+     */
+    public void setNeedJavaIdentifiers(boolean needJavaIdentifiers) {
+        this.needJavaIdentifiers = needJavaIdentifiers;
     }
 
     /**
