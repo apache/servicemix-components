@@ -38,8 +38,10 @@ public class HttpBootstrap implements Bootstrap {
     
     protected InstallationContext context;
     protected ObjectName mbeanName;
+    protected HttpConfiguration configuration;
     
     public HttpBootstrap() {
+        configuration = new HttpConfiguration();
     }
     
     public ObjectName getExtensionMBeanName() {
@@ -47,7 +49,7 @@ public class HttpBootstrap implements Bootstrap {
     }
 
     protected Object getExtensionMBean() throws Exception {
-        return null;
+        return configuration;
     }
     
     protected ObjectName createExtensionMBeanName() throws Exception {
