@@ -171,12 +171,4 @@ public class PortTypeDecorator {
         return def;
     }
     
-    public static void main(String[] args) throws Exception {
-        File file = new File(args[0]);
-        Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL(file.getParent(), file.getName());
-        Definition newDef = decorate(def, file.getName(), "urn:target", "http://localhost");
-        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(newDef, new FileOutputStream(args[1]));
-        
-    }
-    
 }
