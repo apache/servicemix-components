@@ -139,7 +139,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                             } else {
                                 throw new IllegalArgumentException("JMS message should be a text or bytes message");
                             }
-                            String contentType = message.getStringProperty("Content-Type");
+                            String contentType = message.getStringProperty(CONTENT_TYPE);
                             SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
                             NormalizedMessage out = exchange.createMessage();
                             soapHelper.getJBIMarshaler().toNMS(out, soap);
@@ -179,7 +179,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         }
         // overwrite whatever content-type was passed on to us with the one
         // the SoapWriter constructed
-        msg.setStringProperty("Content-Type", writer.getContentType());
+        msg.setStringProperty(CONTENT_TYPE, writer.getContentType());
 
         if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
             synchronized (producer) {

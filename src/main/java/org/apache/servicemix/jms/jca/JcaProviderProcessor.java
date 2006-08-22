@@ -110,7 +110,7 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             writer.write(baos);
             Message msg = session.createTextMessage(baos.toString());
-            msg.setStringProperty("Content-Type", writer.getContentType());
+            msg.setStringProperty(CONTENT_TYPE, writer.getContentType());
             Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
             if (headers != null) {
                 for (Iterator it = headers.keySet().iterator(); it.hasNext();) {

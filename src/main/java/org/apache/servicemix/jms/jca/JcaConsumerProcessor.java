@@ -128,7 +128,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
             } else {
                 throw new IllegalArgumentException("JMS message should be a text or bytes message");
             }
-            String contentType = message.getStringProperty("Content-Type");
+            String contentType = message.getStringProperty(CONTENT_TYPE);
             SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
             Context context = soapHelper.createContext(soap);
             MessageExchange exchange = soapHelper.onReceive(context);
@@ -177,7 +177,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                     SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapFault);
                     writer.write(baos);
                     response = session.createTextMessage(baos.toString());
-                    response.setStringProperty("Content-Type", writer.getContentType());
+                    response.setStringProperty(CONTENT_TYPE, writer.getContentType());
                     // TODO: Copy other properties from fault
                 } else {
                     NormalizedMessage outMsg = exchange.getMessage("out");
@@ -187,7 +187,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                         SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
                         writer.write(baos);
                         response = session.createTextMessage(baos.toString());
-                        response.setStringProperty("Content-Type", writer.getContentType());
+                        response.setStringProperty(CONTENT_TYPE, writer.getContentType());
                         // TODO: Copy other properties from response
                     }
                 }
