@@ -53,7 +53,7 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     public static final String STYLE_QUEUE = "queue";
     public static final String STYLE_TOPIC = "topic";
     
-    public static final String CONTENT_TYPE = "SoapContentType";
+    public static final String CONTENT_TYPE = "MimeContentType";
 
     protected final transient Log log = LogFactory.getLog(getClass());
     
