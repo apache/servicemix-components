@@ -58,6 +58,8 @@ import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 
  * @author Guillaume Nodet
@@ -71,6 +73,7 @@ public class ProviderProcessor implements ExchangeProcessor {
     protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
     private String relUri;
+    private Map methods;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
@@ -86,12 +89,16 @@ public class ProviderProcessor implements ExchangeProcessor {
         if (uri.getFragment() != null) {
             relUri += "#" + uri.getFragment();
         }
+        this.methods = new ConcurrentHashMap();
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
-            return;
-        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+        if (exchange.getStatus() == ExchangeStatus.DONE || 
+            exchange.getStatus() == ExchangeStatus.ERROR) {
+            PostMethod method = (PostMethod) methods.remove(exchange.getExchangeId());
+            if (method != null) {
+                method.releaseConnection();
+            }
             return;
         }
         NormalizedMessage nm = exchange.getMessage("in");
@@ -129,6 +136,7 @@ public class ProviderProcessor implements ExchangeProcessor {
             }
         }
         method.setRequestEntity(entity);
+        boolean close = true;
         try {
             // Uncomment to avoid the http request being sent several times.
             // Can be useful when debugging
@@ -171,7 +179,9 @@ public class ProviderProcessor implements ExchangeProcessor {
                 msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                 soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                 ((InOut) exchange).setOutMessage(msg);
-                channel.sendSync(exchange);
+                methods.put(exchange.getExchangeId(), method);
+                channel.send(exchange);
+                close = false;
             } else if (exchange instanceof InOptionalOut) {
                 if (method.getResponseContentLength() == 0) {
                     exchange.setStatus(ExchangeStatus.DONE);
@@ -186,14 +196,18 @@ public class ProviderProcessor implements ExchangeProcessor {
                     msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                     soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                     ((InOptionalOut) exchange).setOutMessage(msg);
-                    channel.sendSync(exchange);
+                    methods.put(exchange.getExchangeId(), method);
+                    channel.send(exchange);
+                    close = false;
                 }
             } else {
                 exchange.setStatus(ExchangeStatus.DONE);
                 channel.send(exchange);
             }
         } finally {
-            method.releaseConnection();
+            if (close) {
+                method.releaseConnection();
+            }
         }
     }
 
