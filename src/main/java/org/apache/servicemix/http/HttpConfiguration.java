@@ -16,7 +16,12 @@
  */
 package org.apache.servicemix.http;
 
-import org.apache.servicemix.common.PersistentConfiguration;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.mortbay.jetty.nio.SelectChannelConnector;
@@ -26,15 +31,16 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
  * @author gnodet
  * @org.apache.xbean.XBean element="configuration"
  */
-public class HttpConfiguration extends PersistentConfiguration implements HttpConfigurationMBean {
+public class HttpConfiguration implements HttpConfigurationMBean {
 
     public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = SelectChannelConnector.class.getName();
-    
     public static final String MAPPING_DEFAULT = "/jbi";
+    public final static String CONFIG_FILE = "component.properties"; 
     
+    private String rootDir;
+    private Properties properties = new Properties();
     private boolean streamingEnabled = false;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
-
     private transient KeystoreManager keystoreManager;
     private transient AuthenticationService authenticationService;
     
@@ -80,6 +86,20 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
      * to access the component.
      */
     private transient String mapping = MAPPING_DEFAULT;
+
+    /**
+     * @return Returns the rootDir.
+     */
+    public String getRootDir() {
+        return rootDir;
+    }
+
+    /**
+     * @param rootDir The rootDir to set.
+     */
+    public void setRootDir(String rootDir) {
+        this.rootDir = rootDir;
+    }
 
     /**
      * @return the mapping
@@ -241,39 +261,54 @@ public class HttpConfiguration extends PersistentConfiguration implements HttpCo
         properties.setProperty("keystoreManagerName", keystoreManagerName);
         properties.setProperty("authenticationServiceName", authenticationServiceName);
         properties.setProperty("jettyManagement", Boolean.toString(jettyManagement));
-        super.save();
+        if (rootDir != null) {
+            File f = new File(rootDir, CONFIG_FILE);
+            try {
+                this.properties.store(new FileOutputStream(f), null);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not store component configuration", e);
+            }
+        }
     }
     
     public boolean load() {
-        if (super.load()) {
-            if (properties.getProperty("jettyThreadPoolSize") != null) {
-                jettyThreadPoolSize = Integer.parseInt(properties.getProperty("jettyThreadPoolSize"));
-            }
-            if (properties.getProperty("jettyConnectorClassName") != null) {
-                jettyConnectorClassName = properties.getProperty("jettyConnectorClassName");
-            }
-            if (properties.getProperty("streamingEnabled") != null) {
-                streamingEnabled = Boolean.valueOf(properties.getProperty("streamingEnabled")).booleanValue();
-            }
-            if (properties.getProperty("maxConnectionsPerHost") != null) {
-                maxConnectionsPerHost = Integer.parseInt(properties.getProperty("maxConnectionsPerHost"));
-            }
-            if (properties.getProperty("maxTotalConnections") != null) {
-                maxTotalConnections = Integer.parseInt(properties.getProperty("maxTotalConnections"));
-            }
-            if (properties.getProperty("keystoreManagerName") != null) {
-                keystoreManagerName = properties.getProperty("keystoreManagerName");
-            }
-            if (properties.getProperty("authenticationServiceName") != null) {
-                authenticationServiceName = properties.getProperty("authenticationServiceName");
-            }
-            if (properties.getProperty("jettyManagement") != null) {
-                jettyManagement = Boolean.valueOf(properties.getProperty("jettyManagement")).booleanValue();
-            }
-            return true;
-        } else {
+        if (rootDir == null) {
             return false;
         }
+        File f = new File(rootDir, CONFIG_FILE);
+        if (!f.exists()) {
+            return false;
+        }
+        try {
+            properties.load(new FileInputStream(f));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load component configuration", e);
+        }
+        if (properties.getProperty("jettyThreadPoolSize") != null) {
+            jettyThreadPoolSize = Integer.parseInt(properties.getProperty("jettyThreadPoolSize"));
+        }
+        if (properties.getProperty("jettyConnectorClassName") != null) {
+            jettyConnectorClassName = properties.getProperty("jettyConnectorClassName");
+        }
+        if (properties.getProperty("streamingEnabled") != null) {
+            streamingEnabled = Boolean.valueOf(properties.getProperty("streamingEnabled")).booleanValue();
+        }
+        if (properties.getProperty("maxConnectionsPerHost") != null) {
+            maxConnectionsPerHost = Integer.parseInt(properties.getProperty("maxConnectionsPerHost"));
+        }
+        if (properties.getProperty("maxTotalConnections") != null) {
+            maxTotalConnections = Integer.parseInt(properties.getProperty("maxTotalConnections"));
+        }
+        if (properties.getProperty("keystoreManagerName") != null) {
+            keystoreManagerName = properties.getProperty("keystoreManagerName");
+        }
+        if (properties.getProperty("authenticationServiceName") != null) {
+            authenticationServiceName = properties.getProperty("authenticationServiceName");
+        }
+        if (properties.getProperty("jettyManagement") != null) {
+            jettyManagement = Boolean.valueOf(properties.getProperty("jettyManagement")).booleanValue();
+        }
+        return true;
     }
 
 }
