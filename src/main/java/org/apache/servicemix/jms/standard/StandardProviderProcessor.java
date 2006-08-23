@@ -43,11 +43,7 @@ import org.apache.servicemix.soap.marshalers.SoapMessage;
 
 public class StandardProviderProcessor extends AbstractJmsProcessor {
 
-    protected Session session;
     protected Destination destination;
-    protected Destination replyToDestination;
-    protected MessageConsumer consumer;
-    protected MessageProducer producer;
     protected DeliveryChannel channel;
     
     public StandardProviderProcessor(JmsEndpoint endpoint) {
@@ -67,11 +63,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
     }
 
     protected void doStop() throws Exception {
-        session = null;
         destination = null;
-        consumer = null;
-        producer = null;
-        replyToDestination = null;
     }
 
     public void process(MessageExchange exchange) throws Exception {
@@ -80,6 +72,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
+        Session session = null;
         try {
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             if (destination == null) {
@@ -89,7 +82,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
                     destination = session.createTopic(endpoint.getJmsProviderDestinationName());
                 }
             }
-            producer = session.createProducer(destination);
+            MessageProducer producer = session.createProducer(destination);
             
             TextMessage msg = session.createTextMessage();
             NormalizedMessage nm = exchange.getMessage("in");
@@ -98,12 +91,13 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
             if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
                 producer.send(msg);
             } else if (exchange instanceof InOut) {
+                Destination replyToDestination;
                 if (destination instanceof Queue) {
                     replyToDestination = session.createTemporaryQueue();
                 } else {
                     replyToDestination = session.createTemporaryTopic();
                 }
-                consumer = session.createConsumer(replyToDestination);
+                MessageConsumer consumer = session.createConsumer(replyToDestination);
                 msg.setJMSCorrelationID(exchange.getExchangeId());
                 msg.setJMSReplyTo(replyToDestination);
                 producer.send(msg);
