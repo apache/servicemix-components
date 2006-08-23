@@ -202,6 +202,9 @@ public class HttpEndpoint extends SoapEndpoint {
                 def.removeBinding(names[i]);
             }
             String location = getLocationURI();
+            if (!location.endsWith("/")) {
+                location += "/";
+            }
             HttpLifeCycle lf = (HttpLifeCycle) getServiceUnit().getComponent().getLifeCycle();
             if (lf.getConfiguration().isManaged()) {
                 // TODO: need to find the port of the web server

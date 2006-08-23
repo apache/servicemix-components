@@ -82,7 +82,7 @@ public class HttpWsdlTest extends TestCase {
         ep.setService(new QName("http://test", "MyConsumerService"));
         ep.setEndpoint("myConsumer");
         ep.setRoleAsString("consumer");
-        ep.setLocationURI("http://localhost:8195/Service/");
+        ep.setLocationURI("http://localhost:8195/Service");
         HttpSpringComponent http = new HttpSpringComponent();
         http.setEndpoints(new HttpEndpoint[] { ep });
         container.activateComponent(http, "HttpWsdlTest");
