@@ -96,6 +96,10 @@
           <type>service-engine</type>
           <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
           <component>org.apache.servicemix.wsn.component.WSNComponent</component>
+          <!-- 
+               make sure self first delegation 
+            -->
+          <componentClassLoaderDelegation>self-first</componentClassLoaderDelegation>
         </configuration>
       </plugin>
       <plugin>
@@ -113,24 +117,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jaxws-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>wsimport</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <wsdlDirectory>${basedir}/src/main/resources/org/apache/servicemix/wsn</wsdlDirectory>
-          <wsdlFiles>wsn.wsdl</wsdlFiles>
-        </configuration>
-      </plugin>
-      -->
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
