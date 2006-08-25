@@ -150,6 +150,10 @@
           <bootstrap>org.apache.servicemix.jsr181.Jsr181Bootstrap</bootstrap>
           <component>org.apache.servicemix.jsr181.Jsr181Component</component>
           <serviceUnitAnalyzer>org.apache.servicemix.jsr181.packaging.Jsr181ServiceUnitAnalyzer</serviceUnitAnalyzer>
+          <!-- 
+               make sure self first delegation 
+            -->
+          <componentClassLoaderDelegation>self-first</componentClassLoaderDelegation>
         </configuration>
       </plugin>
       <plugin>
