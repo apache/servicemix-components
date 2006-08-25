@@ -93,7 +93,7 @@ public class HttpLifeCycle extends BaseLifeCycle {
                 String name = configuration.getKeystoreManagerName();
                 Object km =  context.getNamingContext().lookup(name);
                 configuration.setKeystoreManager((KeystoreManager) km); 
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore
             }
         }
@@ -102,7 +102,7 @@ public class HttpLifeCycle extends BaseLifeCycle {
                 String name = configuration.getAuthenticationServiceName();
                 Object as =  context.getNamingContext().lookup(name);
                 configuration.setAuthenticationService((AuthenticationService) as); 
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 configuration.setAuthenticationService(new JAASAuthenticationService());
             }
         }
