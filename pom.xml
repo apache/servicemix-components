@@ -44,10 +44,6 @@
           <bootstrap>org.apache.servicemix.http.HttpBootstrap</bootstrap>
           <component>org.apache.servicemix.http.HttpComponent</component>
           <serviceUnitAnalyzer>org.apache.servicemix.http.packaging.HttpServiceUnitAnalyzer</serviceUnitAnalyzer>
-          <!-- 
-               make sure self first delegation 
-            -->
-          <componentClassLoaderDelegation>self-first</componentClassLoaderDelegation>
         </configuration>
       </plugin>
       <plugin>
