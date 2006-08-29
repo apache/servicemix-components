@@ -92,10 +92,6 @@
           <bootstrap>org.apache.servicemix.eip.EIPBootstrap</bootstrap>
           <component>org.apache.servicemix.eip.EIPComponent</component>
           <serviceUnitAnalyzer>org.apache.servicemix.eip.packaging.EipServiceUnitAnalyzer</serviceUnitAnalyzer>
-          <!-- 
-               make sure self first delegation 
-            -->
-          <componentClassLoaderDelegation>self-first</componentClassLoaderDelegation>
         </configuration>
       </plugin>
       <plugin>
