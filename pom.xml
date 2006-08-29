@@ -96,10 +96,6 @@
           <type>service-engine</type>
           <bootstrap>org.apache.servicemix.wsn.component.WSNBootstrap</bootstrap>
           <component>org.apache.servicemix.wsn.component.WSNComponent</component>
-          <!-- 
-               make sure self first delegation 
-            -->
-          <componentClassLoaderDelegation>self-first</componentClassLoaderDelegation>
         </configuration>
       </plugin>
       <plugin>
