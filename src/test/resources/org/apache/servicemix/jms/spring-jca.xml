@@ -53,7 +53,7 @@
                             bootstrapContext="#bootstrapContext"
                             synchronous="true">
                 <jms:activationSpec>
-                  <bean id="activationSpec" class="org.apache.activemq.ra.ActiveMQActivationSpec">
+                  <bean class="org.apache.activemq.ra.ActiveMQActivationSpec">
                     <property name="destination" value="queue/synchronous"/>
                     <property name="destinationType" value="javax.jms.Queue"/>
                   </bean>
@@ -79,7 +79,7 @@
                             bootstrapContext="#bootstrapContext"
                             synchronous="false">
                 <jms:activationSpec>
-                  <bean id="activationSpec" class="org.apache.activemq.ra.ActiveMQActivationSpec">
+                  <bean class="org.apache.activemq.ra.ActiveMQActivationSpec">
                     <property name="destination" value="queue/async"/>
                     <property name="destinationType" value="javax.jms.Queue"/>
                   </bean>
