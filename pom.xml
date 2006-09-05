@@ -37,16 +37,16 @@
   <dependencies>
 
     <dependency>
-      <groupId>${pom.groupId}</groupId>
+      <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
     </dependency>
     <dependency>
-      <groupId>${pom.groupId}</groupId>
+      <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>${pom.groupId}</groupId>
+      <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-components</artifactId>
       <scope>test</scope>
     </dependency>
@@ -65,7 +65,7 @@
       <artifactId>jaxb-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.xml</groupId>
+      <groupId>javax.xml.ws</groupId>
       <artifactId>jaxws-api</artifactId>
     </dependency>
     <dependency>
