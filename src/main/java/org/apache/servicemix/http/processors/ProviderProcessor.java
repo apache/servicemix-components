@@ -101,6 +101,7 @@ public class ProviderProcessor implements ExchangeProcessor {
             }
             return;
         }
+        boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
         NormalizedMessage nm = exchange.getMessage("in");
         if (nm == null) {
             throw new IllegalStateException("Exchange has no input message");
@@ -162,7 +163,11 @@ public class ProviderProcessor implements ExchangeProcessor {
                     fault.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                     soapHelper.getJBIMarshaler().toNMS(fault, soapMessage);
                     exchange.setFault(fault);
-                    channel.send(exchange);
+                    if (txSync) {
+                        channel.sendSync(exchange);
+                    } else {
+                        channel.send(exchange);
+                    }
                     return;
                 } else {
                     throw new Exception("Invalid status response: " + response);
@@ -179,9 +184,13 @@ public class ProviderProcessor implements ExchangeProcessor {
                 msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                 soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                 ((InOut) exchange).setOutMessage(msg);
-                methods.put(exchange.getExchangeId(), method);
-                channel.send(exchange);
-                close = false;
+                if (txSync) {
+                    channel.sendSync(exchange);
+                } else {
+                    methods.put(exchange.getExchangeId(), method);
+                    channel.send(exchange);
+                    close = false;
+                }
             } else if (exchange instanceof InOptionalOut) {
                 if (method.getResponseContentLength() == 0) {
                     exchange.setStatus(ExchangeStatus.DONE);
@@ -196,9 +205,13 @@ public class ProviderProcessor implements ExchangeProcessor {
                     msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
                     soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
                     ((InOptionalOut) exchange).setOutMessage(msg);
-                    methods.put(exchange.getExchangeId(), method);
-                    channel.send(exchange);
-                    close = false;
+                    if (txSync) {
+                        channel.sendSync(exchange);
+                    } else {
+                        methods.put(exchange.getExchangeId(), method);
+                        channel.send(exchange);
+                        close = false;
+                    }
                 }
             } else {
                 exchange.setStatus(ExchangeStatus.DONE);
