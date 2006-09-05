@@ -36,7 +36,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>${pom.groupId}</groupId>
+      <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
     </dependency>
     <dependency>
@@ -56,7 +56,7 @@
       <artifactId>jdom</artifactId>
     </dependency>
     <dependency>
-      <groupId>${pom.groupId}</groupId>
+      <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <scope>provided</scope>
     </dependency>
