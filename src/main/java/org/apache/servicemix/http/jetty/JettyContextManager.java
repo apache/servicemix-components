@@ -18,7 +18,9 @@ package org.apache.servicemix.http.jetty;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -222,7 +224,15 @@ public class JettyContextManager implements ContextManager {
     }
     
     protected String getKey(URL url) {
-        String key = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
+        String host = url.getHost();
+        try {
+            InetAddress addr = InetAddress.getByName(host);
+            if (addr.isAnyLocalAddress()) {
+                host = InetAddress.getLocalHost().getHostName();
+            }
+        } catch (UnknownHostException e) {
+        }
+        String key = url.getProtocol() + "://" + host + ":" + url.getPort();
         return key;
     }
     
