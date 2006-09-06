@@ -143,12 +143,12 @@
           <dependency>
             <groupId>org.codehaus.xfire</groupId>
             <artifactId>xfire-generator</artifactId>
-            <version>1.1.1</version>
+            <version>${xfire-version}</version>
           </dependency>
           <dependency>
             <groupId>org.codehaus.xfire</groupId>
             <artifactId>xfire-jaxws</artifactId>
-            <version>1.1.1</version>
+            <version>${xfire-version}</version>
           </dependency>
         </dependencies>
       </plugin>
