@@ -166,7 +166,9 @@ public class ProviderProcessor implements ExchangeProcessor {
                     if (txSync) {
                         channel.sendSync(exchange);
                     } else {
+                        methods.put(exchange.getExchangeId(), method);
                         channel.send(exchange);
+                        close = false;
                     }
                     return;
                 } else {
