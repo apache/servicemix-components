@@ -70,6 +70,7 @@ public class Jsr181Endpoint extends Endpoint {
     protected String annotations;
     protected String typeMapping;
     protected String serviceInterface;
+    protected String style = "wrapped";
     
     protected ServiceEndpoint activated;
     protected Service xfireService;
@@ -81,6 +82,23 @@ public class Jsr181Endpoint extends Endpoint {
         processor = new Jsr181ExchangeProcessor(this);
     }
     
+    /**
+     * @return the style
+     */
+    public String getStyle() {
+        return style;
+    }
+
+    /**
+     * Service style: can be <code>rpc</code>, <code>document</code>,
+     * <code>wrapped</code> or <code>message</code>.
+     * Default to <code>wrapped</code>
+     * @param style the style to set
+     */
+    public void setStyle(String style) {
+        this.style = style;
+    }
+
     /**
      * @return the wsdlResource
      */
@@ -232,7 +250,9 @@ public class Jsr181Endpoint extends Endpoint {
         }
         Map props = new HashMap();
         props.put(ObjectServiceFactory.PORT_TYPE, interfaceName);
-        props.put(ObjectServiceFactory.STYLE, SoapConstants.STYLE_WRAPPED);
+        if (style != null) {
+            props.put(ObjectServiceFactory.STYLE, style);
+        }
         props.put(ObjectServiceFactory.USE, SoapConstants.USE_LITERAL);
         if (serviceInterface != null) {
             props.put("annotations.allow.interface", "true");
