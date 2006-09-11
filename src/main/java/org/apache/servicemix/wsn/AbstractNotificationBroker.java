@@ -114,7 +114,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 			producerReference.getAddress() != null &&
 			producerReference.getAddress().getValue() != null) {
 			String address = producerReference.getAddress().getValue();
-			publishers.get(address);
+			publisher = publishers.get(address);
 		}
 		if (publisher == null) {
 			publisher = anonymousPublisher;
