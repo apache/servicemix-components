@@ -1,4 +1,14 @@
 <?xml version='1.0'?>
+<!--
+        Copyright © 2004 World Wide Web Consortium, 
+        (Massachusetts Institute of Technology, European Research 
+        Consortium for Informatics and Mathematics, Keio University). 
+        All Rights Reserved. 
+        http://www.w3.org/Consortium/Legal/2002/copyright-documents-20021231
+        
+        The original file is available at 
+             http://www.w3.org/2001/xml.xsd
+  -->
 <xs:schema targetNamespace="http://www.w3.org/XML/1998/namespace" xmlns:xs="http://www.w3.org/2001/XMLSchema" xml:lang="en">
 
  <xs:annotation>
