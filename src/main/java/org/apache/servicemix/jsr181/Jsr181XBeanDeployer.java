@@ -49,18 +49,10 @@ public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
         if (ep.getPojo() == null && ep.getPojoClass() == null) {
             throw failure("deploy", "Endpoint must have a non-null pojo or a pojoClass", null);
         }
-        ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
-            ClassLoader cl = ((XBeanServiceUnit)ep.getServiceUnit()).getConfigurationClassLoader();
-            Thread.currentThread().setContextClassLoader(cl);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Registering endpoint with context classloader " + cl);
-            }
             ep.registerService();
         } catch (Exception e) {
             throw failure("deploy", "Could not register endpoint", e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(old);
         }
         return true;
     }

@@ -41,7 +41,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
 import org.codehaus.xfire.XFire;
@@ -190,8 +189,7 @@ public class Jsr181Endpoint extends Endpoint {
 
     public void registerService() throws Exception {
         if (pojo == null) {
-            ClassLoader classLoader = ((XBeanServiceUnit) getServiceUnit()).getConfigurationClassLoader();
-            Class cl = Class.forName(pojoClass, true, classLoader);
+            Class cl = Class.forName(pojoClass, true, getServiceUnit().getConfigurationClassLoader());
             pojo = cl.newInstance();
         }
         // Create factory
