@@ -41,6 +41,14 @@ import org.springframework.web.context.ContextLoaderListener;
 
 public class HttpManagedTest extends TestCase {
 
+    private Server server;
+    
+    protected void shutDown() throws Exception {
+        if (server != null) {
+            server.stop();
+        }
+    }
+    
     public void test() throws Exception {
         ContextHandler context = new ContextHandler();
         context.setContextPath("/test");
@@ -67,16 +75,16 @@ public class HttpManagedTest extends TestCase {
 
         SelectChannelConnector connector = new SelectChannelConnector();
         connector.setHost("localhost");
-        connector.setPort(8080);
+        connector.setPort(8190);
         
-        Server server = new Server();
+        server = new Server();
         server.setConnectors(new Connector[] { connector });
         server.setHandler(handlers);
         server.start();
         
         System.err.println("Started");
         
-        PostMethod post = new PostMethod("http://localhost:8080/test/jbi/Service/");
+        PostMethod post = new PostMethod("http://localhost:8190/test/jbi/Service/");
         post.setRequestEntity(new StringRequestEntity("<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><hello>world</hello></soap:Body></soap:Envelope>"));
         new HttpClient().executeMethod(post);
         if (post.getStatusCode() != 200) {
