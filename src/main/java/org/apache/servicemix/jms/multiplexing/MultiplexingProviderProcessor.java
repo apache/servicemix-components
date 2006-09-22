@@ -38,8 +38,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
 
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
@@ -57,7 +55,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     protected Map pendingExchanges = new ConcurrentHashMap();
     protected DeliveryChannel channel;
 
-    public MultiplexingProviderProcessor(JmsEndpoint endpoint) {
+    public MultiplexingProviderProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 
@@ -97,56 +95,50 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     }
 
     public void onMessage(final Message message) {
-        try {
-            if (log.isDebugEnabled()) {
-                log.debug("Received jms message " + message);
-            }
-            endpoint.getServiceUnit().getComponent().getWorkManager().scheduleWork(new Work() {
-                public void release() {
-                }
-                public void run() {
-                    try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Handling jms message " + message);
-                        }
-                        InOut exchange = (InOut) pendingExchanges.remove(message.getJMSCorrelationID());
-                        if (exchange == null) {
-                            throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
-                        }
-                        if (message instanceof ObjectMessage) {
-                            Object o = ((ObjectMessage) message).getObject();
-                            if (o instanceof Exception) {
-                                exchange.setError((Exception) o);
-                            } else {
-                                throw new UnsupportedOperationException("Can not handle objects of type " + o.getClass().getName());
-                            }
-                        } else {
-                            InputStream is = null;
-                            if (message instanceof TextMessage) {
-                                is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
-                            } else if (message instanceof BytesMessage) {
-                                int length = (int) ((BytesMessage) message).getBodyLength();
-                                byte[] bytes = new byte[length];
-                                ((BytesMessage) message).readBytes(bytes);
-                                is = new ByteArrayInputStream(bytes);
-                            } else {
-                                throw new IllegalArgumentException("JMS message should be a text or bytes message");
-                            }
-                            String contentType = message.getStringProperty(CONTENT_TYPE);
-                            SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
-                            NormalizedMessage out = exchange.createMessage();
-                            soapHelper.getJBIMarshaler().toNMS(out, soap);
-                            ((InOut) exchange).setOutMessage(out);
-                        }
-                        channel.send(exchange);
-                    } catch (Throwable e) {
-                        log.error("Error while handling jms message", e);
-                    }
-                }
-            });
-        } catch (WorkException e) {
-            log.error("Error while handling jms message", e);
+        if (log.isDebugEnabled()) {
+            log.debug("Received jms message " + message);
         }
+        endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
+            public void run() {
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Handling jms message " + message);
+                    }
+                    InOut exchange = (InOut) pendingExchanges.remove(message.getJMSCorrelationID());
+                    if (exchange == null) {
+                        throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
+                    }
+                    if (message instanceof ObjectMessage) {
+                        Object o = ((ObjectMessage) message).getObject();
+                        if (o instanceof Exception) {
+                            exchange.setError((Exception) o);
+                        } else {
+                            throw new UnsupportedOperationException("Can not handle objects of type " + o.getClass().getName());
+                        }
+                    } else {
+                        InputStream is = null;
+                        if (message instanceof TextMessage) {
+                            is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
+                        } else if (message instanceof BytesMessage) {
+                            int length = (int) ((BytesMessage) message).getBodyLength();
+                            byte[] bytes = new byte[length];
+                            ((BytesMessage) message).readBytes(bytes);
+                            is = new ByteArrayInputStream(bytes);
+                        } else {
+                            throw new IllegalArgumentException("JMS message should be a text or bytes message");
+                        }
+                        String contentType = message.getStringProperty(CONTENT_TYPE);
+                        SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
+                        NormalizedMessage out = exchange.createMessage();
+                        soapHelper.getJBIMarshaler().toNMS(out, soap);
+                        ((InOut) exchange).setOutMessage(out);
+                    }
+                    channel.send(exchange);
+                } catch (Throwable e) {
+                    log.error("Error while handling jms message", e);
+                }
+            }
+        });
     }
 
     public void process(MessageExchange exchange) throws Exception {

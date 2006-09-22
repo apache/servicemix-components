@@ -25,7 +25,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.InitialContext;
-import javax.resource.spi.work.Work;
 
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
@@ -40,7 +39,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
     protected DeliveryChannel channel;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
-    public StandardConsumerProcessor(JmsEndpoint endpoint) {
+    public StandardConsumerProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 
@@ -55,9 +54,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
         }
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         synchronized (running) {
-            endpoint.getServiceUnit().getComponent().getWorkManager().startWork(new Work() {
-                public void release() {
-                }
+            endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
                 public void run() {
                     StandardConsumerProcessor.this.poll();
                 }

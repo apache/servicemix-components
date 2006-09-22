@@ -61,7 +61,7 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     protected Connection connection;
     protected SoapHelper soapHelper;
 
-    public AbstractJmsProcessor(JmsEndpoint endpoint) {
+    public AbstractJmsProcessor(JmsEndpoint endpoint) throws Exception {
         this.endpoint = endpoint;
         this.soapHelper = new SoapHelper(endpoint);
     }

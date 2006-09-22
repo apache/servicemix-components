@@ -28,8 +28,6 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.InitialContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
 
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
@@ -46,7 +44,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
 
-    public MultiplexingConsumerProcessor(JmsEndpoint endpoint) {
+    public MultiplexingConsumerProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 
@@ -79,33 +77,27 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     }
 
     public void onMessage(final Message message) {
-        try {
-            if (log.isDebugEnabled()) {
-                log.debug("Received jms message " + message);
-            }
-            endpoint.getServiceUnit().getComponent().getWorkManager().scheduleWork(new Work() {
-                public void release() {
-                }
-                public void run() {
-                    try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Handling jms message " + message);
-                        }
-                        Context context = createContext();
-                        MessageExchange exchange = toNMS(message, context);
-                        // TODO: copy protocol messages
-                        //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
-                        pendingMessages.put(exchange.getExchangeId(), context);
-                        BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-                        lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this.endpoint);
-                    } catch (Throwable e) {
-                        log.error("Error while handling jms message", e);
-                    }
-                }
-            });
-        } catch (WorkException e) {
-            log.error("Error while handling jms message", e);
+        if (log.isDebugEnabled()) {
+            log.debug("Received jms message " + message);
         }
+        endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
+            public void run() {
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Handling jms message " + message);
+                    }
+                    Context context = createContext();
+                    MessageExchange exchange = toNMS(message, context);
+                    // TODO: copy protocol messages
+                    //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
+                    pendingMessages.put(exchange.getExchangeId(), context);
+                    BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
+                    lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this.endpoint);
+                } catch (Throwable e) {
+                    log.error("Error while handling jms message", e);
+                }
+            }
+        });
     }
 
     public void process(MessageExchange exchange) throws Exception {

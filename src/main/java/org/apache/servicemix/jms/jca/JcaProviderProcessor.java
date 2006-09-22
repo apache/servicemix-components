@@ -44,7 +44,7 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
     protected DeliveryChannel channel;
     protected ConnectionFactory connectionFactory;
     
-    public JcaProviderProcessor(JmsEndpoint endpoint) {
+    public JcaProviderProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 

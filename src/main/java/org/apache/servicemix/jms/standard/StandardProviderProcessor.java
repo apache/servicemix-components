@@ -46,7 +46,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
     protected Destination destination;
     protected DeliveryChannel channel;
     
-    public StandardProviderProcessor(JmsEndpoint endpoint) {
+    public StandardProviderProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 

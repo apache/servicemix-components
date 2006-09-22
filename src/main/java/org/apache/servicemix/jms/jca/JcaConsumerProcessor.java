@@ -62,7 +62,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
     protected TransactionManager transactionManager;
     protected ConnectionFactory connectionFactory;
     
-    public JcaConsumerProcessor(JmsEndpoint endpoint) {
+    public JcaConsumerProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 
