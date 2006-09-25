@@ -69,15 +69,23 @@ public class HttpManagedServlet extends javax.servlet.http.HttpServlet {
         if (componentMBean == null) {
             throw new IllegalStateException("Unable to find component " + componentName);
         }
-        if (componentMBean.getComponent() instanceof HttpSpringComponent == false) {
+        if (componentMBean.getComponent() instanceof HttpSpringComponent) {
+            HttpSpringComponent component = (HttpSpringComponent) componentMBean.getComponent();
+            String mapping = config.getInitParameter(MAPPING_PROPERTY);
+            if (mapping != null) {
+                component.getConfiguration().setMapping(mapping);
+            }
+            processor = component.getMainProcessor(); 
+        } else if (componentMBean.getComponent() instanceof HttpComponent) {
+            HttpComponent component = (HttpComponent) componentMBean.getComponent();
+            String mapping = config.getInitParameter(MAPPING_PROPERTY);
+            if (mapping != null) {
+                component.getConfiguration().setMapping(mapping);
+            }
+            processor = component.getMainProcessor(); 
+        } else {
             throw new IllegalStateException("The component is not an instance of HttpSpringComponent");
         }
-        HttpSpringComponent component = (HttpSpringComponent) componentMBean.getComponent();
-        String mapping = config.getInitParameter(MAPPING_PROPERTY);
-        if (mapping != null) {
-            component.getConfiguration().setMapping(mapping);
-        }
-        processor = component.getMainProcessor(); 
     }
     
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

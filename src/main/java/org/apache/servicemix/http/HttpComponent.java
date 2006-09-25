@@ -53,4 +53,23 @@ public class HttpComponent extends BaseComponent {
         return HttpResolvedEndpoint.resolveEndpoint(epr);
     }
     
+    /**
+     * @return the configuration
+     * @org.apache.xbean.Flat
+     */
+    public HttpConfiguration getConfiguration() {
+        return ((HttpLifeCycle) getLifeCycle()).getConfiguration();
+    }
+
+    /**
+     * @param configuration the configuration to set
+     */
+    public void setConfiguration(HttpConfiguration configuration) {
+        ((HttpLifeCycle) getLifeCycle()).setConfiguration(configuration);
+    }
+
+    public HttpProcessor getMainProcessor() {
+        return ((HttpLifeCycle) getLifeCycle()).getMainProcessor();
+    }
+
 }
