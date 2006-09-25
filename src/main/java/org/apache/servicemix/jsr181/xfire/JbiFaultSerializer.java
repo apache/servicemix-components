@@ -48,21 +48,14 @@ public class JbiFaultSerializer implements MessageSerializer {
     public void writeMessage(OutMessage message, XMLStreamWriter writer, MessageContext context) throws XFireFault {
         try {
             XFireFault fault = (XFireFault) message.getBody();
-            writer.writeStartElement("fault");
-            writer.writeStartElement("message");
-            writer.writeCharacters(fault.getMessage());
-            writer.writeEndElement(); // message
             if (fault.hasDetails()) {
                 Element detail = fault.getDetail();
-                writer.writeStartElement("detail");
                 StaxSerializer serializer = new StaxSerializer();
                 List details = detail.getContent();
                 for (int i = 0; i < details.size(); i++) {
                     serializer.writeElement((Element) details.get(i), writer);
                 }
-                writer.writeEndElement(); // detail
-            }
-            if (configuration.isPrintStackTraceInFaults()) {
+            } else {
                 writer.writeStartElement("stack");
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
@@ -71,7 +64,6 @@ public class JbiFaultSerializer implements MessageSerializer {
                 writer.writeCData(sw.toString());
                 writer.writeEndElement(); // stack
             }
-            writer.writeEndElement(); // fault
         } catch (XMLStreamException e) {
             throw new XFireRuntimeException("Couldn't create fault.", e);
         }

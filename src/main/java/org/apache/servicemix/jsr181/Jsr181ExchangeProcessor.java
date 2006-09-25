@@ -33,7 +33,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
@@ -42,6 +41,7 @@ import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.attachments.JavaMailAttachments;
 import org.codehaus.xfire.attachments.SimpleAttachment;
 import org.codehaus.xfire.exchange.InMessage;
+import org.codehaus.xfire.fault.XFireFault;
 import org.codehaus.xfire.service.OperationInfo;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.transport.Channel;
@@ -49,6 +49,12 @@ import org.codehaus.xfire.transport.Transport;
 
 public class Jsr181ExchangeProcessor implements ExchangeProcessor {
 
+    public static final String SOAP_FAULT_CODE = "org.apache.servicemix.soap.fault.code";
+    public static final String SOAP_FAULT_SUBCODE = "org.apache.servicemix.soap.fault.subcode";
+    public static final String SOAP_FAULT_REASON = "org.apache.servicemix.soap.fault.reason";
+    public static final String SOAP_FAULT_NODE = "org.apache.servicemix.soap.fault.node";
+    public static final String SOAP_FAULT_ROLE = "org.apache.servicemix.soap.fault.role";
+    
     protected DeliveryChannel channel;
     protected Jsr181Endpoint endpoint;
     protected StAXSourceTransformer transformer;
@@ -59,24 +65,12 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-        try {
-            ClassLoader classLoader = ((XBeanServiceUnit) endpoint.getServiceUnit()).getConfigurationClassLoader();
-            Thread.currentThread().setContextClassLoader(classLoader);
-            doProcess(exchange);
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldCl);
-        }
-    }    
-        
-    protected void doProcess(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.DONE) {
             return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
 
-        // TODO: fault should not be serialized as soap
         // TODO: clean this code
         XFire xfire = endpoint.getXFire();
         Service service = endpoint.getXFireService();
@@ -116,6 +110,11 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
             if (ctx.getExchange().hasFaultMessage() && ctx.getExchange().getFaultMessage().getBody() != null) {
                 Fault fault = exchange.createFault();
                 fault.setContent(new StringSource(out.toString()));
+                XFireFault xFault = (XFireFault) ctx.getExchange().getFaultMessage().getBody();
+                fault.setProperty(SOAP_FAULT_CODE, xFault.getFaultCode());
+                fault.setProperty(SOAP_FAULT_REASON, xFault.getReason());
+                fault.setProperty(SOAP_FAULT_ROLE, xFault.getRole());
+                fault.setProperty(SOAP_FAULT_SUBCODE, xFault.getSubCode());
                 exchange.setFault(fault);
             } else {
                 NormalizedMessage outMsg = exchange.createMessage();
