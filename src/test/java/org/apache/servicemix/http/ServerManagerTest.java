@@ -86,6 +86,8 @@ public class ServerManagerTest extends TestCase {
         
         server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
         
+        server.createContext("http://localhost:8192/Service1/test1ex", new TestHttpProcessor());
+        
         try {
             server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");

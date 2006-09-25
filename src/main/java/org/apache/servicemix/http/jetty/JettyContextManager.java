@@ -155,6 +155,7 @@ public class JettyContextManager implements ContextManager {
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
+        String pathSlash = path + "/";
         // Check that context does not exist yet
         HandlerCollection handlerCollection = (HandlerCollection) server.getHandler();
         ContextHandlerCollection contexts = (ContextHandlerCollection) handlerCollection.getHandlers()[0];
@@ -163,8 +164,9 @@ public class JettyContextManager implements ContextManager {
             for (int i = 0; i < handlers.length; i++) {
                 if (handlers[i] instanceof ContextHandler) {
                     ContextHandler h = (ContextHandler) handlers[i];
-                    if (h.getContextPath().startsWith(path) ||
-                        path.startsWith(h.getContextPath())) {
+                    String handlerPath = h.getContextPath() + "/";
+                    if (handlerPath.startsWith(pathSlash) ||
+                        pathSlash.startsWith(handlerPath)) {
                         throw new Exception("The requested context for path '" + path + "' overlaps with an existing context for path: '" + h.getContextPath() + "'");
                     }
                 }
