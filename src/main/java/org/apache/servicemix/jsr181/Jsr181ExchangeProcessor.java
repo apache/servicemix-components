@@ -38,6 +38,8 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFire;
+import org.codehaus.xfire.attachments.Attachment;
+import org.codehaus.xfire.attachments.Attachments;
 import org.codehaus.xfire.attachments.JavaMailAttachments;
 import org.codehaus.xfire.attachments.SimpleAttachment;
 import org.codehaus.xfire.exchange.InMessage;
@@ -118,6 +120,13 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
                 exchange.setFault(fault);
             } else {
                 NormalizedMessage outMsg = exchange.createMessage();
+                Attachments attachments = ctx.getCurrentMessage().getAttachments();
+                if (attachments != null) {
+                    for (Iterator it = attachments.getParts(); it.hasNext();) {
+                        Attachment att = (Attachment) it.next();
+                        outMsg.addAttachment(att.getId(), att.getDataHandler());
+                    }
+                }
                 outMsg.setContent(new StringSource(out.toString()));
                 exchange.setMessage(outMsg, "out");
             }

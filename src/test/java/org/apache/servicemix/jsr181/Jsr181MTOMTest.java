@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.jsr181;
 
+import java.io.ByteArrayOutputStream;
+
 import javax.activation.DataHandler;
 import javax.jbi.messaging.InOut;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -30,6 +32,7 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.ByteArrayDataSource;
+import org.apache.servicemix.jbi.util.FileUtil;
 import org.w3c.dom.Document;
 
 public class Jsr181MTOMTest extends TestCase {
@@ -72,29 +75,25 @@ public class Jsr181MTOMTest extends TestCase {
         Destination dest = client.createDestination("service:http://jsr181.servicemix.apache.org/EchoWithAttachment");
         InOut me = dest.createInOutExchange();
         me.getInMessage().setContent(new StringSource("<echo xmlns:xop='http://www.w3.org/2004/08/xop/include'><msg>hello world</msg><binary><xop:Include href='binary'/></binary></echo>"));
-        me.getInMessage().addAttachment("binary", new DataHandler(new ByteArrayDataSource(new byte[] { 0, 1 , 2}, "image/jpg")));
-        
+        me.getInMessage().addAttachment("binary", new DataHandler(new ByteArrayDataSource(new byte[] { 0, 1, 2}, "image/jpg")));
         client.sendSync(me);
-        
+        assertNotNull(me.getOutMessage());
+        assertEquals(1, me.getOutMessage().getAttachmentNames().size());
+        DataHandler dh = me.getOutMessage().getAttachment((String) me.getOutMessage().getAttachmentNames().iterator().next());
+        assertNotNull(dh);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(dh.getInputStream(), baos);
+        assertEquals(3, baos.toByteArray().length);
+        client.done(me);
     }
     
     public static class EchoWithAttachment {
         
-        /*
-         * Do not use byte[] until xfire-1.2
-        public String echo(String msg, byte[] binary) {
+        public byte[] echo(String msg, byte[] binary) {
             if (binary == null || binary.length == 0) {
                 throw new NullPointerException("binary is null");
             }
-            return "Echo: " + msg;
-        }
-        */
-        
-        public String echo(String msg, DataHandler binary) {
-            if (binary == null || binary.getDataSource() == null) {
-                throw new NullPointerException("binary is null");
-            }
-            return "Echo: " + msg;
+            return binary;
         }
     }
     
