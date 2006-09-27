@@ -18,7 +18,7 @@
 
 -->
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
-	     xmlns:saxon="http://org.apache.servicemix/saxon/1.0"
+	     xmlns:saxon="http://servicemix.apache.org/saxon/1.0"
        xmlns:test="urn:test">
 
   <sm:container id="jbi" embedded="true" createMBeanServer="false">

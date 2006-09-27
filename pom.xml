@@ -90,7 +90,7 @@
         <executions>
           <execution>
             <configuration>
-              <namespace>http://org.apache.servicemix/saxon/1.0</namespace>
+              <namespace>http://servicemix.apache.org/saxon/1.0</namespace>
             </configuration>
             <goals>
               <goal>mapping</goal>
