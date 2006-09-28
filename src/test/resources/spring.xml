@@ -30,25 +30,50 @@
       	  <saxon:component>
       	    <saxon:endpoints>
 
+              <!-- START SNIPPET: xslt --> 
       	      <saxon:xslt service="test:xslt" endpoint="endpoint"
       	                  resource="classpath:transform.xsl" />
-      	                  
+      	      <!-- END SNIPPET: xslt --> 
+      	      
+      	      <!-- START SNIPPET: xslt-dynamic -->
+      	      <saxon:xslt service="test:xslt-dynamic" endpoint="endpoint">
+      	        <saxon:expression>
+      	          <bean class="org.apache.servicemix.expression.PropertyExpression">
+      	            <property name="property" value="xslt.source" />
+      	          </bean>
+      	        </saxon:expression>
+      	      </saxon:xslt>
+      	      <!-- END SNIPPET: xslt-dynamic -->
+      	      
+      	      <!-- START SNIPPET: xquery --> 
       	      <saxon:xquery service="test:xquery" endpoint="endpoint"
       	                    resource="classpath:query.xq" />
-
+      	      <!-- END SNIPPET: xquery --> 
+      	      
+      	      <!-- START SNIPPET: xquery-inline --> 
       	      <saxon:xquery service="test:xquery-inline" endpoint="endpoint">
       	        <!-- CDATA are not supported currently -->
       	        <saxon:query>
-                  &lt;titles>
-                  {
-                    for $x in /bookstore/book
-                    where $x/price > 30
-                    return $x/title
-                  }
-      	          &lt;/titles>
+                  for $x in /bookstore/book
+                  where $x/price > 30
+                  return $x/title
       	        </saxon:query>
+      	        <saxon:outputProperties>
+      	          <saxon:property key="{http://saxon.sf.net/}wrap-result-sequence">yes</saxon:property>
+      	        </saxon:outputProperties>
       	      </saxon:xquery>
-
+      	      <!-- END SNIPPET: xquery-inline --> 
+      	      
+      	      <!-- START SNIPPET: xquery-dynamic -->
+      	      <saxon:xquery service="test:xquery-dynamic" endpoint="endpoint">
+      	        <saxon:expression>
+      	          <bean class="org.apache.servicemix.expression.PropertyExpression">
+      	            <property name="property" value="xquery.source" />
+      	          </bean>
+      	        </saxon:expression>
+      	      </saxon:xquery>
+      	      <!-- END SNIPPET: xquery-dynamic -->
+      	      
       	    </saxon:endpoints>
       	  </saxon:component>
         </sm:component>

@@ -28,7 +28,8 @@ import org.springframework.core.io.Resource;
  */
 public class XQueryEndpoint extends SaxonEndpoint {
 
-    private Resource resource;
+    private static final Properties EMPTY_PROPS = new Properties();
+    
     private String query;
     private XQueryExpression exp;
     private StaticQueryContext staticEnv;
@@ -66,20 +67,6 @@ public class XQueryEndpoint extends SaxonEndpoint {
         this.query = query;
     }
 
-    /**
-     * @return the resource
-     */
-    public Resource getResource() {
-        return resource;
-    }
-
-    /**
-     * @param resource the resource to set
-     */
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
-
     // Interface methods
     // -------------------------------------------------------------------------
     
@@ -91,17 +78,18 @@ public class XQueryEndpoint extends SaxonEndpoint {
         config.setHostLanguage(Configuration.XQUERY);
         setConfiguration(config);
         staticEnv = new StaticQueryContext(config);
-        if (query == null || query.trim().length() == 0) {
-            exp = staticEnv.compileQuery(resource.getInputStream(), null);
-        } else {
-            exp = staticEnv.compileQuery(query);
+        if (getQuery() != null) {
+            exp = staticEnv.compileQuery(getQuery());
+            staticEnv = exp.getStaticContext();
+        } else if (getResource() != null) {
+            exp = staticEnv.compileQuery(getResource().getInputStream(), null);
+            staticEnv = exp.getStaticContext();
         }
-        staticEnv = exp.getStaticContext();
     }
     
     public void validate() throws DeploymentException {
-        if ((query == null || query.trim().length() == 0) && resource == null) {
-            throw new DeploymentException("query or resource should be specified");
+        if (getQuery() == null && getResource() == null && getExpression() == null) {
+            throw new DeploymentException("query, resource or expression should be specified");
         }
     }
 
@@ -119,20 +107,21 @@ public class XQueryEndpoint extends SaxonEndpoint {
         DocumentInfo doc = staticEnv.buildDocument(in.getContent());
         dynamicEnv.setContextItem(doc);
         configureQuery(dynamicEnv, exchange, in);
+        Properties props = outputProperties != null ? outputProperties : EMPTY_PROPS; 
         if (RESULT_BYTES.equalsIgnoreCase(getResult())) {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             Result result = new StreamResult(buffer);
-            expression.run(dynamicEnv, result, outputProperties);
+            expression.pull(dynamicEnv, result, props);
             out.setContent(new BytesSource(buffer.toByteArray()));
         }
         else if (RESULT_STRING.equalsIgnoreCase(getResult())) {
             StringWriter buffer = new StringWriter();
             Result result = new StreamResult(buffer);
-            expression.run(dynamicEnv, result, outputProperties);
+            expression.pull(dynamicEnv, result, props);
             out.setContent(new StringSource(buffer.toString()));
         } else {
             DOMResult result = new DOMResult();
-            expression.run(dynamicEnv, result, outputProperties);
+            expression.pull(dynamicEnv, result, props);
             out.setContent(new DOMSource(result.getNode()));
         }
     }
@@ -154,7 +143,12 @@ public class XQueryEndpoint extends SaxonEndpoint {
     }
     
     protected XQueryExpression createQuery(MessageExchange exchange, NormalizedMessage in) throws Exception {
-        return exp;
+        if (getExpression() != null) {
+            Resource r = getDynamicResource(exchange, in);
+            return staticEnv.compileQuery(r.getInputStream(), null);
+        } else {
+            return exp;
+        }
     }
     
 }

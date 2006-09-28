@@ -18,13 +18,11 @@ package org.apache.servicemix.saxon;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.Iterator;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -50,8 +48,8 @@ public class XsltEndpoint extends SaxonEndpoint {
     
     private TransformerFactory transformerFactory;
     private Source xsltSource;
-    private Resource resource;
     private Templates templates;
+    
     public TransformerFactory getTransformerFactory() {
         if (transformerFactory == null) {
             transformerFactory = createTransformerFactory();
@@ -63,17 +61,9 @@ public class XsltEndpoint extends SaxonEndpoint {
         this.transformerFactory = transformerFactory;
     }
 
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource xsltResource) {
-        this.resource = xsltResource;
-    }
-
     public void validate() throws DeploymentException {
-        if (xsltSource == null && resource == null) {
-            throw new DeploymentException("xsltSrouce or resource must be specified");
+        if (xsltSource == null && getResource() == null && getExpression() == null) {
+            throw new DeploymentException("xsltSource, resource or expression must be specified");
         }
     }
     
@@ -116,21 +106,13 @@ public class XsltEndpoint extends SaxonEndpoint {
 
     protected Source getXsltSource() throws Exception {
         if (xsltSource == null) {
-            xsltSource = createXsltSource();
+            xsltSource = createXsltSource(getResource());
         }
         return xsltSource;
     }
 
-    protected Source createXsltSource() throws Exception {
-        if (resource != null) {
-            URL url = resource.getURL();
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(resource.getInputStream(), url != null ? url.toExternalForm() : null);
-            return new DOMSource(doc);
-        }
-        return null;
+    protected Source createXsltSource(Resource res) throws Exception {
+        return new DOMSource(parse(res));
     }
 
     public Templates getTemplates() throws Exception {
@@ -152,11 +134,17 @@ public class XsltEndpoint extends SaxonEndpoint {
      * Factory method to create a new transformer instance
      */
     protected Transformer createTransformer(MessageExchange exchange, NormalizedMessage in) throws Exception {
-        Source source = getXsltSource();
-        if (source == null) {
-            return getTransformerFactory().newTransformer();
-        }
-        else {
+        // Use dynamic stylesheet selection
+        if (getExpression() != null) {
+            Resource r = getDynamicResource(exchange, in);
+            if (r == null) {
+                return getTransformerFactory().newTransformer();
+            } else {
+                Source source = createXsltSource(r);
+                return getTransformerFactory().newTransformer(source);
+            }
+        // Use static stylesheet
+        } else {
             return getTemplates().newTransformer();
         }
     }

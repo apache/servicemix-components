@@ -1,15 +1,27 @@
 package org.apache.servicemix.saxon;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.Iterator;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.sf.saxon.Configuration;
 
 import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.expression.Expression;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.w3c.dom.Document;
 
 public abstract class SaxonEndpoint extends ProviderEndpoint {
 
@@ -22,6 +34,51 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     private boolean copyAttachments = true;
     private boolean copySubject = true;
     private String result = RESULT_DOM;
+    private Resource resource;
+    private Expression expression;
+    private Resource wsdlResource;
+
+    /**
+     * @return the wsdlResource
+     */
+    public Resource getWsdlResource() {
+        return wsdlResource;
+    }
+
+    /**
+     * @param wsdlResource the wsdlResource to set
+     */
+    public void setWsdlResource(Resource wsdlResource) {
+        this.wsdlResource = wsdlResource;
+    }
+
+    /**
+     * @return the expression
+     */
+    public Expression getExpression() {
+        return expression;
+    }
+
+    /**
+     * @param expression the expression to set
+     */
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    /**
+     * @return the resource
+     */
+    public Resource getResource() {
+        return resource;
+    }
+
+    /**
+     * @param resource the resource to set
+     */
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
 
     /**
      * @return the result
@@ -96,6 +153,13 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     // Interface methods
     // -------------------------------------------------------------------------
     
+    public void activate() throws Exception {
+        if (wsdlResource != null) {
+            setDescription(parse(wsdlResource));
+        }
+        super.activate();
+    }
+    
     public void process(MessageExchange exchange) throws Exception {
         // The component acts as a provider, this means that another component has requested our service
         // As this exchange is active, this is either an in or a fault (out are send by this component)
@@ -159,5 +223,37 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     }
     
     protected abstract void transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception;
+
+    protected Resource getDynamicResource(MessageExchange exchange, NormalizedMessage in) throws Exception {
+        Object res = getExpression().evaluate(exchange, in);
+        if (res == null) {
+            return null;
+        }
+        if (res instanceof Resource) {
+            return (Resource) res;
+        }
+        if (res instanceof File) {
+            return new FileSystemResource((File) res);
+        }
+        if (res instanceof URL) {
+            return new UrlResource((URL) res);
+        }
+        if (res instanceof URI) {
+            return new UrlResource(((URI) res).toURL());
+        }
+        return new DefaultResourceLoader().getResource(res.toString());
+    }
     
+    protected Document parse(Resource res) throws Exception {
+        URL url = null;
+        try {
+            res.getURL();
+        } catch (IOException e) {
+            // Ignore
+        }
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        return builder.parse(res.getInputStream(), url != null ? url.toExternalForm() : null);
+    }
 }

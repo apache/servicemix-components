@@ -78,6 +78,30 @@ public class SaxonComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
+    public void testXsltDynamic() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "xslt-dynamic"));
+        Element e = transformer.toDOMElement(new StreamSource(getClass().getResourceAsStream("/books.xml")));
+        e = DOMUtil.getFirstChildElement(e);
+        me.getInMessage().setContent(new DOMSource(e));
+        me.getInMessage().setProperty("xslt.source", "classpath:transform.xsl");
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        System.err.println(transformer.toString(me.getOutMessage().getContent()));
+        Element el = transformer.toDOMElement(me.getOutMessage());
+        assertEquals("2005", textValueOfXPath(el, "/transformed/book/year"));
+        client.done(me);
+    }
+    
     public void testXQuery() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -104,6 +128,33 @@ public class SaxonComponentTest extends SpringTestSupport {
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "xquery-inline"));
         me.getInMessage().setContent(new StreamSource(getClass().getResourceAsStream("/books.xml")));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        System.err.println(transformer.toString(me.getOutMessage().getContent()));
+        Element el = transformer.toDOMElement(me.getOutMessage());
+        assertEquals(new QName("http://saxon.sf.net/xquery-results", "sequence"), DOMUtil.getQName(el));
+        el = DOMUtil.getFirstChildElement(el);
+        assertEquals(new QName("http://saxon.sf.net/xquery-results", "element"), DOMUtil.getQName(el));
+        el = DOMUtil.getFirstChildElement(el);
+        assertEquals(new QName("title"), DOMUtil.getQName(el));
+        assertEquals("XQuery Kick Start", DOMUtil.getElementText(el));
+        client.done(me);
+    }
+    
+    public void testXQueryDynamic() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "xquery-dynamic"));
+        me.getInMessage().setContent(new StreamSource(getClass().getResourceAsStream("/books.xml")));
+        me.getInMessage().setProperty("xquery.source", getClass().getResource("/query.xq"));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
