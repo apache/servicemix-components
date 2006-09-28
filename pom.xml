@@ -35,7 +35,7 @@
   <description>An XSLT 2.0 / XQuery Service Engine</description>
 
   <properties>
-    <saxon-version>8.7</saxon-version>
+    <saxon-version>8.8</saxon-version>
   </properties>
 
   <dependencies>
