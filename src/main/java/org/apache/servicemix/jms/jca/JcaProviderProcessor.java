@@ -49,12 +49,12 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
     }
 
     public void start() throws Exception {
-        connectionFactory = getConnectionFactory();
+        InitialContext ctx = getInitialContext();
+        connectionFactory = getConnectionFactory(ctx);
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         destination = endpoint.getDestination();
         if (destination == null) {
             if (endpoint.getJndiDestinationName() != null) {
-                InitialContext ctx = getInitialContext();
                 destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
             } else if (endpoint.getJmsProviderDestinationName() == null) {
                 throw new IllegalStateException("No destination provided");

@@ -67,11 +67,10 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     }
 
     public void start() throws Exception {
-        InitialContext ctx = null;
-        ConnectionFactory connectionFactory = null;
         try {
-            // First check configured connectionFactory on the endpoint
-            connectionFactory = getConnectionFactory();
+            InitialContext ctx = getInitialContext();
+            ConnectionFactory connectionFactory = null;
+            connectionFactory = getConnectionFactory(ctx);
             connection = connectionFactory.createConnection();
             connection.start();
             doStart(ctx);
@@ -82,20 +81,14 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
                 // TODO: log
             }
             throw e;
-        } finally {
-            if (ctx != null) {
-                ctx.close();
-            }
         }
     }
     
-    protected ConnectionFactory getConnectionFactory() throws NamingException {
-        InitialContext ctx = null;
+    protected ConnectionFactory getConnectionFactory(InitialContext ctx) throws NamingException {
         // First check configured connectionFactory on the endpoint
         ConnectionFactory connectionFactory = endpoint.getConnectionFactory();
         // Then, check for jndi connection factory name on the endpoint
         if (connectionFactory == null && endpoint.getJndiConnectionFactoryName() != null) {
-            ctx = getInitialContext();
             connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getJndiConnectionFactoryName());
         }
         // Check for a configured connectionFactory on the configuration
@@ -104,7 +97,6 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         }
         // Check for jndi connection factory name on the configuration
         if (connectionFactory == null && endpoint.getConfiguration().getJndiConnectionFactoryName() != null) {
-            ctx = getInitialContext();
             connectionFactory = (ConnectionFactory) ctx.lookup(endpoint.getConfiguration().getJndiConnectionFactoryName());
         }
         return connectionFactory;
