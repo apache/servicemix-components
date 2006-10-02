@@ -79,7 +79,6 @@
         <extensions>true</extensions>
         <configuration>
           <type>service-engine</type>
-          <bootstrap>org.apache.servicemix.saxon.SaxonBootstrap</bootstrap>
           <component>org.apache.servicemix.saxon.SaxonComponent</component>
         </configuration>
       </plugin>
