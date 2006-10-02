@@ -44,7 +44,6 @@
         <extensions>true</extensions>
         <configuration>
           <type>service-engine</type>
-          <bootstrap>org.apache.servicemix.file.FileBootstrap</bootstrap>
           <component>org.apache.servicemix.file.FileComponent</component>
         </configuration>
       </plugin>

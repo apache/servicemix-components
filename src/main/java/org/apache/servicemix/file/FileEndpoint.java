@@ -88,7 +88,8 @@ public class FileEndpoint extends ProviderEndpoint {
     }
 
     protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
-        super.processInOut(exchange, in, out);    /** TODO */
+        /** TODO list the files? */
+        super.processInOut(exchange, in, out);
     }
 
     // Properties
