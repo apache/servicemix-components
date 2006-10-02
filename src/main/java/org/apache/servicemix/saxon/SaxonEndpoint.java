@@ -10,6 +10,9 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.RobustInOnly;
+import javax.jbi.JBIException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -159,48 +162,20 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
         }
         super.activate();
     }
-    
-    public void process(MessageExchange exchange) throws Exception {
-        // The component acts as a provider, this means that another component has requested our service
-        // As this exchange is active, this is either an in or a fault (out are send by this component)
-        if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
-            // Exchange is finished
-            if (exchange.getStatus() == ExchangeStatus.DONE) {
-                return;
-            // Exchange has been aborted with an exception
-            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                return;
-            // Exchange is active
-            } else {
-                // Check here if the mep is supported by this component
-                if (exchange instanceof InOut == false) {
-                   throw new UnsupportedOperationException("Unsupported MEP: " + exchange.getPattern());
-                }
-                // In message
-                if (exchange.getMessage("in") != null) {
-                    NormalizedMessage in = exchange.getMessage("in");
-                    // Transform the content and send it back
-                    NormalizedMessage out = exchange.createMessage();
-                    copyPropertiesAndAttachments(in, out);
-                    transform(exchange, in, out);
-                    exchange.setMessage(out, "out");
-                    send(exchange);
-                // Fault message
-                } else if (exchange.getFault() != null) {
-                    done(exchange);
-                // This is not compliant with the default MEPs
-                } else {
-                    throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
-                }
-            }
-        // Unsupported role: this should never happen has we never create exchanges
-        } else {
-            throw new IllegalStateException("Unsupported role: " + exchange.getRole());
-        }
-    }
-    
+
+
     // Implementation methods
     // -------------------------------------------------------------------------
+
+    /**
+     * Transform the content and send it back
+     */
+    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+        copyPropertiesAndAttachments(in, out);
+        transform(exchange, in, out);
+    }
+
+
     /**
      * If enabled the properties and attachments are copied to the destination message
      */
@@ -256,4 +231,5 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
         DocumentBuilder builder = factory.newDocumentBuilder();
         return builder.parse(res.getInputStream(), url != null ? url.toExternalForm() : null);
     }
+
 }
