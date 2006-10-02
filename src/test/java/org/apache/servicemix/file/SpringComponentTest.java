@@ -19,6 +19,7 @@ package org.apache.servicemix.file;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -34,7 +35,10 @@ public class SpringComponentTest extends SpringTestSupport {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOnly me = client.createInOnlyExchange();
         me.setService(new QName("urn:test", "service"));
-        me.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        NormalizedMessage message = me.getInMessage();
+        message.setProperty("name", "cheese");
+        message.setContent(new StringSource("<hello>world</hello>"));
+
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {

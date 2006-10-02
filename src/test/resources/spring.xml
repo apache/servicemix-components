@@ -29,7 +29,16 @@
       	<sm:component>
             <file:component>
             	<file:endpoints>
-            		<file:endpoint service="test:service" endpoint="endpoint" directory="file:target/componentOutput" />
+            		<file:endpoint service="test:service" endpoint="endpoint" directory="file:target/componentOutput">
+                  <file:marshaler>
+                    <sm:defaultFileMarshaler>
+                      <sm:fileName>
+                        <!-- lets use a header from the message -->
+                        <sm:xpathString xpath="concat($name, '.xml')"/>
+                      </sm:fileName>
+                    </sm:defaultFileMarshaler>
+                  </file:marshaler>
+                </file:endpoint>
             	</file:endpoints>
             </file:component>
         </sm:component>

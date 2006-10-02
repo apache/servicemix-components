@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.file;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
@@ -25,8 +23,6 @@ import org.apache.servicemix.components.util.FileMarshaler;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,8 +36,6 @@ import java.io.OutputStream;
  * @org.apache.xbean.XBean element="endpoint"
  */
 public class FileEndpoint extends ProviderEndpoint {
-    private static final Log log = LogFactory.getLog(FileEndpoint.class);
-
     private File directory;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private String tempFilePrefix = "servicemix-";
@@ -49,35 +43,6 @@ public class FileEndpoint extends ProviderEndpoint {
     private boolean autoCreateDirectory = true;
 
 
-    public void process(MessageExchange exchange) throws Exception {
-        OutputStream out = null;
-        try {
-            NormalizedMessage message = exchange.getMessage("in");
-            String name = marshaler.getOutputName(exchange, message);
-            File newFile = null;
-            System.out.println("Creating file in directory: " + directory.getCanonicalPath());
-            if (name == null) {
-                newFile = File.createTempFile(tempFilePrefix, tempFileSuffix, directory);
-            }
-            else {
-                newFile = new File(directory, name);
-            }
-            out = new BufferedOutputStream(new FileOutputStream(newFile));
-            marshaler.writeMessage(exchange, message, out, name);
-            done(exchange);
-        }
-        finally {
-            if (out != null) {
-                try {
-                    out.close();
-                }
-                catch (IOException e) {
-                    log.error("Caught exception while closing stream on error: " + e, e);
-                }
-            }
-        }
-    }
-    
     public void validate() throws DeploymentException {
         super.validate();
 
@@ -92,6 +57,39 @@ public class FileEndpoint extends ProviderEndpoint {
         }
     }
 
+    protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
+        OutputStream out = null;
+        try {
+            String name = marshaler.getOutputName(exchange, in);
+            File newFile = null;
+            if (name == null) {
+                newFile = File.createTempFile(tempFilePrefix, tempFileSuffix, directory);
+            }
+            else {
+                newFile = new File(directory, name);
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("Writing to file: " + newFile.getCanonicalPath());
+            }
+            out = new BufferedOutputStream(new FileOutputStream(newFile));
+            marshaler.writeMessage(exchange, in, out, name);
+            done(exchange);
+        }
+        finally {
+            if (out != null) {
+                try {
+                    out.close();
+                }
+                catch (IOException e) {
+                    logger.error("Caught exception while closing stream on error: " + e, e);
+                }
+            }
+        }
+    }
+
+    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+        super.processInOut(exchange, in, out);    /** TODO */
+    }
 
     // Properties
     //-------------------------------------------------------------------------
