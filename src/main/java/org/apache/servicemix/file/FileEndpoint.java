@@ -23,6 +23,7 @@ import org.apache.servicemix.components.util.FileMarshaler;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +43,13 @@ public class FileEndpoint extends ProviderEndpoint {
     private String tempFileSuffix = ".xml";
     private boolean autoCreateDirectory = true;
 
+
+    public FileEndpoint() {
+    }
+
+    public FileEndpoint(FileComponent component, ServiceEndpoint endpoint) {
+        super(component, endpoint);
+    }
 
     public void validate() throws DeploymentException {
         super.validate();

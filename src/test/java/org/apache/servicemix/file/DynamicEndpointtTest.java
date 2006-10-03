@@ -1,4 +1,5 @@
-/*
+/**
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -6,7 +7,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,14 +16,6 @@
  * limitations under the License.
  */
 package org.apache.servicemix.file;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -33,36 +26,54 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.w3c.dom.DocumentFragment;
 
-public class SpringComponentTest extends SpringTestSupport {
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import java.net.URL;
 
-    public void testSendingToStaticEndpoint() throws Exception {
+public class DynamicEndpointtTest extends SpringTestSupport {
+    protected String dynamicURI = "file:target/dynamicEndpoint?file.tempFilePrefix=dynamicEp-";
+
+
+    public void testSendingToDynamicEndpoint() throws Exception {
+        // lets check the path is parsable first
+        URL url = new URL(dynamicURI);
+        String path = url.getPath();
+        assertEquals("target/dynamicEndpoint", path);
+
+
+        // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("urn:test", "service"));
-        NormalizedMessage message = me.getInMessage();
 
-        message.setProperty("name", "cheese");
-        message.setContent(new StringSource("<hello>world</hello>"));
+        DocumentFragment epr = URIResolver.createWSAEPR(dynamicURI);
+        ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
+        assertNotNull("We should find a service endpoint!", se);
 
-        client.sendSync(me);
-        assertExchangeWorked(me);
+        InOnly exchange = client.createInOnlyExchange();
+        exchange.setEndpoint(se);
+        exchange.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(exchange);
+
+        assertExchangeWorked(exchange);
     }
-
 
     protected void assertExchangeWorked(MessageExchange me) throws Exception {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            } else {
+            }
+            else {
                 fail("Received ERROR status");
             }
-        } else if (me.getFault() != null) {
+        }
+        else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }
 
     protected AbstractXmlApplicationContext createBeanFactory() {
-        return new ClassPathXmlApplicationContext("spring.xml");
+        return new ClassPathXmlApplicationContext("spring-no-endpoints.xml");
     }
-    
+
 }

@@ -16,16 +16,66 @@
  */
 package org.apache.servicemix.file;
 
+import org.apache.activemq.util.IntrospectionSupport;
+import org.apache.activemq.util.URISupport;
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ResolvedEndpoint;
+import org.w3c.dom.DocumentFragment;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
+import java.net.URI;
+import java.net.URL;
+import java.util.Map;
+import java.io.File;
 
 /**
  * @org.apache.xbean.XBean element="component"
- *                  description="File Component"
+ * description="File Component"
  */
 public class FileComponent extends DefaultComponent {
 
+    public final static String EPR_URI = "urn:servicemix:file";
+    public final static QName EPR_SERVICE = new QName(EPR_URI, "FileComponent");
+    public final static String EPR_NAME = "epr";
+
+
     protected Class[] getEndpointClasses() {
-        return new Class[] { FileEndpoint.class };
+        return new Class[]{FileEndpoint.class};
+    }
+
+    public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
+        return ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "file:");
+    }
+
+    protected QName getEPRServiceName() {
+        return EPR_SERVICE;
+    }
+
+    protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
+        // We receive an exchange for an EPR that has not been used yet.
+        // Register a provider endpoint and restart processing.
+        FileEndpoint fileEp = new FileEndpoint(this, ep);
+
+        // TODO
+        //fileEp.setRole(MessageExchange.Role.PROVIDER);
+
+        // lets use a URL to parse the path
+        URL url = new URL(ep.getEndpointName());
+
+        Map map = URISupport.parseQuery(url.getQuery());
+        IntrospectionSupport.setProperties(fileEp, map, "file.");
+
+        String path = url.getPath();
+        if (path != null) {
+            fileEp.setDirectory(new File(path));
+        }
+        else {
+            throw new IllegalArgumentException("No path defined for URL: " + url);
+        }
+        fileEp.activate();
+        return fileEp;
     }
 
 }
