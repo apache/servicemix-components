@@ -23,7 +23,6 @@ import java.util.Iterator;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -38,8 +37,6 @@ import net.sf.saxon.TransformerFactoryImpl;
 import org.apache.servicemix.jbi.jaxp.BytesSource;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.springframework.core.io.Resource;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 /**
  * @org.apache.xbean.XBean element="xslt"
@@ -78,13 +75,8 @@ public class XsltEndpoint extends SaxonEndpoint {
     
     protected void transformContent(Transformer transformer, MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
         Source src = in.getContent();
-        if (src instanceof DOMSource || RESULT_DOM.equalsIgnoreCase(getResult())) {
-            Node n = ((DOMSource) src).getNode();
-            if (n instanceof Document == false) {
-                Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                doc.appendChild(doc.importNode(n, true));
-                src = new DOMSource(doc);
-            }
+        if (src instanceof DOMSource) {
+            src = new DOMSource(getSourceTransformer().toDOMDocument(src));
         }
         if (RESULT_BYTES.equalsIgnoreCase(getResult())) {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -98,6 +90,8 @@ public class XsltEndpoint extends SaxonEndpoint {
             transformer.transform(src, result);
             out.setContent(new StringSource(buffer.toString()));
         } else {
+            // Saxon has a blocking bug
+            // see http://sourceforge.net/tracker/index.php?func=detail&aid=1558133&group_id=29872&atid=397617
             DOMResult result = new DOMResult();
             transformer.transform(src, result);
             out.setContent(new DOMSource(result.getNode()));

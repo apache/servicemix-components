@@ -6,20 +6,15 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
 
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.JBIException;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.sf.saxon.Configuration;
 
 import org.apache.servicemix.common.ProviderEndpoint;
 import org.apache.servicemix.expression.Expression;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -40,6 +35,21 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     private Resource resource;
     private Expression expression;
     private Resource wsdlResource;
+    private SourceTransformer sourceTransformer = new SourceTransformer();
+
+    /**
+     * @param sourceTransformer the sourceTransformer to set
+     */
+    protected void setSourceTransformer(SourceTransformer sourceTransformer) {
+        this.sourceTransformer = sourceTransformer;
+    }
+
+    /**
+     * @return the sourceTransformer
+     */
+    public SourceTransformer getSourceTransformer() {
+        return sourceTransformer;
+    }
 
     /**
      * @return the wsdlResource
@@ -226,9 +236,7 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
         } catch (IOException e) {
             // Ignore
         }
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = sourceTransformer.createDocumentBuilder();
         return builder.parse(res.getInputStream(), url != null ? url.toExternalForm() : null);
     }
 
