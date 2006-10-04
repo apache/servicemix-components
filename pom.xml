@@ -29,7 +29,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.servicemix.file</groupId>
+  <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-file</artifactId>
   <packaging>jbi-component</packaging>
   <name>ServiceMix File</name>
