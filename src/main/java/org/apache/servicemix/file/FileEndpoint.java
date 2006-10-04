@@ -81,7 +81,6 @@ public class FileEndpoint extends ProviderEndpoint {
             }
             out = new BufferedOutputStream(new FileOutputStream(newFile));
             marshaler.writeMessage(exchange, in, out, name);
-            done(exchange);
         }
         finally {
             if (out != null) {
