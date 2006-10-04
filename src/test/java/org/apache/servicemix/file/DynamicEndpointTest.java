@@ -30,11 +30,17 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
+
+import java.io.File;
 import java.net.URL;
 
-public class DynamicEndpointtTest extends SpringTestSupport {
+public class DynamicEndpointTest extends SpringTestSupport {
     protected String dynamicURI = "file:target/dynamicEndpoint?file.tempFilePrefix=dynamicEp-";
 
+    protected void setUp() throws Exception {
+        super.setUp();
+        new File("target/dynamicEndpoint").mkdirs();
+    }
 
     public void testSendingToDynamicEndpoint() throws Exception {
         // lets check the path is parsable first
