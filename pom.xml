@@ -73,6 +73,11 @@
               <value>${basedir}/target/test-classes/log4j-tests.properties</value>
             </property>
           </systemProperties>
+		  <excludes>
+           <exclude>**/HttpAddressingTest.*</exclude>
+		   <exclude>**/HttpTxTest.*</exclude>
+		   <exclude>**/HttpSecurityTest.*</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
@@ -146,4 +151,5 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+
 </project>
