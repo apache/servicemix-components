@@ -48,10 +48,10 @@ public class ScriptComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
-    /*public void testRuby() throws Exception {
+    public void testRuby() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
-        me.setService(new QName("urn:test", "ruby"));
+        me.setService(new QName("urn:test", "jruby"));
         me.getInMessage().setContent(new StringSource("<hello>world</hello>"));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
@@ -65,7 +65,7 @@ public class ScriptComponentTest extends SpringTestSupport {
         }
         System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
-    }*/
+    }
     
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("spring.xml");

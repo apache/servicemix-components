@@ -1,19 +1,20 @@
 require 'java'
 
-include_class 'org.apache.servicemix.script.ScriptExchangeProcessor'
-include_class 'javax.jbi.messaging.MessageExchange'
-include_class 'javax.jbi.messaging.NormalizedMessage'
-include_class 'org.apache.servicemix.jbi.jaxp.StringSource'
-include_class 'org.apache.servicemix.jbi.jaxp.SourceTransformer'
+include_class 'org.apache.servicemix.common.ExchangeProcessor'
 
-class RubyExchangeProcessor < org.apache.servicemix.script.ScriptExchangeProcessor
+class RubyExchangeProcessor < ExchangeProcessor
+
+ def setExchangeHelper(exchangeHelper)
+  @@exchangeHelper = exchangeHelper
+ end
 
  def start()
    print "Starting"
  end
  
- def process(javax.jbi.messaging.MessageExchange me)
-   print "Processing "+me
+ def process(messageExchange)
+   print "Processing exchange in JRuby"
+   @@exchangeHelper.send messageExchange
  end
 
  def stop()

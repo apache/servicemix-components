@@ -29,31 +29,42 @@
 					<script:component>						
 						<script:endpoints>
 							<!-- Groovy Endpoint  -->
-							<script:exchangeProcessor
+							<script:exchangeProcessor id="groovyEndpoint"
 								service="test:groovy" endpoint="endpoint">
-								<property name="script" ref="groovyExchangeProcessor"/>
+								<property name="implementation" ref="groovyExchangeProcessor"/>
 							</script:exchangeProcessor>
 							
 							<!-- JRuby Endpoint  -->
-							<!-- <script:exchangeProcessor
+							<script:exchangeProcessor id="rubyEndpoint"
 								service="test:jruby" endpoint="endpoint">
-								<property name="script" ref="rubyExchangeProcessor"/>
-							</script:exchangeProcessor>-->
+								<property name="implementation" ref="rubyExchangeProcessor"/>
+							</script:exchangeProcessor>
 						</script:endpoints>						
 					</script:component>
 				</sm:component>
 			</sm:activationSpec>
 		</sm:activationSpecs>
 	</sm:container>
+	
+	<script:exchangeHelper id="groovyExchangeHelper">		
+		<constructor-arg ref="groovyEndpoint"/>
+	</script:exchangeHelper>
+	
+	<script:exchangeHelper id="rubyExchangeHelper">		
+		<constructor-arg ref="rubyEndpoint"/>
+	</script:exchangeHelper>
 
 	<lang:groovy
 		id="groovyExchangeProcessor"
 		script-source="classpath:GroovyExchangeProcessor.groovy">
+		<lang:property name="exchangeHelper" ref="groovyExchangeHelper" />
 	</lang:groovy>
 	
-	<!-- <lang:jruby
+	<lang:jruby
 		id="rubyExchangeProcessor"
+		script-interfaces="org.apache.servicemix.common.ExchangeProcessor"
 		script-source="classpath:RubyExchangeProcessor.rb">
-	</lang:jruby> -->
+		<lang:property name="exchangeHelper" value="rubyExchangeHelper" />
+	</lang:jruby>
 
 </beans>

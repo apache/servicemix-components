@@ -44,7 +44,7 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 
 	private MessageExchangeFactory exchangeFactory;
 
-	private ScriptExchangeProcessor script;
+	private ExchangeProcessor implementation;
 
 	public void activate() throws Exception {
 		logger = this.serviceUnit.getComponent().getLogger();
@@ -89,13 +89,13 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 		return Role.PROVIDER;
 	}
 
-	public ScriptExchangeProcessor getScript() {
-		return script;
+	public ExchangeProcessor getImplementation() {
+		return implementation;
 	}
 
 	public void process(MessageExchange exchange) throws Exception {
-		if (script != null)
-			script.process(exchange);
+		if (implementation != null)
+			implementation.process(exchange);
 
 	}
 
@@ -110,20 +110,19 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 		}
 	}
 
-	public void setScript(ScriptExchangeProcessor script) {
-		this.script = script;
-		script.setScriptExchangeProcessorEndpoint(this);
+	public void setImplementation(ExchangeProcessor implementation) {
+		this.implementation = implementation;		
 	}
 
 	public void start() throws Exception {
-		if (script != null)
-			script.start();
+		if (implementation != null)
+			implementation.start();
 	}
 
 	public void stop() {
-		if (script != null) {
+		if (implementation != null) {
 			try {
-				script.stop();
+				implementation.stop();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
