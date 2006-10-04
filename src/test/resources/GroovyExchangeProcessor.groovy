@@ -19,7 +19,7 @@ class GroovyExchangeProcessor implements ExchangeProcessor {
     	NormalizedMessage out = exchange.createMessage();
         out.setContent(new StringSource("<world>hello</world>"));
         exchange.setMessage(out, "out");
-        exchangeHelper.send(exchange);    	
+        exchangeHelper.sendExchange(exchange);    	
     }
     
     def void stop() {

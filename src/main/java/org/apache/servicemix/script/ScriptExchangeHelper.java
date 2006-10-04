@@ -34,16 +34,16 @@ public class ScriptExchangeHelper {
 		this.endpoint = endpoint;
 	}
 
-	public void done(MessageExchange exchange) throws MessagingException {
+	public void doneExchange(MessageExchange exchange) throws MessagingException {
 		endpoint.done(exchange);
 	}
 
-	public void fail(MessageExchange exchange, Exception exception)
+	public void failExchange(MessageExchange exchange, Exception exception)
 			throws MessagingException {
 		endpoint.fail(exchange, exception);
 	}
 
-	public void send(MessageExchange exchange) throws MessagingException {
+	public void sendExchange(MessageExchange exchange) throws MessagingException {
 		endpoint.send(exchange);
 	}
 }
