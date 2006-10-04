@@ -26,15 +26,22 @@ import javax.jbi.messaging.MessagingException;
  * @org.apache.xbean.XBean element="exchangeHelper" description="ServiceMix
  *                         Scripting Helper"
  */
-public class ScriptExchangeHelper {
+public class ScriptExchangeHelper implements ScriptHelper {
 
 	private ScriptExchangeProcessorEndpoint endpoint;
 
-	public ScriptExchangeHelper(ScriptExchangeProcessorEndpoint endpoint) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.servicemix.script.ScriptHelper#setScriptExchangeProcessorEndpoint(org.apache.servicemix.script.ScriptExchangeProcessorEndpoint)
+	 */
+	public void setScriptExchangeProcessorEndpoint(
+			ScriptExchangeProcessorEndpoint endpoint) {
 		this.endpoint = endpoint;
 	}
 
-	public void doneExchange(MessageExchange exchange) throws MessagingException {
+	public void doneExchange(MessageExchange exchange)
+			throws MessagingException {
 		endpoint.done(exchange);
 	}
 
@@ -43,7 +50,8 @@ public class ScriptExchangeHelper {
 		endpoint.fail(exchange, exception);
 	}
 
-	public void sendExchange(MessageExchange exchange) throws MessagingException {
+	public void sendExchange(MessageExchange exchange)
+			throws MessagingException {
 		endpoint.send(exchange);
 	}
 }

@@ -13,16 +13,15 @@ class RubyExchangeProcessor < ExchangeProcessor
  end
  
  def process(exchange)
-   print "Processing exchange in JRuby"
-   @exchangeHelper.sendExchange exchange
+   print "Processing exchange "
+   print exchange
+   print " using "
+   print @exchangeHelper
+   @exchangeHelper.sendExchange(exchange)
  end
 
  def stop()
    print "Stopping"
- end
- 
- def toString()
-   return "RubyExchangeProcessor"
  end
 
 end

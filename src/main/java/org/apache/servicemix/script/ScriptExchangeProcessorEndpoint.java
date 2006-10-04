@@ -16,16 +16,18 @@
  */
 package org.apache.servicemix.script;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
 import org.apache.servicemix.common.BaseLifeCycle;
@@ -45,6 +47,8 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 	private MessageExchangeFactory exchangeFactory;
 
 	private ExchangeProcessor implementation;
+
+	private List helpers = new ArrayList();
 
 	public void activate() throws Exception {
 		logger = this.serviceUnit.getComponent().getLogger();
@@ -76,6 +80,14 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 		send(me);
 	}
 
+	public List getHelpers() {
+		return helpers;
+	}
+
+	public ExchangeProcessor getImplementation() {
+		return implementation;
+	}
+
 	public ExchangeProcessor getProcessor() {
 		return this;
 	}
@@ -87,10 +99,6 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 	 */
 	public Role getRole() {
 		return Role.PROVIDER;
-	}
-
-	public ExchangeProcessor getImplementation() {
-		return implementation;
 	}
 
 	public void process(MessageExchange exchange) throws Exception {
@@ -110,8 +118,19 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements
 		}
 	}
 
+	public void setHelpers(List helpers) {
+		this.helpers = helpers;
+		for (Iterator iterator = helpers.iterator(); iterator.hasNext();) {
+			Object nextHelper = iterator.next();
+			if (nextHelper instanceof ScriptHelper) {
+				((ScriptHelper) nextHelper)
+						.setScriptExchangeProcessorEndpoint(this);
+			}
+		}
+	}
+
 	public void setImplementation(ExchangeProcessor implementation) {
-		this.implementation = implementation;		
+		this.implementation = implementation;
 	}
 
 	public void start() throws Exception {

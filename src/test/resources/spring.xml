@@ -26,45 +26,51 @@
 		<sm:activationSpecs>
 			<sm:activationSpec>
 				<sm:component>
-					<script:component>						
+					<script:component>
 						<script:endpoints>
 							<!-- Groovy Endpoint  -->
-							<script:exchangeProcessor id="groovyEndpoint"
+							<script:exchangeProcessor
 								service="test:groovy" endpoint="endpoint">
-								<property name="implementation" ref="groovyExchangeProcessor"/>
+								<property name="helpers">
+									<list>
+										<ref bean="groovyExchangeHelper" />
+									</list>
+								</property>
+								<property name="implementation"
+									ref="groovyExchangeProcessor" />
 							</script:exchangeProcessor>
-							
+
 							<!-- JRuby Endpoint  -->
-							<script:exchangeProcessor id="rubyEndpoint"
+							<script:exchangeProcessor
 								service="test:jruby" endpoint="endpoint">
-								<property name="implementation" ref="rubyExchangeProcessor"/>
+								<property name="helpers">
+									<list>
+										<ref bean="jrubyExchangeHelper" />
+									</list>
+								</property>
+								<property name="implementation"
+									ref="jrubyExchangeProcessor" />
 							</script:exchangeProcessor>
-						</script:endpoints>						
+						</script:endpoints>
 					</script:component>
 				</sm:component>
 			</sm:activationSpec>
 		</sm:activationSpecs>
 	</sm:container>
-	
-	<script:exchangeHelper id="groovyExchangeHelper">		
-		<constructor-arg ref="groovyEndpoint"/>
-	</script:exchangeHelper>
-	
-	<script:exchangeHelper id="rubyExchangeHelper">		
-		<constructor-arg ref="rubyEndpoint"/>
-	</script:exchangeHelper>
 
-	<lang:groovy
-		id="groovyExchangeProcessor"
+	<script:exchangeHelper id="groovyExchangeHelper" singleton="true" />
+
+	<script:exchangeHelper id="jrubyExchangeHelper" singleton="true" />
+
+	<lang:groovy id="groovyExchangeProcessor"
 		script-source="classpath:GroovyExchangeProcessor.groovy">
 		<lang:property name="exchangeHelper" ref="groovyExchangeHelper" />
 	</lang:groovy>
-	
-	<lang:jruby
-		id="rubyExchangeProcessor"
+
+	<lang:jruby id="jrubyExchangeProcessor"
 		script-interfaces="org.apache.servicemix.common.ExchangeProcessor"
 		script-source="classpath:RubyExchangeProcessor.rb">
-		<lang:property name="exchangeHelper" value="rubyExchangeHelper" />
+		<lang:property name="exchangeHelper" ref="jrubyExchangeHelper" />
 	</lang:jruby>
 
 </beans>
