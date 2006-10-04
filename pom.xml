@@ -95,18 +95,24 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.xbean</groupId>
-        <artifactId>maven-xbean-plugin</artifactId>
-        <executions>
-          <execution>
-            <configuration>
-              <namespace>http://servicemix.apache.org/eip/1.0</namespace>
-            </configuration>
-            <goals>
-              <goal>mapping</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/StaticRoutingSlipTxTest.*</exclude>
+			<exclude>**/WireTapJmsFlowTest.*</exclude>
+			<exclude>**/PipelineTxTest.*</exclude>
+			<exclude>**/SplitAggregatorTxTest.*</exclude>
+			<exclude>**/StaticRecipientListTxTest.*</exclude>
+			<exclude>**/MessageFilterTxTest.*</exclude>
+			<exclude>**/WireTapTxTest.*</exclude>
+			<exclude>**/XPathSplitterTxTest.*</exclude>
+			<exclude>**/DeploymentTest.*</exclude>
+			<exclude>**/NamespaceContextImplTest.*</exclude>
+			<exclude>**/SpringConfigurationTest.*</exclude>
+			<exclude>**/ContentBasedRouterTxTest.*</exclude>
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>
