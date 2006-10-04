@@ -23,5 +23,9 @@ class RubyExchangeProcessor < ExchangeProcessor
  def stop()
    print "Stopping"
  end
+ 
+ def toString()
+ 	return "You do need to implement a toString?"
+ end
 
 end
