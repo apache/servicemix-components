@@ -164,6 +164,17 @@
           <target>1.5</target>
         </configuration>
       </plugin>
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/Jsr181SpringTest.*</exclude>
+			<exclude>**/Jsr181SpringProxyTest.*</exclude>
+			<exclude>**/Jsr181ProxySUTest.*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
