@@ -42,7 +42,7 @@ public class FileComponent extends DefaultComponent {
 
 
     protected Class[] getEndpointClasses() {
-        return new Class[]{FileEndpoint.class};
+        return new Class[]{FileEndpoint.class, FilePollEndpoint.class};
     }
 
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
