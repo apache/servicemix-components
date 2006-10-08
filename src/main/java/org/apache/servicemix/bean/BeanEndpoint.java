@@ -19,6 +19,7 @@ package org.apache.servicemix.bean;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.bean.support.BeanInfo;
 import org.apache.servicemix.bean.support.DefaultMethodInvocationStrategy;
 import org.apache.servicemix.bean.support.MethodInvocationStrategy;
@@ -62,14 +63,25 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
             throw new IllegalArgumentException("No 'methodInvocationStrategy' property set");
         }
 
+        injectBean(getBean());
+
         // TODO invoke the bean's lifecycle methods for @PostConstruct
         // could use Spring to do this?
-        injectBean(getBean());
+
+        if (getBean() instanceof ExchangeProcessor) {
+            ExchangeProcessor processor = (ExchangeProcessor) getBean();
+            processor.start();
+        }
     }
 
 
     public void stop() throws Exception {
         super.stop();
+
+        if (getBean() instanceof ExchangeProcessor) {
+            ExchangeProcessor processor = (ExchangeProcessor) getBean();
+            processor.stop();
+        }
 
         // TODO invoke the beans destroy methods for @PreDestroy
 
@@ -166,6 +178,10 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
         if (pojo instanceof MessageExchangeListener) {
             MessageExchangeListener listener = (MessageExchangeListener) pojo;
             listener.onMessageExchange(exchange);
+        }
+        else if (pojo instanceof ExchangeProcessor) {
+            ExchangeProcessor processor = (ExchangeProcessor) pojo;
+            processor.process(exchange);
         }
         else {
             MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(pojo, getBeanInfo(), exchange, this);

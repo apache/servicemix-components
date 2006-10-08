@@ -35,7 +35,7 @@ import javax.xml.namespace.QName;
 
 public class PlainBeanEndpointTest extends SpringTestSupport {
 
-    public void testSendingToDynamicEndpointForPlainPojoWithFooOperation() throws Exception {
+    public void testSendingToDynamicEndpointForPlainBeanWithFooOperation() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
@@ -59,7 +59,7 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         assertNotNull("Bean's foo() method should bave been invoked", answer);
     }
 
-    public void testSendingToDynamicEndpointForPlainPojoWithBarOperation() throws Exception {
+    public void testSendingToDynamicEndpointForPlainBeanWithBarOperation() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
@@ -82,7 +82,7 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         assertNotNull("Bean's bar() method should bave been invoked", bar);
     }
 
-    public void testSendingToDynamicEndpointForPlainPojoWithPropertyExpressionParamameter() throws Exception {
+    public void testSendingToDynamicEndpointForPlainBeanWithPropertyExpressionParamameter() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
@@ -107,7 +107,7 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         assertEquals("Bean's methodWithPropertyParameter() method should bave been invoked", "James", answer);
     }
 
-    public void testSendingToDynamicEndpointForPlainPojoWithPropertyAndXPathExpressionParamameter() throws Exception {
+    public void testSendingToDynamicEndpointForPlainBeanWithPropertyAndXPathExpressionParamameter() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
