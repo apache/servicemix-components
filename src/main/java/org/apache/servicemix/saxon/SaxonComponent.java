@@ -16,15 +16,9 @@
  */
 package org.apache.servicemix.saxon;
 
-import org.apache.servicemix.common.BaseComponent;
-import org.apache.servicemix.common.BaseLifeCycle;
-import org.apache.servicemix.common.BaseServiceUnitManager;
-import org.apache.servicemix.common.Deployer;
-import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
-import org.apache.servicemix.common.xbean.XBeanServiceUnit;
+
+import java.util.List;
 
 /**
  * 
@@ -34,8 +28,21 @@ import org.apache.servicemix.common.xbean.XBeanServiceUnit;
  */
 public class SaxonComponent extends DefaultComponent {
 
+    private SaxonEndpoint[] endpoints;
+
+    public SaxonEndpoint[] getEndpoints() {
+        return endpoints;
+    }
+
+    public void setEndpoints(SaxonEndpoint[] endpoints) {
+        this.endpoints = endpoints;
+    }
+
     protected Class[] getEndpointClasses() {
         return new Class[] { SaxonEndpoint.class };
     }
 
+    protected List getConfiguredEndpoints() {
+        return asList(getEndpoints());
+    }
 }
