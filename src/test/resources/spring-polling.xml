@@ -29,12 +29,12 @@
       	<sm:component>
             <file:component>
             	<file:endpoints>
-
                 <file:endpoint service="test:service" endpoint="endpoint" directory="file:target/componentOutput"/>
-
-
-                <file:poller service="test:poller" endpoint="poller" file="file:target/pollerFiles"/>
             	</file:endpoints>
+              
+              <file:pollingEndpoints>
+                <file:pollingEndpoint service="test:poller" endpoint="poller" file="file:target/pollerFiles"/>
+              </file:pollingEndpoints>
             </file:component>
         </sm:component>
       </sm:activationSpec>

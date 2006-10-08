@@ -40,12 +40,12 @@ import java.util.Set;
  * and sends the files into the JBI bus as messages, deleting the files
  * by default when they are processed.
  *
- * @org.apache.xbean.XBean element="poller"
+ * @org.apache.xbean.XBean element="pollingEndpoint"
  *
  * @version $Revision$
  */
-public class FilePollEndpoint extends PollingEndpoint {
-    private static final Log log = LogFactory.getLog(FilePollEndpoint.class);
+public class FilePollingEndpoint extends PollingEndpoint {
+    private static final Log log = LogFactory.getLog(FilePollingEndpoint.class);
 
     private File file;
     private FileFilter filter;

@@ -30,12 +30,10 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
-
 import java.io.File;
-import java.net.URL;
 
 public class DynamicEndpointTest extends SpringTestSupport {
-    protected String dynamicURI = "file:target/dynamicEndpoint?file.tempFilePrefix=dynamicEp-";
+    protected String dynamicURI = "file://target/dynamicEndpoint?file.tempFilePrefix=dynamicEp-";
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -43,12 +41,6 @@ public class DynamicEndpointTest extends SpringTestSupport {
     }
 
     public void testSendingToDynamicEndpoint() throws Exception {
-        // lets check the path is parsable first
-        URL url = new URL(dynamicURI);
-        String path = url.getPath();
-        assertEquals("target/dynamicEndpoint", path);
-
-
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 

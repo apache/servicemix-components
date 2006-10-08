@@ -16,26 +16,23 @@
  */
 package org.apache.servicemix.file;
 
-import org.apache.servicemix.common.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
+import org.apache.servicemix.common.ProviderEndpoint;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
+import java.io.*;
 
 /**
  * An endpoint which receives a message and writes the content to a file.
  *
  * @org.apache.xbean.XBean element="endpoint"
- */
+ *
+ * @version $Revision: $
+*/
 public class FileEndpoint extends ProviderEndpoint {
     private File directory;
     private FileMarshaler marshaler = new DefaultFileMarshaler();

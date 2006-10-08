@@ -25,14 +25,17 @@ import org.w3c.dom.DocumentFragment;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
-import java.net.URI;
-import java.net.URL;
-import java.util.Map;
 import java.io.File;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
- * @org.apache.xbean.XBean element="component"
- * description="File Component"
+ * A file based component
+ *
+ * @version $Revision: $
+ * @org.apache.xbean.XBean element="component" description="File Component"
  */
 public class FileComponent extends DefaultComponent {
 
@@ -40,13 +43,39 @@ public class FileComponent extends DefaultComponent {
     public final static QName EPR_SERVICE = new QName(EPR_URI, "FileComponent");
     public final static String EPR_NAME = "epr";
 
+    private FileEndpoint[] endpoints;
+    private FilePollingEndpoint[] pollingEndpoints;
 
-    protected Class[] getEndpointClasses() {
-        return new Class[]{FileEndpoint.class, FilePollEndpoint.class};
+    public FileEndpoint[] getEndpoints() {
+        return endpoints;
+    }
+
+    public void setEndpoints(FileEndpoint[] endpoints) {
+        this.endpoints = endpoints;
+    }
+
+
+    public FilePollingEndpoint[] getPollingEndpoints() {
+        return pollingEndpoints;
+    }
+
+    public void setPollingEndpoints(FilePollingEndpoint[] pollingEndpoints) {
+        this.pollingEndpoints = pollingEndpoints;
     }
 
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
         return ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "file:");
+    }
+
+    protected List getConfiguredEndpoints() {
+        List answer = new ArrayList();
+        answer.addAll(asList(getEndpoints()));
+        answer.addAll(asList(getPollingEndpoints()));
+        return answer;
+    }
+
+    protected Class[] getEndpointClasses() {
+        return new Class[]{FileEndpoint.class, FilePollingEndpoint.class};
     }
 
     protected QName getEPRServiceName() {
@@ -61,18 +90,38 @@ public class FileComponent extends DefaultComponent {
         // TODO
         //fileEp.setRole(MessageExchange.Role.PROVIDER);
 
-        // lets use a URL to parse the path
-        URL url = new URL(ep.getEndpointName());
+        URI uri = new URI(ep.getEndpointName());
 
-        Map map = URISupport.parseQuery(url.getQuery());
-        IntrospectionSupport.setProperties(fileEp, map, "file.");
-
-        String path = url.getPath();
-        if (path != null) {
-            fileEp.setDirectory(new File(path));
+        String file = null;
+        String host = uri.getHost();
+        String path = uri.getPath();
+        if (host != null) {
+            if (path != null) {
+                // lets assume host really is a relative directory
+                file = host + File.separator + path;
+            }
+            else {
+                file = host;
+            }
         }
         else {
-            throw new IllegalArgumentException("No path defined for URL: " + url);
+            if (path != null) {
+                file = path;
+            }
+            else {
+                // must be an abssolute URI
+                file = uri.getSchemeSpecificPart();
+            }
+        }
+
+        Map map = URISupport.parseQuery(uri.getQuery());
+        IntrospectionSupport.setProperties(fileEp, map);
+
+        if (file != null) {
+            fileEp.setDirectory(new File(file));
+        }
+        else {
+            throw new IllegalArgumentException("No file defined for URL: " + uri);
         }
         fileEp.activate();
         return fileEp;
