@@ -16,15 +16,14 @@
  */
 package org.apache.servicemix.bean;
 
+import org.apache.servicemix.bean.beans.ListenerBean;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.bean.beans.ListenerBean;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.DocumentFragment;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -44,11 +43,9 @@ public class DynamicEndpointTest extends SpringTestSupport {
     }
 
     protected ListenerBean assertInvokeListenerBean(String uri) throws Exception {
-        // now lets make a request on this endpoint
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        ServiceMixClient client = new DefaultServiceMixClient(jbi);
 
-        DocumentFragment epr = URIResolver.createWSAEPR(uri);
-        ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
+        ServiceEndpoint se = client.resolveEndpointReference(uri);
         assertNotNull("We should find a service endpoint!", se);
 
         InOnly exchange = client.createInOnlyExchange();
