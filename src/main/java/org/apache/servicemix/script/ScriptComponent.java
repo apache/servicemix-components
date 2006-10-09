@@ -16,16 +16,32 @@
  */
 package org.apache.servicemix.script;
 
+import java.util.List;
+
 import org.apache.servicemix.common.DefaultComponent;
 
 /**
- * @org.apache.xbean.XBean element="component"
- *                  description="ServiceMix Scripting Component"
+ * @org.apache.xbean.XBean element="component" description="ServiceMix Scripting
+ *                         Component"
  */
 public class ScriptComponent extends DefaultComponent {
 
-    protected Class[] getEndpointClasses() {
-        return new Class[] { ScriptExchangeProcessorEndpoint.class };
-    }
+	private ScriptExchangeProcessorEndpoint[] endpoints;
+
+	protected Class[] getEndpointClasses() {
+		return new Class[] { ScriptExchangeProcessorEndpoint.class };
+	}
+
+	public ScriptExchangeProcessorEndpoint[] getEndpoints() {
+		return endpoints;
+	}
+
+	public void setEndpoints(ScriptExchangeProcessorEndpoint[] endpoints) {
+		this.endpoints = endpoints;
+	}
+
+	protected List getConfiguredEndpoints() {
+		return asList(endpoints);
+	}
 
 }
