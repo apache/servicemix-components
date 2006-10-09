@@ -22,8 +22,8 @@ import javax.wsdl.extensions.http.HTTPBinding;
 import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap.SOAPBinding;
 
-import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.wsdl1.AbstractWsdl1Deployer;
 import org.apache.servicemix.common.wsdl1.JbiEndpoint;
 
@@ -33,7 +33,7 @@ import org.apache.servicemix.common.wsdl1.JbiEndpoint;
  */
 public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
 
-    public HttpWsdl1Deployer(BaseComponent component) {
+    public HttpWsdl1Deployer(ServiceMixComponent component) {
         super(component);
     }
 
@@ -56,7 +56,6 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
             endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
             endpoint.setDefaultOperation(jbiEndpoint.getDefaultOperation());
             endpoint.setLocationURI(((HTTPAddress) portElement).getLocationURI());
-            endpoint.setBinding(bindingElement);
             return endpoint;
         } else if (portElement instanceof SOAPAddress && bindingElement instanceof SOAPBinding) {
             HttpEndpoint endpoint = new HttpEndpoint();
@@ -65,7 +64,6 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
             endpoint.setDefaultMep(jbiEndpoint.getDefaultMep());
             endpoint.setDefaultOperation(jbiEndpoint.getDefaultOperation());
             endpoint.setLocationURI(((SOAPAddress) portElement).getLocationURI());
-            endpoint.setBinding(bindingElement);
             return endpoint;
         } else {
             return null;

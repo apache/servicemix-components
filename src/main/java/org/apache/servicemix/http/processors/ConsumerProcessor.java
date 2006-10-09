@@ -39,8 +39,8 @@ import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.ContextManager;
+import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpoint;
-import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
@@ -259,8 +259,8 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     }
     
     protected ContextManager getServerManager() {
-        HttpLifeCycle lf =  (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-        return lf.getServer();
+        HttpComponent comp =  (HttpComponent) endpoint.getServiceUnit().getComponent();
+        return comp.getServer();
     }
     
     protected void generateDocument(HttpServletResponse response, Node node) throws Exception {

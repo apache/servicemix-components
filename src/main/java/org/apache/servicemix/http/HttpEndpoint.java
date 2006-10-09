@@ -18,7 +18,7 @@ package org.apache.servicemix.http;
 
 import java.net.URI;
 
-import javax.jbi.component.ComponentLifeCycle;
+import javax.jbi.management.DeploymentException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
@@ -30,6 +30,7 @@ import javax.wsdl.extensions.http.HTTPAddress;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
 import org.apache.servicemix.http.tools.PortTypeDecorator;
@@ -205,10 +206,10 @@ public class HttpEndpoint extends SoapEndpoint {
             if (!location.endsWith("/")) {
                 location += "/";
             }
-            HttpLifeCycle lf = (HttpLifeCycle) getServiceUnit().getComponent().getLifeCycle();
-            if (lf.getConfiguration().isManaged()) {
+            HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+            if (comp.getConfiguration().isManaged()) {
                 // TODO: need to find the port of the web server
-                location = "http://localhost" + lf.getConfiguration().getMapping() + new URI(location).getPath();
+                location = "http://localhost" + comp.getConfiguration().getMapping() + new URI(location).getPath();
             }
             if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
                 if (isSoap()) {
@@ -265,15 +266,33 @@ public class HttpEndpoint extends SoapEndpoint {
     }
 
     public AuthenticationService getAuthenticationService() {
-        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
-        return ((HttpLifeCycle) lf).getAuthenticationService();
+        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+        return comp.getAuthenticationService();
     }
 
     public KeystoreManager getKeystoreManager() {
-        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
-        return ((HttpLifeCycle) lf).getKeystoreManager();
+        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+        return comp.getKeystoreManager();
     }
 
+    public void validate() throws DeploymentException {
+        if (getRole() == null) {
+            throw failure("deploy", "Endpoint must have a defined role", null);
+        }
+        if (getLocationURI() == null) {
+            throw failure("deploy", "Endpoint must have a defined locationURI", null);
+        }
+    }
 
+    protected DeploymentException failure(String task, String info, Throwable e) {
+        ManagementSupport.Message msg = new ManagementSupport.Message();
+        msg.setComponent(serviceUnit.getComponent().getComponentName());
+        msg.setTask(task);
+        msg.setResult("FAILED");
+        msg.setType("ERROR");
+        msg.setMessage(info);
+        msg.setException(e);
+        return new DeploymentException(ManagementSupport.createComponentMessage(msg));
+    }
 
 }

@@ -62,7 +62,7 @@ public class HttpConsumerTest extends TestCase {
     protected long testInOnly(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
-        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration().setStreamingEnabled(streaming);
+        component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HTTPComponent");
         
         // Add a receiver component
@@ -111,7 +111,7 @@ public class HttpConsumerTest extends TestCase {
     protected long testInOut(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
-        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration().setStreamingEnabled(streaming);
+        component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HTTPComponent");
         
         // Add a receiver component
@@ -163,10 +163,16 @@ public class HttpConsumerTest extends TestCase {
         
     public void testInOnly() throws Exception {
         testInOnly("<hello>world</hello>", false);
+        // Pause to avoid reusing the same http connection
+        // to read the wsdl, has the server has changed
+        Thread.sleep(1000);
     }
     
     public void testInOut() throws Exception {
         testInOut("<hello>world</hello>", true);
+        // Pause to avoid reusing the same http connection
+        // to read the wsdl, has the server has changed
+        Thread.sleep(1000);
     }
     
     public void testPerfInOnlyWithBigMessage() throws Exception {

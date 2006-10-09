@@ -16,33 +16,235 @@
  */
 package org.apache.servicemix.http;
 
-import javax.jbi.servicedesc.ServiceEndpoint;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.servicemix.common.BaseComponent;
-import org.apache.servicemix.common.BaseLifeCycle;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
+
+import org.apache.activemq.util.IntrospectionSupport;
+import org.apache.activemq.util.URISupport;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.servicemix.common.BaseServiceUnitManager;
+import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.http.jetty.JCLLogger;
+import org.apache.servicemix.http.jetty.JettyContextManager;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
+import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.w3c.dom.DocumentFragment;
 
-public class HttpComponent extends BaseComponent {
+/**
+ * 
+ * @author gnodet
+ * @org.apache.xbean.XBean element="component"
+ *                  description="An http component"
+ */
+public class HttpComponent extends DefaultComponent {
 
     static {
         JCLLogger.init();
     }
     
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createLifeCycle()
+    protected ContextManager server;
+    protected HttpClient client;
+    protected MultiThreadedHttpConnectionManager connectionManager;
+    protected HttpConfiguration configuration = new HttpConfiguration();
+    protected HttpEndpoint[] endpoints;
+    
+    /**
+     * @return the endpoints
      */
-    protected BaseLifeCycle createLifeCycle() {
-        return new HttpLifeCycle(this);
+    public HttpEndpoint[] getEndpoints() {
+        return endpoints;
+    }
+
+    /**
+     * @param endpoints the endpoints to set
+     */
+    public void setEndpoints(HttpEndpoint[] endpoints) {
+        this.endpoints = endpoints;
+    }
+
+    public ContextManager getServer() {
+        return server;
+    }
+
+    public void setServer(ContextManager server) {
+        this.server = server;
+    }
+
+    public HttpClient getClient() {
+        return client;
+    }
+    
+    public void setClient(HttpClient client) {
+        this.client = client;
+    }
+    
+    /**
+     * @return Returns the configuration.
+     * @org.apache.xbean.Flat
+     */
+    public HttpConfiguration getConfiguration() {
+        return configuration;
+    }
+    
+    public void setConfiguration(HttpConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    /* (non-Javadoc)
+     * @see org.servicemix.common.BaseComponentLifeCycle#getExtensionMBean()
+     */
+    protected Object getExtensionMBean() throws Exception {
+        return configuration;
+    }
+
+    protected void doInit() throws Exception {
+        super.doInit();
+        // Load configuration
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.load();
+        // Lookup keystoreManager and authenticationService
+        if (configuration.getKeystoreManager() == null) {
+            try {
+                String name = configuration.getKeystoreManagerName();
+                Object km =  context.getNamingContext().lookup(name);
+                configuration.setKeystoreManager((KeystoreManager) km); 
+            } catch (Throwable e) {
+                // ignore
+            }
+        }
+        if (configuration.getAuthenticationService() == null) {
+            try {
+                String name = configuration.getAuthenticationServiceName();
+                Object as =  context.getNamingContext().lookup(name);
+                configuration.setAuthenticationService((AuthenticationService) as); 
+            } catch (Throwable e) {
+                configuration.setAuthenticationService(new JAASAuthenticationService());
+            }
+        }
+        // Create client
+        if (client == null) {
+            connectionManager = new MultiThreadedHttpConnectionManager();
+            HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+            params.setDefaultMaxConnectionsPerHost(configuration.getMaxConnectionsPerHost());
+            params.setMaxTotalConnections(configuration.getMaxTotalConnections());
+            connectionManager.setParams(params);
+            client = new HttpClient(connectionManager);
+        }
+        // Create serverManager
+        if (configuration.isManaged()) {
+            server = new ManagedContextManager();
+        } else {
+            JettyContextManager server = new JettyContextManager();
+            server.setMBeanServer(context.getMBeanServer());
+            this.server = server;
+        }
+        server.setConfiguration(configuration);
+        server.init();
+    }
+
+    protected void doShutDown() throws Exception {
+        super.doShutDown();
+        if (server != null) {
+            ContextManager s = server;
+            server = null;
+            s.shutDown();
+        }
+        if (connectionManager != null) {
+            connectionManager.shutdown();
+        }
+    }
+
+    protected void doStart() throws Exception {
+        server.start();
+        super.doStart();
+    }
+
+    protected void doStop() throws Exception {
+        super.doStop();
+        server.stop();
+    }
+    
+    protected QName getEPRServiceName() {
+        return HttpResolvedEndpoint.EPR_SERVICE;
+    }
+    
+    protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
+        // We receive an exchange for an EPR that has not been used yet.
+        // Register a provider endpoint and restart processing.
+        HttpEndpoint httpEp = new HttpEndpoint();
+        httpEp.setServiceUnit(new ServiceUnit(component));
+        httpEp.setService(ep.getServiceName());
+        httpEp.setEndpoint(ep.getEndpointName());
+        httpEp.setRole(MessageExchange.Role.PROVIDER);
+        URI uri = new URI(ep.getEndpointName());
+        Map map = URISupport.parseQuery(uri.getQuery());
+        if( IntrospectionSupport.setProperties(httpEp, map, "http.") ) {
+            uri = URISupport.createRemainingURI(uri, map);
+        }
+        if (httpEp.getLocationURI() == null) {
+            httpEp.setLocationURI(uri.toString());
+        }
+        httpEp.activateDynamic();
+        return httpEp;
+    }
+
+    /**
+     * @return the keystoreManager
+     */
+    public KeystoreManager getKeystoreManager() {
+        return configuration.getKeystoreManager();
+    }
+
+    /**
+     * @param keystoreManager the keystoreManager to set
+     */
+    public void setKeystoreManager(KeystoreManager keystoreManager) {
+        this.configuration.setKeystoreManager(keystoreManager);
+    }
+
+    /**
+     * @return the authenticationService
+     */
+    public AuthenticationService getAuthenticationService() {
+        return configuration.getAuthenticationService();
+    }
+
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.configuration.setAuthenticationService(authenticationService);
+    }
+
+    /**
+     * When servicemix-http is embedded inside a web application and configured
+     * to reuse the existing servlet container, this method will create and
+     * return the HTTPProcessor which will handle all servlet calls
+     * @param mappings 
+     */
+    public HttpProcessor getMainProcessor() {
+        return server.getMainProcessor();
     }
 
     /* (non-Javadoc)
      * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] { new HttpXBeanDeployer(this), new HttpWsdl1Deployer(this) };
+        Deployer[] deployers = new Deployer[] { new BaseXBeanDeployer(this, getEndpointClasses()), 
+                                                new HttpWsdl1Deployer(this) };
         return new BaseServiceUnitManager(this, deployers);
     }
 
@@ -52,24 +254,15 @@ public class HttpComponent extends BaseComponent {
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
         return HttpResolvedEndpoint.resolveEndpoint(epr);
     }
+
+    protected List getConfiguredEndpoints() {
+        List answer = new ArrayList();
+        answer.addAll(asList(getEndpoints()));
+        return answer;
+    }
+
+    protected Class[] getEndpointClasses() {
+        return new Class[] { HttpEndpoint.class };
+    }
     
-    /**
-     * @return the configuration
-     * @org.apache.xbean.Flat
-     */
-    public HttpConfiguration getConfiguration() {
-        return ((HttpLifeCycle) getLifeCycle()).getConfiguration();
-    }
-
-    /**
-     * @param configuration the configuration to set
-     */
-    public void setConfiguration(HttpConfiguration configuration) {
-        ((HttpLifeCycle) getLifeCycle()).setConfiguration(configuration);
-    }
-
-    public HttpProcessor getMainProcessor() {
-        return ((HttpLifeCycle) getLifeCycle()).getMainProcessor();
-    }
-
 }

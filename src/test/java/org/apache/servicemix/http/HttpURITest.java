@@ -53,7 +53,7 @@ public class HttpURITest extends TestCase {
     }
 
     public void testResolveEndpoint() throws Exception {
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         HttpEndpoint ep = new HttpEndpoint();
         ep.setRole(MessageExchange.Role.CONSUMER);
         ep.setService(ReceiverComponent.SERVICE);
@@ -67,7 +67,7 @@ public class HttpURITest extends TestCase {
         jbi.activateComponent(receiver, "receiver");
 
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        DocumentFragment epr = URIResolver.createWSAEPR("http://localhost:8192?http.soap=true");
+        DocumentFragment epr = URIResolver.createWSAEPR("http://localhost:8192/?http.soap=true");
         ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
         assertNotNull(se);
 

@@ -60,8 +60,7 @@ public class HttpProviderTest extends TestCase {
 	protected long testInOnly(String msg, boolean streaming) throws Exception {
 		// HTTP Component
 		HttpComponent component = new HttpComponent();
-		((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
-				.setStreamingEnabled(streaming);
+		component.getConfiguration().setStreamingEnabled(streaming);
 		container.activateComponent(component, "HttpProviderTest");
 
 		// Add a receiver component
@@ -71,7 +70,7 @@ public class HttpProviderTest extends TestCase {
 		container.activateComponent(asReceiver);
 
 		// Add the http receiver
-        HttpSpringComponent connector = new HttpSpringComponent();
+        HttpComponent connector = new HttpComponent();
         HttpEndpoint endpoint = new HttpEndpoint();
         endpoint.setRole(Role.CONSUMER);
         endpoint.setLocationURI("http://localhost:8192/");
@@ -121,8 +120,7 @@ public class HttpProviderTest extends TestCase {
 	protected String testInOut(String msg, boolean streaming) throws Exception {
 		// HTTP Component
 		HttpComponent component = new HttpComponent();
-		((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
-				.setStreamingEnabled(streaming);
+		component.getConfiguration().setStreamingEnabled(streaming);
 		container.activateComponent(component, "HTTPComponent");
 
 		// Add a echo component
@@ -132,7 +130,7 @@ public class HttpProviderTest extends TestCase {
 		container.activateComponent(asReceiver);
 
 		// Add the http receiver
-        HttpSpringComponent connector = new HttpSpringComponent();
+        HttpComponent connector = new HttpComponent();
         HttpEndpoint endpoint = new HttpEndpoint();
         endpoint.setRole(Role.CONSUMER);
         endpoint.setLocationURI("http://localhost:8192/");

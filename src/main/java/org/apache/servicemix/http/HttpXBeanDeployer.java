@@ -18,6 +18,7 @@ package org.apache.servicemix.http;
 
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
 
 import javax.jbi.management.DeploymentException;
@@ -42,5 +43,16 @@ public class HttpXBeanDeployer extends AbstractXBeanDeployer {
         return true;
     }
 
+
+    protected DeploymentException failure(String task, String info, Throwable e) {
+        ManagementSupport.Message msg = new ManagementSupport.Message();
+        msg.setComponent(component.getComponentName());
+        msg.setTask(task);
+        msg.setResult("FAILED");
+        msg.setType("ERROR");
+        msg.setMessage(info);
+        msg.setException(e);
+        return new DeploymentException(ManagementSupport.createComponentMessage(msg));
+    }
 
 }

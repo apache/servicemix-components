@@ -85,7 +85,7 @@ public class HttpSoapTest extends TestCase {
     }
     
     public void testFaultOnParse() throws Exception {
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         HttpEndpoint ep = new HttpEndpoint();
         ep.setService(new QName("urn:test", "echo"));
         ep.setEndpoint("echo");
@@ -110,7 +110,7 @@ public class HttpSoapTest extends TestCase {
         echo.setEndpoint("echo");
         container.activateComponent(echo, "echo");
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         
         HttpEndpoint ep1 = new HttpEndpoint();
         ep1.setService(new QName("urn:test", "echo"));
@@ -145,7 +145,7 @@ public class HttpSoapTest extends TestCase {
         echo.setEndpoint("echo");
         container.activateComponent(echo, "echo");
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         
         HttpEndpoint ep1 = new HttpEndpoint();
         ep1.setService(new QName("urn:test", "s1"));
@@ -186,7 +186,7 @@ public class HttpSoapTest extends TestCase {
         echo.setEndpoint("echo");
         container.activateComponent(echo, "echo");
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         
         HttpEndpoint ep1 = new HttpEndpoint();
         ep1.setService(new QName("urn:test", "s1"));
@@ -274,7 +274,7 @@ public class HttpSoapTest extends TestCase {
         ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep3.setSoap(true);
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
         container.activateComponent(http, "http1");
         
@@ -337,7 +337,7 @@ public class HttpSoapTest extends TestCase {
         ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep3.setSoap(true);
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
         container.activateComponent(http, "http1");
         
@@ -394,7 +394,7 @@ public class HttpSoapTest extends TestCase {
         ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-only"));
         ep3.setSoap(true);
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
         container.activateComponent(http, "http1");
         
@@ -427,7 +427,7 @@ public class HttpSoapTest extends TestCase {
         echo.setEndpoint("echo");
         container.activateComponent(echo, "echo");
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         
         HttpEndpoint ep0 = new HttpEndpoint();
         ep0.setService(new QName("urn:test", "s0"));

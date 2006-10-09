@@ -101,7 +101,7 @@ public class HttpTxTest extends TestCase {
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep1.setSoap(true);
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep0, ep1 });
         jbi.activateComponent(http, "http");
 
@@ -139,7 +139,7 @@ public class HttpTxTest extends TestCase {
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep1.setSoap(true);
         
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep0, ep1 });
         jbi.activateComponent(http, "http");
 

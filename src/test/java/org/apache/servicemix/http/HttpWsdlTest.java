@@ -85,7 +85,7 @@ public class HttpWsdlTest extends TestCase {
         ep.setRoleAsString("consumer");
         ep.setLocationURI("http://localhost:" + portNumber + "/Service");
         ep.setSoap(true);
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep });
         container.activateComponent(http, "HttpWsdlTest");
         
@@ -181,7 +181,7 @@ public class HttpWsdlTest extends TestCase {
         ep.setRoleAsString("consumer");
         ep.setLocationURI("http://localhost:8196/Service/");
         ep.setWsdlResource(new UrlResource("http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl"));
-        HttpSpringComponent http = new HttpSpringComponent();
+        HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep });
         container.activateComponent(http, "HttpWsdlTest");
         

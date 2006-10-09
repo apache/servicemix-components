@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -49,9 +48,9 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpConfiguration;
 import org.apache.servicemix.http.HttpEndpoint;
-import org.apache.servicemix.http.HttpLifeCycle;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
@@ -244,8 +243,8 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
     
     protected HttpConfiguration getConfiguration(HttpEndpoint endpoint) {
-        ComponentLifeCycle lf = endpoint.getServiceUnit().getComponent().getLifeCycle();
-        return ((HttpLifeCycle) lf).getConfiguration();
+        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+        return comp.getConfiguration();
     }
 
     public void stop() throws Exception {
@@ -272,8 +271,8 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 	
     protected RequestEntity writeMessage(SoapWriter writer) throws Exception {
-        HttpLifeCycle lf = (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-        if (lf.getConfiguration().isStreamingEnabled()) {
+        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+        if (comp.getConfiguration().isStreamingEnabled()) {
             return new StreamingRequestEntity(writer);
         } else {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -283,8 +282,8 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 
     protected HttpClient getClient() {
-        HttpLifeCycle lf =  (HttpLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-        return lf.getClient();
+        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+        return comp.getClient();
     }
 
     public static class StreamingRequestEntity implements RequestEntity {
