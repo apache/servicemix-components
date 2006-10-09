@@ -16,28 +16,25 @@
  */
 package org.apache.servicemix.ftp;
 
-import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.w3c.dom.DocumentFragment;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.servicedesc.ServiceEndpoint;
 
 public class DynamicEndpointTest extends SpringTestSupport {
 
     public void testSendingToDynamicEndpoint() throws Exception {
-        // now lets make a request on this endpoint
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        ServiceMixClient client = new DefaultServiceMixClient(jbi);
 
-        DocumentFragment epr = URIResolver.createWSAEPR("ftp://host/path");
-        ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
+        ServiceEndpoint se = client.resolveEndpointReference("ftp://host/path");
         assertNotNull("We should find a service endpoint!", se);
 
         InOnly exchange = client.createInOnlyExchange();
