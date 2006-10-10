@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.packet.Message;
@@ -30,7 +30,7 @@ import java.net.URI;
  * @version $Revision: $
  * @org.apache.xbean.XBean element="privateChatEndpoint"
  */
-public class PrivateChatEndpoint extends JabberEndpoint {
+public class PrivateChatEndpoint extends XMPPEndpoint {
 
     private Chat chat;
     private String participant;
@@ -38,7 +38,7 @@ public class PrivateChatEndpoint extends JabberEndpoint {
     public PrivateChatEndpoint() {
     }
 
-    public PrivateChatEndpoint(JabberComponent component, ServiceEndpoint serviceEndpoint) {
+    public PrivateChatEndpoint(XMPPComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
     }
 

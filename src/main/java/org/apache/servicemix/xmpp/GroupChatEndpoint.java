@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.jivesoftware.smack.GroupChat;
 import org.jivesoftware.smack.packet.Message;
@@ -29,7 +29,7 @@ import javax.jbi.servicedesc.ServiceEndpoint;
  * @version $Revision: $
  * @org.apache.xbean.XBean element="groupChatEndpoint"
  */
-public class GroupChatEndpoint extends JabberEndpoint {
+public class GroupChatEndpoint extends XMPPEndpoint {
 
     private GroupChat chat;
     private String room;
@@ -38,11 +38,11 @@ public class GroupChatEndpoint extends JabberEndpoint {
     public GroupChatEndpoint() {
     }
 
-    public GroupChatEndpoint(JabberComponent component, ServiceEndpoint serviceEndpoint) {
+    public GroupChatEndpoint(XMPPComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
     }
 
-    public GroupChatEndpoint(JabberComponent component, ServiceEndpoint serviceEndpoint, String room) {
+    public GroupChatEndpoint(XMPPComponent component, ServiceEndpoint serviceEndpoint, String room) {
         super(component, serviceEndpoint);
         this.room = room;
     }

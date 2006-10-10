@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
@@ -34,7 +34,7 @@ public class DynamicEndpointTest extends SpringTestSupport {
     public void testSendingToDynamicEndpoint() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbi);
 
-        ServiceEndpoint se = client.resolveEndpointReference("jabber://im.google.com/room");
+        ServiceEndpoint se = client.resolveEndpointReference("xmpp://im.google.com/room");
         assertNotNull("We should find a service endpoint!", se);
 
         InOnly exchange = client.createInOnlyExchange();

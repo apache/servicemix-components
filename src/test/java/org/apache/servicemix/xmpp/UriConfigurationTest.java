@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import junit.framework.TestCase;
 import org.apache.servicemix.common.ResolvedEndpoint;
@@ -29,14 +29,14 @@ public class UriConfigurationTest extends TestCase {
 
 
     public void testUriConfiguration() throws Exception {
-        ServiceEndpoint serviceEndpoint = new ResolvedEndpoint("jabber://servicemix-user@localhost/test-user@localhost", new QName("test"));
+        ServiceEndpoint serviceEndpoint = new ResolvedEndpoint("xmpp://servicemix-user@localhost/test-user@localhost", new QName("test"));
 
-        JabberComponent component = new JabberComponent();
+        XMPPComponent component = new XMPPComponent();
         PrivateChatEndpoint endpoint = (PrivateChatEndpoint) component.createEndpoint(serviceEndpoint);
         assertNotNull("Should have created an endpoint", endpoint);
 
         assertEquals("localhost", endpoint.getHost());
         assertEquals("servicemix-user", endpoint.getUser());
-        assertEquals("test-user@localhost", endpoint.getResource());
+        assertEquals("test-user@localhost", endpoint.getParticipant());
     }
 }

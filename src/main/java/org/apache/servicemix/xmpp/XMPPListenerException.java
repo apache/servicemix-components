@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.jivesoftware.smack.packet.Packet;
 
 /**
- * A runtime exception thrown when processing inbound Jabber packets.
+ * A runtime exception thrown when processing inbound XMPP packets.
  *
  * @version $Revision: 426415 $
  */
-public class JabberListenerException extends RuntimeException {
+public class XMPPListenerException extends RuntimeException {
     private Packet packet;
 
-    public JabberListenerException(Exception cause, Packet packet) {
+    public XMPPListenerException(Exception cause, Packet packet) {
         super(cause.getMessage() + ". Was processing packet: " + packet, cause);
         this.packet = packet;
     }

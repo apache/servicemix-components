@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
@@ -29,18 +29,11 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
-import java.util.Map;
-import java.util.Set;
 import java.net.InetAddress;
 
 public class SpringComponentTest extends SpringTestSupport {
 
     public static void main(String[] args) {
-        Set<Map.Entry<Object,Object>> entries = System.getProperties().entrySet();
-        for (Map.Entry<Object, Object> entry : entries) {
-            System.out.println(entry.getKey() + " = " + entry.getValue());
-        }
-
         try {
             SpringComponentTest test = new SpringComponentTest();
             test.setUp();

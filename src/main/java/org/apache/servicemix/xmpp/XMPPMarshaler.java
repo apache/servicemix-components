@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.apache.servicemix.jbi.jaxp.SourceMarshaler;
 import org.jivesoftware.smack.packet.Message;
@@ -35,16 +35,16 @@ import java.util.Iterator;
  *
  * @version $Revision: 429277 $
  */
-public class JabberMarshaler {
+public class XMPPMarshaler {
     private SourceMarshaler sourceMarshaler;
     private String messageBodyOpenTag = "<message>";
     private String messageBodyCloseTag = "</message>";
 
-    public JabberMarshaler() {
+    public XMPPMarshaler() {
         this(new SourceMarshaler());
     }
 
-    public JabberMarshaler(SourceMarshaler sourceMarshaler) {
+    public XMPPMarshaler(SourceMarshaler sourceMarshaler) {
         this.sourceMarshaler = sourceMarshaler;
     }
 
@@ -66,7 +66,7 @@ public class JabberMarshaler {
         }
 
         // lets add the packet to the NMS
-        normalizedMessage.setProperty("org.apache.servicemix.jabber.packet", packet);
+        normalizedMessage.setProperty("org.apache.servicemix.xmpp.packet", packet);
     }
 
     /**

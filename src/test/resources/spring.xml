@@ -18,7 +18,7 @@
 
 -->
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
-       xmlns:jabber="http://servicemix.apache.org/jabber/1.0"
+       xmlns:xmpp="http://servicemix.apache.org/xmpp/1.0"
        xmlns:test="urn:test">
   
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
@@ -30,19 +30,19 @@
       <sm:activationSpec>
         <sm:component>
 
-          <jabber:component user="servicemix-user" password="servicemix-pwd">
+          <xmpp:component user="servicemix-user" password="servicemix-pwd">
 
-            <jabber:endpoints>
+            <xmpp:endpoints>
 
-              <jabber:privateChatEndpoint service="test:service" endpoint="endpoint"
-                                          uri="jabber://${host}/test-user@${host}"/>
+              <xmpp:privateChatEndpoint service="test:service" endpoint="endpoint"
+                                          uri="xmpp://${host}/test-user@${host}"/>
 
 
-              <!--<jabber:groupChatEndpoint service="test:groupChat" endpoint="endpoint2"-->
-                                        <!--uri="jabber://${host}" room="conference"/>-->
+              <!--<xmpp:groupChatEndpoint service="test:groupChat" endpoint="endpoint2"-->
+                                        <!--uri="xmpp://${host}" room="conference"/>-->
 
-            </jabber:endpoints>
-          </jabber:component>
+            </xmpp:endpoints>
+          </xmpp:component>
         </sm:component>
       </sm:activationSpec>
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.apache.activemq.util.URISupport;
 import org.apache.servicemix.common.DefaultComponent;
@@ -41,23 +41,23 @@ import java.util.Map;
  * @version $Revision: $
  * @org.apache.xbean.XBean element="component" description="POJO Component"
  */
-public class JabberComponent extends DefaultComponent implements BeanFactoryAware {
+public class XMPPComponent extends DefaultComponent implements BeanFactoryAware {
 
-    public final static String EPR_URI = "urn:servicemix:jabber";
-    public final static QName EPR_SERVICE = new QName(EPR_URI, "JabberComponent");
+    public final static String EPR_URI = "urn:servicemix:xmpp";
+    public final static QName EPR_SERVICE = new QName(EPR_URI, "XMPPComponent");
     public final static String EPR_NAME = "epr";
 
-    private JabberEndpoint[] endpoints;
+    private XMPPEndpoint[] endpoints;
     private BeanFactory beanFactory;
     private String user;
     private String password;
 
 
-    public JabberEndpoint[] getEndpoints() {
+    public XMPPEndpoint[] getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(JabberEndpoint[] endpoints) {
+    public void setEndpoints(XMPPEndpoint[] endpoints) {
         this.endpoints = endpoints;
     }
 
@@ -86,7 +86,7 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
     }
 
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        return ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "jabber:");
+        return ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "xmpp:");
     }
 
     protected List getConfiguredEndpoints() {
@@ -94,7 +94,7 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[]{JabberEndpoint.class};
+        return new Class[]{XMPPEndpoint.class};
     }
 
     protected QName getEPRServiceName() {
@@ -102,7 +102,7 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
-        JabberEndpoint endpoint = createEndpoint(ep);
+        XMPPEndpoint endpoint = createEndpoint(ep);
         endpoint.activate();
         return endpoint;
     }
@@ -111,11 +111,11 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
      * A factory method for creating endpoints from a service endpoint
      * which is public so that it can be easily unit tested
      */
-    public JabberEndpoint createEndpoint(ServiceEndpoint ep) throws URISyntaxException {
+    public XMPPEndpoint createEndpoint(ServiceEndpoint ep) throws URISyntaxException {
         URI uri = new URI(ep.getEndpointName());
         Map map = URISupport.parseQuery(uri.getQuery());
 
-        JabberEndpoint endpoint = null;
+        XMPPEndpoint endpoint = null;
 
         // TODO how do we decide whether to use group or private chat from the URI in a nicer way?
         String room = (String) map.get("room");

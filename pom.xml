@@ -97,8 +97,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <excludes>
-            <!--  TODO - need an embedded Jabber server to be able to properly test -->
-            <exclude>**/*Test.*</exclude>
+            <!--  These integration tests require a Jabber server -->
+            <exclude>**/DynamicEndpointTest.*</exclude>
+            <exclude>**/SpringComponentTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>

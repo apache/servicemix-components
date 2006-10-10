@@ -18,7 +18,7 @@
 
 -->
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
-       xmlns:jabber="http://servicemix.apache.org/jabber/1.0"
+       xmlns:xmpp="http://servicemix.apache.org/xmpp/1.0"
        xmlns:test="urn:test">
 
   <sm:container id="jbi" embedded="true" createMBeanServer="false">
@@ -27,7 +27,7 @@
 
       <sm:activationSpec>
         <sm:component>
-          <jabber:component/>
+          <xmpp:component/>
         </sm:component>
       </sm:activationSpec>
 

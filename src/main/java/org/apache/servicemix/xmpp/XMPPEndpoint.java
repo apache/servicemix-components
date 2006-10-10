@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jabber;
+package org.apache.servicemix.xmpp;
 
 import org.apache.servicemix.common.ProviderEndpoint;
 import org.apache.servicemix.common.ServiceUnit;
@@ -35,12 +35,12 @@ import java.net.URI;
 import java.util.Iterator;
 
 /**
- * Represents a base Jabber endpoint
+ * Represents a base XMPP endpoint
  *
  * @version $Revision: $
  */
-public abstract class JabberEndpoint extends ProviderEndpoint implements PacketListener {
-    private JabberMarshaler marshaler = new JabberMarshaler();
+public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketListener {
+    private XMPPMarshaler marshaler = new XMPPMarshaler();
     private XMPPConnection connection;
     private String host;
     private int port;
@@ -51,10 +51,10 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
     private PacketFilter filter;
     private boolean createAccount;
 
-    public JabberEndpoint() {
+    public XMPPEndpoint() {
     }
 
-    public JabberEndpoint(JabberComponent component, ServiceEndpoint serviceEndpoint) {
+    public XMPPEndpoint(XMPPComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
         init(component);
     }
@@ -110,7 +110,7 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
 
     public void setServiceUnit(ServiceUnit serviceUnit) {
         super.setServiceUnit(serviceUnit);
-        init((JabberComponent) serviceUnit.getComponent());
+        init((XMPPComponent) serviceUnit.getComponent());
     }
 
     public void processPacket(Packet packet) {
@@ -144,7 +144,7 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
             //send(exchange);
         }
         catch (MessagingException e) {
-            throw new JabberListenerException(e, packet);
+            throw new XMPPListenerException(e, packet);
         }
     }
 
@@ -186,11 +186,11 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
         this.port = port;
     }
 
-    public JabberMarshaler getMarshaler() {
+    public XMPPMarshaler getMarshaler() {
         return marshaler;
     }
 
-    public void setMarshaler(JabberMarshaler marshaler) {
+    public void setMarshaler(XMPPMarshaler marshaler) {
         this.marshaler = marshaler;
     }
 
@@ -243,7 +243,7 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
     }
 
 
-    protected void init(JabberComponent component) {
+    protected void init(XMPPComponent component) {
         if (user == null) {
             user = component.getUser();
         }
