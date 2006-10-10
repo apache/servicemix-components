@@ -17,6 +17,7 @@
 package org.apache.servicemix.jabber;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -28,11 +29,40 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
+import java.util.Map;
+import java.util.Set;
+import java.net.InetAddress;
 
 public class SpringComponentTest extends SpringTestSupport {
 
+    public static void main(String[] args) {
+        Set<Map.Entry<Object,Object>> entries = System.getProperties().entrySet();
+        for (Map.Entry<Object, Object> entry : entries) {
+            System.out.println(entry.getKey() + " = " + entry.getValue());
+        }
+
+        try {
+            SpringComponentTest test = new SpringComponentTest();
+            test.setUp();
+            test.testSendingToStaticEndpoint();
+
+            System.out.println();
+            System.out.println("Waiting for incoming messages");
+            System.out.println("Press any key to terminate");
+            System.out.println();
+
+            System.in.read();
+
+            test.tearDown();
+        }
+        catch (Exception e) {
+            System.err.println("Caught: " + e);
+            e.printStackTrace();
+        }
+
+    }
     public void testSendingToStaticEndpoint() throws Exception {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        ServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOnly me = client.createInOnlyExchange();
         me.setService(new QName("urn:test", "service"));
         NormalizedMessage message = me.getInMessage();
@@ -44,6 +74,12 @@ public class SpringComponentTest extends SpringTestSupport {
         assertExchangeWorked(me);
     }
 
+
+    protected void setUp() throws Exception {
+        String host = InetAddress.getLocalHost().getHostName();
+        System.setProperty("host", host);
+        super.setUp();
+    }
 
     protected void assertExchangeWorked(MessageExchange me) throws Exception {
         if (me.getStatus() == ExchangeStatus.ERROR) {

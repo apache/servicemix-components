@@ -17,17 +17,22 @@
 package org.apache.servicemix.jabber;
 
 import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.common.ServiceUnit;
 import org.jivesoftware.smack.AccountManager;
-import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.RosterPacket;
+import org.jivesoftware.smack.packet.Message;
 
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import java.net.URI;
+import java.util.Iterator;
 
 /**
  * Represents a base Jabber endpoint
@@ -44,12 +49,14 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
     private String resource = "ServiceMix";
     private boolean login = true;
     private PacketFilter filter;
+    private boolean createAccount;
 
     public JabberEndpoint() {
     }
 
     public JabberEndpoint(JabberComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
+        init(component);
     }
 
     public void stop() throws Exception {
@@ -73,27 +80,68 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
         getConnection().addPacketListener(this, filter);
         if (login && !connection.isAuthenticated()) {
             if (user != null) {
-                AccountManager accountManager = new AccountManager(connection);
-                accountManager.createAccount(user, password);
-
                 logger.info("Logging in to Jabber as user: " + user + " on connection: " + connection);
-                connection.login(user, password, resource);
+                if (password == null) {
+                    logger.warn("No password configured for user: " + user);
+                }
+
+                if (createAccount) {
+                    AccountManager accountManager = new AccountManager(connection);
+                    accountManager.createAccount(user, password);
+                }
+                if (resource != null) {
+                    connection.login(user, password, resource);
+                }
+                else {
+                    connection.login(user, password);
+                }
             }
             else {
                 logger.info("Logging in anonymously to Jabber on connection: " + connection);
                 connection.loginAnonymously();
             }
+
+            // now lets send a presence
+
+            connection.sendPacket(new Presence(Presence.Type.AVAILABLE));
         }
     }
 
 
+    public void setServiceUnit(ServiceUnit serviceUnit) {
+        super.setServiceUnit(serviceUnit);
+        init((JabberComponent) serviceUnit.getComponent());
+    }
+
     public void processPacket(Packet packet) {
         try {
+            System.out.println("Received packet: " + packet);
+            Iterator iter = packet.getPropertyNames();
+            while (iter.hasNext()) {
+                String property = (String) iter.next();
+                System.out.println("Packet header: " + property + " value: " + packet.getProperty(property));
+            }
+            if (packet instanceof Message) {
+                Message message = (Message) packet;
+                System.out.println("Received message: " + message + " with " + message.getBody());
+
+            }
+            else if (packet instanceof RosterPacket) {
+                RosterPacket rosterPacket = (RosterPacket) packet;
+                System.out.println("Roster packet with : " + rosterPacket.getRosterItemCount());
+                Iterator rosterItems = rosterPacket.getRosterItems();
+                while (rosterItems.hasNext()) {
+                    Object item = rosterItems.next();
+                    System.out.println("Roster item: " + item);
+                }
+
+            }
             InOnly exchange = getExchangeFactory().createInOnlyExchange();
             NormalizedMessage in = exchange.createMessage();
             exchange.setInMessage(in);
             marshaler.toNMS(in, packet);
-            done(exchange);
+            System.out.println("Exchange: " + exchange);
+            //send(exchange);
         }
         catch (MessagingException e) {
             throw new JabberListenerException(e, packet);
@@ -109,11 +157,8 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
     public void setUri(URI uri) {
         setHost(uri.getHost());
         setPort(uri.getPort());
-        setUser(uri.getUserInfo());
-        setPassword(uri.getAuthority());
-        String path = uri.getPath();
-        if (path != null) {
-            setResource(path);
+        if (uri.getUserInfo() != null) {
+            setUser(uri.getUserInfo());
         }
     }
 
@@ -181,6 +226,14 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
         this.login = login;
     }
 
+    public boolean isCreateAccount() {
+        return createAccount;
+    }
+
+    public void setCreateAccount(boolean createAccount) {
+        this.createAccount = createAccount;
+    }
+
     public PacketFilter getFilter() {
         return filter;
     }
@@ -188,4 +241,15 @@ public abstract class JabberEndpoint extends ProviderEndpoint implements PacketL
     public void setFilter(PacketFilter filter) {
         this.filter = filter;
     }
+
+
+    protected void init(JabberComponent component) {
+        if (user == null) {
+            user = component.getUser();
+        }
+        if (password == null) {
+            password = component.getPassword();
+        }
+    }
+
 }

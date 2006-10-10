@@ -20,10 +20,13 @@ import org.apache.servicemix.jbi.jaxp.SourceMarshaler;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.namespace.QName;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -34,6 +37,8 @@ import java.util.Iterator;
  */
 public class JabberMarshaler {
     private SourceMarshaler sourceMarshaler;
+    private String messageBodyOpenTag = "<message>";
+    private String messageBodyCloseTag = "</message>";
 
     public JabberMarshaler() {
         this(new SourceMarshaler());
@@ -53,8 +58,11 @@ public class JabberMarshaler {
         addNmsProperties(normalizedMessage, packet);
         if (packet instanceof Message) {
             Message message = (Message) packet;
-            Source source = sourceMarshaler.asSource(message.getBody());
-            normalizedMessage.setContent(source);
+            String text = message.getBody();
+            if (text != null) {
+                Source source = sourceMarshaler.asSource(messageBodyOpenTag + text + messageBodyCloseTag);
+                normalizedMessage.setContent(source);
+            }
         }
 
         // lets add the packet to the NMS
@@ -65,15 +73,14 @@ public class JabberMarshaler {
      * Marshals from the Jabber message to the normalized message
      *
      * @param message
-     * @param normalizedMessage
-     * @throws javax.xml.transform.TransformerException
-     *
+     * @param exchange
+     * @param normalizedMessage @throws javax.xml.transform.TransformerException
      */
-    public void fromNMS(Message message, NormalizedMessage normalizedMessage) throws TransformerException {
+    public void fromNMS(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) throws TransformerException {
         // lets create a text message
         String xml = messageAsString(normalizedMessage);
         message.setBody(xml);
-        addJabberProperties(message, normalizedMessage);
+        addJabberProperties(message, exchange, normalizedMessage);
     }
 
     // Properties
@@ -106,6 +113,28 @@ public class JabberMarshaler {
         this.sourceMarshaler = sourceMarshaler;
     }
 
+    public String getMessageBodyOpenTag() {
+        return messageBodyOpenTag;
+    }
+
+    /**
+     * Sets the XML open tag used to wrap inbound Jabber text messages
+     */
+    public void setMessageBodyOpenTag(String messageBodyOpenTag) {
+        this.messageBodyOpenTag = messageBodyOpenTag;
+    }
+
+    public String getMessageBodyCloseTag() {
+        return messageBodyCloseTag;
+    }
+
+    /**
+     * Sets the XML close tag used to wrap inbound Jabber text messages
+     */
+    public void setMessageBodyCloseTag(String messageBodyCloseTag) {
+        this.messageBodyCloseTag = messageBodyCloseTag;
+    }
+
     // Implementation methods
     //-------------------------------------------------------------------------
 
@@ -119,13 +148,29 @@ public class JabberMarshaler {
     /**
      * Appends properties on the NMS to the JMS Message
      */
-    protected void addJabberProperties(Message message, NormalizedMessage normalizedMessage) {
+    protected void addJabberProperties(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) {
         for (Iterator iter = normalizedMessage.getPropertyNames().iterator(); iter.hasNext();) {
             String name = (String) iter.next();
             Object value = normalizedMessage.getProperty(name);
             if (shouldIncludeHeader(normalizedMessage, name, value)) {
                 message.setProperty(name, value);
             }
+        }
+        message.setProperty("exchangeId", exchange.getExchangeId());
+        setProperty(message, "interface", exchange.getInterfaceName());
+        setProperty(message, "operation", exchange.getOperation());
+        setProperty(message, "service", exchange.getService());
+        //message.setProperty("pattern", exchange.getPattern());
+        //message.setProperty("role", exchange.getRole());
+        ServiceEndpoint endpoint = exchange.getEndpoint();
+        if (endpoint != null) {
+            message.setProperty("endpointName", endpoint.getEndpointName());
+        }
+    }
+
+    protected void setProperty(Message message, String name, QName qName) {
+        if (qName != null) {
+            message.setProperty(name, qName.toString());
         }
     }
 

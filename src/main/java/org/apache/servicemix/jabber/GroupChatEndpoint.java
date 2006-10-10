@@ -88,7 +88,9 @@ public class GroupChatEndpoint extends JabberEndpoint {
     //-------------------------------------------------------------------------
     protected void processInOnly(MessageExchange exchange, NormalizedMessage normalizedMessage) throws Exception {
         Message message = chat.createMessage();
-        getMarshaler().fromNMS(message, normalizedMessage);
+        message.setTo(room);
+        message.setFrom(getUser());
+        getMarshaler().fromNMS(message, exchange, normalizedMessage);
         chat.sendMessage(message);
         done(exchange);
     }

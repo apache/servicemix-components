@@ -30,10 +30,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.servicemix</groupId>
-  <artifactId>servicemix-jabber</artifactId>
+  <artifactId>servicemix-xmpp</artifactId>
   <packaging>jbi-component</packaging>
-  <name>ServiceMix Jabber</name>
-  <description>A Jabber component</description>
+  <name>ServiceMix XMPP</name>
+  <description>An XMPP component for communicating with Jabber networks</description>
 
   <dependencies>
     <dependency>
@@ -74,7 +74,7 @@
         <extensions>true</extensions>
         <configuration>
           <type>service-engine</type>
-          <component>org.apache.servicemix.jabber.JabberComponent</component>
+          <component>org.apache.servicemix.xmpp.XMPPComponent</component>
         </configuration>
       </plugin>
       <plugin>
@@ -87,7 +87,7 @@
               <goal>mapping</goal>
             </goals>
             <configuration>
-              <namespace>http://servicemix.apache.org/jabber/1.0</namespace>
+              <namespace>http://servicemix.apache.org/xmpp/1.0</namespace>
             </configuration>
           </execution>
         </executions>

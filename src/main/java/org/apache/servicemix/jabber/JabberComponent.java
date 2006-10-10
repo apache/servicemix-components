@@ -20,6 +20,7 @@ import org.apache.activemq.util.URISupport;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ResolvedEndpoint;
+import org.apache.servicemix.jbi.util.IntrospectionSupport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -28,6 +29,7 @@ import org.w3c.dom.DocumentFragment;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +49,8 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
 
     private JabberEndpoint[] endpoints;
     private BeanFactory beanFactory;
+    private String user;
+    private String password;
 
 
     public JabberEndpoint[] getEndpoints() {
@@ -55,6 +59,22 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
 
     public void setEndpoints(JabberEndpoint[] endpoints) {
         this.endpoints = endpoints;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public BeanFactory getBeanFactory() {
@@ -82,11 +102,22 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
+        JabberEndpoint endpoint = createEndpoint(ep);
+        endpoint.activate();
+        return endpoint;
+    }
+
+    /**
+     * A factory method for creating endpoints from a service endpoint
+     * which is public so that it can be easily unit tested
+     */
+    public JabberEndpoint createEndpoint(ServiceEndpoint ep) throws URISyntaxException {
         URI uri = new URI(ep.getEndpointName());
         Map map = URISupport.parseQuery(uri.getQuery());
 
         JabberEndpoint endpoint = null;
-        // TODO how do we decide whether to use group or private chat from the URI??
+
+        // TODO how do we decide whether to use group or private chat from the URI in a nicer way?
         String room = (String) map.get("room");
         if (room != null) {
             endpoint = new GroupChatEndpoint(this, ep, room);
@@ -95,15 +126,14 @@ public class JabberComponent extends DefaultComponent implements BeanFactoryAwar
             endpoint = new PrivateChatEndpoint(this, ep);
         }
 
+        IntrospectionSupport.setProperties(endpoint, map);
+        IntrospectionSupport.setProperties(endpoint.getMarshaler(), map, "marshal.");
+
         // TODO
         //endpoint.setRole(MessageExchange.Role.PROVIDER);
 
         endpoint.setUri(uri);
 
-        // TODO
-        // IntrospectionSupport.setProperties(endpoint.getBean(), map);
-
-        endpoint.activate();
         return endpoint;
     }
 

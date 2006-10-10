@@ -22,6 +22,7 @@ import org.jivesoftware.smack.packet.Message;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import java.net.URI;
 
 /**
  * Represents an endpoint for chatting to a single individual
@@ -41,14 +42,10 @@ public class PrivateChatEndpoint extends JabberEndpoint {
         super(component, serviceEndpoint);
     }
 
-    public PrivateChatEndpoint(JabberComponent component, ServiceEndpoint serviceEndpoint, String participant) {
-        super(component, serviceEndpoint);
-        this.participant = participant;
-    }
-
     public void start() throws Exception {
         super.start();
         if (chat == null) {
+            String participant = getParticipant();
             if (participant == null) {
                 throw new IllegalArgumentException("No participant property specified");
             }
@@ -80,12 +77,29 @@ public class PrivateChatEndpoint extends JabberEndpoint {
         this.participant = participant;
     }
 
+
+    public void setUri(URI uri) {
+        super.setUri(uri);
+        String path = uri.getPath();
+        if (path != null) {
+            // lets strip the leading slash to make an XMPP resource
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            setParticipant(path);
+        }
+    }
+
+
     // Implementation methods
     //-------------------------------------------------------------------------
     protected void processInOnly(MessageExchange exchange, NormalizedMessage normalizedMessage) throws Exception {
         Message message = chat.createMessage();
-        getMarshaler().fromNMS(message, normalizedMessage);
+        getMarshaler().fromNMS(message, exchange, normalizedMessage);
+        message.setTo(getParticipant());
+        message.setFrom(getUser());
+        message.setThread(exchange.getExchangeId());
+        message.setType(Message.Type.NORMAL);
         chat.sendMessage(message);
-        done(exchange);
     }
 }

@@ -20,6 +20,8 @@
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
        xmlns:jabber="http://servicemix.apache.org/jabber/1.0"
        xmlns:test="urn:test">
+  
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
   <sm:container id="jbi" embedded="true" createMBeanServer="false">
 
@@ -27,9 +29,18 @@
 
       <sm:activationSpec>
         <sm:component>
-          <jabber:component>
+
+          <jabber:component user="servicemix-user" password="servicemix-pwd">
+
             <jabber:endpoints>
-              <jabber:groupChatEndpoint service="test:service" endpoint="endpoint" uri="jabber://im.google.com/servicemix" room="foo"/>
+
+              <jabber:privateChatEndpoint service="test:service" endpoint="endpoint"
+                                          uri="jabber://${host}/test-user@${host}"/>
+
+
+              <!--<jabber:groupChatEndpoint service="test:groupChat" endpoint="endpoint2"-->
+                                        <!--uri="jabber://${host}" room="conference"/>-->
+
             </jabber:endpoints>
           </jabber:component>
         </sm:component>
