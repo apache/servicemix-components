@@ -26,6 +26,7 @@ import javax.jbi.management.DeploymentException;
 import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
 import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.springframework.beans.BeansException;
