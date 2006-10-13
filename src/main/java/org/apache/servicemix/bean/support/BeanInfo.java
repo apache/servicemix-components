@@ -58,7 +58,7 @@ public class BeanInfo {
         this.type = type;
         this.strategy = strategy;
         introspect(type);
-        if (operations.size() == 0) {
+        if (operations.size() == 1) {
             Collection<MethodInfo> methodInfos = operations.values();
             for (MethodInfo methodInfo : methodInfos) {
                 defaultExpression = methodInfo;
