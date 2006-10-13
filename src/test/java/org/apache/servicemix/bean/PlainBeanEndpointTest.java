@@ -134,6 +134,34 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         assertEquals("xpath parameter", "London", xpath);
     }
 
+    public void testSendingToDynamicEndpointForPlainBeanWithPropertyAndContentParamameter() throws Exception {
+        // now lets make a request on this endpoint
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+
+        DocumentFragment epr = URIResolver.createWSAEPR("bean:plainBean");
+        ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
+        assertNotNull("We should find a service endpoint!", se);
+
+        InOnly exchange = client.createInOnlyExchange();
+        exchange.setEndpoint(se);
+        exchange.setOperation(new QName("methodWithPropertyParameterAndContent"));
+        NormalizedMessage inMessage = exchange.getInMessage();
+        inMessage.setProperty("person", "James");
+        inMessage.setContent(new StringSource("<hello address='London'>world</hello>"));
+        client.sendSync(exchange);
+
+        assertExchangeWorked(exchange);
+
+        PlainBean bean = (PlainBean) getBean("plainBean");
+        Object property = bean.getPropertyParameter();
+        Object body = bean.getBody();
+        log.info("Bean's methodWithPropertyParameterAndContent() method has been with property: " + property + " and body: " + body);
+
+        assertEquals("property parameter", "James", property);
+        // TODO need to add a marshalling example
+        //assertEquals("content parameter", "London", body);
+    }
+
     protected void assertExchangeWorked(MessageExchange me) throws Exception {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {

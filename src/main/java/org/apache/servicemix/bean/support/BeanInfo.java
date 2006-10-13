@@ -19,11 +19,14 @@ package org.apache.servicemix.bean.support;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.bean.Content;
+import org.apache.servicemix.bean.Property;
+import org.apache.servicemix.bean.XPath;
+import org.apache.servicemix.components.util.MessageHelper;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.expression.JAXPStringXPathExpression;
 import org.apache.servicemix.expression.PropertyExpression;
-import org.apache.servicemix.bean.Property;
-import org.apache.servicemix.bean.XPath;
+import org.apache.servicemix.jbi.messaging.PojoMarshaler;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
@@ -146,10 +149,35 @@ public class BeanInfo {
             Property propertyAnnotation = (Property) annotation;
             return new PropertyExpression(propertyAnnotation.name());
         }
-        if (annotation instanceof XPath) {
+        else if (annotation instanceof Content) {
+            Content content = (Content) annotation;
+            final PojoMarshaler marshaller = newInstance(content);
+            return createContentExpression(marshaller);
+        }
+        else if (annotation instanceof XPath) {
             XPath xpathAnnotation = (XPath) annotation;
             return new JAXPStringXPathExpression(xpathAnnotation.xpath());
         }
         return null;
+    }
+
+    protected Expression createContentExpression(final PojoMarshaler marshaller) {
+        return new Expression() {
+            public Object evaluate(MessageExchange exchange, NormalizedMessage message) throws MessagingException {
+                return MessageHelper.getBody(message, marshaller);
+            }
+        };
+    }
+
+    protected PojoMarshaler newInstance(Content content) {
+        try {
+            return content.marshalType().newInstance();
+        }
+        catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        }
+        catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

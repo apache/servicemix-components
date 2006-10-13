@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.bean.Property;
 import org.apache.servicemix.bean.XPath;
+import org.apache.servicemix.bean.Content;
 
 import javax.jbi.messaging.MessageExchange;
 
@@ -36,6 +37,7 @@ public class PlainBean {
     private MessageExchange bar;
     private String propertyParameter;
     private String xpathParameter;
+    private Object body;
 
     public void foo(MessageExchange messageExchange) {
         this.foo = messageExchange;
@@ -57,6 +59,12 @@ public class PlainBean {
         this.propertyParameter = name;
         this.xpathParameter = address;
         log.info("methodWithPropertyParameterAndXPath() called with parameter: " + address);
+    }
+
+    public void methodWithPropertyParameterAndContent(@Property(name = "person") String name, @Content Object body) {
+        this.propertyParameter = name;
+        this.body = body;
+        log.info("methodWithPropertyParameterAndContent() called with body: " + body);
     }
 
 
@@ -90,5 +98,13 @@ public class PlainBean {
 
     public void setXpathParameter(String xpathParameter) {
         this.xpathParameter = xpathParameter;
+    }
+
+    public Object getBody() {
+        return body;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
     }
 }

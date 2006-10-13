@@ -49,8 +49,14 @@ public class UriTest extends TestCase {
         dump(uri);
     }
 
+
     public void testHierarchialWithAbsolutePath() throws Exception {
         URI uri = new URI("file:///cheese/path?foo=123");
+        dump(uri);
+    }
+
+    public void testUserNameAndPassword() throws Exception {
+        URI uri = new URI("jabber://me@host/them@somewhere.else.com?foo=bar");
         dump(uri);
     }
 
