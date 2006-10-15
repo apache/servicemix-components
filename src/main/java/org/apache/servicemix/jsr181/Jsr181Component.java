@@ -53,7 +53,7 @@ public class Jsr181Component extends DefaultComponent {
     }
     
     public List getConfiguredEndpoints() {
-        return endpoints != null ? Arrays.asList(endpoints) : Collections.EMPTY_LIST;
+        return asList(endpoints);
     }
     
     protected Class[] getEndpointClasses() {
