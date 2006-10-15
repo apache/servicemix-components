@@ -256,9 +256,7 @@ public class HttpComponent extends DefaultComponent {
     }
 
     protected List getConfiguredEndpoints() {
-        List answer = new ArrayList();
-        answer.addAll(asList(getEndpoints()));
-        return answer;
+        return asList(endpoints);
     }
 
     protected Class[] getEndpointClasses() {
