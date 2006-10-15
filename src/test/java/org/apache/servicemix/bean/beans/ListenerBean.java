@@ -20,6 +20,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.MessageExchangeListener;
 
+import javax.annotation.Resource;
+import javax.jbi.messaging.DeliveryChannel;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 
@@ -32,19 +35,22 @@ public class ListenerBean implements MessageExchangeListener {
 
     private static final Log log = LogFactory.getLog(ListenerBean.class);
 
+    @Resource
+    private DeliveryChannel channel;
+    
     private MessageExchange lastExchange;
     private String param;
 
-    public void onMessageExchange(MessageExchange messageExchange) throws MessagingException {
-        this.lastExchange = messageExchange;
-
-        log.info("Received exchange: " + messageExchange);
+    public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+        this.lastExchange = exchange;
+        log.info("Received exchange: " + exchange);
+        exchange.setStatus(ExchangeStatus.DONE);
+        channel.send(exchange);
     }
 
     public MessageExchange getLastExchange() {
         return lastExchange;
     }
-
 
     public String getParam() {
         return param;

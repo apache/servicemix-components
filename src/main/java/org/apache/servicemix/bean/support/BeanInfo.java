@@ -20,6 +20,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.bean.Content;
+import org.apache.servicemix.bean.Operation;
 import org.apache.servicemix.bean.Property;
 import org.apache.servicemix.bean.XPath;
 import org.apache.servicemix.components.util.MessageHelper;
@@ -110,8 +111,12 @@ public class BeanInfo {
         }
 
         // now lets add the method to the repository
+        String opName = method.getName();
+        if (method.getAnnotation(Operation.class) != null) {
+            opName = method.getAnnotation(Operation.class).name();
+        }
         Expression parametersExpression = createMethodParametersExpression(parameterExpressions);
-        operations.put(method.getName(), new MethodInfo(type, method, parametersExpression));
+        operations.put(opName, new MethodInfo(type, method, parametersExpression));
     }
 
     protected Expression createMethodParametersExpression(final Expression[] parameterExpressions) {
@@ -140,7 +145,6 @@ public class BeanInfo {
                 return answer;
             }
         }
-
         return strategy.getDefaultParameterTypeExpression(parameterType);
     }
 

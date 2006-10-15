@@ -18,22 +18,21 @@ package org.apache.servicemix.bean;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
 import org.aopalliance.intercept.MethodInvocation;
@@ -44,12 +43,15 @@ import org.apache.commons.jexl.JexlHelper;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.bean.support.BeanInfo;
 import org.apache.servicemix.bean.support.DefaultMethodInvocationStrategy;
+import org.apache.servicemix.bean.support.DestinationImpl;
+import org.apache.servicemix.bean.support.Holder;
 import org.apache.servicemix.bean.support.MethodInvocationStrategy;
 import org.apache.servicemix.bean.support.ReflectionUtils;
+import org.apache.servicemix.bean.support.Request;
 import org.apache.servicemix.common.EndpointComponentContext;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ProviderEndpoint;
-import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.expression.JAXPStringXPathExpression;
+import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.jbi.util.MessageUtil;
 import org.springframework.beans.BeansException;
@@ -62,16 +64,20 @@ import org.springframework.beans.factory.BeanFactoryAware;
  *
  * @version $Revision: $
  * @org.apache.xbean.XBean element="endpoint"
+ * 
+ * TODO: handle correlations to create / scope beans
  */
 public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
     private BeanFactory beanFactory;
     private String beanName;
     private Object bean;
     private BeanInfo beanInfo;
+    private Class<?> beanType;
     private MethodInvocationStrategy methodInvocationStrategy;
+    private org.apache.servicemix.expression.Expression correlationExpression;
     
     private Map<String, Holder> exchanges = new ConcurrentHashMap<String, Holder>();
-    private Map<String, Request> requests = new ConcurrentHashMap<String, Request>();
+    private Map<Object, Request> requests = new ConcurrentHashMap<Object, Request>();
     private ThreadLocal<Request> currentRequest = new ThreadLocal<Request>();
     private ComponentContext context;
     private DeliveryChannel channel;
@@ -86,41 +92,27 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
 
     public void start() throws Exception {
         super.start();
-        context = new EndpointComponentContext(getServiceUnit().getComponent().getComponentContext());
+        context = new EndpointComponentContext(this);
         channel = context.getDeliveryChannel();
-
-        if (getBean() == null) {
-            throw new IllegalArgumentException("No 'bean' property set");
+        Object pojo = getBean();
+        if (pojo != null) {
+            injectBean(pojo);
+            ReflectionUtils.callLifecycleMethod(pojo, PostConstruct.class);
         }
+        beanType = pojo != null ? pojo.getClass() : createBean().getClass();
         if (getMethodInvocationStrategy() == null) {
             throw new IllegalArgumentException("No 'methodInvocationStrategy' property set");
-        }
-
-        injectBean(getBean());
-        // Call PostConstruct annotated methods
-        ReflectionUtils.callLifecycleMethod(getBean(), PostConstruct.class);
-
-        if (getBean() instanceof ExchangeProcessor) {
-            ExchangeProcessor processor = (ExchangeProcessor) getBean();
-            processor.start();
         }
     }
 
 
     public void stop() throws Exception {
         super.stop();
-
-        if (getBean() instanceof ExchangeProcessor) {
-            ExchangeProcessor processor = (ExchangeProcessor) getBean();
-            processor.stop();
+        Object pojo = getBean();
+        if (pojo != null) {
+            ReflectionUtils.callLifecycleMethod(pojo, PreDestroy.class);
         }
-
-        // TODO invoke the beans destroy methods for @PreDestroy
-
-        // lets allow garbage collection to take place
-        bean = null;
     }
-
 
     public BeanFactory getBeanFactory() {
         return beanFactory;
@@ -139,9 +131,6 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
     }
 
     public Object getBean() {
-        if (bean == null) {
-            bean = createBean();
-        }
         return bean;
     }
 
@@ -152,7 +141,7 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
 
     public BeanInfo getBeanInfo() {
         if (beanInfo == null) {
-            beanInfo = new BeanInfo(getBean().getClass(), getMethodInvocationStrategy());
+            beanInfo = new BeanInfo(beanType, getMethodInvocationStrategy());
         }
         return beanInfo;
     }
@@ -173,9 +162,11 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
     }
 
 
+    @Override
     public void process(MessageExchange exchange) throws Exception {
-        if (exchange.getRole() == MessageExchange.Role.CONSUMER) {
+        if (exchange.getRole() == Role.CONSUMER) {
             onConsumerExchange(exchange);
+        // Find or create the request for this provider exchange
         } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
             onProviderExchange(exchange);
         } else {
@@ -184,58 +175,85 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
     }
     
     protected void onProviderExchange(MessageExchange exchange) throws Exception {
-        // Exchange is finished
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
-            return;
+        Object corId = getCorrelation(exchange);
+        Request req = requests.get(corId);
+        if (req == null) {
+            Object pojo = getBean();
+            if (pojo == null) {
+                pojo = createBean();
+                injectBean(pojo);
+                ReflectionUtils.callLifecycleMethod(bean, PostConstruct.class);
+            }
+            req = new Request(pojo, exchange);
+            requests.put(corId, req);
         }
-        // Exchange has been aborted with an exception
-        else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            return;
-        // Fault message
-        } else if (exchange.getFault() != null) {
-            // TODO: find a way to send it back to the bean before setting the DONE status
-            done(exchange);
+        currentRequest.set(req);
+        // If the bean implements MessageExchangeListener,
+        // just call the method
+        if (req.getBean() instanceof MessageExchangeListener) {
+            ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
         } else {
-            onMessageExchange(exchange);
-            done(exchange);
+            // Exchange is finished
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                return;
+            }
+            // Exchange has been aborted with an exception
+            else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                return;
+                // Fault message
+            } else if (exchange.getFault() != null) {
+                // TODO: find a way to send it back to the bean before setting the DONE status
+                done(exchange);
+            } else {
+                MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(req.getBean(), getBeanInfo(), exchange, this);
+                if (invocation == null) {
+                    throw new UnknownMessageExchangeTypeException(exchange, this);
+                }
+                try {
+                    invocation.proceed();
+                } catch (Exception e) {
+                    throw e;
+                } catch (Throwable throwable) {
+                    throw new MethodInvocationFailedException(req.getBean(), invocation, exchange, this, throwable);
+                }
+                if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                    send(exchange);
+                }
+                if (exchange.getFault() == null && exchange.getMessage("out") == null)  {
+                    // TODO: handle MEP correctly (DONE should only be sent for InOnly)
+                    done(exchange);
+                }
+            }
         }
+        checkEndOfRequest(req);
+        currentRequest.set(null);
     }
     
     protected void onConsumerExchange(MessageExchange exchange) throws Exception {
-        Holder me = exchanges.get(exchange.getExchangeId());
-        if (me == null) {
-            throw new IllegalStateException("Consumer exchange not found");
+        Object corId = exchange.getExchangeId();
+        Request req = requests.remove(corId);
+        if (req == null) {
+            throw new IllegalStateException("Receiving unknown consumer exchange: " + exchange);
         }
-        me.set(exchange);
-        evaluateCallbacks(requests.remove(exchange.getExchangeId()));
-    }
-
-    protected void onMessageExchange(MessageExchange exchange) throws Exception {
-        Request req = new Request(getBean(), exchange);
-        requests.put(exchange.getExchangeId(), req);
         currentRequest.set(req);
-        Object pojo = req.getBean();
-        if (pojo instanceof MessageExchangeListener) {
-            MessageExchangeListener listener = (MessageExchangeListener) pojo;
-            listener.onMessageExchange(exchange);
-        }
-        else if (pojo instanceof ExchangeProcessor) {
-            ExchangeProcessor processor = (ExchangeProcessor) pojo;
-            processor.process(exchange);
-        }
-        else {
-            MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(pojo, getBeanInfo(), exchange, this);
-            if (invocation == null) {
-                throw new UnknownMessageExchangeTypeException(exchange, this);
+        // If the bean implements MessageExchangeListener,
+        // just call the method
+        if (req.getBean() instanceof MessageExchangeListener) {
+            ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
+        } else {
+            Holder me = exchanges.get(exchange.getExchangeId());
+            if (me == null) {
+                throw new IllegalStateException("Consumer exchange not found");
             }
-            try {
-                invocation.proceed();
-            } catch (Exception e) {
-                throw e;
-            } catch (Throwable throwable) {
-                throw new MethodInvocationFailedException(pojo, invocation, exchange, this, throwable);
-            }
+            me.set(exchange);
+            evaluateCallbacks(req);
         }
+        checkEndOfRequest(req);
+        currentRequest.set(null);
+    }
+    
+    protected Object getCorrelation(MessageExchange exchange) throws MessagingException {
+        return getCorrelationExpression().evaluate(exchange, exchange.getMessage("in"));
     }
 
     protected Object createBean() {
@@ -264,7 +282,7 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
             public void doWith(Field f) throws IllegalArgumentException, IllegalAccessException {
                 ExchangeTarget et = f.getAnnotation(ExchangeTarget.class);
                 if (et != null) {
-                    ReflectionUtils.setField(f, bean, new DestinationImpl(et.uri()));
+                    ReflectionUtils.setField(f, bean, new DestinationImpl(et.uri(), BeanEndpoint.this));
                 }
                 if (f.getAnnotation(Resource.class) != null) {
                     if (ComponentContext.class.isAssignableFrom(f.getType())) {
@@ -277,7 +295,7 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
         });
     }
     
-    protected void evaluateCallbacks(Request req) {
+    protected void evaluateCallbacks(final Request req) {
         final Object bean = req.getBean();
         ReflectionUtils.doWithMethods(bean.getClass(), new ReflectionUtils.MethodCallback() {
             @SuppressWarnings("unchecked")
@@ -288,9 +306,15 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
                         JexlContext jc = JexlHelper.createContext();
                         jc.getVars().put("this", bean);
                         Object r = e.evaluate(jc);
-                        if (r instanceof Boolean && ((Boolean) r).booleanValue()) {
+                        if (r instanceof Boolean == false) {
+                            throw new RuntimeException("Expression did not returned a boolean value but: " + r);
+                        }
+                        boolean oldVal = req.getCallbacks().get(method);
+                        boolean newVal = (Boolean) r;
+                        if (oldVal == false && newVal == true) {
+                            req.getCallbacks().put(method, newVal);
                             Object o = method.invoke(bean, new Object[0]);
-                            // TODO
+                            // TODO: handle return value and sent it as the answer
                         }
                     } catch (Exception e) {
                         throw new RuntimeException("Unable to invoke callback", e);
@@ -300,122 +324,66 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
         });
     }
     
-    public class DestinationImpl implements Destination {
-
-        private final String uri;
-        
-        public DestinationImpl(String uri) {
-            this.uri = uri;
-        }
-        
-        public NormalizedMessage createMessage() {
-            return new MessageUtil.NormalizedMessageImpl();
-        }
-
-        public Future<NormalizedMessage> send(NormalizedMessage message) {
-            try {
-                InOut me = getExchangeFactory().createInOutExchange();
-                URIResolver.configureExchange(me, getServiceUnit().getComponent().getComponentContext(), uri);
-                MessageUtil.transferTo(message, me, "in");
-                return send(me);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
-        protected Future<NormalizedMessage> send(final MessageExchange me) throws Exception {
+    /**
+     * Used by POJOs acting as a consumer
+     * @param uri
+     * @param message
+     * @return
+     */
+    public Future<NormalizedMessage> send(String uri, NormalizedMessage message) {
+        try {
+            InOut me = getExchangeFactory().createInOutExchange();
+            URIResolver.configureExchange(me, getServiceUnit().getComponent().getComponentContext(), uri);
+            MessageUtil.transferTo(message, me, "in");
             final Holder h = new Holder(); 
             requests.put(me.getExchangeId(), currentRequest.get());
             exchanges.put(me.getExchangeId(), h);
             BeanEndpoint.this.send(me);
             return h;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     
-    public static class Request {
-        private Object bean;
-        private MessageExchange exchange;
-        private Set<String> sentExchanges = new HashSet<String>();
-        
-        public Request() {
-        }
-        
-        public Request(Object bean, MessageExchange exchange) {
-            this.bean = bean;
-            this.exchange = exchange;
-        }
-        
-        /**
-         * @return the bean
-         */
-        public Object getBean() {
-            return bean;
-        }
-        /**
-         * @param bean the bean to set
-         */
-        public void setBean(Object bean) {
-            this.bean = bean;
-        }
-        /**
-         * @return the exchange
-         */
-        public MessageExchange getExchange() {
-            return exchange;
-        }
-        /**
-         * @param exchange the exchange to set
-         */
-        public void setExchange(MessageExchange exchange) {
-            this.exchange = exchange;
-        }
-        /**
-         * @param id the id of the exchange sent 
-         */
-        public void addSentExchange(String id) {
-            sentExchanges.add(id);
+    protected void checkEndOfRequest(Request request) {
+        if (request.getExchange().getStatus() != ExchangeStatus.ACTIVE) {
+            ReflectionUtils.callLifecycleMethod(request.getBean(), PreDestroy.class);
+            request.setBean(null);
+            request.setExchange(null);
+            requests.remove(request);
         }
     }
-    
-    public static class Holder implements Future<NormalizedMessage> {
-        
-        private MessageExchange object;
-        private boolean cancel;
-        
-        public synchronized NormalizedMessage get() throws InterruptedException, ExecutionException {
-            if (object == null) {
-                wait();
+
+    /**
+     * @return the correlationExpression
+     */
+    public org.apache.servicemix.expression.Expression getCorrelationExpression() {
+        if (correlationExpression == null) {
+            // Find correlation expression
+            Correlation cor = beanType.getAnnotation(Correlation.class);
+            if (cor != null) {
+                if (cor.property() != null) {
+                    correlationExpression = new PropertyExpression(cor.property());
+                } else if (cor.xpath() != null) {
+                    correlationExpression = new JAXPStringXPathExpression(cor.xpath());
+                }
             }
-            return extract(object);
-        }
-        public synchronized NormalizedMessage get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
-            if (object == null) {
-                wait(unit.toMillis(timeout));
-            }
-            return extract(object);
-        }
-        public synchronized void set(MessageExchange t) {
-            object = t;
-            notifyAll();
-        }
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            cancel = true;
-            return false;
-        }
-        public boolean isCancelled() {
-            return cancel;
-        }
-        public boolean isDone() {
-            return object != null;
-        }
-        protected NormalizedMessage extract(MessageExchange me) throws ExecutionException {
-            if (me.getStatus() == ExchangeStatus.ERROR) {
-                throw new ExecutionException(me.getError());
-            } else if (me.getFault() != null) {
-                throw new ExecutionException(new FaultException("Fault occured", me, me.getFault()));
-            } else {
-                return me.getMessage("out");
+            if (correlationExpression == null) {
+                correlationExpression = new org.apache.servicemix.expression.Expression() {
+                    public Object evaluate(MessageExchange exchange, NormalizedMessage message) throws MessagingException {
+                        return exchange.getExchangeId();
+                    }
+                };
             }
         }
+        return correlationExpression;
     }
+
+    /**
+     * @param correlationExpression the correlationExpression to set
+     */
+    public void setCorrelationExpression(org.apache.servicemix.expression.Expression correlationExpression) {
+        this.correlationExpression = correlationExpression;
+    }
+
 }

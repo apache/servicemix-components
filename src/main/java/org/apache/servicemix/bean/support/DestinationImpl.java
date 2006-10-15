@@ -14,28 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.bean;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+package org.apache.servicemix.bean.support;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import java.util.concurrent.Future;
 
-@Retention(RUNTIME)
-@Target( { METHOD })
-public @interface Operation {
+import javax.jbi.messaging.NormalizedMessage;
+
+import org.apache.servicemix.bean.BeanEndpoint;
+import org.apache.servicemix.bean.Destination;
+import org.apache.servicemix.jbi.util.MessageUtil;
+
+public class DestinationImpl implements Destination {
+
+    private final BeanEndpoint endpoint;
+    private final String uri;
     
-    enum MEP {
-        InOnly,
-        RobustInOnly,
-        InOut,
-        InOptionalOut,
-        Default,
+    public DestinationImpl(String uri, BeanEndpoint endpoint) {
+        this.uri = uri;
+        this.endpoint = endpoint;
     }
     
-    String name() default "";
+    public NormalizedMessage createMessage() {
+        return new MessageUtil.NormalizedMessageImpl();
+    }
 
-    MEP mep() default MEP.Default;
+    public Future<NormalizedMessage> send(NormalizedMessage message) {
+        return endpoint.send(uri, message);
+    }
     
 }

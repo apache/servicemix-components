@@ -39,6 +39,6 @@
   </sm:container>
 
   <bean id="listenerBean" class="org.apache.servicemix.bean.beans.ListenerBean"/>
-  <bean id="annotationsBean" class="org.apache.servicemix.bean.beans.AnnotatedBean"/>
+  <bean id="annotatedBean" class="org.apache.servicemix.bean.beans.AnnotatedBean"/>
 
 </beans>

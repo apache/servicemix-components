@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.activemq.util.IntrospectionSupport;
-import org.apache.activemq.util.URISupport;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ResolvedEndpoint;
+import org.apache.servicemix.jbi.util.IntrospectionSupport;
+import org.apache.servicemix.jbi.util.URISupport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -112,6 +112,9 @@ public class BeanComponent extends DefaultComponent implements BeanFactoryAware 
         }
 
         Map map = URISupport.parseQuery(uri.getQuery());
+        if (endpoint.getBean() == null) {
+            endpoint.setBean(endpoint.createBean());
+        }
         IntrospectionSupport.setProperties(endpoint.getBean(), map);
 
         endpoint.activate();

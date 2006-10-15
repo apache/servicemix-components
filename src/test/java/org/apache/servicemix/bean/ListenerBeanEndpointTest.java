@@ -16,7 +16,7 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.servicemix.bean.beans.ExchangeProcessorBean;
+import org.apache.servicemix.bean.beans.ListenerBean;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -31,13 +31,13 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
-public class ExchangeProcessorBeanEndpointTest extends SpringTestSupport {
+public class ListenerBeanEndpointTest extends SpringTestSupport {
 
     public void testSendingToDynamicEndpointForExchangeProcessorBeanWithFooOperation() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
-        DocumentFragment epr = URIResolver.createWSAEPR("bean:exchangeProcessorBean");
+        DocumentFragment epr = URIResolver.createWSAEPR("bean:listenerBean");
         ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
         assertNotNull("We should find a service endpoint!", se);
 
@@ -48,7 +48,7 @@ public class ExchangeProcessorBeanEndpointTest extends SpringTestSupport {
 
         assertExchangeWorked(exchange);
 
-        ExchangeProcessorBean bean = (ExchangeProcessorBean) getBean("exchangeProcessorBean");
+        ListenerBean bean = (ListenerBean) getBean("listenerBean");
         MessageExchange answer = bean.getLastExchange();
 
         log.info("Bean's process() method has been invoked: " + answer);

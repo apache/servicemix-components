@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.bean.beans;
 
+import javax.jbi.messaging.MessageExchange;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.bean.ExchangeDriven;
-
-import javax.jbi.messaging.MessageExchange;
+import org.apache.servicemix.bean.Operation;
 
 /**
  * A simple POJO which uses an annotation to indicate which method should be driven by a message exchange
@@ -33,7 +33,7 @@ public class AnnotatedBean {
 
     private MessageExchange myExchangeMethod;
 
-    @ExchangeDriven
+    @Operation(name = "foo")
     public void myExchangeMethod(MessageExchange messageExchange) {
         this.myExchangeMethod = messageExchange;
 

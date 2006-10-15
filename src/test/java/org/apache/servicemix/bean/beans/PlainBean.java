@@ -54,7 +54,6 @@ public class PlainBean {
         log.info("methodWithPropertyParameter() called with parameter: " + name);
     }
 
-
     public void methodWithPropertyParameterAndXPath(@Property(name = "person") String name, @XPath(xpath="/hello/@address") String address) {
         this.propertyParameter = name;
         this.xpathParameter = address;

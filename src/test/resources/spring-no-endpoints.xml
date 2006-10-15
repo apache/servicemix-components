@@ -34,9 +34,9 @@
     </sm:activationSpecs>
   </sm:container>
 
-  <bean id="exchangeProcessorBean" class="org.apache.servicemix.bean.beans.ExchangeProcessorBean"/>
+  <bean id="consumerBean" class="org.apache.servicemix.bean.beans.ConsumerBean"/>
   <bean id="listenerBean" class="org.apache.servicemix.bean.beans.ListenerBean"/>
-  <bean id="annotationsBean" class="org.apache.servicemix.bean.beans.AnnotatedBean"/>
+  <bean id="annotatedBean" class="org.apache.servicemix.bean.beans.AnnotatedBean"/>
   <bean id="plainBean" class="org.apache.servicemix.bean.beans.PlainBean"/>
 
 </beans>
