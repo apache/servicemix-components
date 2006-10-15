@@ -30,10 +30,26 @@
       	  <saxon:component>
       	    <saxon:endpoints>
 
-              <!-- START SNIPPET: xslt --> 
+      	      <!-- START SNIPPET: xslt --> 
       	      <saxon:xslt service="test:xslt" endpoint="endpoint"
-      	                  resource="classpath:transform.xsl" />
+      	        resource="classpath:transform.xsl" />
       	      <!-- END SNIPPET: xslt --> 
+      	      
+      	      <!-- START SNIPPET: xslt-params --> 
+      	      <saxon:xslt service="test:xslt-params" endpoint="endpoint"
+      	        resource="classpath:parameter-test.xsl">
+      	        <property name="parameters">
+      	          <map>
+      	            <entry key="stringParam" value="cheeseyCheese"/>
+      	            <entry key="integerParam">
+      	              <bean class="java.lang.Integer">
+      	                <constructor-arg index="0" value="4002"/>
+      	              </bean>
+      	            </entry>
+      	          </map>
+      	        </property>
+      	      </saxon:xslt>
+      	      <!-- END SNIPPET: xslt-params --> 
       	      
       	      <!-- START SNIPPET: xslt-dynamic -->
       	      <saxon:xslt service="test:xslt-dynamic" endpoint="endpoint">

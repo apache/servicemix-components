@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.saxon;
 
+import java.util.Date;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
@@ -24,6 +26,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
@@ -31,8 +34,6 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.w3c.dom.Element;
 
 public class SaxonComponentTest extends SpringTestSupport {
-
-    
     
     public void testXslt() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -101,6 +102,27 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("2005", textValueOfXPath(el, "/transformed/book/year"));
         client.done(me);
     }
+    
+    public void testXsltWithParam() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "xslt-params"));
+        me.getInMessage().setContent(new StringSource("<sample id='777888' sent='" + new Date() + "'>hello world!</sample>"));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        System.err.println(transformer.toString(me.getOutMessage().getContent()));
+        Element el = transformer.toDOMElement(me.getOutMessage());
+        assertEquals("cheeseyCheese", textValueOfXPath(el, "//param"));
+        assertEquals("4002", textValueOfXPath(el, "//integer"));
+     }
     
     public void testXQuery() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);

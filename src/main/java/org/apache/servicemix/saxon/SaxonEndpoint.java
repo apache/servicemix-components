@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -36,6 +37,7 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     private Expression expression;
     private Resource wsdlResource;
     private SourceTransformer sourceTransformer = new SourceTransformer();
+    private Map parameters;
 
     /**
      * @param sourceTransformer the sourceTransformer to set
@@ -161,6 +163,20 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
      */
     public void setCopySubject(boolean copySubject) {
         this.copySubject = copySubject;
+    }
+
+    /**
+     * @return the parameters
+     */
+    public Map getParameters() {
+        return parameters;
+    }
+
+    /**
+     * @param parameters the parameters to set
+     */
+    public void setParameters(Map parameters) {
+        this.parameters = parameters;
     }
 
     // Interface methods

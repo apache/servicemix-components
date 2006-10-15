@@ -19,6 +19,7 @@ package org.apache.servicemix.saxon;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
@@ -165,6 +166,14 @@ public class XsltEndpoint extends SaxonEndpoint {
             String name = (String) iter.next();
             Object value = in.getProperty(name);
             transformer.setParameter(name, value);
+        }
+        Map parameters = getParameters();
+        if (parameters != null) {
+            for (Iterator iter = parameters.keySet().iterator(); iter.hasNext();) {
+                String name = (String) iter.next();
+                Object value = parameters.get(name);
+                transformer.setParameter(name, value);
+            }
         }
         transformer.setParameter("exchange", exchange);
         transformer.setParameter("in", in);

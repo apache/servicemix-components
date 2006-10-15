@@ -3,6 +3,7 @@ package org.apache.servicemix.saxon;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jbi.management.DeploymentException;
@@ -136,6 +137,14 @@ public class XQueryEndpoint extends SaxonEndpoint {
             String name = (String) iter.next();
             Object value = in.getProperty(name);
             dynamicEnv.setParameter(name, value);
+        }
+        Map parameters = getParameters();
+        if (parameters != null) {
+            for (Iterator iter = parameters.keySet().iterator(); iter.hasNext();) {
+                String name = (String) iter.next();
+                Object value = parameters.get(name);
+                dynamicEnv.setParameter(name, value);
+            }
         }
         dynamicEnv.setParameter("exchange", exchange);
         dynamicEnv.setParameter("in", in);
