@@ -16,30 +16,72 @@
  */
 package org.apache.servicemix.eip;
 
-import org.apache.servicemix.common.BaseComponent;
-import org.apache.servicemix.common.BaseLifeCycle;
-import org.apache.servicemix.common.BaseServiceUnitManager;
-import org.apache.servicemix.common.Deployer;
+import java.util.List;
+
+import org.apache.servicemix.common.DefaultComponent;
 
 /**
  * @author gnodet
  * @version $Revision: 376451 $
+ * @org.apache.xbean.XBean element="component"
+ *                  description="An EIP component"
  */
-public class EIPComponent extends BaseComponent {
+public class EIPComponent extends DefaultComponent {
 
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createLifeCycle()
+    private EIPEndpoint[] endpoints;
+    private EIPConfiguration configuration;
+
+    public EIPComponent() {
+        configuration = new EIPConfiguration();
+    }
+    
+    /**
+     * @return the configuration
      */
-    protected BaseLifeCycle createLifeCycle() {
-        return new EIPLifeCycle(this);
+    protected EIPConfiguration getConfiguration() {
+        return configuration;
     }
 
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
+    /**
+     * @param configuration the configuration to set
      */
-    public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] { new EIPDeployer(this) };
-        return new BaseServiceUnitManager(this, deployers);
+    protected void setConfiguration(EIPConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    /**
+     * @return Returns the endpoints.
+     */
+    public EIPEndpoint[] getEndpoints() {
+        return endpoints;
+    }
+
+    /**
+     * @param endpoints The endpoints to set.
+     */
+    public void setEndpoints(EIPEndpoint[] endpoints) {
+        this.endpoints = endpoints;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.servicemix.common.BaseComponentLifeCycle#getExtensionMBean()
+     */
+    protected Object getExtensionMBean() throws Exception {
+        return configuration;
+    }
+
+    protected void doInit() throws Exception {
+        super.doInit();
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.load();
+    }
+
+    protected List getConfiguredEndpoints() {
+        return asList(endpoints);
+    }
+
+    protected Class[] getEndpointClasses() {
+        return new Class[] { EIPEndpoint.class };
     }
 
 }
