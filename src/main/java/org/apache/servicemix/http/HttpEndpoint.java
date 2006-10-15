@@ -19,6 +19,7 @@ package org.apache.servicemix.http;
 import java.net.URI;
 
 import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
@@ -281,6 +282,9 @@ public class HttpEndpoint extends SoapEndpoint {
         }
         if (getLocationURI() == null) {
             throw failure("deploy", "Endpoint must have a defined locationURI", null);
+        }
+        if (!isSoap() && getRole() == Role.CONSUMER && getDefaultMep() == null) {
+            throw failure("deploy", "Non soap endpoints must have a defined defaultMep", null);
         }
     }
 
