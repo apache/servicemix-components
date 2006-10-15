@@ -33,8 +33,8 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.xbean.AbstractXBeanServiceUnitAnalyzer;
+import org.apache.servicemix.jsr181.Jsr181Component;
 import org.apache.servicemix.jsr181.Jsr181Endpoint;
-import org.apache.servicemix.jsr181.Jsr181SpringComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 
@@ -49,7 +49,7 @@ public class Jsr181ServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer 
 		// We need to generate the dummy component to register the services
 		Jsr181Endpoint jsr181Endpoint = (Jsr181Endpoint) endpoint;
 		try {
-			Jsr181SpringComponent componentDummy = new Jsr181SpringComponent();
+			Jsr181Component componentDummy = new Jsr181Component();
 			componentDummy
 					.setEndpoints(new Jsr181Endpoint[] { jsr181Endpoint });
 			componentDummy.getLifeCycle().init(new DummyComponentContext());

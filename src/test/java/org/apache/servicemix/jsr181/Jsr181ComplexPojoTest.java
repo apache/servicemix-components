@@ -103,7 +103,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
     }
     
     public void testComplexOneWay() throws Exception {
-        Jsr181SpringComponent component = new Jsr181SpringComponent();
+        Jsr181Component component = new Jsr181Component();
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setPojo(new ComplexPojoImpl());
         endpoint.setServiceInterface(ComplexPojo.class.getName());
@@ -126,7 +126,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
     }
     
     public void testComplexTwoWay() throws Exception {
-        Jsr181SpringComponent component = new Jsr181SpringComponent();
+        Jsr181Component component = new Jsr181Component();
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setPojo(new ComplexPojoImpl());
         endpoint.setServiceInterface(ComplexPojo.class.getName());
@@ -154,7 +154,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
     }
     
     public void testFault() throws Exception {
-        Jsr181SpringComponent component = new Jsr181SpringComponent();
+        Jsr181Component component = new Jsr181Component();
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setPojo(new ComplexPojoImpl());
         endpoint.setServiceInterface(ComplexPojo.class.getName());

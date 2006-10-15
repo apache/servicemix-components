@@ -30,7 +30,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jsr181.Jsr181LifeCycle;
+import org.apache.servicemix.jsr181.Jsr181Component;
 import org.codehaus.xfire.XFire;
 import org.springframework.beans.factory.FactoryBean;
 
@@ -76,7 +76,7 @@ public class JbiProxyFactoryBean implements FactoryBean {
     
     synchronized private InvocationHandler getJBIInvocationHandler() throws Exception {
         if( jbiInvocationHandler == null ) {
-            XFire xfire = Jsr181LifeCycle.createXFire(getInternalContext());
+            XFire xfire = Jsr181Component.createXFire(getInternalContext());
             Object o = JbiProxy.create(xfire, context, interfaceName, service, endpoint, type);
             jbiInvocationHandler = Proxy.getInvocationHandler(o);
         }

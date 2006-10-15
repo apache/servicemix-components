@@ -56,7 +56,7 @@ public class Jsr181MTOMTest extends TestCase {
     }
 
     public void testMtom() throws Exception {
-        Jsr181SpringComponent jsr181 = new Jsr181SpringComponent();
+        Jsr181Component jsr181 = new Jsr181Component();
         Jsr181Endpoint ep = new Jsr181Endpoint();
         ep.setPojo(new EchoWithAttachment());
         ep.setMtomEnabled(true);

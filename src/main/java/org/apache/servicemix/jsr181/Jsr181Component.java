@@ -16,30 +16,81 @@
  */
 package org.apache.servicemix.jsr181;
 
-import org.apache.servicemix.common.BaseComponent;
-import org.apache.servicemix.common.BaseLifeCycle;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.jbi.component.ComponentContext;
+
 import org.apache.servicemix.common.BaseServiceUnitManager;
+import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
+import org.apache.servicemix.jsr181.xfire.JbiTransport;
+import org.codehaus.xfire.DefaultXFire;
+import org.codehaus.xfire.XFire;
+import org.codehaus.xfire.transport.Transport;
 
 /**
+ * @org.apache.xbean.XBean element="component"
+ *                  description="A jsr181 component"
  * @author gnodet
  *
  */
-public class Jsr181Component extends BaseComponent {
+public class Jsr181Component extends DefaultComponent {
 
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createLifeCycle()
-     */
-    protected BaseLifeCycle createLifeCycle() {
-        return new Jsr181LifeCycle(this);
+    private Jsr181Endpoint[] endpoints;
+    private XFire xfire;
+    
+    public Jsr181Component() {
+    }
+    
+    public Jsr181Endpoint[] getEndpoints() {
+        return endpoints;
     }
 
+    public void setEndpoints(Jsr181Endpoint[] endpoints) {
+        this.endpoints = endpoints;
+    }
+    
+    public List getConfiguredEndpoints() {
+        return endpoints != null ? Arrays.asList(endpoints) : Collections.EMPTY_LIST;
+    }
+    
+    protected Class[] getEndpointClasses() {
+        return new Class[] { Jsr181Endpoint.class };
+    }
+    
     /* (non-Javadoc)
      * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
         Deployer[] deployers = new Deployer[] { new Jsr181XBeanDeployer(this) };
         return new BaseServiceUnitManager(this, deployers);
+    }
+
+    /**
+     * @return Returns the xfire.
+     */
+    public XFire getXFire() {
+        return xfire;
+    }
+
+    /* (non-Javadoc)
+     * @see org.servicemix.common.BaseLifeCycle#doInit()
+     */
+    protected void doInit() throws Exception {
+        xfire = createXFire(this.context);
+        super.doInit();
+    }
+    
+    public static XFire createXFire(ComponentContext context) {
+        XFire xfire = new DefaultXFire();
+        Object[] transports = xfire.getTransportManager().getTransports().toArray();
+        for (int i = 0; i < transports.length; i++) {
+            xfire.getTransportManager().unregister((Transport) transports[i]);
+        }
+        xfire.getTransportManager().register(new JbiTransport(context));
+        return xfire;
     }
 
 }

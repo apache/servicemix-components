@@ -23,7 +23,6 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.servicemix.jsr181.Jsr181ConfigurationMBean;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFireRuntimeException;
 import org.codehaus.xfire.exchange.InMessage;
@@ -35,10 +34,7 @@ import org.jdom.Element;
 
 public class JbiFaultSerializer implements MessageSerializer {
 
-    private Jsr181ConfigurationMBean configuration;
-    
-    public JbiFaultSerializer(Jsr181ConfigurationMBean configuration) {
-        this.configuration = configuration;
+    public JbiFaultSerializer() {
     }
     
     public void readMessage(InMessage message, MessageContext context) throws XFireFault {

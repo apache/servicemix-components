@@ -23,12 +23,9 @@ import java.util.Map;
 
 import javax.jbi.management.DeploymentException;
 
-import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
-import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
@@ -38,7 +35,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 public class Jsr181XBeanDeployer extends AbstractXBeanDeployer {
 
-    public Jsr181XBeanDeployer(BaseComponent component) {
+    public Jsr181XBeanDeployer(Jsr181Component component) {
         super(component);
     }
 

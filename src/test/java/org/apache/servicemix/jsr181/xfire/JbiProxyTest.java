@@ -27,9 +27,8 @@ import junit.framework.TestCase;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jsr181.Jsr181Component;
 import org.apache.servicemix.jsr181.Jsr181Endpoint;
-import org.apache.servicemix.jsr181.Jsr181LifeCycle;
-import org.apache.servicemix.jsr181.Jsr181SpringComponent;
 import org.codehaus.xfire.XFire;
 
 public class JbiProxyTest extends TestCase {
@@ -56,13 +55,13 @@ public class JbiProxyTest extends TestCase {
     public void testProxy() throws Exception {
         container.start();
 
-        Jsr181SpringComponent component1 = new Jsr181SpringComponent();
+        Jsr181Component component1 = new Jsr181Component();
         Jsr181Endpoint endpoint1 = new Jsr181Endpoint();
         endpoint1.setPojo(new EchoService());
         component1.setEndpoints(new Jsr181Endpoint[] { endpoint1 });
         container.activateComponent(component1, "JSR181Component-1");
         
-        Jsr181SpringComponent component2 = new Jsr181SpringComponent();
+        Jsr181Component component2 = new Jsr181Component();
         Jsr181Endpoint endpoint2 = new Jsr181Endpoint();
         endpoint2.setPojo(new ProxyPojoService());
         endpoint2.setServiceInterface(ProxyPojo.class.getName());
@@ -107,7 +106,7 @@ public class JbiProxyTest extends TestCase {
             this.context = context;
             if (context != null) {
                 try {
-                    XFire xfire = Jsr181LifeCycle.createXFire(context);
+                    XFire xfire = Jsr181Component.createXFire(context);
                     QName service = new QName("http://xfire.jsr181.servicemix.apache.org", "EchoService");
                     proxy = (Echo) JbiProxy.create(xfire, context, null, service, null, Echo.class);
                 } catch (Exception e) {

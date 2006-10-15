@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jbi.component.ComponentContext;
+import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Binding;
@@ -45,6 +46,7 @@ import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
 import org.codehaus.xfire.XFire;
+import org.codehaus.xfire.annotations.AnnotationServiceFactory;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.service.invoker.BeanInvoker;
@@ -163,7 +165,7 @@ public class Jsr181Endpoint extends Endpoint {
         logger = this.serviceUnit.getComponent().getLogger();
         ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
         activated = ctx.activateEndpoint(service, endpoint);
-        injectContext(new EndpointComponentContext(ctx));
+        injectContext(new EndpointComponentContext(this));
         processor.start();
     }
 
@@ -188,6 +190,19 @@ public class Jsr181Endpoint extends Endpoint {
         }
     }
 
+    /**
+     * Validate the endpoint at either deployment time for statically defined endpoints or at runtime for dynamic endpoints
+     * 
+     * @throws DeploymentException
+     */
+    public void validate() throws DeploymentException {
+        try {
+            registerService();
+        } catch (Exception e) {
+            throw new DeploymentException(e);
+        }
+    }
+    
     public void registerService() throws Exception {
         if (pojo == null) {
             Class cl = Class.forName(pojoClass, true, getServiceUnit().getConfigurationClassLoader());
@@ -254,11 +269,11 @@ public class Jsr181Endpoint extends Endpoint {
         }
         props.put(ObjectServiceFactory.USE, SoapConstants.USE_LITERAL);
         if (serviceInterface != null) {
-            props.put("annotations.allow.interface", "true");
+            props.put(AnnotationServiceFactory.ALLOW_INTERFACE, Boolean.TRUE);
         }
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
-        xfireService.setFaultSerializer(new JbiFaultSerializer(getConfiguration()));
+        xfireService.setFaultSerializer(new JbiFaultSerializer());
         xfireService.setProperty(SoapConstants.MTOM_ENABLED, Boolean.toString(mtomEnabled));
         xfire.getServiceRegistry().register(xfireService);
         
@@ -356,15 +371,9 @@ public class Jsr181Endpoint extends Endpoint {
     }
     
     public XFire getXFire() {
-        Jsr181LifeCycle jsr181LifeCycle = (Jsr181LifeCycle) this.serviceUnit.getComponent().getLifeCycle();
-        XFire xfire = jsr181LifeCycle.getXFire();
+        Jsr181Component component = (Jsr181Component) this.serviceUnit.getComponent();
+        XFire xfire = component.getXFire();
         return xfire;
-    }
-    
-    public Jsr181ConfigurationMBean getConfiguration() {
-        Jsr181LifeCycle jsr181LifeCycle = (Jsr181LifeCycle) this.serviceUnit.getComponent().getLifeCycle();
-        Jsr181ConfigurationMBean configuration = jsr181LifeCycle.getConfiguration();
-        return configuration;
     }
     
     public String getPojoClass() {

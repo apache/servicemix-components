@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.jsr181.xfire;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -25,6 +28,7 @@ import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 
 import org.codehaus.xfire.XFire;
+import org.codehaus.xfire.annotations.AnnotationServiceFactory;
 import org.codehaus.xfire.client.Client;
 import org.codehaus.xfire.client.XFireProxyFactory;
 import org.codehaus.xfire.service.Service;
@@ -81,8 +85,10 @@ public class JbiProxy {
     
     public Object getProxy() throws Exception {
         if (proxy == null) {
+            Map props = new HashMap();
+            props.put(AnnotationServiceFactory.ALLOW_INTERFACE, Boolean.TRUE);
             ServiceFactory factory = ServiceFactoryHelper.findServiceFactory(xfire, serviceClass, null, null);
-            Service service = factory.create(serviceClass, null, getDescription(), null);
+            Service service = factory.create(serviceClass, null, getDescription(), props);
             JBIClient client = new JBIClient(xfire, service);
             if (interfaceName != null) {
                 client.getService().setProperty(JbiChannel.JBI_INTERFACE_NAME, interfaceName);

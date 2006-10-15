@@ -22,8 +22,6 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jsr181.Jsr181Endpoint;
-import org.apache.servicemix.jsr181.Jsr181SpringComponent;
 
 import test.EchoService;
 import test.EchoService2;
@@ -53,7 +51,7 @@ public class Jsr181OverrideTest extends TestCase {
         QName svcName = new QName("svcUri", "service");
         QName itfName = new QName("itfUri", "interface");
         String epName = "endpoint";
-        Jsr181SpringComponent component = new Jsr181SpringComponent();
+        Jsr181Component component = new Jsr181Component();
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setService(svcName);
         endpoint.setInterfaceName(itfName);
@@ -67,7 +65,7 @@ public class Jsr181OverrideTest extends TestCase {
         QName svcName = new QName("svcUri", "service");
         QName itfName = new QName("itfUri", "interface");
         String epName = "endpoint";
-        Jsr181SpringComponent component = new Jsr181SpringComponent();
+        Jsr181Component component = new Jsr181Component();
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setService(svcName);
         endpoint.setInterfaceName(itfName);
