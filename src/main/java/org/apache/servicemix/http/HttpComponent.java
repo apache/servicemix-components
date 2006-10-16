@@ -17,7 +17,6 @@
 package org.apache.servicemix.http;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +33,7 @@ import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ResolvedEndpoint;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.http.jetty.JCLLogger;
@@ -51,6 +51,10 @@ import org.w3c.dom.DocumentFragment;
  */
 public class HttpComponent extends DefaultComponent {
 
+    public final static String EPR_URI = "urn:servicemix:http";
+    public final static QName EPR_SERVICE = new QName(EPR_URI, "HttpComponent");
+    public final static String EPR_NAME = "epr";
+    
     static {
         JCLLogger.init();
     }
@@ -178,7 +182,7 @@ public class HttpComponent extends DefaultComponent {
     }
     
     protected QName getEPRServiceName() {
-        return HttpResolvedEndpoint.EPR_SERVICE;
+        return EPR_SERVICE;
     }
     
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
@@ -252,7 +256,11 @@ public class HttpComponent extends DefaultComponent {
      * @see javax.jbi.component.Component#resolveEndpointReference(org.w3c.dom.DocumentFragment)
      */
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        return HttpResolvedEndpoint.resolveEndpoint(epr);
+        ServiceEndpoint ep = ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "http:");
+        if (ep == null) {
+            ep = ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "https:");
+        }
+        return ep;
     }
 
     protected List getConfiguredEndpoints() {

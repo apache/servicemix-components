@@ -31,6 +31,7 @@ import javax.wsdl.extensions.http.HTTPAddress;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
@@ -263,7 +264,12 @@ public class HttpEndpoint extends SoapEndpoint {
     }
 
     protected ServiceEndpoint createExternalEndpoint() {
-        return new HttpExternalEndpoint(this);
+        return new ExternalEndpoint(HttpComponent.EPR_URI, 
+                                    HttpComponent.EPR_NAME,
+                                    getLocationURI(),
+                                    getEndpoint(),
+                                    getService(),
+                                    getInterfaceName());
     }
 
     public AuthenticationService getAuthenticationService() {
