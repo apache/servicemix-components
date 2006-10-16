@@ -17,7 +17,10 @@
 package org.apache.servicemix.jsr181.packaging;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Logger;
 
@@ -33,6 +36,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.xbean.AbstractXBeanServiceUnitAnalyzer;
+import org.apache.servicemix.common.xbean.ParentBeanFactoryPostProcessor;
 import org.apache.servicemix.jsr181.Jsr181Component;
 import org.apache.servicemix.jsr181.Jsr181Endpoint;
 import org.w3c.dom.Document;
@@ -45,17 +49,14 @@ public class Jsr181ServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer 
 	}
 
 	protected List getProvides(Endpoint endpoint) {
-
 		// We need to generate the dummy component to register the services
 		Jsr181Endpoint jsr181Endpoint = (Jsr181Endpoint) endpoint;
 		try {
 			Jsr181Component componentDummy = new Jsr181Component();
-			componentDummy
-					.setEndpoints(new Jsr181Endpoint[] { jsr181Endpoint });
+			componentDummy.setEndpoints(new Jsr181Endpoint[] { jsr181Endpoint });
 			componentDummy.getLifeCycle().init(new DummyComponentContext());
 		} catch (Exception e) {
-			throw new RuntimeException("Unable to register JSR-181 service, "
-					+ e.getMessage(), e);
+			throw new RuntimeException("Unable to register JSR-181 service, " + e.getMessage(), e);
 		}
 		return super.getProvides(endpoint);
 	}
@@ -71,6 +72,12 @@ public class Jsr181ServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer 
 			return false;
 	}
 
+    protected List getBeanFactoryPostProcessors(String absolutePath) {
+        Map beans = new HashMap();
+        beans.put("context", new DummyComponentContext());
+        return Collections.singletonList(new ParentBeanFactoryPostProcessor(beans));
+    }
+    
 	public class DummyComponentContext implements ComponentContext {
 
 		public ServiceEndpoint activateEndpoint(QName serviceName,

@@ -43,6 +43,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
 import org.codehaus.xfire.XFire;
@@ -199,12 +200,19 @@ public class Jsr181Endpoint extends Endpoint {
         try {
             registerService();
         } catch (Exception e) {
-            throw new DeploymentException(e);
+            throw ManagementSupport.failure(
+                            "deploy", 
+                            getServiceUnit().getComponent().getComponentName(), 
+                            null, 
+                            e);
         }
     }
     
     public void registerService() throws Exception {
         if (pojo == null) {
+            if (pojoClass == null) {
+                throw new IllegalArgumentException("Endpoint must have a non-null pojo or a pojoClass");
+            }
             Class cl = Class.forName(pojoClass, true, getServiceUnit().getConfigurationClassLoader());
             pojo = cl.newInstance();
         }
