@@ -49,5 +49,13 @@ public interface HttpConfigurationMBean {
     public boolean isJettyManagement();
     
     public void setJettyManagement(boolean jettyManagement);
+
+    public int getConnectorMaxIdleTime();
+
+    public void setConnectorMaxIdleTime(int connectorMaxIdleTime);
+
+    public int getConsumerProcessorSuspendTime();
+
+    public void setConsumerProcessorSuspendTime(int consumerProcessorSuspendTime);
     
 }

@@ -88,6 +88,18 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private transient String mapping = MAPPING_DEFAULT;
 
     /**
+     * Jetty connector max idle time 
+     * (default value in jetty is 30000msec)
+     **/
+    private int connectorMaxIdleTime = 30000;
+
+    /**
+     * HttpConsumerProcessor continuation suspend time
+     * (default value in servicemix is 60000msec)
+     */
+    private int consumerProcessorSuspendTime = 60000;
+
+    /**
      * @return Returns the rootDir.
      */
     public String getRootDir() {
@@ -251,6 +263,25 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         this.maxTotalConnections = maxTotalConnections;
         save();
     }
+
+    public int getConnectorMaxIdleTime() {
+        return connectorMaxIdleTime;
+    }
+
+    public void setConnectorMaxIdleTime(int connectorMaxIdleTime) {
+        this.connectorMaxIdleTime = connectorMaxIdleTime;
+        save();
+    }
+
+    public int getConsumerProcessorSuspendTime() {
+        return consumerProcessorSuspendTime;
+    }
+
+    public void setConsumerProcessorSuspendTime(int consumerProcessorSuspendTime) {
+	      this.consumerProcessorSuspendTime = consumerProcessorSuspendTime;
+        save();
+    }
+
     
     public void save() {
         properties.setProperty("jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
@@ -261,6 +292,8 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         properties.setProperty("keystoreManagerName", keystoreManagerName);
         properties.setProperty("authenticationServiceName", authenticationServiceName);
         properties.setProperty("jettyManagement", Boolean.toString(jettyManagement));
+        properties.setProperty("connectorMaxIdleTime", Integer.toString(connectorMaxIdleTime));
+        properties.setProperty("consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -307,6 +340,12 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         }
         if (properties.getProperty("jettyManagement") != null) {
             jettyManagement = Boolean.valueOf(properties.getProperty("jettyManagement")).booleanValue();
+        }
+        if (properties.getProperty("connectorMaxIdleTime") != null) {
+            connectorMaxIdleTime = Integer.parseInt(properties.getProperty("connectorMaxIdleTime"));
+        }
+        if (properties.getProperty("consumerProcessorSuspendTime") != null) {
+            consumerProcessorSuspendTime = Integer.parseInt(properties.getProperty("consumerProcessorSuspendTime"));
         }
         return true;
     }

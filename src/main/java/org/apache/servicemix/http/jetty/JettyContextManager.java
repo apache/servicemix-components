@@ -318,6 +318,7 @@ public class JettyContextManager implements ContextManager {
         }
         connector.setHost(url.getHost());
         connector.setPort(url.getPort());
+        connector.setMaxIdleTime(this.configuration.getConnectorMaxIdleTime());
         Server server = new Server();
         server.setThreadPool(new ThreadPoolWrapper());
         server.setConnectors(new Connector[] { connector });

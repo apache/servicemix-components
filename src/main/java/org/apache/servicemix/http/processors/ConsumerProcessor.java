@@ -72,12 +72,14 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     protected SoapHelper soapHelper;
     protected Map locks;
     protected Map exchanges;
+    protected int suspentionTime = 60000;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
         this.soapHelper = new SoapHelper(endpoint);
         this.locks = new ConcurrentHashMap();
         this.exchanges = new ConcurrentHashMap();
+        this.suspentionTime = ((HttpComponent) endpoint.getServiceUnit().getComponent()).getConfiguration().getConsumerProcessorSuspendTime();
     }
     
     public SslParameters getSsl() {
@@ -172,8 +174,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                         if (log.isDebugEnabled()) {
                             log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
                         }
-                        // TODO: make this timeout configurable
-                        boolean result = cont.suspend(1000 * 60); // 60 s
+                        boolean result = cont.suspend(suspentionTime);
                         if (!result) {
                             throw new Exception("Error sending exchange: aborted");
                         }
