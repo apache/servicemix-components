@@ -47,7 +47,7 @@ public class ConsumerBeanTest extends TestCase {
         BeanEndpoint ep = new BeanEndpoint();
         ep.setService(new QName("bean"));
         ep.setEndpoint("endpoint");
-        ep.setBean(new ConsumerBean());
+        ep.setBeanType(ConsumerBean.class);
         bc.setEndpoints(new BeanEndpoint[] { ep });
         jbi.activateComponent(bc, "servicemix-bean");
         

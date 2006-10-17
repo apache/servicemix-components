@@ -74,7 +74,7 @@ public class ConsumerBean {
     public void destroy() {
     }
     
-    @Operation(name="receive")
+    @Operation
     public void receive(NormalizedMessage message) throws Exception {
         request1 = service1.send(MessageUtil.copy(message));
         request2 = service2.send(MessageUtil.copy(message));

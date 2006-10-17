@@ -26,16 +26,6 @@ import java.lang.annotation.Target;
 @Target( { METHOD })
 public @interface Operation {
     
-    enum MEP {
-        InOnly,
-        RobustInOnly,
-        InOut,
-        InOptionalOut,
-        Default,
-    }
-    
     String name() default "";
 
-    MEP mep() default MEP.Default;
-    
 }

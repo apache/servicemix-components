@@ -39,7 +39,7 @@ public class AnnotatedBean {
 
         log.info("myExchangeMethod() received exchange: " + messageExchange);
     }
-
+    
     public MessageExchange getMyExchangeMethod() {
         return myExchangeMethod;
     }

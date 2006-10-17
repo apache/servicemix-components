@@ -64,15 +64,15 @@ import org.springframework.beans.factory.BeanFactoryAware;
  *
  * @version $Revision: $
  * @org.apache.xbean.XBean element="endpoint"
- * 
- * TODO: handle correlations to create / scope beans
  */
 public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
+
     private BeanFactory beanFactory;
     private String beanName;
     private Object bean;
     private BeanInfo beanInfo;
     private Class<?> beanType;
+    private String beanClassName;
     private MethodInvocationStrategy methodInvocationStrategy;
     private org.apache.servicemix.expression.Expression correlationExpression;
     
@@ -138,6 +138,33 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
         this.bean = bean;
     }
 
+    /**
+     * @return the beanType
+     */
+    public Class<?> getBeanType() {
+        return beanType;
+    }
+
+    /**
+     * @param beanType the beanType to set
+     */
+    public void setBeanType(Class<?> beanType) {
+        this.beanType = beanType;
+    }
+
+    /**
+     * @return the beanClassName
+     */
+    public String getBeanClassName() {
+        return beanClassName;
+    }
+
+    /**
+     * @param beanClassName the beanClassName to set
+     */
+    public void setBeanClassName(String beanClassName) {
+        this.beanClassName = beanClassName;
+    }
 
     public BeanInfo getBeanInfo() {
         if (beanInfo == null) {
@@ -182,7 +209,7 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
             if (pojo == null) {
                 pojo = createBean();
                 injectBean(pojo);
-                ReflectionUtils.callLifecycleMethod(bean, PostConstruct.class);
+                ReflectionUtils.callLifecycleMethod(pojo, PostConstruct.class);
             }
             req = new Request(pojo, exchange);
             requests.put(corId, req);
@@ -256,15 +283,26 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
         return getCorrelationExpression().evaluate(exchange, exchange.getMessage("in"));
     }
 
-    protected Object createBean() {
-        if (beanName == null) {
+    protected Object createBean() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        if (beanName == null && beanType == null) {
             throw new IllegalArgumentException("Property 'beanName' has not been set!");
         }
-        Object answer = beanFactory.getBean(beanName);
-        if (answer == null) {
-            throw new NoSuchBeanException(beanName, this);
+        if (beanType == null && beanClassName != null) {
+            beanType = Class.forName(beanClassName, true, getServiceUnit().getConfigurationClassLoader());
         }
-        return answer;
+        if (beanType != null) {
+            return beanType.newInstance();
+        } else if (beanName == null) {
+            throw new IllegalArgumentException("Property 'beanName', 'beanType' or 'beanClassName' must be set!");
+        } else if (beanFactory == null) {
+            throw new IllegalArgumentException("Property 'beanName' specified, but no BeanFactory set!");
+        } else {
+            Object answer = beanFactory.getBean(beanName);
+            if (answer == null) {
+                throw new NoSuchBeanException(beanName, this);
+            }
+            return answer;
+        }
     }
 
     protected MethodInvocationStrategy createMethodInvocationStrategy() {
@@ -309,9 +347,9 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
                         if (r instanceof Boolean == false) {
                             throw new RuntimeException("Expression did not returned a boolean value but: " + r);
                         }
-                        boolean oldVal = req.getCallbacks().get(method);
-                        boolean newVal = (Boolean) r;
-                        if (oldVal == false && newVal == true) {
+                        Boolean oldVal = req.getCallbacks().get(method);
+                        Boolean newVal = (Boolean) r;
+                        if ((oldVal == null || oldVal == false) && newVal == true) {
                             req.getCallbacks().put(method, newVal);
                             Object o = method.invoke(bean, new Object[0]);
                             // TODO: handle return value and sent it as the answer
