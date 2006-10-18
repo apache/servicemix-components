@@ -46,6 +46,8 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.HttpComponent;
@@ -67,18 +69,22 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
  */
 public class ProviderProcessor implements ExchangeProcessor {
 
+    private static Log log = LogFactory.getLog(ProviderProcessor.class);
+
     protected HttpEndpoint endpoint;
-    protected HostConfiguration host;
     protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
-    private String relUri;
     private Map methods;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         this.endpoint = endpoint;
         this.soapHelper = new SoapHelper(endpoint);
-        java.net.URI uri = java.net.URI.create(endpoint.getLocationURI());
-        relUri = uri.getPath();
+        this.methods = new ConcurrentHashMap();
+    }
+
+    private String getRelUri(String locationUri) {
+        java.net.URI uri = java.net.URI.create(locationUri);
+        String relUri = uri.getPath();
         if (!relUri.startsWith("/")) {
             relUri = "/" + relUri;
         }
@@ -88,7 +94,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         if (uri.getFragment() != null) {
             relUri += "#" + uri.getFragment();
         }
-        this.methods = new ConcurrentHashMap();
+        return relUri;
     }
 
     public void process(MessageExchange exchange) throws Exception {
@@ -105,7 +111,17 @@ public class ProviderProcessor implements ExchangeProcessor {
         if (nm == null) {
             throw new IllegalStateException("Exchange has no input message");
         }
-        PostMethod method = new PostMethod(relUri);
+
+        String locationURI = endpoint.getLocationURI();
+
+        // Incorporated because of JIRA SM-695
+        Object newDestinationURI = nm.getProperty(JbiConstants.HTTP_DESTINATION_URI);
+        if (newDestinationURI != null) {
+            locationURI = (String) newDestinationURI;
+            log.debug("Location URI overridden: " + locationURI);
+        }
+
+        PostMethod method = new PostMethod(getRelUri(locationURI));
         SoapMessage soapMessage = new SoapMessage();
         soapHelper.getJBIMarshaler().fromNMS(soapMessage, nm);
         Context context = soapHelper.createContext(soapMessage);
@@ -149,7 +165,7 @@ public class ProviderProcessor implements ExchangeProcessor {
             if (endpoint.getBasicAuthentication() != null) {
                 endpoint.getBasicAuthentication().applyCredentials( getClient() );
             }
-            int response = getClient().executeMethod(host, method);
+            int response = getClient().executeMethod(getHostConfiguration(locationURI), method);
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (exchange instanceof InOnly == false) {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
@@ -225,24 +241,30 @@ public class ProviderProcessor implements ExchangeProcessor {
         }
     }
 
-    public void start() throws Exception {
-        URI uri = new URI(endpoint.getLocationURI(), false);
+    private HostConfiguration getHostConfiguration(String locationURI) throws Exception {
+        HostConfiguration host;
+        URI uri = new URI(locationURI, false);
         if (uri.getScheme().equals("https")) {
             ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(
                             endpoint.getSsl(),
                             endpoint.getKeystoreManager());
             Protocol protocol = new Protocol("https", sf, 443);
-            HttpHost host = new HttpHost(uri.getHost(), uri.getPort(), protocol);
-            this.host = new HostConfiguration();
-            this.host.setHost(host);
+            HttpHost httphost = new HttpHost(uri.getHost(), uri.getPort(), protocol);
+            host = new HostConfiguration();
+            host.setHost(httphost);
         } else {
-            this.host = new HostConfiguration();
-            this.host.setHost(uri.getHost(), uri.getPort());
+            host = new HostConfiguration();
+            host.setHost(uri.getHost(), uri.getPort());
         }
+
+        return host;
+    }
+
+    public void start() throws Exception {
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
     }
     
-    protected HttpConfiguration getConfiguration(HttpEndpoint endpoint) {
+    protected HttpConfiguration getConfiguration() {
         HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
         return comp.getConfiguration();
     }
@@ -271,8 +293,7 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 	
     protected RequestEntity writeMessage(SoapWriter writer) throws Exception {
-        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
-        if (comp.getConfiguration().isStreamingEnabled()) {
+        if (getConfiguration().isStreamingEnabled()) {
             return new StreamingRequestEntity(writer);
         } else {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -282,7 +303,7 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 
     protected HttpClient getClient() {
-        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+        HttpComponent comp =  (HttpComponent) endpoint.getServiceUnit().getComponent();
         return comp.getClient();
     }
 

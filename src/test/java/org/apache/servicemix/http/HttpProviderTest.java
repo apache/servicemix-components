@@ -24,179 +24,247 @@ import java.net.URL;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.components.http.HttpConnector;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.JbiConstants;
 
 public class HttpProviderTest extends TestCase {
 
-	protected JBIContainer container;
+    protected JBIContainer container;
 
-	protected void setUp() throws Exception {
-		container = new JBIContainer();
-		container.setUseMBeanServer(false);
-		container.setCreateMBeanServer(false);
-		container.setEmbedded(true);
-		container.init();
-	}
+    protected void setUp() throws Exception {
+        container = new JBIContainer();
+        container.setUseMBeanServer(false);
+        container.setCreateMBeanServer(false);
+        container.setEmbedded(true);
+        container.init();
+    }
 
-	protected void tearDown() throws Exception {
-		if (container != null) {
-			container.shutDown();
-		}
-	}
+    protected void tearDown() throws Exception {
+        if (container != null) {
+            container.shutDown();
+        }
+    }
 
-	protected long testInOnly(String msg, boolean streaming) throws Exception {
-		// HTTP Component
-		HttpComponent component = new HttpComponent();
-		component.getConfiguration().setStreamingEnabled(streaming);
-		container.activateComponent(component, "HttpProviderTest");
+    protected long testInOnly(String msg, boolean streaming) throws Exception {
+        // HTTP Component
+        HttpComponent component = new HttpComponent();
+        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
+                .setStreamingEnabled(streaming);
+        container.activateComponent(component, "HttpProviderTest");
 
-		// Add a receiver component
-		Receiver receiver = new ReceiverComponent();
-		ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
-		asReceiver.setService(new QName("test", "receiver"));
-		container.activateComponent(asReceiver);
+        // Add a receiver component
+        Receiver receiver = new ReceiverComponent();
+        ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
+        asReceiver.setService(new QName("test", "receiver"));
+        container.activateComponent(asReceiver);
 
-		// Add the http receiver
-        HttpComponent connector = new HttpComponent();
-        HttpEndpoint endpoint = new HttpEndpoint();
-        endpoint.setRole(Role.CONSUMER);
-        endpoint.setLocationURI("http://localhost:8192/");
-        endpoint.setSoap(false);
-        endpoint.setDefaultMep(SoapHelper.IN_ONLY);
-        endpoint.setService(new QName("test", "receiver"));
-        endpoint.setEndpoint("BC");
-        connector.setEndpoints(new HttpEndpoint[] { endpoint });
-		ActivationSpec asConnector = new ActivationSpec("connector", connector);
-		container.activateComponent(asConnector);
-
-		// Start container
-		container.start();
-
-		// Deploy SU
-		URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
-		File path = new File(new URI(url.toString()));
-		path = path.getParentFile();
-		component.getServiceUnitManager().deploy("provider",
-				path.getAbsolutePath());
-		component.getServiceUnitManager().start("provider");
-
-		// Call it
-		DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-		RobustInOnly in = client.createRobustInOnlyExchange();
-		in.setInterfaceName(new QName("http://http.servicemix.org/Test",
-				"ProviderInterface"));
-		in.getInMessage().setContent(
-				new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-
-		long t0 = System.currentTimeMillis();
-		client.sendSync(in);
-		long t1 = System.currentTimeMillis();
-		assertTrue(in.getStatus() == ExchangeStatus.DONE);
-
-		// Check we received the message
-		receiver.getMessageList().assertMessagesReceived(1);
-
-		component.getServiceUnitManager().stop("provider");
-		component.getServiceUnitManager().shutDown("provider");
-		component.getServiceUnitManager().undeploy("provider",
-				path.getAbsolutePath());
-
-		return t1 - t0;
-	}
-
-	protected String testInOut(String msg, boolean streaming) throws Exception {
-		// HTTP Component
-		HttpComponent component = new HttpComponent();
-		component.getConfiguration().setStreamingEnabled(streaming);
-		container.activateComponent(component, "HTTPComponent");
-
-		// Add a echo component
-		EchoComponent echo = new EchoComponent();
-		ActivationSpec asReceiver = new ActivationSpec("echo", echo);
-		asReceiver.setService(new QName("test", "echo"));
-		container.activateComponent(asReceiver);
-
-		// Add the http receiver
-        HttpComponent connector = new HttpComponent();
-        HttpEndpoint endpoint = new HttpEndpoint();
-        endpoint.setRole(Role.CONSUMER);
-        endpoint.setLocationURI("http://localhost:8192/");
-        endpoint.setSoap(false);
-        endpoint.setDefaultMep(SoapHelper.IN_OUT);
-        endpoint.setService(new QName("test", "echo"));
-        endpoint.setEndpoint("BC");
-        connector.setEndpoints(new HttpEndpoint[] { endpoint });
+        // Add the http receiver
+        HttpConnector connector = new HttpConnector("localhost", 8192);
+        connector.setDefaultInOut(false);
         ActivationSpec asConnector = new ActivationSpec("connector", connector);
+        asConnector.setDestinationService(new QName("test", "receiver"));
         container.activateComponent(asConnector);
 
-		// Start container
-		container.start();
+        // Start container
+        container.start();
 
-		// Deploy SU
-		URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
-		File path = new File(new URI(url.toString()));
-		path = path.getParentFile();
-		component.getServiceUnitManager().deploy("provider",
-				path.getAbsolutePath());
-		component.getServiceUnitManager().start("provider");
+        // Deploy SU
+        URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("provider",
+                path.getAbsolutePath());
+        component.getServiceUnitManager().start("provider");
 
-		// Call it
-		DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-		InOut inout = client.createInOutExchange();
-		inout.setInterfaceName(new QName("http://http.servicemix.org/Test",
-				"ProviderInterface"));
-		inout.getInMessage().setContent(
-				new StreamSource(new ByteArrayInputStream(msg.getBytes())));
+        // Call it
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        RobustInOnly in = client.createRobustInOnlyExchange();
+        in.setInterfaceName(new QName("http://http.servicemix.org/Test",
+                "ProviderInterface"));
+        in.getInMessage().setContent(
+                new StreamSource(new ByteArrayInputStream(msg.getBytes())));
 
-		long t0 = System.currentTimeMillis();
-		client.sendSync(inout);
-		long t1 = System.currentTimeMillis();
-		assertTrue(inout.getStatus() == ExchangeStatus.ACTIVE);
+        long t0 = System.currentTimeMillis();
+        client.sendSync(in);
+        long t1 = System.currentTimeMillis();
+        assertTrue(in.getStatus() == ExchangeStatus.DONE);
 
-		// Check we received the message
-		assertNotNull(inout.getOutMessage());
-		assertNotNull(inout.getOutMessage().getContent());
-		SourceTransformer sourceTransformer = new SourceTransformer();
-		String reply = sourceTransformer.toString(inout.getOutMessage()
-				.getContent());
-		String inputMesage = sourceTransformer.toString(new StreamSource(
-				new ByteArrayInputStream(msg.getBytes())));
-		System.out.println("Msg Sent [" + inputMesage + "]");
-		System.out.println("Msg Recieved [" + reply + "]");
+        // Check we received the message
+        receiver.getMessageList().assertMessagesReceived(1);
 
-		assertEquals(inputMesage.length(), reply.length());
-		assertEquals(inputMesage, reply);
+        component.getServiceUnitManager().stop("provider");
+        component.getServiceUnitManager().shutDown("provider");
+        component.getServiceUnitManager().undeploy("provider",
+                path.getAbsolutePath());
 
-		component.getServiceUnitManager().stop("provider");
-		component.getServiceUnitManager().shutDown("provider");
-		component.getServiceUnitManager().undeploy("provider",
-				path.getAbsolutePath());
+        return t1 - t0;
+    }
 
-		System.out.println("Executed in " + (t1 - t0) + "ms");
+    /**
+     * The http.wsdl specifies the location URI as localhost:8192.
+     * Set a NormalizedMessage property to override this value.
+     * Therefore don't start the HttpConnector on 8192, rather on
+     * another port to prove this functionality works.
+     * @param msg
+     * @param streaming
+     * @return
+     * @throws Exception
+     */
+    protected long testInOnlyOverrideDestination(String msg, boolean streaming)
+            throws Exception {
+        // HTTP Component
+        HttpComponent component = new HttpComponent();
+        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
+                .setStreamingEnabled(streaming);
+        container.activateComponent(component, "HttpProviderTest");
 
-		return reply;
-	}
+        // Add a receiver component
+        Receiver receiver = new ReceiverComponent();
+        ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
+        asReceiver.setService(new QName("test", "receiver"));
+        container.activateComponent(asReceiver);
 
-	public void testInOnly() throws Exception {
-		testInOnly("<hello>world</hello>", false);
-	}
+        // Add the http receiver
+        HttpConnector connector = new HttpConnector("localhost", 9192);
+        connector.setDefaultInOut(false);
+        ActivationSpec asConnector = new ActivationSpec("connector", connector);
+        asConnector.setDestinationService(new QName("test", "receiver"));
+        container.activateComponent(asConnector);
 
-	public void testInOut() throws Exception {
-		testInOut("<hello>world</hello>", true);
-	}
+        // Start container
+        container.start();
+
+        // Deploy SU
+        URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("provider",
+                path.getAbsolutePath());
+        component.getServiceUnitManager().start("provider");
+
+        // Call it
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        RobustInOnly in = client.createRobustInOnlyExchange();
+        in.setInterfaceName(new QName("http://http.servicemix.org/Test",
+                "ProviderInterface"));
+        in.getInMessage().setContent(
+                new StreamSource(new ByteArrayInputStream(msg.getBytes())));
+        in.getInMessage().setProperty(JbiConstants.HTTP_DESTINATION_URI,
+                "http://localhost:9192/CheckAvailability");
+
+        long t0 = System.currentTimeMillis();
+        client.sendSync(in);
+        long t1 = System.currentTimeMillis();
+        assertTrue(in.getStatus() == ExchangeStatus.DONE);
+
+        // Check we received the message
+        receiver.getMessageList().assertMessagesReceived(1);
+
+        component.getServiceUnitManager().stop("provider");
+        component.getServiceUnitManager().shutDown("provider");
+        component.getServiceUnitManager().undeploy("provider",
+                path.getAbsolutePath());
+
+        return t1 - t0;
+    }
+
+    protected String testInOut(String msg, boolean streaming) throws Exception {
+        // HTTP Component
+        HttpComponent component = new HttpComponent();
+        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
+                .setStreamingEnabled(streaming);
+        container.activateComponent(component, "HTTPComponent");
+
+        // Add a echo component
+        EchoComponent echo = new EchoComponent();
+        ActivationSpec asReceiver = new ActivationSpec("echo", echo);
+        asReceiver.setService(new QName("test", "echo"));
+        container.activateComponent(asReceiver);
+
+        // Add the http receiver
+        HttpConnector connector = new HttpConnector("localhost", 8192);
+        connector.setDefaultInOut(true);
+        ActivationSpec asConnector = new ActivationSpec("connector", connector);
+        asConnector.setDestinationService(new QName("test", "echo"));
+        container.activateComponent(asConnector);
+
+        // Start container
+        container.start();
+
+        // Deploy SU
+        URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("provider",
+                path.getAbsolutePath());
+        component.getServiceUnitManager().start("provider");
+
+        // Call it
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut inout = client.createInOutExchange();
+        inout.setInterfaceName(new QName("http://http.servicemix.org/Test",
+                "ProviderInterface"));
+        inout.getInMessage().setContent(
+                new StreamSource(new ByteArrayInputStream(msg.getBytes())));
+
+        long t0 = System.currentTimeMillis();
+        client.sendSync(inout);
+        long t1 = System.currentTimeMillis();
+        assertTrue(inout.getStatus() == ExchangeStatus.ACTIVE);
+
+        // Check we received the message
+        assertNotNull(inout.getOutMessage());
+        assertNotNull(inout.getOutMessage().getContent());
+        SourceTransformer sourceTransformer = new SourceTransformer();
+        String reply = sourceTransformer.toString(inout.getOutMessage()
+                .getContent());
+        String inputMesage = sourceTransformer.toString(new StreamSource(
+                new ByteArrayInputStream(msg.getBytes())));
+        System.out.println("Msg Sent [" + inputMesage + "]");
+        System.out.println("Msg Recieved [" + reply + "]");
+
+        assertEquals(inputMesage.length(), reply.length());
+        assertEquals(inputMesage, reply);
+
+        component.getServiceUnitManager().stop("provider");
+        component.getServiceUnitManager().shutDown("provider");
+        component.getServiceUnitManager().undeploy("provider",
+                path.getAbsolutePath());
+
+        System.out.println("Executed in " + (t1 - t0) + "ms");
+
+        return reply;
+    }
+
+    public void testInOnly() throws Exception {
+        testInOnly("<hello>world</hello>", false);
+    }
+
+    /**
+     * JIRA SM-695.
+     * Tests the ability of the ProviderProcessor to override
+     * the locationURI using the property JbiConstants.HTTP_DESTINATION_URI
+     * @throws Exception
+     */
+    public void testInOnlyOverrideDestination() throws Exception {
+        testInOnlyOverrideDestination("<hello>world</hello>", false);
+    }
+
+    public void testInOut() throws Exception {
+        testInOut("<hello>world</hello>", true);
+    }
 
 	public void testPerfInOnlyWithBigMessage() throws Exception {
 		int nbRuns = 10;
