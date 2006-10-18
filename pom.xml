@@ -152,7 +152,6 @@
         <artifactId>jbi-maven-plugin</artifactId>
         <configuration>
           <type>service-engine</type>
-          <bootstrap>org.apache.servicemix.jsr181.Jsr181Bootstrap</bootstrap>
           <component>org.apache.servicemix.jsr181.Jsr181Component</component>
           <serviceUnitAnalyzer>org.apache.servicemix.jsr181.packaging.Jsr181ServiceUnitAnalyzer</serviceUnitAnalyzer>
         </configuration>
@@ -164,14 +163,14 @@
           <target>1.5</target>
         </configuration>
       </plugin>
-	  <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <excludes>
             <exclude>**/Jsr181SpringTest.*</exclude>
-			<exclude>**/Jsr181SpringProxyTest.*</exclude>
-			<exclude>**/Jsr181ProxySUTest.*</exclude>
+            <exclude>**/Jsr181SpringProxyTest.*</exclude>
+            <exclude>**/Jsr181ProxySUTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>
