@@ -36,19 +36,10 @@ public class HttpBootstrap implements Bootstrap {
     protected HttpConfiguration configuration;
     
     public HttpBootstrap() {
-        configuration = new HttpConfiguration();
     }
     
     public ObjectName getExtensionMBeanName() {
         return mbeanName;
-    }
-
-    protected Object getExtensionMBean() throws Exception {
-        return configuration;
-    }
-    
-    protected ObjectName createExtensionMBeanName() throws Exception {
-        return this.context.getContext().getMBeanNames().createCustomComponentMBeanName("bootstrap");
     }
 
     /* (non-Javadoc)
@@ -66,18 +57,18 @@ public class HttpBootstrap implements Bootstrap {
     }
 
     protected void doInit() throws Exception {
-        Object mbean = getExtensionMBean();
-        if (mbean != null) {
-            this.mbeanName = createExtensionMBeanName();
-            MBeanServer server = this.context.getContext().getMBeanServer();
-            if (server == null) {
-                throw new JBIException("null mBeanServer");
-            }
-            if (server.isRegistered(this.mbeanName)) {
-                server.unregisterMBean(this.mbeanName);
-            }
-            server.registerMBean(mbean, this.mbeanName);
+        configuration = new HttpConfiguration();
+        configuration.setRootDir(this.context.getInstallRoot());
+        configuration.setComponentName(this.context.getComponentName());
+        mbeanName = this.context.getContext().getMBeanNames().createCustomComponentMBeanName("bootstrap");
+        MBeanServer server = this.context.getContext().getMBeanServer();
+        if (server == null) {
+            throw new JBIException("null mBeanServer");
         }
+        if (server.isRegistered(this.mbeanName)) {
+            server.unregisterMBean(this.mbeanName);
+        }
+        server.registerMBean(configuration, this.mbeanName);
     }
     
     /* (non-Javadoc)
@@ -109,32 +100,12 @@ public class HttpBootstrap implements Bootstrap {
      * @see javax.jbi.component.Bootstrap#onInstall()
      */
     public void onInstall() throws JBIException {
-        try {
-            doOnInstall();
-        } catch (JBIException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new JBIException("Error calling onInstall", e);
-        }
     }
 
-    protected void doOnInstall() throws Exception {
-    }
-    
     /* (non-Javadoc)
      * @see javax.jbi.component.Bootstrap#onUninstall()
      */
     public void onUninstall() throws JBIException {
-        try {
-            doOnUninstall();
-        } catch (JBIException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new JBIException("Error calling onUninstall", e);
-        }
     }
 
-    protected void doOnUninstall() throws Exception {
-    }
-    
 }

@@ -118,6 +118,7 @@ public class HttpComponent extends DefaultComponent {
         super.doInit();
         // Load configuration
         configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.setComponentName(context.getComponentName());
         configuration.load();
         // Lookup keystoreManager and authenticationService
         if (configuration.getKeystoreManager() == null) {

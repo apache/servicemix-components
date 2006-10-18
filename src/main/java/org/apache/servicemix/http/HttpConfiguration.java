@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.io.InputStream;
 
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
@@ -38,6 +39,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     public final static String CONFIG_FILE = "component.properties"; 
     
     private String rootDir;
+    private String componentName = "servicemix-http";
     private Properties properties = new Properties();
     private boolean streamingEnabled = false;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
@@ -111,6 +113,20 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      */
     public void setRootDir(String rootDir) {
         this.rootDir = rootDir;
+    }
+
+    /**
+     * @return Returns the componentName.
+     */
+    public String getComponentName() {
+        return componentName;
+    }
+
+    /**
+     * @param componentName The componentName to set.
+     */
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
     }
 
     /**
@@ -284,16 +300,16 @@ public class HttpConfiguration implements HttpConfigurationMBean {
 
     
     public void save() {
-        properties.setProperty("jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
-        properties.setProperty("jettyConnectorClassName", jettyConnectorClassName);
-        properties.setProperty("streamingEnabled", Boolean.toString(streamingEnabled));
-        properties.setProperty("maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
-        properties.setProperty("maxTotalConnections", Integer.toString(maxTotalConnections));
-        properties.setProperty("keystoreManagerName", keystoreManagerName);
-        properties.setProperty("authenticationServiceName", authenticationServiceName);
-        properties.setProperty("jettyManagement", Boolean.toString(jettyManagement));
-        properties.setProperty("connectorMaxIdleTime", Integer.toString(connectorMaxIdleTime));
-        properties.setProperty("consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
+        properties.setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
+        properties.setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);
+        properties.setProperty(componentName + ".streamingEnabled", Boolean.toString(streamingEnabled));
+        properties.setProperty(componentName + ".maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
+        properties.setProperty(componentName + ".maxTotalConnections", Integer.toString(maxTotalConnections));
+        properties.setProperty(componentName + ".keystoreManagerName", keystoreManagerName);
+        properties.setProperty(componentName + ".authenticationServiceName", authenticationServiceName);
+        properties.setProperty(componentName + ".jettyManagement", Boolean.toString(jettyManagement));
+        properties.setProperty(componentName + ".connectorMaxIdleTime", Integer.toString(connectorMaxIdleTime));
+        properties.setProperty(componentName + ".consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -305,47 +321,61 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     }
     
     public boolean load() {
-        if (rootDir == null) {
-            return false;
+        File f = null;
+        InputStream in = null;
+        if (rootDir != null) {
+            // try to find the property file in the workspace folder
+            f = new File(rootDir, CONFIG_FILE);
+            if (!f.exists()) {
+                f = null;
+            }
         }
-        File f = new File(rootDir, CONFIG_FILE);
-        if (!f.exists()) {
-            return false;
+        if (f == null) {
+            // find property file in classpath if it is not available in workspace 
+            in = this.getClass().getClassLoader().getResourceAsStream(CONFIG_FILE);
+            if (in == null) {
+                return false;
+            }
         }
+
         try {
-            properties.load(new FileInputStream(f));
+            if (f != null) {
+                properties.load(new FileInputStream(f));
+            } else {
+                properties.load(in);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not load component configuration", e);
         }
-        if (properties.getProperty("jettyThreadPoolSize") != null) {
-            jettyThreadPoolSize = Integer.parseInt(properties.getProperty("jettyThreadPoolSize"));
+        if (properties.getProperty(componentName + ".jettyThreadPoolSize") != null) {
+            jettyThreadPoolSize = Integer.parseInt(properties.getProperty(componentName + ".jettyThreadPoolSize"));
         }
-        if (properties.getProperty("jettyConnectorClassName") != null) {
-            jettyConnectorClassName = properties.getProperty("jettyConnectorClassName");
+        if (properties.getProperty(componentName + ".jettyConnectorClassName") != null) {
+            jettyConnectorClassName = properties.getProperty(componentName + ".jettyConnectorClassName");
         }
-        if (properties.getProperty("streamingEnabled") != null) {
-            streamingEnabled = Boolean.valueOf(properties.getProperty("streamingEnabled")).booleanValue();
+        if (properties.getProperty(componentName + ".streamingEnabled") != null) {
+            streamingEnabled = Boolean.valueOf(properties.getProperty(componentName + ".streamingEnabled")).booleanValue();
         }
-        if (properties.getProperty("maxConnectionsPerHost") != null) {
-            maxConnectionsPerHost = Integer.parseInt(properties.getProperty("maxConnectionsPerHost"));
+        if (properties.getProperty(componentName + ".maxConnectionsPerHost") != null) {
+            maxConnectionsPerHost = Integer.parseInt(properties.getProperty(componentName + ".maxConnectionsPerHost"));
         }
-        if (properties.getProperty("maxTotalConnections") != null) {
-            maxTotalConnections = Integer.parseInt(properties.getProperty("maxTotalConnections"));
+        if (properties.getProperty(componentName + ".maxTotalConnections") != null) {
+            maxTotalConnections = Integer.parseInt(properties.getProperty(componentName + ".maxTotalConnections"));
         }
-        if (properties.getProperty("keystoreManagerName") != null) {
-            keystoreManagerName = properties.getProperty("keystoreManagerName");
+        if (properties.getProperty(componentName + ".keystoreManagerName") != null) {
+            keystoreManagerName = properties.getProperty(componentName + ".keystoreManagerName");
         }
-        if (properties.getProperty("authenticationServiceName") != null) {
-            authenticationServiceName = properties.getProperty("authenticationServiceName");
+        if (properties.getProperty(componentName + ".authenticationServiceName") != null) {
+            authenticationServiceName = properties.getProperty(componentName + ".authenticationServiceName");
         }
-        if (properties.getProperty("jettyManagement") != null) {
-            jettyManagement = Boolean.valueOf(properties.getProperty("jettyManagement")).booleanValue();
+        if (properties.getProperty(componentName + ".jettyManagement") != null) {
+            jettyManagement = Boolean.valueOf(properties.getProperty(componentName + ".jettyManagement")).booleanValue();
         }
-        if (properties.getProperty("connectorMaxIdleTime") != null) {
-            connectorMaxIdleTime = Integer.parseInt(properties.getProperty("connectorMaxIdleTime"));
+        if (properties.getProperty(componentName + ".connectorMaxIdleTime") != null) {
+            connectorMaxIdleTime = Integer.parseInt(properties.getProperty(componentName + ".connectorMaxIdleTime"));
         }
-        if (properties.getProperty("consumerProcessorSuspendTime") != null) {
-            consumerProcessorSuspendTime = Integer.parseInt(properties.getProperty("consumerProcessorSuspendTime"));
+        if (properties.getProperty(componentName + ".consumerProcessorSuspendTime") != null) {
+            consumerProcessorSuspendTime = Integer.parseInt(properties.getProperty(componentName + ".consumerProcessorSuspendTime"));
         }
         return true;
     }
