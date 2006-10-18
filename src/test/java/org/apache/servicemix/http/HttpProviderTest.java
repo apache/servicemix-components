@@ -60,8 +60,7 @@ public class HttpProviderTest extends TestCase {
     protected long testInOnly(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
-        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
-                .setStreamingEnabled(streaming);
+        component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HttpProviderTest");
 
         // Add a receiver component
@@ -126,8 +125,7 @@ public class HttpProviderTest extends TestCase {
             throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
-        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
-                .setStreamingEnabled(streaming);
+        component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HttpProviderTest");
 
         // Add a receiver component
@@ -183,8 +181,7 @@ public class HttpProviderTest extends TestCase {
     protected String testInOut(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
-        ((HttpLifeCycle) component.getLifeCycle()).getConfiguration()
-                .setStreamingEnabled(streaming);
+        component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HTTPComponent");
 
         // Add a echo component
