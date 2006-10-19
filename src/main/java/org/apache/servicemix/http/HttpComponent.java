@@ -65,6 +65,67 @@ public class HttpComponent extends DefaultComponent {
     protected HttpConfiguration configuration = new HttpConfiguration();
     protected HttpEndpoint[] endpoints;
     
+    protected String protocol;
+    protected String host;
+    protected int port = 80;
+    protected String path;
+    
+    /**
+     * @return the host
+     */
+    public String getHost() {
+        return host;
+    }
+
+    /**
+     * @param host the host to set
+     */
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    /**
+     * @return the path
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
+     * @param path the path to set
+     */
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    /**
+     * @return the port
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * @param port the port to set
+     */
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    /**
+     * @return the protocol
+     */
+    public String getProtocol() {
+        return protocol;
+    }
+
+    /**
+     * @param protocol the protocol to set
+     */
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
     /**
      * @return the endpoints
      */
@@ -94,7 +155,7 @@ public class HttpComponent extends DefaultComponent {
     public void setClient(HttpClient client) {
         this.client = client;
     }
-    
+
     /**
      * @return Returns the configuration.
      * @org.apache.xbean.Flat
@@ -181,11 +242,11 @@ public class HttpComponent extends DefaultComponent {
         super.doStop();
         server.stop();
     }
-    
+
     protected QName getEPRServiceName() {
         return EPR_SERVICE;
     }
-    
+
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         // We receive an exchange for an EPR that has not been used yet.
         // Register a provider endpoint and restart processing.

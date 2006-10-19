@@ -58,7 +58,7 @@ public class HttpEndpoint extends SoapEndpoint {
     protected String authMethod;
     protected String soapAction;
     protected BasicAuthCredentials basicAuthentication;
-    
+
     /**
      * @return the soapAction
      */
@@ -117,22 +117,22 @@ public class HttpEndpoint extends SoapEndpoint {
         this.locationURI = locationUri;
     }
 
-	/**
+    /**
      * Authentication parameters used for provider endpoints using BASIC 
      * authentication.
      * 
-	 * @return Returns the basicAuthentication.
-	 */
-	public BasicAuthCredentials getBasicAuthentication() {
-		return basicAuthentication;
-	}
+     * @return Returns the basicAuthentication.
+     */
+    public BasicAuthCredentials getBasicAuthentication() {
+        return basicAuthentication;
+    }
 
-	/**
-	 * @param basicAuthentication The basicAuthentication to set.
-	 */
-	public void setBasicAuthentication(BasicAuthCredentials basicAuthCredentials) {
-		this.basicAuthentication = basicAuthCredentials;
-	}
+    /**
+     * @param basicAuthentication The basicAuthentication to set.
+     */
+    public void setBasicAuthentication(BasicAuthCredentials basicAuthCredentials) {
+        this.basicAuthentication = basicAuthCredentials;
+    }
 	
     /**
      * @org.apache.xbean.Property alias="role"
@@ -140,6 +140,12 @@ public class HttpEndpoint extends SoapEndpoint {
      */
     public void setRoleAsString(String role) {
         super.setRoleAsString(role);
+    }
+
+    public void reloadWsdl() {
+        description = null;
+        definition = null;
+        loadWsdl();
     }
 
     protected PortType getTargetPortType(Definition def) {
@@ -186,7 +192,7 @@ public class HttpEndpoint extends SoapEndpoint {
         }
         return portType;
     }
-    
+
     protected void overrideDefinition(Definition def) throws Exception {
         PortType portType = getTargetPortType(def);
         if (portType != null) {
@@ -210,8 +216,24 @@ public class HttpEndpoint extends SoapEndpoint {
             }
             HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
             if (comp.getConfiguration().isManaged()) {
-                // TODO: need to find the port of the web server
-                location = "http://localhost" + comp.getConfiguration().getMapping() + new URI(location).getPath();
+                // Save the path
+                String path = new URI(location).getPath();
+                location = "http://localhost";
+                if (comp.getHost() != null) {
+                    if (comp.getProtocol() != null) {
+                        location = comp.getProtocol() + "://";
+                    } else {
+                        location = "http://";
+                    }
+                    location += comp.getHost();
+                    if (comp.getPort() != 80) {
+                        location += ":" + comp.getPort();
+                    }
+                    if (comp.getPath() != null) {
+                        location += comp.getPath();
+                    }
+                }
+                location += comp.getConfiguration().getMapping() + path;
             }
             if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
                 if (isSoap()) {
@@ -254,7 +276,7 @@ public class HttpEndpoint extends SoapEndpoint {
             }
         }
     }
-    
+
     protected ExchangeProcessor createProviderProcessor() {
         return new ProviderProcessor(this);
     }

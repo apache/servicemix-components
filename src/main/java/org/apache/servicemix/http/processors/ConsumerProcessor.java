@@ -136,6 +136,17 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             if (path.lastIndexOf('/') >= 0) {
                 path = path.substring(path.lastIndexOf('/') + 1);
             }
+
+            // Set protocol, host, and port in the component
+            HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+            comp.setProtocol(request.getScheme());
+            comp.setHost(request.getServerName());
+            comp.setPort(request.getServerPort());
+            comp.setPath(request.getContextPath());
+
+            // Reload the wsdl
+            endpoint.reloadWsdl();
+
             Node node = (Node) endpoint.getWsdls().get(path);
             generateDocument(response, node);
             return;
