@@ -17,16 +17,6 @@
  */
 package org.apache.servicemix.file;
 
-import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArraySet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.common.PollingEndpoint;
-import org.apache.servicemix.components.util.DefaultFileMarshaler;
-import org.apache.servicemix.components.util.FileMarshaler;
-
-import javax.jbi.management.DeploymentException;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -34,6 +24,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
+
+import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.NormalizedMessage;
+
+import org.apache.servicemix.common.PollingEndpoint;
+import org.apache.servicemix.components.util.DefaultFileMarshaler;
+import org.apache.servicemix.components.util.FileMarshaler;
+
+import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * A polling endpoint which looks for a file or files in a directory
@@ -45,7 +45,6 @@ import java.util.Set;
  * @version $Revision$
  */
 public class FilePollingEndpoint extends PollingEndpoint {
-    private static final Log log = LogFactory.getLog(FilePollingEndpoint.class);
 
     private File file;
     private FileFilter filter;
