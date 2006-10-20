@@ -24,13 +24,6 @@ import javax.transaction.TransactionManager;
 
 import org.apache.activemq.broker.BrokerService;
 import org.apache.derby.jdbc.EmbeddedXADataSource;
-import org.apache.geronimo.connector.outbound.GenericConnectionManager;
-import org.apache.geronimo.connector.outbound.connectionmanagerconfig.NoPool;
-import org.apache.geronimo.connector.outbound.connectionmanagerconfig.XATransactions;
-import org.apache.geronimo.transaction.context.GeronimoTransactionManager;
-import org.apache.geronimo.transaction.context.TransactionContextManager;
-import org.apache.geronimo.transaction.manager.TransactionManagerImpl;
-import org.apache.geronimo.transaction.manager.XidFactoryImpl;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.nmr.flow.Flow;
@@ -39,6 +32,8 @@ import org.apache.servicemix.jbi.nmr.flow.seda.SedaFlow;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.jdbc.JdbcStoreFactory;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
+import org.jencks.GeronimoPlatformTransactionManager;
+import org.jencks.factory.ConnectionManagerFactoryBean;
 import org.tranql.connector.AllExceptionsAreFatalSorter;
 import org.tranql.connector.jdbc.AbstractXADataSourceMCF;
 
@@ -57,19 +52,14 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         broker.addConnector("tcp://localhost:61616");
         broker.start();
         
-        TransactionManagerImpl exTransactionManager = new TransactionManagerImpl(600, new XidFactoryImpl(), null, null);
-        TransactionContextManager transactionContextManager = new TransactionContextManager(exTransactionManager, exTransactionManager);
-        tm = (TransactionManager) new GeronimoTransactionManager(transactionContextManager);
+        tm = new GeronimoPlatformTransactionManager();
         
         // Create an embedded database for testing tx results when commit / rollback
-        ConnectionManager cm = new GenericConnectionManager(
-                        new XATransactions(true, true),
-                        new NoPool(),
-                        false,
-                        null,
-                        transactionContextManager,
-                        "connectionManager",
-                        GenericConnectionManager.class.getClassLoader());
+        ConnectionManagerFactoryBean factory = new ConnectionManagerFactoryBean();
+        factory.setTransactionManager(tm);
+        factory.setTransaction("xa");
+        factory.afterPropertiesSet();
+        ConnectionManager cm = (ConnectionManager) factory.getObject();
         ManagedConnectionFactory mcf = new DerbyDataSourceMCF("target/testdb");
         dataSource = (DataSource) mcf.createConnectionFactory(cm);
 
@@ -78,11 +68,8 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         storeFactory.setTransactional(true);
         store = storeFactory.open("store");
         
-        JCAFlow jcaFlow = new JCAFlow();
-        jcaFlow.setTransactionContextManager(transactionContextManager);
-        
         jbi = new JBIContainer();
-        jbi.setFlows(new Flow[] { new SedaFlow(), jcaFlow });
+        jbi.setFlows(new Flow[] { new SedaFlow(), new JCAFlow() });
         jbi.setEmbedded(true);
         jbi.setUseMBeanServer(false);
         jbi.setCreateMBeanServer(false);
