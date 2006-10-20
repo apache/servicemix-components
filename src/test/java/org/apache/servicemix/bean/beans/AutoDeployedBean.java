@@ -29,7 +29,7 @@ import javax.jbi.messaging.MessageExchange;
 /**
  * A simple POJO which uses annotations to expose it on a JBI bus
  *
- * @version $Revision: $
+ * @version $Revision$
  */
 @Endpoint(name="cheese", targetNamespace = "urn:test", serviceName = "service")
 public class AutoDeployedBean {
