@@ -56,7 +56,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>incubator-activemq</groupId>
+      <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-core</artifactId>
       <scope>provided</scope>
     </dependency>
