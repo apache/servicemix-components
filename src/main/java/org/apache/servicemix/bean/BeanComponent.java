@@ -24,6 +24,8 @@ import org.apache.servicemix.jbi.util.URISupport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.DocumentFragment;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -31,24 +33,25 @@ import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * A JBI component for binding beans to the JBI bus which work directly off of the JBI messages
  * without requiring any SOAP Processing. If you require support for SOAP, JAX-WS, JSR-181 then you
  * should use the servicemix-jsr181 module instead.
  *
+ * @version $Revision: $
  * @org.apache.xbean.XBean element="component" description="Bean Component"
-  *
-  * @version $Revision: $
  */
-public class BeanComponent extends DefaultComponent implements BeanFactoryAware {
+public class BeanComponent extends DefaultComponent implements ApplicationContextAware {
 
     public final static String EPR_URI = "urn:servicemix:bean";
     public final static QName EPR_SERVICE = new QName(EPR_URI, "BeanComponent");
     public final static String EPR_NAME = "epr";
 
     private BeanEndpoint[] endpoints;
-    private BeanFactory beanFactory;
+    private String[] searchPackages;
+    private ApplicationContext applicationContext;
 
 
     public BeanEndpoint[] getEndpoints() {
@@ -59,12 +62,20 @@ public class BeanComponent extends DefaultComponent implements BeanFactoryAware 
         this.endpoints = endpoints;
     }
 
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public String[] getSearchPackages() {
+        return searchPackages;
+    }
+
+    public void setSearchPackages(String[] searchPackages) {
+        this.searchPackages = searchPackages;
     }
 
     public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
@@ -72,7 +83,12 @@ public class BeanComponent extends DefaultComponent implements BeanFactoryAware 
     }
 
     protected List getConfiguredEndpoints() {
-        return asList(getEndpoints());
+        List list = new ArrayList(asList(getEndpoints()));
+        if (searchPackages != null) {
+            EndpointFinder finder = new EndpointFinder(this);
+            finder.addEndpoints(list);
+        }
+        return list;
     }
 
     protected Class[] getEndpointClasses() {
@@ -121,4 +137,10 @@ public class BeanComponent extends DefaultComponent implements BeanFactoryAware 
         return endpoint;
     }
 
+    /**
+     * Adds a new component dynamically
+     */
+    public void addEndpoint(BeanEndpoint endpoint) throws Exception {
+        super.addEndpoint(endpoint);
+    }
 }

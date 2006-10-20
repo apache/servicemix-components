@@ -57,6 +57,8 @@ import org.apache.servicemix.jbi.util.MessageUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Represents a bean endpoint which consists of a together with a {@link MethodInvocationStrategy}
@@ -65,9 +67,9 @@ import org.springframework.beans.factory.BeanFactoryAware;
  * @version $Revision: $
  * @org.apache.xbean.XBean element="endpoint"
  */
-public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
+public class BeanEndpoint extends ProviderEndpoint implements ApplicationContextAware {
 
-    private BeanFactory beanFactory;
+    private ApplicationContext applicationContext;
     private String beanName;
     private Object bean;
     private BeanInfo beanInfo;
@@ -87,7 +89,7 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
 
     public BeanEndpoint(BeanComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
-        setBeanFactory(component.getBeanFactory());
+        setApplicationContext(component.getApplicationContext());
     }
 
     public void start() throws Exception {
@@ -114,12 +116,13 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
         }
     }
 
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
     public String getBeanName() {
@@ -294,10 +297,10 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
             return beanType.newInstance();
         } else if (beanName == null) {
             throw new IllegalArgumentException("Property 'beanName', 'beanType' or 'beanClassName' must be set!");
-        } else if (beanFactory == null) {
+        } else if (applicationContext == null) {
             throw new IllegalArgumentException("Property 'beanName' specified, but no BeanFactory set!");
         } else {
-            Object answer = beanFactory.getBean(beanName);
+            Object answer = applicationContext.getBean(beanName);
             if (answer == null) {
                 throw new NoSuchBeanException(beanName, this);
             }
@@ -423,5 +426,4 @@ public class BeanEndpoint extends ProviderEndpoint implements BeanFactoryAware {
     public void setCorrelationExpression(org.apache.servicemix.expression.Expression correlationExpression) {
         this.correlationExpression = correlationExpression;
     }
-
 }
