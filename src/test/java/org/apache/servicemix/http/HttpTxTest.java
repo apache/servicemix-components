@@ -25,10 +25,6 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.apache.activemq.broker.BrokerService;
-import org.apache.geronimo.transaction.context.GeronimoTransactionManager;
-import org.apache.geronimo.transaction.context.TransactionContextManager;
-import org.apache.geronimo.transaction.manager.TransactionManagerImpl;
-import org.apache.geronimo.transaction.manager.XidFactoryImpl;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.Destination;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -38,6 +34,7 @@ import org.apache.servicemix.jbi.nmr.flow.Flow;
 import org.apache.servicemix.jbi.nmr.flow.jca.JCAFlow;
 import org.apache.servicemix.jbi.nmr.flow.seda.SedaFlow;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
+import org.jencks.GeronimoPlatformTransactionManager;
 
 public class HttpTxTest extends TestCase {
 
@@ -53,15 +50,10 @@ public class HttpTxTest extends TestCase {
         broker.addConnector("tcp://localhost:61616");
         broker.start();
 
-        TransactionManagerImpl exTransactionManager = new TransactionManagerImpl(600, new XidFactoryImpl(), null, null);
-        TransactionContextManager transactionContextManager = new TransactionContextManager(exTransactionManager, exTransactionManager);
-        tm = (TransactionManager) new GeronimoTransactionManager(transactionContextManager);
+        tm = new GeronimoPlatformTransactionManager();
 
-        JCAFlow jcaFlow = new JCAFlow();
-        jcaFlow.setTransactionContextManager(transactionContextManager);
-        
         jbi = new JBIContainer();
-        jbi.setFlows(new Flow[] { new SedaFlow(), jcaFlow });
+        jbi.setFlows(new Flow[] { new SedaFlow(), new JCAFlow() });
         jbi.setEmbedded(true);
         jbi.setUseMBeanServer(false);
         jbi.setCreateMBeanServer(false);
