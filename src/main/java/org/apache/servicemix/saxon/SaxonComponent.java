@@ -16,9 +16,12 @@
  */
 package org.apache.servicemix.saxon;
 
-import org.apache.servicemix.common.DefaultComponent;
-
 import java.util.List;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.Endpoint;
 
 /**
  * 
@@ -27,6 +30,8 @@ import java.util.List;
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
  */
 public class SaxonComponent extends DefaultComponent {
+
+    public final static String[] EPR_PROTOCOLS = { "xslt:", "xquery:" };
 
     private SaxonEndpoint[] endpoints;
 
@@ -44,5 +49,14 @@ public class SaxonComponent extends DefaultComponent {
 
     protected List getConfiguredEndpoints() {
         return asList(getEndpoints());
+    }
+
+    protected String[] getEPRProtocols() {
+        return EPR_PROTOCOLS;
+    }
+
+    protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
+        // TODO: handle EPR
+        return super.getResolvedEPR(ep);
     }
 }

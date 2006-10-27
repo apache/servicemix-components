@@ -13,7 +13,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import net.sf.saxon.Configuration;
 
-import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.springframework.core.io.DefaultResourceLoader;

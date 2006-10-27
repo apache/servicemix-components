@@ -72,6 +72,7 @@ public class XQueryEndpoint extends SaxonEndpoint {
     // -------------------------------------------------------------------------
     
     public void start() throws Exception {
+        super.start();
         Configuration config = getConfiguration();
         if (config == null) {
             config = new Configuration();
