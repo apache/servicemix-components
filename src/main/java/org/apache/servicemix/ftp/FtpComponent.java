@@ -16,15 +16,13 @@
  */
 package org.apache.servicemix.ftp;
 
-import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ResolvedEndpoint;
-import org.w3c.dom.DocumentFragment;
-
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.List;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.Endpoint;
 
 /**
  * An FTP based component
@@ -33,10 +31,6 @@ import java.util.List;
  * @org.apache.xbean.XBean element="component" description="FTP Component"
  */
 public class FtpComponent extends DefaultComponent {
-
-    public final static String EPR_URI = "urn:servicemix:ftp";
-    public final static QName EPR_SERVICE = new QName(FtpComponent.EPR_URI, "FtpComponent");
-    public final static String EPR_NAME = "epr";
 
     private FtpEndpoint[] endpoints;
 
@@ -48,20 +42,12 @@ public class FtpComponent extends DefaultComponent {
         this.endpoints = endpoints;
     }
 
-    public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        return ResolvedEndpoint.resolveEndpoint(epr, FtpComponent.EPR_URI, FtpComponent.EPR_NAME, FtpComponent.EPR_SERVICE, "ftp:");
-    }
-
     protected List getConfiguredEndpoints() {
         return asList(getEndpoints());
     }
 
     protected Class[] getEndpointClasses() {
         return new Class[]{FtpEndpoint.class};
-    }
-
-    protected QName getEPRServiceName() {
-        return FtpComponent.EPR_SERVICE;
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {

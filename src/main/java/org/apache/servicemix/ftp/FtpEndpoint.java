@@ -18,7 +18,7 @@ package org.apache.servicemix.ftp;
 
 import org.apache.commons.net.SocketClient;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 
