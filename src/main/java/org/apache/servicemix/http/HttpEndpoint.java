@@ -286,11 +286,10 @@ public class HttpEndpoint extends SoapEndpoint {
     }
 
     protected ServiceEndpoint createExternalEndpoint() {
-        return new ExternalEndpoint(HttpComponent.EPR_URI, 
-                                    HttpComponent.EPR_NAME,
+        return new ExternalEndpoint(getServiceUnit().getComponent().getEPRElementName(),
                                     getLocationURI(),
-                                    getEndpoint(),
                                     getService(),
+                                    getEndpoint(),
                                     getInterfaceName());
     }
 

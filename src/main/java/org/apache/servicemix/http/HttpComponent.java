@@ -22,10 +22,7 @@ import java.util.Map;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IntrospectionSupport;
-import org.apache.activemq.util.URISupport;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
@@ -33,7 +30,6 @@ import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ResolvedEndpoint;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.http.jetty.JCLLogger;
@@ -41,7 +37,8 @@ import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
-import org.w3c.dom.DocumentFragment;
+import org.apache.servicemix.jbi.util.IntrospectionSupport;
+import org.apache.servicemix.jbi.util.URISupport;
 
 /**
  * 
@@ -51,9 +48,7 @@ import org.w3c.dom.DocumentFragment;
  */
 public class HttpComponent extends DefaultComponent {
 
-    public final static String EPR_URI = "urn:servicemix:http";
-    public final static QName EPR_SERVICE = new QName(EPR_URI, "HttpComponent");
-    public final static String EPR_NAME = "epr";
+    public final static String[] EPR_PROTOCOLS = { "http:", "https" };
     
     static {
         JCLLogger.init();
@@ -243,8 +238,8 @@ public class HttpComponent extends DefaultComponent {
         server.stop();
     }
 
-    protected QName getEPRServiceName() {
-        return EPR_SERVICE;
+    protected String[] getEPRProtocols() {
+        return EPR_PROTOCOLS;
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
@@ -312,17 +307,6 @@ public class HttpComponent extends DefaultComponent {
         Deployer[] deployers = new Deployer[] { new BaseXBeanDeployer(this, getEndpointClasses()), 
                                                 new HttpWsdl1Deployer(this) };
         return new BaseServiceUnitManager(this, deployers);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.jbi.component.Component#resolveEndpointReference(org.w3c.dom.DocumentFragment)
-     */
-    public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        ServiceEndpoint ep = ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "http:");
-        if (ep == null) {
-            ep = ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "https:");
-        }
-        return ep;
     }
 
     protected List getConfiguredEndpoints() {
