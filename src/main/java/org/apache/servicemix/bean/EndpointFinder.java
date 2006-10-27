@@ -115,7 +115,7 @@ public class EndpointFinder implements ApplicationContextAware {
         answer.setEndpoint(endpointAnnotation.name());
         QName service = createQName(endpointAnnotation.serviceName(), endpointAnnotation.targetNamespace());
         if (service == null) {
-            service = BeanComponent.EPR_SERVICE;
+            service = beanComponent.getEPRServiceName();
         }
         answer.setService(service);
         return answer;

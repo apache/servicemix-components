@@ -49,7 +49,7 @@ import org.apache.servicemix.bean.support.MethodInvocationStrategy;
 import org.apache.servicemix.bean.support.ReflectionUtils;
 import org.apache.servicemix.bean.support.Request;
 import org.apache.servicemix.common.EndpointComponentContext;
-import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.expression.JAXPStringXPathExpression;
 import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.jbi.resolver.URIResolver;
