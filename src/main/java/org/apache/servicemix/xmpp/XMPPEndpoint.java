@@ -16,11 +16,9 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.apache.servicemix.common.ProviderEndpoint;
 import org.apache.servicemix.common.ServiceUnit;
-import org.jivesoftware.smack.AccountManager;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;

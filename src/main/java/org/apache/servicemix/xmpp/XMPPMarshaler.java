@@ -85,19 +85,6 @@ public class XMPPMarshaler {
 
     // Properties
     //-------------------------------------------------------------------------
-    /**
-     * @deprecated use getSourceMarshaler instead
-     */
-    public SourceMarshaler getSourceMarshaller() {
-        return sourceMarshaler;
-    }
-
-    /**
-     * @deprecated use setSourceMashaler instead
-     */
-    public void setSourceMarshaller(SourceMarshaler sourceMarshaler) {
-        this.sourceMarshaler = sourceMarshaler;
-    }
 
     /**
      * @return the sourceMarshaler

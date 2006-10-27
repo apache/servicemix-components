@@ -16,22 +16,20 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.apache.activemq.util.URISupport;
-import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ResolvedEndpoint;
-import org.apache.servicemix.jbi.util.IntrospectionSupport;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.w3c.dom.DocumentFragment;
-
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.jbi.util.IntrospectionSupport;
+import org.apache.servicemix.jbi.util.URISupport;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 
 /**
  * A JBI component for binding POJOs to the JBI bus which work directly off of the JBI messages
@@ -42,10 +40,6 @@ import java.util.Map;
  * @org.apache.xbean.XBean element="component" description="POJO Component"
  */
 public class XMPPComponent extends DefaultComponent implements BeanFactoryAware {
-
-    public final static String EPR_URI = "urn:servicemix:xmpp";
-    public final static QName EPR_SERVICE = new QName(EPR_URI, "XMPPComponent");
-    public final static String EPR_NAME = "epr";
 
     private XMPPEndpoint[] endpoints;
     private BeanFactory beanFactory;
@@ -85,20 +79,12 @@ public class XMPPComponent extends DefaultComponent implements BeanFactoryAware 
         this.beanFactory = beanFactory;
     }
 
-    public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        return ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "xmpp:");
-    }
-
     protected List getConfiguredEndpoints() {
         return asList(getEndpoints());
     }
 
     protected Class[] getEndpointClasses() {
         return new Class[]{XMPPEndpoint.class};
-    }
-
-    protected QName getEPRServiceName() {
-        return EPR_SERVICE;
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
