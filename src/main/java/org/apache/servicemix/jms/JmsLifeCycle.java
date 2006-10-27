@@ -91,7 +91,7 @@ public class JmsLifeCycle extends BaseLifeCycle {
         this.configuration = configuration;
     }
 
-    protected QName getEPRServiceName() {
+    public QName getEPRServiceName() {
         return JmsResolvedEndpoint.EPR_SERVICE;
     }
     
