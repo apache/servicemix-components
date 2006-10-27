@@ -16,32 +16,26 @@
  */
 package org.apache.servicemix.file;
 
-import org.apache.activemq.util.IntrospectionSupport;
-import org.apache.activemq.util.URISupport;
-import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ResolvedEndpoint;
-import org.w3c.dom.DocumentFragment;
-
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jbi.servicedesc.ServiceEndpoint;
+
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.jbi.util.IntrospectionSupport;
+import org.apache.servicemix.jbi.util.URISupport;
+
 /**
  * A file based component
  *
- * @version $Revision: $
+ * @version $Revision$
  * @org.apache.xbean.XBean element="component" description="File Component"
  */
 public class FileComponent extends DefaultComponent {
-
-    public final static String EPR_URI = "urn:servicemix:file";
-    public final static QName EPR_SERVICE = new QName(EPR_URI, "FileComponent");
-    public final static String EPR_NAME = "epr";
 
     private FileEndpoint[] endpoints;
     private FilePollingEndpoint[] pollingEndpoints;
@@ -63,10 +57,6 @@ public class FileComponent extends DefaultComponent {
         this.pollingEndpoints = pollingEndpoints;
     }
 
-    public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-        return ResolvedEndpoint.resolveEndpoint(epr, EPR_URI, EPR_NAME, EPR_SERVICE, "file:");
-    }
-
     protected List getConfiguredEndpoints() {
         List answer = new ArrayList();
         answer.addAll(asList(getEndpoints()));
@@ -76,10 +66,6 @@ public class FileComponent extends DefaultComponent {
 
     protected Class[] getEndpointClasses() {
         return new Class[]{FileEndpoint.class, FilePollingEndpoint.class};
-    }
-
-    protected QName getEPRServiceName() {
-        return EPR_SERVICE;
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {

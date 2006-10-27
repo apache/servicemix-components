@@ -17,21 +17,17 @@
 package org.apache.servicemix.file;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.DocumentFragment;
 
 public class SpringComponentTest extends SpringTestSupport {
 

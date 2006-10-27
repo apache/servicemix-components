@@ -18,7 +18,7 @@ package org.apache.servicemix.file;
 
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
-import org.apache.servicemix.common.ProviderEndpoint;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
@@ -50,7 +50,6 @@ public class FileEndpoint extends ProviderEndpoint {
 
     public void validate() throws DeploymentException {
         super.validate();
-
         if (directory == null) {
             throw new DeploymentException("You must specify the directory property");
         }

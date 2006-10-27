@@ -17,20 +17,18 @@
  */
 package org.apache.servicemix.file;
 
-import org.apache.servicemix.tck.SpringTestSupport;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
+
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.namespace.QName;
-import java.io.File;
-import java.io.FileWriter;
 
 public class PollDirectoryTest extends SpringTestSupport {
     protected String directoryName = "target/pollDirectory";

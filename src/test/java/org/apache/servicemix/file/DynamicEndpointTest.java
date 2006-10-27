@@ -17,6 +17,13 @@
  */
 package org.apache.servicemix.file;
 
+import java.io.File;
+
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -24,12 +31,6 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.servicedesc.ServiceEndpoint;
-import java.io.File;
 
 public class DynamicEndpointTest extends SpringTestSupport {
     protected String dynamicURI = "file://target/dynamicEndpoint?file.tempFilePrefix=dynamicEp-";

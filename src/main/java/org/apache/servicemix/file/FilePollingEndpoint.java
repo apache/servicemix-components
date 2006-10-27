@@ -27,9 +27,10 @@ import java.util.Set;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.servicemix.common.PollingEndpoint;
+import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 
@@ -207,7 +208,16 @@ public class FilePollingEndpoint extends PollingEndpoint {
         NormalizedMessage message = exchange.createMessage();
         exchange.setInMessage(message);
         marshaler.readMessage(exchange, message, in, name);
-        getDeliveryChannel().sendSync(exchange);
+        sendSync(exchange);
         in.close();
+    }
+
+    public String getLocationURI() {
+        return file.toURI().toString();
+    }
+
+    public void process(MessageExchange exchange) throws Exception {
+        // Do nothing. In our case, this method should never be called
+        // as we only send synchronous InOnly exchange
     }
 }

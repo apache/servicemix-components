@@ -29,11 +29,16 @@
       	<sm:component>
             <file:component>
             	<file:endpoints>
-                <file:endpoint service="test:service" endpoint="endpoint" directory="file:target/componentOutput"/>
+                <file:endpoint service="test:service"
+                               endpoint="endpoint"
+                               directory="file:target/componentOutput" />
             	</file:endpoints>
               
               <file:pollingEndpoints>
-                <file:pollingEndpoint service="test:poller" endpoint="poller" file="file:target/pollerFiles"/>
+                <file:pollingEndpoint service="test:poller"
+                                      endpoint="poller"
+                                      targetService="test:service"
+                                      file="file:target/pollerFiles" />
               </file:pollingEndpoints>
             </file:component>
         </sm:component>
