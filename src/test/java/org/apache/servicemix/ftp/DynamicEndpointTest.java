@@ -16,29 +16,31 @@
  */
 package org.apache.servicemix.ftp;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.servicedesc.ServiceEndpoint;
-
 public class DynamicEndpointTest extends SpringTestSupport {
 
     public void testSendingToDynamicEndpoint() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbi);
 
-        ServiceEndpoint se = client.resolveEndpointReference("ftp://host/path");
+        ServiceEndpoint se = client.resolveEndpointReference("ftp://servicemix:rocks@localhost/smx/test");
         assertNotNull("We should find a service endpoint!", se);
 
         InOnly exchange = client.createInOnlyExchange();
         exchange.setEndpoint(se);
+        exchange.getInMessage().setProperty(DefaultFileMarshaler.FILE_NAME_PROPERTY, "test.xml");
         exchange.getInMessage().setContent(new StringSource("<hello>world</hello>"));
         client.sendSync(exchange);
 

@@ -22,6 +22,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 
+import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -41,6 +42,7 @@ public class FtpEndpoint extends ProviderEndpoint {
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private String uniqueFileName = "ServiceMix";
     private boolean overwrite = false;
+    private URI uri;
 
     public FtpEndpoint() {
     }
@@ -48,12 +50,22 @@ public class FtpEndpoint extends ProviderEndpoint {
     public FtpEndpoint(FtpComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
+    
+    public void validate() throws DeploymentException {
+        super.validate();
+        if (uri == null && (getClientPool() == null || getClientPool().getHost() == null)) {
+            throw new DeploymentException("Property uri or clientPool.host must be configured");
+        }
+        if (uri != null && getClientPool() != null && getClientPool().getHost() != null) {
+            throw new DeploymentException("Properties uri and clientPool.host can not be configured at the same time");
+        }
+    }
 
     /**
      * Configures the endpoint from a URI
      */
     public void setUri(URI uri) {
-        // TODO
+        this.uri = uri;
     }
 
 
@@ -61,6 +73,17 @@ public class FtpEndpoint extends ProviderEndpoint {
         super.start();
         if (clientPool == null) {
             clientPool = createClientPool();
+        }
+        if (uri != null) {
+            clientPool.setHost(uri.getHost());
+            clientPool.setPort(uri.getPort());
+            if (uri.getUserInfo() != null) {
+                String[] infos = uri.getUserInfo().split(":");
+                clientPool.setUsername(infos[0]);
+                if (infos.length > 1) {
+                    clientPool.setPassword(infos[1]);
+                }
+            }
         }
     }
 
@@ -111,6 +134,10 @@ public class FtpEndpoint extends ProviderEndpoint {
         OutputStream out = null;
         try {
             client = (FTPClient) getClientPool().borrowClient();
+            // Change to the directory specified by the URI path if any
+            if (uri != null && uri.getPath() != null) {
+                client.changeWorkingDirectory(uri.getPath());
+            }
 
             String name = marshaler.getOutputName(exchange, message);
             if (name == null) {
@@ -150,9 +177,10 @@ public class FtpEndpoint extends ProviderEndpoint {
         }
     }
 
-    protected FTPClientPool createClientPool() {
-        FTPClientPool answer = new FTPClientPool();
-        return answer;
+    protected FTPClientPool createClientPool() throws Exception {
+        FTPClientPool pool = new FTPClientPool();
+        pool.afterPropertiesSet();
+        return pool;
     }
 
     protected void returnClient(SocketClient client) {

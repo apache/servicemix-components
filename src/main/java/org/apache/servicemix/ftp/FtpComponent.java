@@ -18,11 +18,14 @@ package org.apache.servicemix.ftp;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.jbi.util.IntrospectionSupport;
+import org.apache.servicemix.jbi.util.URISupport;
 
 /**
  * An FTP based component
@@ -52,13 +55,11 @@ public class FtpComponent extends DefaultComponent {
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         FtpEndpoint ftpEndpoint = new FtpEndpoint(this, ep);
-
-        // TODO
-        //ftpEp.setRole(MessageExchange.Role.PROVIDER);
-
         URI uri = new URI(ep.getEndpointName());
-
+        Map map = URISupport.parseQuery(uri.getQuery());
+        IntrospectionSupport.setProperties(ftpEndpoint, map);
         ftpEndpoint.setUri(uri);
+        ftpEndpoint.validate();
         ftpEndpoint.activate();
         return ftpEndpoint;
     }

@@ -18,6 +18,7 @@ package org.apache.servicemix.ftp;
 
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
@@ -37,7 +38,7 @@ public class SpringComponentTest extends SpringTestSupport {
         me.setService(new QName("urn:test", "service"));
         NormalizedMessage message = me.getInMessage();
 
-        message.setProperty("name", "cheese");
+        message.setProperty(DefaultFileMarshaler.FILE_NAME_PROPERTY, "test2.xml");
         message.setContent(new StringSource("<hello>world</hello>"));
 
         client.sendSync(me);
