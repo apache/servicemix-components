@@ -95,7 +95,7 @@ public class FileComponent extends DefaultComponent {
                 file = path;
             }
             else {
-                // must be an abssolute URI
+                // must be an absolute URI
                 file = uri.getSchemeSpecificPart();
             }
         }

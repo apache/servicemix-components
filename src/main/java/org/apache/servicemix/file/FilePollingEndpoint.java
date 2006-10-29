@@ -205,6 +205,7 @@ public class FilePollingEndpoint extends PollingEndpoint {
         String name = aFile.getCanonicalPath();
         InputStream in = new BufferedInputStream(new FileInputStream(aFile));
         InOnly exchange = getExchangeFactory().createInOnlyExchange();
+        configureExchangeTarget(exchange);
         NormalizedMessage message = exchange.createMessage();
         exchange.setInMessage(message);
         marshaler.readMessage(exchange, message, in, name);
