@@ -17,6 +17,7 @@
 package org.apache.servicemix.ftp;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ import org.apache.servicemix.jbi.util.URISupport;
 public class FtpComponent extends DefaultComponent {
 
     private FtpEndpoint[] endpoints;
+    private FtpPollingEndpoint[] pollingEndpoints;
 
     public FtpEndpoint[] getEndpoints() {
         return endpoints;
@@ -45,12 +47,29 @@ public class FtpComponent extends DefaultComponent {
         this.endpoints = endpoints;
     }
 
+    /**
+     * @return the pollingEndpoints
+     */
+    public FtpPollingEndpoint[] getPollingEndpoints() {
+        return pollingEndpoints;
+    }
+
+    /**
+     * @param pollingEndpoints the pollingEndpoints to set
+     */
+    public void setPollingEndpoints(FtpPollingEndpoint[] pollingEndpoints) {
+        this.pollingEndpoints = pollingEndpoints;
+    }
+
     protected List getConfiguredEndpoints() {
-        return asList(getEndpoints());
+        ArrayList l = new ArrayList();
+        l.addAll(asList(getEndpoints()));
+        l.addAll(asList(getPollingEndpoints()));
+        return l;
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[]{FtpEndpoint.class};
+        return new Class[] { FtpEndpoint.class, FtpPollingEndpoint.class };
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {

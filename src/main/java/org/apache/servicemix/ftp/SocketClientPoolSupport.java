@@ -44,7 +44,9 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
 
     public void afterPropertiesSet() throws Exception {
         if (pool == null) {
-            pool = new GenericObjectPool();
+            GenericObjectPool goPool = new GenericObjectPool();
+            goPool.setTestOnBorrow(true);
+            pool = goPool;
         }
         pool.setFactory(this);
     }

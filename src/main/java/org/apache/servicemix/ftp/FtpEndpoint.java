@@ -16,19 +16,20 @@
  */
 package org.apache.servicemix.ftp;
 
-import org.apache.commons.net.SocketClient;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-import org.apache.servicemix.components.util.DefaultFileMarshaler;
-import org.apache.servicemix.components.util.FileMarshaler;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
 
+import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
+
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.components.util.DefaultFileMarshaler;
+import org.apache.servicemix.components.util.FileMarshaler;
 
 /**
  * An FTP endpoint
@@ -133,7 +134,7 @@ public class FtpEndpoint extends ProviderEndpoint {
         FTPClient client = null;
         OutputStream out = null;
         try {
-            client = (FTPClient) getClientPool().borrowClient();
+            client = borrowClient();
             // Change to the directory specified by the URI path if any
             if (uri != null && uri.getPath() != null) {
                 client.changeWorkingDirectory(uri.getPath());
@@ -162,7 +163,6 @@ public class FtpEndpoint extends ProviderEndpoint {
                 throw new IOException("No output stream available for output name: " + name + ". Maybe the file already exists?");
             }
             marshaler.writeMessage(exchange, message, out, name);
-            done(exchange);
         }
         finally {
             returnClient(client);
@@ -183,7 +183,16 @@ public class FtpEndpoint extends ProviderEndpoint {
         return pool;
     }
 
-    protected void returnClient(SocketClient client) {
+    protected FTPClient borrowClient() throws JBIException {
+        try {
+            return (FTPClient) getClientPool().borrowClient();
+        }
+        catch (Exception e) {
+            throw new JBIException(e);
+        }
+    }
+
+    protected void returnClient(FTPClient client) {
         if (client != null) {
             try {
                 getClientPool().returnClient(client);
