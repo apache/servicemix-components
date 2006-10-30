@@ -32,7 +32,7 @@
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-file</artifactId>
   <packaging>jbi-component</packaging>
-  <name>ServiceMix File</name>
+  <name>ServiceMix :: File</name>
   <description>A File component</description>
 
   <dependencies>
