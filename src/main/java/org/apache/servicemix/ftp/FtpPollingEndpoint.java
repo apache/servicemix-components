@@ -211,7 +211,12 @@ public class FtpPollingEndpoint extends PollingEndpoint {
         for (int i = 0; i < files.length; i++) {
             String file = fileOrDirectory + "/" + files[i].getName();
             if (!files[i].isDirectory()) {
-                if (getFilter() == null || getFilter().accept(new File(file))) {
+                File f = new File(file);
+                String name = f.getName();
+                if (name.equals(".") || name.equals("..")) {
+                    continue; // ignore "." and ".."
+                }
+                if (getFilter() == null || getFilter().accept(f)) {
                     pollFile(file); // process the file
                 }
             } else if (processDir) {
