@@ -31,19 +31,25 @@
             	<file:endpoints>
                 <file:endpoint service="test:service"
                                endpoint="endpoint"
-                               directory="file:target/componentOutput" />
+                               directory="file:target/pollerFiles" />
             	</file:endpoints>
               
               <file:pollingEndpoints>
                 <file:pollingEndpoint service="test:poller"
                                       endpoint="poller"
-                                      targetService="test:service"
+                                      targetService="test:receiver"
                                       file="file:target/pollerFiles" />
               </file:pollingEndpoints>
             </file:component>
         </sm:component>
       </sm:activationSpec>
-
+      
+      <sm:activationSpec id="receiver" service="test:receiver">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      
     </sm:activationSpecs>
   </sm:container>
 

@@ -24,8 +24,10 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -35,23 +37,25 @@ public class PollDirectoryTest extends SpringTestSupport {
     protected String dynamicURI = "file:" + directoryName;
 
 
+    private int NUMBER = 10;
+
     public void testSendToWriterSoItCanBePolled() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
         // lets send a request to be written to a file
         // which should then be polled
-        InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("urn:test", "service"));
-        NormalizedMessage message = me.getInMessage();
+        for (int i = 0; i < NUMBER; i++) {
+            InOnly me = client.createInOnlyExchange();
+            me.setService(new QName("urn:test", "service"));
+            NormalizedMessage message = me.getInMessage();
+            message.setProperty(DefaultFileMarshaler.FILE_NAME_PROPERTY, "test" + i + ".xml");
+            message.setContent(new StringSource("<hello>world</hello>"));
+            client.sendSync(me);
+        }
 
-        message.setProperty("name", "cheese");
-        message.setContent(new StringSource("<hello>world</hello>"));
-
-        client.sendSync(me);
-
-
-        Thread.sleep(5000);
+        Receiver receiver = (Receiver) getBean("receiver");
+        receiver.getMessageList().assertMessagesReceived(NUMBER);
     }
 
     protected void assertExchangeWorked(MessageExchange me) throws Exception {

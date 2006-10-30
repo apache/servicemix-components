@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -7,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,18 +22,23 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Set;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
+import org.apache.servicemix.locks.LockManager;
+import org.apache.servicemix.locks.impl.SimpleLockManager;
 
-import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArraySet;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 
 /**
  * A polling endpoint which looks for a file or files in a directory
@@ -53,7 +57,18 @@ public class FilePollingEndpoint extends PollingEndpoint {
     private boolean recursive = true;
     private boolean autoCreateDirectory = true;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
-    private Set workingSet = new CopyOnWriteArraySet();
+    private LockManager lockManager;
+
+    public FilePollingEndpoint() {
+    }
+
+    public FilePollingEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
+        super(serviceUnit, service, endpoint);
+    }
+
+    public FilePollingEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
+        super(component, endpoint);
+    }
 
     public void poll() throws Exception {
         pollFileOrDirectory(file);
@@ -67,6 +82,13 @@ public class FilePollingEndpoint extends PollingEndpoint {
         if (isAutoCreateDirectory() && !file.exists()) {
             file.mkdirs();
         }
+        if (lockManager == null) {
+            lockManager = createLockManager();
+        }
+    }
+    
+    protected LockManager createLockManager() {
+        return new SimpleLockManager();
     }
 
 
@@ -83,6 +105,20 @@ public class FilePollingEndpoint extends PollingEndpoint {
      */
     public void setFile(File file) {
         this.file = file;
+    }
+
+    /**
+     * @return the lockManager
+     */
+    public LockManager getLockManager() {
+        return lockManager;
+    }
+
+    /**
+     * @param lockManager the lockManager to set
+     */
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
     }
 
     public FileFilter getFilter() {
@@ -131,15 +167,6 @@ public class FilePollingEndpoint extends PollingEndpoint {
         this.marshaler = marshaler;
     }
 
-    /**
-     * The set of FTPFiles that this component is currently working on
-     *
-     * @return
-     */
-    public Set getWorkingSet() {
-        return workingSet;
-    }
-
     // Implementation methods
     //-------------------------------------------------------------------------
 
@@ -165,21 +192,27 @@ public class FilePollingEndpoint extends PollingEndpoint {
     }
 
     protected void pollFile(final File aFile) {
-        if (workingSet.add(aFile)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Scheduling file " + aFile + " for processing");
-            }
-            getExecutor().execute(new Runnable() {
-                public void run() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Scheduling file " + aFile + " for processing");
+        }
+        getExecutor().execute(new Runnable() {
+            public void run() {
+                String uri = file.toURI().relativize(aFile.toURI()).toString();
+                Lock lock = lockManager.getLock(uri);
+                if (lock.tryLock()) {
                     try {
                         processFileAndDelete(aFile);
                     }
                     finally {
-                        workingSet.remove(aFile);
+                        lock.unlock();
+                    }
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Unable to acquire lock on " + aFile);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     protected void processFileAndDelete(File aFile) {
