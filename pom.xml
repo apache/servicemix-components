@@ -32,7 +32,7 @@
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-xmpp</artifactId>
   <packaging>jbi-component</packaging>
-  <name>ServiceMix XMPP</name>
+  <name>ServiceMix :: XMPP</name>
   <description>An XMPP component for communicating with Jabber networks</description>
 
   <dependencies>
