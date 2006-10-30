@@ -32,7 +32,7 @@
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-ftp</artifactId>
   <packaging>jbi-component</packaging>
-  <name>ServiceMix FTP</name>
+  <name>ServiceMix :: FTP</name>
   <description>An FTP component</description>
 
   <dependencies>
