@@ -209,21 +209,26 @@ public class FtpPollingEndpoint extends PollingEndpoint {
     protected void pollFileOrDirectory(FTPClient ftp, String fileOrDirectory, boolean processDir) throws Exception {
         FTPFile[] files = ftp.listFiles(fileOrDirectory);
         for (int i = 0; i < files.length; i++) {
-            String file = fileOrDirectory + "/" + files[i].getName();
+            String name = files[i].getName();
+            if (name.equals(".") || name.equals("..")) {
+                continue; // ignore "." and ".."
+            }
+            String file = fileOrDirectory + "/" + name;
+            // This is a file, process it
             if (!files[i].isDirectory()) {
-                File f = new File(file);
-                String name = f.getName();
-                if (name.equals(".") || name.equals("..")) {
-                    continue; // ignore "." and ".."
-                }
-                if (getFilter() == null || getFilter().accept(f)) {
+                if (getFilter() == null || getFilter().accept(new File(file))) {
                     pollFile(file); // process the file
                 }
+            // Only process directories if processDir is true
             } else if (processDir) {
-                logger.debug("Polling directory " + file);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Polling directory " + file);
+                }
                 pollFileOrDirectory(ftp, file, isRecursive());
             } else {
-                logger.debug("Skipping directory " + file);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Skipping directory " + file);
+                }
             }
         }
     }
