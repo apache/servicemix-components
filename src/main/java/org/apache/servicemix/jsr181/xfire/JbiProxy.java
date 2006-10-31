@@ -88,7 +88,7 @@ public class JbiProxy {
             Map props = new HashMap();
             props.put(AnnotationServiceFactory.ALLOW_INTERFACE, Boolean.TRUE);
             ServiceFactory factory = ServiceFactoryHelper.findServiceFactory(xfire, serviceClass, null, null);
-            Service service = factory.create(serviceClass, null, getDescription(), props);
+            Service service = factory.create(serviceClass, props);
             JBIClient client = new JBIClient(xfire, service);
             if (interfaceName != null) {
                 client.getService().setProperty(JbiChannel.JBI_INTERFACE_NAME, interfaceName);

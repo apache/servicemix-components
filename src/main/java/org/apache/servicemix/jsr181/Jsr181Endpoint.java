@@ -44,6 +44,7 @@ import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ManagementSupport;
+import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
 import org.codehaus.xfire.XFire;
@@ -258,6 +259,7 @@ public class Jsr181Endpoint extends Endpoint {
                 throw new InvalidParameterException("The name of the PortType defined by the deployed wsdl does not match the interface name of the jbi endpoint");
             }
             // Create the DOM document 
+            definition = new WSDLFlattener(definition).getDefinition(interfaceName);
             description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
         }
         
@@ -289,36 +291,7 @@ public class Jsr181Endpoint extends Endpoint {
         // generate one
         if (this.description == null) {
             this.description = generateWsdl();
-        
-            // If the both interfaceName and serviceName are provided with non matching namespaces,
-            // the generated wsdl is bad. We have to keep only the port type definition.
-            if (this.service != null && interfaceName != null &&
-                !this.service.getNamespaceURI().equals(interfaceName.getNamespaceURI())) {
-                // Parse the WSDL
-                WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
-                reader.setFeature(Constants.FEATURE_VERBOSE, false);
-                definition = reader.readWSDL(null, description);
-                // Get the service and port definition
-                javax.wsdl.Service svc = definition.getService(new QName(this.interfaceName.getNamespaceURI(), this.service.getLocalPart()));
-                Port port = svc != null && svc.getPorts().size() == 1 ? (Port) svc.getPorts().values().iterator().next() : null;
-                if (port != null) {
-                    // If the endpoint name has not been defined, retrieve it now
-                    if (endpoint == null) {
-                        endpoint = port.getName();
-                    }
-                    // Now, remove binding and service infos and change target namespace
-                    definition.removeBinding(port.getBinding().getQName());
-                    definition.removeService(svc.getQName());
-                    description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
-                }
-            }
-            // Write WSDL
-            if (logger.isTraceEnabled()) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
-                logger.trace(baos.toString());
-            }
-        
+
             // Check service name and endpoint name
             QName serviceName = xfireService.getName();
             QName interfName = xfireService.getServiceInfo().getPortType();
@@ -337,7 +310,12 @@ public class Jsr181Endpoint extends Endpoint {
                         ") does not match the service name defined in the endpoint spec (" + interfaceName + 
                         "). WSDL description may be unusable.");
             }
-            definition = WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+
+            // Parse the WSDL
+            WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
+            reader.setFeature(Constants.FEATURE_VERBOSE, false);
+            definition = reader.readWSDL(null, description);
+
             javax.wsdl.Service svc = definition.getService(serviceName);
             if (svc != null) {
                 if (svc.getPorts().values().size() == 1) {
@@ -355,6 +333,17 @@ public class Jsr181Endpoint extends Endpoint {
             }
             if (endpoint == null) {
                 throw new IllegalArgumentException("endpoint name should be provided");
+            }
+
+            // Flatten it
+            definition = new WSDLFlattener(definition).getDefinition(interfaceName);
+            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+
+            // Write WSDL
+            if (logger.isDebugEnabled()) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
+                logger.debug(baos.toString());
             }
         }
     }
