@@ -25,6 +25,8 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.drools.DroolsEndpoint;
@@ -40,7 +42,7 @@ import org.drools.WorkingMemory;
  * @version $Revision: 426415 $
  */
 public class JbiHelper {
-    
+
     private DroolsEndpoint endpoint;
     private Exchange exchange;
     private WorkingMemory memory;
@@ -58,21 +60,25 @@ public class JbiHelper {
     public DroolsEndpoint getEndpoint() {
         return endpoint;
     }
-    
+
     public ComponentContext getContext() {
         return endpoint.getContext();
     }
-    
+
     public DeliveryChannel getChannel() throws MessagingException {
         return getContext().getDeliveryChannel();
     }
-    
+
     public ServiceMixClient getClient() {
         return new ServiceMixClientFacade(getContext());
     }
 
     public Exchange getExchange() {
         return exchange;
+    }
+
+    public Log getLogger() {
+        return LogFactory.getLog(memory.getRuleBase().getPackages()[0].getName());
     }
 
     /**
@@ -118,7 +124,7 @@ public class JbiHelper {
         }
         update();
     }
-    
+
     public void fault(String content) throws Exception {
         MessageExchange exchange = this.exchange.getInternalExchange();
         if (exchange instanceof InOnly) {
@@ -132,8 +138,18 @@ public class JbiHelper {
         }
         update();
     }
-    
+
+    public void answer(String content) throws Exception {
+        MessageExchange exchange = this.exchange.getInternalExchange();
+        NormalizedMessage out = exchange.createMessage();
+        out.setContent(new StringSource(content));
+        exchange.setMessage(out, "out");
+        getChannel().sendSync(exchange);
+        update();
+    }
+
     protected void update() {
         this.memory.modifyObject(this.exchangeFactHandle, this.exchange);
     }
+
 }

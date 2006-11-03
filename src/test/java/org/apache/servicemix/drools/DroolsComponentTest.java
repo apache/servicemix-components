@@ -99,6 +99,8 @@ public class DroolsComponentTest extends TestCase {
         r1.getMessageList().assertMessagesReceived(1);
         r2.getMessageList().assertMessagesReceived(1);
         r3.getMessageList().assertMessagesReceived(1);
+        
+        Thread.sleep(50);
     }
     
     public void testRouteInOut() throws Exception {
@@ -159,6 +161,29 @@ public class DroolsComponentTest extends TestCase {
         client.sendSync(me);
         assertEquals(ExchangeStatus.ERROR, me.getStatus());
         
+        Thread.sleep(50);
     }
-    
+
+    public void testFibonacci() throws Exception {
+        drools = new DroolsComponent();
+        DroolsEndpoint endpoint = new DroolsEndpoint(drools.getServiceUnit(),
+                                                     new QName("drools"), "endpoint");
+        endpoint.setRuleBaseResource(new ClassPathResource("fibonacci.drl"));
+        drools.setEndpoints(new DroolsEndpoint[] { endpoint });
+        jbi.activateComponent(drools, "servicemix-drools");
+        
+        jbi.start();
+        
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("drools"));
+        me.getInMessage().setContent(new StringSource("<fibonacci>50</fibonacci>"));
+        me.getInMessage().setProperty("prop", Boolean.TRUE);
+        client.sendSync(me);
+        Element e = new SourceTransformer().toDOMElement(me.getOutMessage());
+        assertEquals("result", e.getLocalName());
+        assertEquals("12586269025", e.getTextContent());
+        client.done(me);
+        
+        Thread.sleep(50);
+    }
 }

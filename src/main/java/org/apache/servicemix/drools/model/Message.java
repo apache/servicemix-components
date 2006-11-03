@@ -22,6 +22,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.w3c.dom.Element;
 
 public class Message {
 
@@ -60,6 +61,10 @@ public class Message {
     
     public void setProperty(String name, Object value) {
         message.setProperty(name, value);
+    }
+    
+    public Element getContent() {
+        return (Element) ((DOMSource) message.getContent()).getNode();
     }
     
 }
