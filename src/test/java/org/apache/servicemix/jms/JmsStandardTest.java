@@ -65,7 +65,7 @@ public class JmsStandardTest extends TestCase {
     }
 
     public void test() throws Exception {
-        JmsSpringComponent jms = new JmsSpringComponent();
+        JmsComponent jms = new JmsComponent();
         JmsEndpoint ep = new JmsEndpoint();
         ep.setInitialContextFactory(ActiveMQInitialContextFactory.class.getName());
         ep.setJndiProviderURL("tcp://localhost:61216");

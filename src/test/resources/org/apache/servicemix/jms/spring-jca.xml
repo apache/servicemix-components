@@ -18,9 +18,11 @@
 
 -->
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
-	   xmlns:jms="http://servicemix.apache.org/jms/1.0"
-	   xmlns:amq="http://activemq.org/config/1.0"
-	   xmlns:test="http://test">
+	     xmlns:jms="http://servicemix.apache.org/jms/1.0"
+	     xmlns:amq="http://activemq.org/config/1.0"
+       xmlns:amqra="http://activemq.org/ra/1.0"
+       xmlns:jencks="http://jencks.org/2.0"
+	     xmlns:test="http://test">
 
   <!-- the JBI container -->
   <sm:container id="jbi" 
@@ -30,8 +32,7 @@
                 transactionManager="#transactionManager">
     <sm:flows>
       <sm:sedaFlow />
-      <sm:jcaFlow bootstrapContext="#bootstrapContext"
-                  connectionManager="#connectionManager"
+      <sm:jcaFlow connectionManager="#connectionManager"
                   jmsURL="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true" />
     </sm:flows>
 
@@ -53,10 +54,7 @@
                             bootstrapContext="#bootstrapContext"
                             synchronous="true">
                 <jms:activationSpec>
-                  <bean class="org.apache.activemq.ra.ActiveMQActivationSpec">
-                    <property name="destination" value="queue/synchronous"/>
-                    <property name="destinationType" value="javax.jms.Queue"/>
-                  </bean>
+                  <amqra:activationSpec destination="queue/synchronous" destinationType="javax.jms.Queue" />
                 </jms:activationSpec>
               </jms:endpoint>
 
@@ -79,10 +77,7 @@
                             bootstrapContext="#bootstrapContext"
                             synchronous="false">
                 <jms:activationSpec>
-                  <bean class="org.apache.activemq.ra.ActiveMQActivationSpec">
-                    <property name="destination" value="queue/async"/>
-                    <property name="destinationType" value="javax.jms.Queue"/>
-                  </bean>
+                  <amqra:activationSpec destination="queue/async" destinationType="javax.jms.Queue" />
                 </jms:activationSpec>
               </jms:endpoint>
 
@@ -120,16 +115,11 @@
   </bean>
   
   <!-- A managed JMS ConnectionFactory for ActiveMQ -->
-  <bean id="activemqMCF" class="org.apache.activemq.ra.ActiveMQManagedConnectionFactory">
-    <property name="resourceAdapter" ref="resourceAdapter" />
-  </bean>
-  <bean id="connectionFactory" class="org.springframework.jca.support.LocalConnectionFactoryBean">
-    <property name="managedConnectionFactory" ref="activemqMCF"/>
-    <property name="connectionManager" ref="connectionManager"/>
-  </bean>
-  <bean id="resourceAdapter" class="org.apache.activemq.ra.ActiveMQResourceAdapter">
-    <property name="serverUrl" value="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true"/>
-  </bean>
+  <amqra:managedConnectionFactory id="activemqMCF" resourceAdapter="#resourceAdapter" />
+  <amqra:resourceAdapter  id="resourceAdapter" serverUrl="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true"/>
+  <jencks:connectionFactory  id="connectionFactory"
+                             managedConnectionFactory="#activemqMCF"
+                             connectionManager="#connectionManager" />
   
   <amq:broker id="broker" persistent="false">
 
@@ -139,58 +129,23 @@
 
   </amq:broker>
 
-  <!-- Transaction log -->
-  <bean id="transactionLog" class="org.apache.geronimo.transaction.log.UnrecoverableLog" />
-
-  <!-- Internal transaction manager -->
-  <bean id="extendedTransactionManager" class="org.jencks.factory.TransactionManagerFactoryBean">
-    <property name="transactionLog" ref="transactionLog" />
-    <property name="defaultTransactionTimeoutSeconds" value="600"/>
-  </bean>
-  
-  <!-- Transaction context manager -->
-  <bean id="transactionContextManager" class="org.jencks.factory.TransactionContextManagerFactoryBean">
-    <property name="transactionManager" ref="extendedTransactionManager"/>
-  </bean>
-  
-  <!-- Public transaction manager -->
-  <bean id="transactionManager" class="org.jencks.factory.GeronimoTransactionManagerFactoryBean">
-    <property name="transactionContextManager" ref="transactionContextManager"/>
-  </bean>
+  <!-- Transaction manager -->
+  <jencks:transactionManager id="transactionManager" />
   
   <!-- Work manager -->
-  <bean id="workManager" class="org.jencks.factory.WorkManagerFactoryBean">
-    <property name="threadPoolSize" value="30"/>
-    <property name="transactionContextManager" ref="transactionContextManager"/>
-  </bean>
+  <jencks:workManager id="workManager" transactionManager="#transactionManager" />
   
   <!-- Bootstrap context for JCA -->
-  <bean id="bootstrapContext" class="org.jencks.factory.BootstrapContextFactoryBean">
-    <property name="workManager" ref="workManager"/>
-  </bean>
+  <jencks:bootstrapContext id="bootstrapContext" workManager="#workManager" transactionManager="#transactionManager" />
   
   <!-- Connection manager for JCA -->
-  <bean id="connectionTracker" class="org.apache.geronimo.connector.outbound.connectiontracking.ConnectionTrackingCoordinator"/>
-  <bean id="poolingSupport" class="org.jencks.factory.SinglePoolFactoryBean">
-    <property name="maxSize" value="16"/>
-    <property name="minSize" value="1"/>
-    <property name="blockingTimeoutMilliseconds" value="60"/>
-    <property name="idleTimeoutMinutes" value="60"/>
-    <property name="matchOne" value="true"/>
-    <property name="matchAll" value="true"/>
-    <property name="selectOneAssumeMatch" value="true"/>
-  </bean>
-  <bean id="transactionSupport" class="org.jencks.factory.XATransactionFactoryBean">
-    <property name="useTransactionCaching" value="true"/>
-    <property name="useThreadCaching" value="true"/>
-  </bean>
-  <bean id="connectionManager" class="org.jencks.factory.ConnectionManagerFactoryBean">
-    <property name="containerManagedSecurity" value="false"/>
-    <property name="transactionContextManager" ref="transactionContextManager"/>
-    <property name="poolingSupport" ref="poolingSupport"/>
-    <property name="transactionSupport" ref="transactionSupport"/>
-    <property name="connectionTracker" ref="connectionTracker"/>
-  </bean>
-  
+  <jencks:connectionTracker id="connectionTracker" geronimoTransactionManager="#transactionManager" />
+  <jencks:poolingSupport id="poolingSupport" allConnectionsEqual="false" />
+  <jencks:connectionManager id="connectionManager"
+                            containerManagedSecurity="false"
+                            transaction="xa"
+                            transactionManager="#transactionManager"
+                            poolingSupport="#poolingSupport"
+                            connectionTracker="#connectionTracker" />
 
 </beans>

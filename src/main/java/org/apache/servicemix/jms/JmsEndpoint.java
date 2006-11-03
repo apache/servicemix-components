@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.jbi.component.ComponentLifeCycle;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -33,6 +32,7 @@ import javax.wsdl.Port;
 import javax.wsdl.Service;
 
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
@@ -310,8 +310,7 @@ public class JmsEndpoint extends SoapEndpoint {
         try {
             String procName = processorName;
             if (processorName == null) {
-                JmsLifeCycle lf = (JmsLifeCycle) getServiceUnit().getComponent().getLifeCycle();
-                procName = lf.getConfiguration().getProcessorName();
+                procName = getConfiguration().getProcessorName();
             }
             String uri = "META-INF/services/org/apache/servicemix/jms/" + procName;
             InputStream in = loadResource(uri);
@@ -358,7 +357,16 @@ public class JmsEndpoint extends SoapEndpoint {
     }
 
     protected ServiceEndpoint createExternalEndpoint() {
-        return new JmsExternalEndpoint(this);
+        return new ExternalEndpoint(getServiceUnit().getComponent().getEPRElementName(),
+                                    getLocationURI(),
+                                    getService(),
+                                    getEndpoint(),
+                                    getInterfaceName());
+    }
+    
+    protected String getLocationURI() {
+        // Need to return a real URI
+        return getService() + "#" + getEndpoint();
     }
 
     protected void overrideDefinition(Definition def) {
@@ -436,18 +444,18 @@ public class JmsEndpoint extends SoapEndpoint {
     }
     
     public JmsConfiguration getConfiguration() {
-        JmsLifeCycle lifeCycle = (JmsLifeCycle) getServiceUnit().getComponent().getLifeCycle();
-        return lifeCycle.getConfiguration();
+        JmsComponent component = (JmsComponent) getServiceUnit().getComponent();
+        return component.getConfiguration();
     }
 
     public AuthenticationService getAuthenticationService() {
-        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
-        return ((JmsLifeCycle) lf).getAuthenticationService();
+        JmsComponent component = (JmsComponent) getServiceUnit().getComponent();
+        return component.getAuthenticationService();
     }
 
     public KeystoreManager getKeystoreManager() {
-        ComponentLifeCycle lf = getServiceUnit().getComponent().getLifeCycle();
-        return ((JmsLifeCycle) lf).getKeystoreManager();
+        JmsComponent component = (JmsComponent) getServiceUnit().getComponent();
+        return component.getKeystoreManager();
     }
 
 }

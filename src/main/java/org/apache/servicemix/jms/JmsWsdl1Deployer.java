@@ -19,7 +19,6 @@ package org.apache.servicemix.jms;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.ExtensionRegistry;
 
-import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.wsdl1.AbstractWsdl1Deployer;
 import org.apache.servicemix.common.wsdl1.JbiEndpoint;
@@ -33,7 +32,7 @@ import org.apache.servicemix.jms.wsdl.JmsExtension;
  */
 public class JmsWsdl1Deployer extends AbstractWsdl1Deployer {
 
-    public JmsWsdl1Deployer(BaseComponent component) {
+    public JmsWsdl1Deployer(JmsComponent component) {
         super(component);
     }
 

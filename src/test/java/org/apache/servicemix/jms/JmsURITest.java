@@ -72,8 +72,8 @@ public class JmsURITest extends TestCase {
     }
 
     public void testResolveEndpoint() throws Exception {
-        JmsSpringComponent jms = new JmsSpringComponent();
-        ((JmsLifeCycle) jms.getLifeCycle()).getConfiguration().setConnectionFactory(connectionFactory);
+        JmsComponent jms = new JmsComponent();
+        jms.getConfiguration().setConnectionFactory(connectionFactory);
         JmsEndpoint ep = new JmsEndpoint();
         ep.setRole(MessageExchange.Role.CONSUMER);
         ep.setService(ReceiverComponent.SERVICE);
