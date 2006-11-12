@@ -100,12 +100,11 @@ public class JbiChannel extends AbstractChannel {
                         channel.send(me);
                         if (me.getError() != null) {
                             throw new XFireFault(me.getError(), XFireFault.RECEIVER);
-                        } else if (me.getFault() != null){
-                            // TODO: retrieve fault
-                            throw new XFireFault("Fault received", XFireFault.RECEIVER);
                         } else {
                             throw new XFireFault("Unkown Error", XFireFault.RECEIVER);
                         }
+                    } else if (me.getFault() != null){
+                        throw new XFireFault(sourceTransformer.contentToString(me.getFault()), XFireFault.RECEIVER);
                     }
                     Source outSrc = me.getOutMessage().getContent();
                     me.setStatus(ExchangeStatus.DONE);
