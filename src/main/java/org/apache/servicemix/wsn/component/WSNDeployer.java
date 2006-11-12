@@ -90,6 +90,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
             }
             ep = createEndpoint(url);
             ep.setServiceUnit(su);
+            validate(ep);
             su.addEndpoint(ep);
         }
         if (su.getEndpoints().size() == 0) {
