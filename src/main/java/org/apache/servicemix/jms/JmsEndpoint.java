@@ -56,6 +56,8 @@ public class JmsEndpoint extends SoapEndpoint {
     protected String jndiConnectionFactoryName;
     protected String jndiDestinationName;
     protected String jmsProviderDestinationName;
+    
+    protected boolean useMsgIdInResponse;
     //
     // Spring configuration
     //
@@ -456,6 +458,19 @@ public class JmsEndpoint extends SoapEndpoint {
     public KeystoreManager getKeystoreManager() {
         JmsComponent component = (JmsComponent) getServiceUnit().getComponent();
         return component.getKeystoreManager();
+    }
+
+    /**
+     * Determines whether for a request/response pattern, the message id of the request message
+     * should be used as the correlation id in the response or the correlation id of the request.
+     * @return
+     */
+    public boolean isUseMsgIdInResponse() {
+        return useMsgIdInResponse;
+    }
+
+    public void setUseMsgIdInResponse(boolean useMsgIdInResponse) {
+        this.useMsgIdInResponse = useMsgIdInResponse;
     }
 
 }

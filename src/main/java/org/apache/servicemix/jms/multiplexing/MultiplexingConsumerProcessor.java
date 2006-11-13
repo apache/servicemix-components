@@ -109,7 +109,11 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
             response = fromNMSResponse(exchange, context, session);
             if (response != null) {
                 producer = session.createProducer(message.getJMSReplyTo());
-                response.setJMSCorrelationID(message.getJMSCorrelationID());
+                if (endpoint.isUseMsgIdInResponse()) {
+                    response.setJMSCorrelationID(message.getJMSMessageID());
+                } else {
+                    response.setJMSCorrelationID(message.getJMSCorrelationID());
+                }
                 producer.send(response);
             }
         } finally {
