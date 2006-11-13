@@ -263,10 +263,18 @@ public class JettyContextManager implements ContextManager {
             sslConnector.setConfidentialPort(url.getPort());
             sslConnector.setKeystore(keyStore);
             sslConnector.setKeyAlias(ssl.getKeyAlias());
-            sslConnector.setTrustStore(ssl.getTrustStore());
             sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
             sslConnector.setWantClientAuth(ssl.isWantClientAuth());
             sslConnector.setKeystoreManager(getConfiguration().getKeystoreManager());
+            // important to set this values for selfsigned keys 
+            // otherwise the standard truststore of the jre is used
+            sslConnector.setTruststore(ssl.getTrustStore());
+            if (ssl.getTrustStorePassword() != null) {
+                // check is necessary because if a null password is set
+                // jetty would ask for a password on the comandline
+                sslConnector.setTrustPassword(ssl.getTrustStorePassword());
+            }
+            sslConnector.setTruststoreType(ssl.getTrustStoreType());
             connector = sslConnector;
         } else if (isSsl) {
             String keyStore = ssl.getKeyStore();
