@@ -86,11 +86,12 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
         resourceAdapter = endpoint.getResourceAdapter();
         if (resourceAdapter == null) {
             resourceAdapter = activationSpec.getResourceAdapter();
+            if (resourceAdapter == null) {
+                throw new IllegalArgumentException("resourceAdapter not set");
+            }
         } else if (activationSpec.getResourceAdapter() == null) {
             activationSpec.setResourceAdapter(resourceAdapter);
-        } else {
-            throw new IllegalArgumentException("resourceAdapter not set");
-        }
+        } 
         resourceAdapter.start(bootstrapContext);
         resourceAdapter.endpointActivation(endpointFactory, activationSpec);
     }
