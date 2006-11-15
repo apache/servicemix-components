@@ -4,8 +4,8 @@
   <soap:Header>
     <wsse:Security soap:mustUnderstand="1">
       <wsse:UsernameToken>
-        <wsse:Username>user1</wsse:Username>
-        <wsse:Password>user1</wsse:Password>
+        <wsse:Username>user--1</wsse:Username>
+        <wsse:Password>usecxzr1</wsse:Password>
       </wsse:UsernameToken>
     </wsse:Security>
   </soap:Header>

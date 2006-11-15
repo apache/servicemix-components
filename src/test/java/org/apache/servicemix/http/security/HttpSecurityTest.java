@@ -27,10 +27,13 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.w3c.dom.Element;
 
 public class HttpSecurityTest extends SpringTestSupport {
     
@@ -88,10 +91,10 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
             int state = client.executeMethod(method);
+            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
             if (state != HttpServletResponse.SC_OK && state != HttpServletResponse.SC_ACCEPTED) {
                 throw new IllegalStateException("Http status: " + state);
             }
-            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
         } finally {
             method.releaseConnection();
         }
@@ -107,10 +110,58 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
+            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
             if (state != HttpServletResponse.SC_OK && state != HttpServletResponse.SC_ACCEPTED) {
                 throw new IllegalStateException("Http status: " + state);
             }
-            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
+        } finally {
+            method.releaseConnection();
+        }
+    }
+
+    public void testWSSecBadCred() throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(getClass().getResourceAsStream("request-bc.xml"), out);
+        String request = out.toString();
+        HttpClient client = new HttpClient();
+        PostMethod method = new PostMethod("http://localhost:8192/WSSec/");
+        try {
+            method.setDoAuthentication(true);
+            method.setRequestEntity(new StringRequestEntity(request));
+            int state = client.executeMethod(method);
+            String str = method.getResponseBodyAsString();
+            System.err.println(str);
+            assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+            Element e = new SourceTransformer().toDOMElement(new StringSource(str));
+            assertEquals("Envelope", e.getLocalName());
+            e = (Element) e.getFirstChild();
+            assertEquals("Body", e.getLocalName());
+            e = (Element) e.getFirstChild();
+            assertEquals("Fault", e.getLocalName());
+        } finally {
+            method.releaseConnection();
+        }
+    }
+
+    public void testWSSecUnkownUser() throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(getClass().getResourceAsStream("request-uu.xml"), out);
+        String request = out.toString();
+        HttpClient client = new HttpClient();
+        PostMethod method = new PostMethod("http://localhost:8192/WSSec/");
+        try {
+            method.setDoAuthentication(true);
+            method.setRequestEntity(new StringRequestEntity(request));
+            int state = client.executeMethod(method);
+            String str = method.getResponseBodyAsString();
+            System.err.println(str);
+            assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+            Element e = new SourceTransformer().toDOMElement(new StringSource(str));
+            assertEquals("Envelope", e.getLocalName());
+            e = (Element) e.getFirstChild();
+            assertEquals("Body", e.getLocalName());
+            e = (Element) e.getFirstChild();
+            assertEquals("Fault", e.getLocalName());
         } finally {
             method.releaseConnection();
         }
