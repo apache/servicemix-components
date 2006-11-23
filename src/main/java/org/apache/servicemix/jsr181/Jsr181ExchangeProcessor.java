@@ -104,7 +104,12 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
             }
             msg.setAttachments(attachments);
         }
-        c.receive(ctx, msg);
+        JBIContext.setMessageExchange(exchange);
+        try {
+            c.receive(ctx, msg);
+        } finally {
+            JBIContext.setMessageExchange(null);
+        }
         c.close();
         
         // Set response or DONE status
