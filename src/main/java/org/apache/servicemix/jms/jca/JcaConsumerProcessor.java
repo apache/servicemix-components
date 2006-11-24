@@ -133,18 +133,43 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
         try {
             if (exchange.getStatus() == ExchangeStatus.DONE) {
                 return;
-            }
-            connection = connectionFactory.createConnection();
-            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-            response = fromNMSResponse(exchange, context, session);
-            if (response != null) {
-                MessageProducer producer = session.createProducer(message.getJMSReplyTo());
-                if (endpoint.isUseMsgIdInResponse()) {
-                    response.setJMSCorrelationID(message.getJMSMessageID());
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                if (endpoint.isRollbackOnError()) {
+                    TransactionManager tm = (TransactionManager) endpoint.getServiceUnit().getComponent().getComponentContext().getTransactionManager();
+                    tm.setRollbackOnly();
+                    return;
+                } else if (exchange instanceof InOnly) {
+                    log.info("Exchange in error: " + exchange, exchange.getError());
+                    return;
                 } else {
-                    response.setJMSCorrelationID(message.getJMSCorrelationID());
+                    connection = connectionFactory.createConnection();
+                    Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
+                    Exception error = exchange.getError();
+                    if (error == null) {
+                        error = new Exception("Exchange in error");
+                    }
+                    response = session.createObjectMessage(error);
+                    MessageProducer producer = session.createProducer(message.getJMSReplyTo());
+                    if (endpoint.isUseMsgIdInResponse()) {
+                        response.setJMSCorrelationID(message.getJMSMessageID());
+                    } else {
+                        response.setJMSCorrelationID(message.getJMSCorrelationID());
+                    }
+                    producer.send(response);
                 }
-                producer.send(response);
+            } else {
+                connection = connectionFactory.createConnection();
+                Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
+                response = fromNMSResponse(exchange, context, session);
+                if (response != null) {
+                    MessageProducer producer = session.createProducer(message.getJMSReplyTo());
+                    if (endpoint.isUseMsgIdInResponse()) {
+                        response.setJMSCorrelationID(message.getJMSMessageID());
+                    } else {
+                        response.setJMSCorrelationID(message.getJMSCorrelationID());
+                    }
+                    producer.send(response);
+                }
             }
         } finally {
             if (connection != null) {

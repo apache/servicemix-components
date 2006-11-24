@@ -71,6 +71,8 @@ public class JmsEndpoint extends SoapEndpoint {
     protected ActivationSpec activationSpec;
     protected BootstrapContext bootstrapContext;
     protected boolean synchronous;
+    protected boolean rollbackOnError;
+    
     // Other configuration flags
     protected boolean needJavaIdentifiers;
     
@@ -106,6 +108,20 @@ public class JmsEndpoint extends SoapEndpoint {
      */
     public void setSynchronous(boolean synchronous) {
         this.synchronous = synchronous;
+    }
+
+    /**
+     * @return the rollbackOnError
+     */
+    public boolean isRollbackOnError() {
+        return rollbackOnError;
+    }
+
+    /**
+     * @param rollbackOnError the rollbackOnError to set
+     */
+    public void setRollbackOnError(boolean rollbackOnError) {
+        this.rollbackOnError = rollbackOnError;
     }
 
     /**
