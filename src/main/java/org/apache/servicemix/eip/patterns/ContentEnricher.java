@@ -129,17 +129,14 @@ public class ContentEnricher extends EIPEndpoint {
 		this.resultElementName = resultElementName;
 	}
 
-	@Override
     protected void processAsync(MessageExchange exchange) throws Exception {
         throw new IllegalStateException();
     }
 
-    @Override
     protected void processSync(MessageExchange exchange) throws Exception {
         throw new IllegalStateException();
     }
 
-    @Override
     public void process(MessageExchange exchange) throws Exception {
     	    	
         if (exchange instanceof InOnly == false &&
