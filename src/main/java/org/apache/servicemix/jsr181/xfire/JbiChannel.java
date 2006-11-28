@@ -107,11 +107,12 @@ public class JbiChannel extends AbstractChannel {
                         throw new XFireFault(sourceTransformer.contentToString(me.getFault()), XFireFault.RECEIVER);
                     }
                     Source outSrc = me.getOutMessage().getContent();
-                    me.setStatus(ExchangeStatus.DONE);
-                    channel.send(me);
 
                     InMessage inMessage = new InMessage(sourceTransformer.toXMLStreamReader(outSrc), getUri());
                     getEndpoint().onReceive(context, inMessage);
+
+                    me.setStatus(ExchangeStatus.DONE);
+                    channel.send(me);
                 } else {
                     // TODO
                 }
