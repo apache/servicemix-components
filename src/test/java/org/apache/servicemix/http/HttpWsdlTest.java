@@ -41,6 +41,7 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.springframework.core.io.UrlResource;
 import org.w3c.dom.Document;
 
@@ -180,6 +181,7 @@ public class HttpWsdlTest extends TestCase {
         ep.setEndpoint("myConsumer");
         ep.setRoleAsString("consumer");
         ep.setLocationURI("http://localhost:8196/Service/");
+        ep.setDefaultMep(MessageExchangeSupport.IN_OUT);
         ep.setWsdlResource(new UrlResource("http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl"));
         HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep });
