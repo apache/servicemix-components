@@ -43,6 +43,10 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-soap</artifactId>
     </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
