@@ -48,6 +48,9 @@ public class ScriptComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
+    /*
+     * See http://issues.apache.org/activemq/browse/SM-761
+     *     
     public void testRuby() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -66,6 +69,7 @@ public class ScriptComponentTest extends SpringTestSupport {
         System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
+    */
     
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("spring.xml");

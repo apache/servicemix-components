@@ -1,6 +1,9 @@
 require 'java'
 
+include_class 'javax.jbi.messaging.MessageExchange'
+include_class 'org.apache.servicemix.jbi.jaxp.StringSource'
 include_class 'org.apache.servicemix.common.ExchangeProcessor'
+include_class 'org.apache.servicemix.script.ScriptExchangeHelper'
 
 class RubyExchangeProcessor < ExchangeProcessor
 
@@ -9,7 +12,7 @@ class RubyExchangeProcessor < ExchangeProcessor
  end
 
  def start()
-   print "Starting"
+   print "Starting\n"
  end
  
  def process(exchange)
@@ -17,11 +20,15 @@ class RubyExchangeProcessor < ExchangeProcessor
    print exchange
    print " using "
    print @exchangeHelper
+   print "\n"
+   out = exchange.createMessage()
+   out.setContent(StringSource.new("<world>hello</world>"))
+   exchange.setMessage(out, "out")
    @exchangeHelper.sendExchange(exchange)
  end
 
  def stop()
-   print "Stopping"
+   print "Stopping\n"
  end
  
  def toString()
