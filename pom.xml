@@ -41,26 +41,22 @@
       <artifactId>servicemix-shared</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jencks</groupId>
       <artifactId>jencks</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>jencks</groupId>
-          <artifactId>xapool-without-pool</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.modules</groupId>
       <artifactId>geronimo-connector</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.modules</groupId>
       <artifactId>geronimo-transaction</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
