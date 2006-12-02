@@ -162,36 +162,36 @@ public class Pipeline extends EIPEndpoint {
                 done(tme);
                 sendSync(exchange);
             }
-        }
         // This should not happen
-        else if (tme.getOutMessage() == null) {
+        } else if (tme.getOutMessage() == null) {
             throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no correlation set");
-        }
         // This is the answer from the transformer
-        MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
-        target.configureTarget(me, getContext());
-        MessageUtil.transferOutToIn(tme, me);
-        sendSync(me);
-        done(tme);
-        if (me.getStatus() == ExchangeStatus.DONE) {
-            done(exchange);
-        } else if (me.getStatus() == ExchangeStatus.ERROR) {
-            fail(exchange, me.getError());
-        } else if (me.getFault() != null) {
-            if (exchange instanceof InOnly) {
-                // Do not use the fault has it may contain streams
-                // So just transform it to a string and send an error
-                String fault = new SourceTransformer().contentToString(me.getFault());
-                done(me);
-                fail(exchange, new FaultException(fault, null, null));
-            } else {
-                Fault fault = MessageUtil.copyFault(me);
-                MessageUtil.transferToFault(fault, exchange);
-                done(me);
-                sendSync(exchange);
-            }
         } else {
-            throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no correlation set");
+            MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+            target.configureTarget(me, getContext());
+            MessageUtil.transferOutToIn(tme, me);
+            sendSync(me);
+            done(tme);
+            if (me.getStatus() == ExchangeStatus.DONE) {
+                done(exchange);
+            } else if (me.getStatus() == ExchangeStatus.ERROR) {
+                fail(exchange, me.getError());
+            } else if (me.getFault() != null) {
+                if (exchange instanceof InOnly) {
+                    // Do not use the fault has it may contain streams
+                    // So just transform it to a string and send an error
+                    String fault = new SourceTransformer().contentToString(me.getFault());
+                    done(me);
+                    fail(exchange, new FaultException(fault, null, null));
+                } else {
+                    Fault fault = MessageUtil.copyFault(me);
+                    MessageUtil.transferToFault(fault, exchange);
+                    done(me);
+                    sendSync(exchange);
+                }
+            } else {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no correlation set");
+            }
         }
     }
 
