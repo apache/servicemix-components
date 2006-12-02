@@ -22,7 +22,6 @@ import javax.jbi.messaging.NormalizedMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
-import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * @author gnodet
@@ -45,7 +44,7 @@ public class XPathPredicate extends JAXPBooleanXPathExpression implements Predic
      */
     public boolean matches(MessageExchange exchange) {
         try {
-            NormalizedMessage in = MessageUtil.copyIn(exchange);
+            NormalizedMessage in = exchange.getMessage("in");
             Boolean match = (Boolean) evaluate(exchange, in);
             return Boolean.TRUE.equals(match);
         } catch (Exception e) {
