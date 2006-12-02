@@ -81,9 +81,10 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
             return;
         }
         Connection connection = null;
+        Session session = null;
         try {
             connection = connectionFactory.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             if (destination == null) {
                 if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
                     destination = session.createQueue(endpoint.getJmsProviderDestinationName());
@@ -100,6 +101,9 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);
         } finally {
+            if (session != null) {
+                session.close();
+            }
             if (connection != null) {
                 connection.close();
             }
