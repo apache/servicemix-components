@@ -32,6 +32,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -135,10 +136,15 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
                 outMsg.setContent(new StringSource(out.toString()));
                 exchange.setMessage(outMsg, "out");
             }
+            if (exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC))) {
+                channel.sendSync(exchange);
+            } else {
+                channel.send(exchange);
+            }
         } else {
             exchange.setStatus(ExchangeStatus.DONE);
+            channel.send(exchange);
         }
-        channel.send(exchange);
     }
 
     public void start() throws Exception {
