@@ -145,8 +145,9 @@ public class Jsr181ComplexPojoTest extends TestCase {
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
-        me.getInMessage().setContent(new StringSource("<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world</in0></twoWay>"));
+        me.getInMessage().setContent(new StringSource("<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world ã</in0></twoWay>"));
         client.sendSync(me);
+        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
         
         // Wait all acks being processed

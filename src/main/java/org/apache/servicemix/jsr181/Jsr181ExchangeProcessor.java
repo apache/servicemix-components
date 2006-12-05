@@ -115,9 +115,10 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         
         // Set response or DONE status
         if (isInAndOut(exchange)) {
+            String charSet = ctx.getOutMessage().getEncoding();
             if (ctx.getExchange().hasFaultMessage() && ctx.getExchange().getFaultMessage().getBody() != null) {
                 Fault fault = exchange.createFault();
-                fault.setContent(new StringSource(out.toString()));
+                fault.setContent(new StringSource(out.toString(charSet)));
                 XFireFault xFault = (XFireFault) ctx.getExchange().getFaultMessage().getBody();
                 fault.setProperty(SOAP_FAULT_CODE, xFault.getFaultCode());
                 fault.setProperty(SOAP_FAULT_REASON, xFault.getReason());
@@ -133,7 +134,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
                         outMsg.addAttachment(att.getId(), att.getDataHandler());
                     }
                 }
-                outMsg.setContent(new StringSource(out.toString()));
+                outMsg.setContent(new StringSource(out.toString(charSet)));
                 exchange.setMessage(outMsg, "out");
             }
             if (exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC))) {
