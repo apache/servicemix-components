@@ -110,9 +110,7 @@
 				<extensions>true</extensions>
 				<configuration>
 					<type>service-engine</type>
-					<component>
-						org.apache.servicemix.MyComponent
-					</component>
+					<component>org.apache.servicemix.script.ScriptComponent</component>
 				</configuration>
 			</plugin>
 			<plugin>
