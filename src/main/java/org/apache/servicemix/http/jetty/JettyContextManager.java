@@ -203,6 +203,7 @@ public class JettyContextManager implements ContextManager {
         context.setAttribute("processor", processor);
         // add context
         contexts.addHandler(context);
+        handler.initialize();
         context.start();
         return context;
     }
