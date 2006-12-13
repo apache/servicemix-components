@@ -60,6 +60,7 @@ public class HttpBootstrap implements Bootstrap {
         configuration = new HttpConfiguration();
         configuration.setRootDir(this.context.getInstallRoot());
         configuration.setComponentName(this.context.getComponentName());
+        configuration.load();
         mbeanName = this.context.getContext().getMBeanNames().createCustomComponentMBeanName("bootstrap");
         MBeanServer server = this.context.getContext().getMBeanServer();
         if (server == null) {

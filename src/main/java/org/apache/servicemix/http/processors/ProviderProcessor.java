@@ -34,16 +34,19 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.logging.Log;
@@ -154,17 +157,14 @@ public class ProviderProcessor implements ExchangeProcessor {
         method.setRequestEntity(entity);
         boolean close = true;
         try {
-            // Uncomment to avoid the http request being sent several times.
-            // Can be useful when debugging
-            //================================
-            //method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new HttpMethodRetryHandler() {
-            //    public boolean retryMethod(HttpMethod method, IOException exception, int executionCount) {
-            //        return false;
-            //    }
-            //});
+            // Set the retry handler
+            int retries = getConfiguration().isStreamingEnabled() ? 0 : getConfiguration().getRetryCount();
+            method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(retries, true));
+            // Set authentication
             if (endpoint.getBasicAuthentication() != null) {
                 endpoint.getBasicAuthentication().applyCredentials( getClient() );
             }
+            // Execute the HTTP method
             int response = getClient().executeMethod(getHostConfiguration(locationURI), method);
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (exchange instanceof InOnly == false) {
@@ -256,7 +256,16 @@ public class ProviderProcessor implements ExchangeProcessor {
             host = new HostConfiguration();
             host.setHost(uri.getHost(), uri.getPort());
         }
-
+        if (endpoint.getProxy() != null) {
+            if ((endpoint.getProxy().getProxyHost() != null) && (endpoint.getProxy().getProxyPort() != 0)) {
+                host.setProxy(endpoint.getProxy().getProxyHost(), endpoint.getProxy().getProxyPort());
+            }
+        } else if ((getConfiguration().getProxyHost() != null) && (getConfiguration().getProxyPort() != 0)) {
+            host.setProxy(getConfiguration().getProxyHost(), getConfiguration().getProxyPort());
+        }
+        if (endpoint.getProxy().getProxyCredentials() != null) {
+            endpoint.getProxy().getProxyCredentials().applyProxyCredentials(getClient());
+        }
         return host;
     }
 

@@ -64,16 +64,27 @@ public class BasicAuthCredentials {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	/**
-	 * Applies this authentication to the given method.
-	 * @param method The method to receive authentication headers.
-	 */
-	public void applyCredentials( HttpClient client )
-	{
-		AuthScope scope = new AuthScope( AuthScope.ANY_HOST, AuthScope.ANY_PORT );
-		Credentials credentials = new UsernamePasswordCredentials( this.username, this.password );
-		client.getState().setCredentials( scope, credentials );
-	}
-	
+
+    /**
+     * Applies this authentication to the given method.
+     * @param method The method to receive authentication headers.
+     */
+    public void applyCredentials( HttpClient client )
+    {
+        AuthScope scope = new AuthScope( AuthScope.ANY_HOST, AuthScope.ANY_PORT );
+        Credentials credentials = new UsernamePasswordCredentials( this.username, this.password );
+        client.getState().setCredentials( scope, credentials );
+    }
+
+    /**
+     * Applies this authentication to the given method.
+     * @param method The method to receive authentication headers.
+     */
+    public void applyProxyCredentials( HttpClient client )
+    {
+        AuthScope scope = new AuthScope( AuthScope.ANY_HOST, AuthScope.ANY_PORT );
+        Credentials credentials = new UsernamePasswordCredentials( this.username, this.password );
+        client.getState().setProxyCredentials( scope, credentials );
+    }
+
 }

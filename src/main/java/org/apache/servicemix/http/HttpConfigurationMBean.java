@@ -57,5 +57,17 @@ public interface HttpConfigurationMBean {
     public int getConsumerProcessorSuspendTime();
 
     public void setConsumerProcessorSuspendTime(int consumerProcessorSuspendTime);
-    
+
+    public int getRetryCount();
+
+    public void setRetryCount(int retryCount);
+
+    public String getProxyHost();
+
+    public void setProxyHost(String name);
+
+    public int getProxyPort();
+
+    public void setProxyPort(int name);
+
 }

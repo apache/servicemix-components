@@ -58,6 +58,7 @@ public class HttpEndpoint extends SoapEndpoint {
     protected String authMethod;
     protected String soapAction;
     protected BasicAuthCredentials basicAuthentication;
+    protected ProxyParameters proxy;
 
     /**
      * @return the soapAction
@@ -132,6 +133,20 @@ public class HttpEndpoint extends SoapEndpoint {
      */
     public void setBasicAuthentication(BasicAuthCredentials basicAuthCredentials) {
         this.basicAuthentication = basicAuthCredentials;
+    }
+    
+    /**
+     * @return Returns the proxy.
+     */
+    public ProxyParameters getProxy() {
+        return this.proxy;
+    }
+
+    /**
+     * @param proxy The proxy to set.
+     */
+    public void setProxy(ProxyParameters proxy) {
+        this.proxy = proxy;
     }
 	
     /**

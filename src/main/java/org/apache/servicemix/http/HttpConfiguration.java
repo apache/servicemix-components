@@ -102,7 +102,25 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private int consumerProcessorSuspendTime = 60000;
 
     /**
+     * Number of times a given HTTP request will be tried
+     * until successful.  If streaming is enabled, the value
+     * will always be 0.
+     */
+    private int retryCount = 3;
+    
+    /**
+     * Proxy hostname. Component wide configuration, used either for http or https connections. Can be overriden on a endpoint basis.
+     */
+    private String proxyHost;
+    
+    /**
+     * Proxy listening port. Component wide configuration, used either for http or https connections. Can be overriden on a endpoint basis. 
+     */
+    private int proxyPort;
+
+    /**
      * @return Returns the rootDir.
+     * @org.apache.xbean.Property hidden="true"
      */
     public String getRootDir() {
         return rootDir;
@@ -117,6 +135,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
 
     /**
      * @return Returns the componentName.
+     * @org.apache.xbean.Property hidden="true"
      */
     public String getComponentName() {
         return componentName;
@@ -294,22 +313,69 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     }
 
     public void setConsumerProcessorSuspendTime(int consumerProcessorSuspendTime) {
-	      this.consumerProcessorSuspendTime = consumerProcessorSuspendTime;
+        this.consumerProcessorSuspendTime = consumerProcessorSuspendTime;
         save();
     }
 
+    /**
+     * @return the retryCount
+     */
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    /**
+     * @param retryCount the retryCount to set
+     */
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+        save();
+    }
+
+    /**
+     * @return Returns the proxyHost.
+     */
+    public String getProxyHost() {
+        return this.proxyHost;
+    }
+
+    /**
+     * @param proxyHost The proxyHost to set.
+     */
+    public void setProxyHost(String proxyHost) {
+        this.proxyHost = proxyHost;
+        save();
+    }
+
+    /**
+     * @return Returns the proxyPort.
+     */
+    public int getProxyPort() {
+        return this.proxyPort;
+    }
+
+    /**
+     * @param proxyPort The proxyPort to set.
+     */
+    public void setProxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
+        save();
+    }
     
     public void save() {
-        properties.setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
-        properties.setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);
-        properties.setProperty(componentName + ".streamingEnabled", Boolean.toString(streamingEnabled));
-        properties.setProperty(componentName + ".maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
-        properties.setProperty(componentName + ".maxTotalConnections", Integer.toString(maxTotalConnections));
-        properties.setProperty(componentName + ".keystoreManagerName", keystoreManagerName);
-        properties.setProperty(componentName + ".authenticationServiceName", authenticationServiceName);
-        properties.setProperty(componentName + ".jettyManagement", Boolean.toString(jettyManagement));
-        properties.setProperty(componentName + ".connectorMaxIdleTime", Integer.toString(connectorMaxIdleTime));
-        properties.setProperty(componentName + ".consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
+        setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
+        setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);
+        setProperty(componentName + ".streamingEnabled", Boolean.toString(streamingEnabled));
+        setProperty(componentName + ".maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
+        setProperty(componentName + ".maxTotalConnections", Integer.toString(maxTotalConnections));
+        setProperty(componentName + ".keystoreManagerName", keystoreManagerName);
+        setProperty(componentName + ".authenticationServiceName", authenticationServiceName);
+        setProperty(componentName + ".jettyManagement", Boolean.toString(jettyManagement));
+        setProperty(componentName + ".connectorMaxIdleTime", Integer.toString(connectorMaxIdleTime));
+        setProperty(componentName + ".consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
+        setProperty(componentName + ".retryCount", Integer.toString(retryCount));
+        setProperty(componentName + ".proxyHost", proxyHost);
+        setProperty(componentName + ".proxyPort", Integer.toString(proxyPort));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -317,6 +383,14 @@ public class HttpConfiguration implements HttpConfigurationMBean {
             } catch (Exception e) {
                 throw new RuntimeException("Could not store component configuration", e);
             }
+        }
+    }
+    
+    protected void setProperty(String name, String value) {
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.setProperty(name, value);
         }
     }
     
@@ -376,6 +450,15 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         }
         if (properties.getProperty(componentName + ".consumerProcessorSuspendTime") != null) {
             consumerProcessorSuspendTime = Integer.parseInt(properties.getProperty(componentName + ".consumerProcessorSuspendTime"));
+        }
+        if (properties.getProperty(componentName + ".retryCount") != null) {
+            retryCount = Integer.parseInt(properties.getProperty(componentName + ".retryCount"));
+        }
+        if (properties.getProperty(componentName + ".proxyHost") != null) {
+            proxyHost = properties.getProperty(componentName + ".proxyHost");
+        }
+        if (properties.getProperty(componentName + ".proxyPort") != null) {
+            proxyPort = Integer.parseInt(properties.getProperty(componentName + ".proxyPort"));
         }
         return true;
     }
