@@ -29,7 +29,6 @@ public class JmsBootstrap implements Bootstrap {
     protected JmsConfiguration configuration;
     
     public JmsBootstrap() {
-        configuration = new JmsConfiguration();
     }
     
     public ObjectName getExtensionMBeanName() {
@@ -62,6 +61,10 @@ public class JmsBootstrap implements Bootstrap {
     }
 
     protected void doInit() throws Exception {
+        configuration = new JmsConfiguration();
+        configuration.setRootDir(this.context.getInstallRoot());
+        configuration.setComponentName(this.context.getComponentName());
+        configuration.load();
         Object mbean = getExtensionMBean();
         if (mbean != null) {
             this.mbeanName = createExtensionMBeanName();

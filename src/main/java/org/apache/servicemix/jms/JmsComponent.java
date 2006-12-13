@@ -123,6 +123,7 @@ public class JmsComponent extends DefaultComponent {
     protected void doInit() throws Exception {
         super.doInit();
         configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.setComponentName(this.context.getComponentName());
         configuration.load();
         // Lookup keystoreManager and authenticationService
         if (configuration.getKeystoreManager() == null) {

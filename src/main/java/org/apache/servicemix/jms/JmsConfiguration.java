@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
@@ -29,13 +30,14 @@ import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 
 /**
  * @author gnodet
- *
+ * @org.apache.xbean.XBean element="configuration"
  */
 public class JmsConfiguration implements JmsConfigurationMBean {
 
     public final static String CONFIG_FILE = "component.properties"; 
     
     private String rootDir;
+    private String componentName = "servicemix-jms";
     private Properties properties = new Properties();
     private String userName;
     private String password;
@@ -60,6 +62,7 @@ public class JmsConfiguration implements JmsConfigurationMBean {
     
     /**
      * @return Returns the rootDir.
+     * @org.apache.xbean.Property hidden="true"
      */
     public String getRootDir() {
         return rootDir;
@@ -70,6 +73,21 @@ public class JmsConfiguration implements JmsConfigurationMBean {
      */
     public void setRootDir(String rootDir) {
         this.rootDir = rootDir;
+    }
+
+    /**
+     * @return Returns the componentName.
+     * @org.apache.xbean.Property hidden="true"
+     */
+    public String getComponentName() {
+        return componentName;
+    }
+
+    /**
+     * @param componentName The componentName to set.
+     */
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
     }
 
     /**
@@ -107,7 +125,6 @@ public class JmsConfiguration implements JmsConfigurationMBean {
      */
     public void setKeystoreManager(KeystoreManager keystoreManager) {
         this.keystoreManager = keystoreManager;
-        save();
     }
     /**
      * @return the keystoreManagerName
@@ -216,14 +233,14 @@ public class JmsConfiguration implements JmsConfigurationMBean {
 
     
     public void save() {
-        properties.setProperty("userName", userName);
-        properties.setProperty("password", password);
-        properties.setProperty("jndiInitialContextFactory", jndiInitialContextFactory);
-        properties.setProperty("jndiProviderUrl", jndiProviderUrl);
-        properties.setProperty("jndiName", jndiConnectionFactoryName);
-        properties.setProperty("processorName", processorName);
-        properties.setProperty("keystoreManagerName", keystoreManagerName);
-        properties.setProperty("authenticationServiceName", authenticationServiceName);
+        setProperty(componentName + ".userName", userName);
+        setProperty(componentName + ".password", password);
+        setProperty(componentName + ".jndiInitialContextFactory", jndiInitialContextFactory);
+        setProperty(componentName + ".jndiProviderUrl", jndiProviderUrl);
+        setProperty(componentName + ".jndiName", jndiConnectionFactoryName);
+        setProperty(componentName + ".processorName", processorName);
+        setProperty(componentName + ".keystoreManagerName", keystoreManagerName);
+        setProperty(componentName + ".authenticationServiceName", authenticationServiceName);
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -234,41 +251,63 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         }
     }
     
+    protected void setProperty(String name, String value) {
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.setProperty(name, value);
+        }
+    }
+    
     public boolean load() {
-        if (rootDir == null) {
-            return false;
+        File f = null;
+        InputStream in = null;
+        if (rootDir != null) {
+            // try to find the property file in the workspace folder
+            f = new File(rootDir, CONFIG_FILE);
+            if (!f.exists()) {
+                f = null;
+            }
         }
-        File f = new File(rootDir, CONFIG_FILE);
-        if (!f.exists()) {
-            return false;
+        if (f == null) {
+            // find property file in classpath if it is not available in workspace 
+            in = this.getClass().getClassLoader().getResourceAsStream(CONFIG_FILE);
+            if (in == null) {
+                return false;
+            }
         }
+
         try {
-            properties.load(new FileInputStream(f));
+            if (f != null) {
+                properties.load(new FileInputStream(f));
+            } else {
+                properties.load(in);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not load component configuration", e);
         }
-        if (properties.getProperty("userName") != null) {
+        if (properties.getProperty(componentName + ".userName") != null) {
             userName = properties.getProperty("userName");
         }
-        if (properties.getProperty("password") != null) {
+        if (properties.getProperty(componentName + ".password") != null) {
             password = properties.getProperty("password");
         }
-        if (properties.getProperty("jndiInitialContextFactory") != null) {
+        if (properties.getProperty(componentName + ".jndiInitialContextFactory") != null) {
             jndiInitialContextFactory = properties.getProperty("jndiInitialContextFactory");
         }
-        if (properties.getProperty("jndiProviderUrl") != null) {
+        if (properties.getProperty(componentName + ".jndiProviderUrl") != null) {
             jndiProviderUrl = properties.getProperty("jndiProviderUrl");
         }
-        if (properties.getProperty("jndiName") != null) {
+        if (properties.getProperty(componentName + ".jndiName") != null) {
             jndiConnectionFactoryName = properties.getProperty("jndiName");
         }
-        if (properties.getProperty("processorName") != null) {
+        if (properties.getProperty(componentName + ".processorName") != null) {
             processorName = properties.getProperty("processorName");
         }
-        if (properties.getProperty("keystoreManagerName") != null) {
+        if (properties.getProperty(componentName + ".keystoreManagerName") != null) {
             keystoreManagerName = properties.getProperty("keystoreManagerName");
         }
-        if (properties.getProperty("authenticationServiceName") != null) {
+        if (properties.getProperty(componentName + ".authenticationServiceName") != null) {
             authenticationServiceName = properties.getProperty("authenticationServiceName");
         }
         return true;
