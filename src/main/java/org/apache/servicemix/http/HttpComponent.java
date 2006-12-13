@@ -225,6 +225,8 @@ public class HttpComponent extends DefaultComponent {
         }
         if (connectionManager != null) {
             connectionManager.shutdown();
+            connectionManager = null;
+            client = null;
         }
     }
 
