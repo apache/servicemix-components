@@ -25,6 +25,7 @@ import java.net.URI;
 
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -241,29 +242,38 @@ public class FtpPollingEndpoint extends PollingEndpoint {
             public void run() {
                 final Lock lock = lockManager.getLock(file);
                 if (lock.tryLock()) {
+                    boolean unlock = true;
                     try {
-                        processFileAndDelete(file);
+                        unlock = processFileAndDelete(file);
                     }
                     finally {
-                        lock.unlock();
+                        if (unlock) {
+                            lock.unlock();
+                        }
                     }
                 }
             }
         });
     }
 
-    protected void processFileAndDelete(String file) {
+    protected boolean processFileAndDelete(String file) {
         FTPClient ftp = null;
+        boolean unlock = true;
         try {
             ftp = borrowClient();
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing file " + file);
             }
+            // Process the file. If processing fails, an exception should be thrown.
             processFile(ftp, file);
+            // Processing is succesfull
+            // We should not unlock until the file has been deleted
+            unlock = false;
             if (isDeleteFile()) {
                 if (!ftp.deleteFile(file)) {
                     throw new IOException("Could not delete file " + file);
                 }
+                unlock = true;
             }
         }
         catch (Exception e) {
@@ -271,6 +281,7 @@ public class FtpPollingEndpoint extends PollingEndpoint {
         } finally {
             returnClient(ftp);
         }
+        return unlock;
     }
 
     protected void processFile(FTPClient ftp, String file) throws Exception {
@@ -283,6 +294,13 @@ public class FtpPollingEndpoint extends PollingEndpoint {
         sendSync(exchange);
         in.close();
         ftp.completePendingCommand();
+        if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            Exception e = exchange.getError();
+            if (e == null) {
+                e = new JBIException("Unkown error");
+            }
+            throw e;
+        }
     }
 
     public String getLocationURI() {
