@@ -275,7 +275,6 @@ public class FtpPollingEndpoint extends PollingEndpoint {
 
     protected void processFile(FTPClient ftp, String file) throws Exception {
         InputStream in = ftp.retrieveFileStream(file);
-        ftp.completePendingCommand();
         InOnly exchange = getExchangeFactory().createInOnlyExchange();
         configureExchangeTarget(exchange);
         NormalizedMessage message = exchange.createMessage();
@@ -283,6 +282,7 @@ public class FtpPollingEndpoint extends PollingEndpoint {
         marshaler.readMessage(exchange, message, in, file);
         sendSync(exchange);
         in.close();
+        ftp.completePendingCommand();
     }
 
     public String getLocationURI() {

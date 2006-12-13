@@ -165,7 +165,6 @@ public class FtpEndpoint extends ProviderEndpoint {
             marshaler.writeMessage(exchange, message, out, name);
         }
         finally {
-            returnClient(client);
             if (out != null) {
                 try {
                     out.close();
@@ -174,6 +173,8 @@ public class FtpEndpoint extends ProviderEndpoint {
                     logger.error("Caught exception while closing stream on error: " + e, e);
                 }
             }
+            client.completePendingCommand();
+            returnClient(client);
         }
     }
 

@@ -36,12 +36,19 @@ public class PollDirectoryTest extends SpringTestSupport {
     protected String directoryName = "target/pollDirectory";
     protected String dynamicURI = "file:" + directoryName;
 
-    private int NUMBER = 10;
+    private int NUMBER = 100;
+    private int SIZE = 100;
 
     public void testSendToWriterSoItCanBePolled() throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
+        StringBuffer sb = new StringBuffer("<root>");
+        for (int i = 0; i < SIZE; i++) {
+            sb.append("<hello>world</hello>");
+        }
+        sb.append("</root>");
+        
         // lets send a request to be written to a file
         // which should then be polled
         for (int i = 0; i < NUMBER; i++) {
@@ -49,7 +56,7 @@ public class PollDirectoryTest extends SpringTestSupport {
             me.setService(new QName("urn:test", "service"));
             NormalizedMessage message = me.getInMessage();
             message.setProperty(DefaultFileMarshaler.FILE_NAME_PROPERTY, "test" + i + ".xml");
-            message.setContent(new StringSource("<hello>world</hello>"));
+            message.setContent(new StringSource(sb.toString()));
             client.sendSync(me);
         }
 

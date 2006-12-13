@@ -32,17 +32,21 @@ import javax.xml.namespace.QName;
 
 public class SpringComponentTest extends SpringTestSupport {
 
+    private int NUMBER = 10;
+
     public void testSendingToStaticEndpoint() throws Exception {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("urn:test", "service"));
-        NormalizedMessage message = me.getInMessage();
-
-        message.setProperty(DefaultFileMarshaler.FILE_NAME_PROPERTY, "test2.xml");
-        message.setContent(new StringSource("<hello>world</hello>"));
-
-        client.sendSync(me);
-        assertExchangeWorked(me);
+        for (int i = 0; i < NUMBER; i++) {
+            DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+            InOnly me = client.createInOnlyExchange();
+            me.setService(new QName("urn:test", "service"));
+            NormalizedMessage message = me.getInMessage();
+    
+            message.setProperty(DefaultFileMarshaler.FILE_NAME_PROPERTY, "test2.xml");
+            message.setContent(new StringSource("<hello>world</hello>"));
+    
+            client.sendSync(me);
+            assertExchangeWorked(me);
+        }
     }
 
 
