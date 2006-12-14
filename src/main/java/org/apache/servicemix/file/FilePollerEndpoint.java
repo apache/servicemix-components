@@ -45,11 +45,11 @@ import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
  * and sends the files into the JBI bus as messages, deleting the files
  * by default when they are processed.
  *
- * @org.apache.xbean.XBean element="pollingEndpoint"
+ * @org.apache.xbean.XBean element="poller"
  *
  * @version $Revision$
  */
-public class FilePollingEndpoint extends PollingEndpoint {
+public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointType {
 
     private File file;
     private FileFilter filter;
@@ -59,14 +59,14 @@ public class FilePollingEndpoint extends PollingEndpoint {
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
 
-    public FilePollingEndpoint() {
+    public FilePollerEndpoint() {
     }
 
-    public FilePollingEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
+    public FilePollerEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
         super(serviceUnit, service, endpoint);
     }
 
-    public FilePollingEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
+    public FilePollerEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
 

@@ -29,17 +29,15 @@
       	<sm:component>
             <file:component>
             	<file:endpoints>
-                <file:endpoint service="test:service"
-                               endpoint="endpoint"
-                               directory="file:target/pollerFiles" />
-            	</file:endpoints>
+                <file:sender service="test:service"
+                             endpoint="endpoint"
+                             directory="file:target/pollerFiles" />
               
-              <file:pollingEndpoints>
-                <file:pollingEndpoint service="test:poller"
-                                      endpoint="poller"
-                                      targetService="test:receiver"
-                                      file="file:target/pollerFiles" />
-              </file:pollingEndpoints>
+                <file:poller service="test:poller"
+                             endpoint="poller"
+                             targetService="test:receiver"
+                             file="file:target/pollerFiles" />
+            	</file:endpoints>
             </file:component>
         </sm:component>
       </sm:activationSpec>

@@ -18,7 +18,6 @@ package org.apache.servicemix.file;
 
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,41 +36,29 @@ import org.apache.servicemix.jbi.util.URISupport;
  */
 public class FileComponent extends DefaultComponent {
 
-    private FileEndpoint[] endpoints;
-    private FilePollingEndpoint[] pollingEndpoints;
+    private FileEndpointType[] endpoints;
 
-    public FileEndpoint[] getEndpoints() {
+    public FileEndpointType[] getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(FileEndpoint[] endpoints) {
+    public void setEndpoints(FileEndpointType[] endpoints) {
         this.endpoints = endpoints;
     }
 
 
-    public FilePollingEndpoint[] getPollingEndpoints() {
-        return pollingEndpoints;
-    }
-
-    public void setPollingEndpoints(FilePollingEndpoint[] pollingEndpoints) {
-        this.pollingEndpoints = pollingEndpoints;
-    }
-
     protected List getConfiguredEndpoints() {
-        List answer = new ArrayList();
-        answer.addAll(asList(getEndpoints()));
-        answer.addAll(asList(getPollingEndpoints()));
-        return answer;
+        return asList(getEndpoints());
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[]{FileEndpoint.class, FilePollingEndpoint.class};
+        return new Class[]{ FilePollerEndpoint.class, FileSenderEndpoint.class };
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         // We receive an exchange for an EPR that has not been used yet.
         // Register a provider endpoint and restart processing.
-        FileEndpoint fileEp = new FileEndpoint(this, ep);
+        FileSenderEndpoint fileEp = new FileSenderEndpoint(this, ep);
 
         // TODO
         //fileEp.setRole(MessageExchange.Role.PROVIDER);

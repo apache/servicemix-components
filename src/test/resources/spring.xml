@@ -29,7 +29,7 @@
       	<sm:component>
             <file:component>
             	<file:endpoints>
-            		<file:endpoint service="test:service" endpoint="endpoint" directory="file:target/componentOutput">
+            		<file:sender service="test:service" endpoint="endpoint" directory="file:target/componentOutput">
                   <file:marshaler>
                     <sm:defaultFileMarshaler>
                       <sm:fileName>
@@ -38,7 +38,7 @@
                       </sm:fileName>
                     </sm:defaultFileMarshaler>
                   </file:marshaler>
-                </file:endpoint>
+                </file:sender>
             	</file:endpoints>
             </file:component>
         </sm:component>

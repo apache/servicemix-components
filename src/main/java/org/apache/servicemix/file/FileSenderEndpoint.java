@@ -29,11 +29,12 @@ import java.io.*;
 /**
  * An endpoint which receives a message and writes the content to a file.
  *
- * @org.apache.xbean.XBean element="endpoint"
+ * @org.apache.xbean.XBean element="sender"
  *
  * @version $Revision: $
 */
-public class FileEndpoint extends ProviderEndpoint {
+public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpointType {
+
     private File directory;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private String tempFilePrefix = "servicemix-";
@@ -41,10 +42,10 @@ public class FileEndpoint extends ProviderEndpoint {
     private boolean autoCreateDirectory = true;
 
 
-    public FileEndpoint() {
+    public FileSenderEndpoint() {
     }
 
-    public FileEndpoint(FileComponent component, ServiceEndpoint endpoint) {
+    public FileSenderEndpoint(FileComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
 
