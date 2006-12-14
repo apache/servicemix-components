@@ -35,9 +35,9 @@ import org.apache.servicemix.components.util.FileMarshaler;
  * An FTP endpoint
  *
  * @version $Revision: $
- * @org.apache.xbean.XBean element="endpoint"
+ * @org.apache.xbean.XBean element="sender"
  */
-public class FtpEndpoint extends ProviderEndpoint {
+public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointType {
 
     private FTPClientPool clientPool;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
@@ -45,10 +45,10 @@ public class FtpEndpoint extends ProviderEndpoint {
     private boolean overwrite = false;
     private URI uri;
 
-    public FtpEndpoint() {
+    public FtpSenderEndpoint() {
     }
 
-    public FtpEndpoint(FtpComponent component, ServiceEndpoint endpoint) {
+    public FtpSenderEndpoint(FtpComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
     

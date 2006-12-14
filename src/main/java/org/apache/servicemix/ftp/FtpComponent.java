@@ -17,7 +17,6 @@
 package org.apache.servicemix.ftp;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,44 +35,26 @@ import org.apache.servicemix.jbi.util.URISupport;
  */
 public class FtpComponent extends DefaultComponent {
 
-    private FtpEndpoint[] endpoints;
-    private FtpPollingEndpoint[] pollingEndpoints;
+    private FtpEndpointType[] endpoints;
 
-    public FtpEndpoint[] getEndpoints() {
+    public FtpEndpointType[] getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(FtpEndpoint[] endpoints) {
+    public void setEndpoints(FtpEndpointType[] endpoints) {
         this.endpoints = endpoints;
     }
 
-    /**
-     * @return the pollingEndpoints
-     */
-    public FtpPollingEndpoint[] getPollingEndpoints() {
-        return pollingEndpoints;
-    }
-
-    /**
-     * @param pollingEndpoints the pollingEndpoints to set
-     */
-    public void setPollingEndpoints(FtpPollingEndpoint[] pollingEndpoints) {
-        this.pollingEndpoints = pollingEndpoints;
-    }
-
     protected List getConfiguredEndpoints() {
-        ArrayList l = new ArrayList();
-        l.addAll(asList(getEndpoints()));
-        l.addAll(asList(getPollingEndpoints()));
-        return l;
+        return asList(getEndpoints());
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { FtpEndpoint.class, FtpPollingEndpoint.class };
+        return new Class[] { FtpPollerEndpoint.class, FtpSenderEndpoint.class };
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
-        FtpEndpoint ftpEndpoint = new FtpEndpoint(this, ep);
+        FtpSenderEndpoint ftpEndpoint = new FtpSenderEndpoint(this, ep);
         URI uri = new URI(ep.getEndpointName());
         Map map = URISupport.parseQuery(uri.getQuery());
         IntrospectionSupport.setProperties(ftpEndpoint, map);

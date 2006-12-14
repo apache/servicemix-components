@@ -49,11 +49,11 @@ import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
  * and sends the files into the JBI bus as messages, deleting the files
  * by default when they are processed.
  *
- * @org.apache.xbean.XBean element="pollingEndpoint"
+ * @org.apache.xbean.XBean element="poller"
  *
  * @version $Revision: 468487 $
  */
-public class FtpPollingEndpoint extends PollingEndpoint {
+public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointType {
 
     private FTPClientPool clientPool;
     private FileFilter filter;
@@ -63,14 +63,14 @@ public class FtpPollingEndpoint extends PollingEndpoint {
     private LockManager lockManager;
     private URI uri;
 
-    public FtpPollingEndpoint() {
+    public FtpPollerEndpoint() {
     }
 
-    public FtpPollingEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
+    public FtpPollerEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
         super(serviceUnit, service, endpoint);
     }
 
-    public FtpPollingEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
+    public FtpPollerEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
 

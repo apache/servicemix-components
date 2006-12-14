@@ -29,9 +29,9 @@
       	<sm:component>
             <ftp:component>
             	<ftp:endpoints>
-            		<ftp:endpoint service="test:service"
-                              endpoint="endpoint" 
-                              uri="ftp://servicemix:rocks@localhost/smx/test" />
+            		<ftp:sender service="test:service"
+                            endpoint="endpoint" 
+                            uri="ftp://servicemix:rocks@localhost/smx/test" />
             	</ftp:endpoints>
             </ftp:component>
         </sm:component>

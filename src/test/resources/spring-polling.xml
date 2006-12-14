@@ -29,17 +29,15 @@
       	<sm:component>
             <ftp:component>
             	<ftp:endpoints>
-            		<ftp:endpoint service="test:service"
-                              endpoint="endpoint" 
-                              uri="ftp://servicemix:rocks@localhost/smx/test" />
-            	</ftp:endpoints>
+            		<ftp:sender service="test:service"
+                            endpoint="endpoint" 
+                            uri="ftp://servicemix:rocks@localhost/smx/test" />
             	
-              <ftp:pollingEndpoints>
-                <ftp:pollingEndpoint service="test:poller"
-                                     endpoint="endpoint"
-                                     targetService="test:receiver"
-                                     uri="ftp://servicemix:rocks@localhost/smx/test" />
-              </ftp:pollingEndpoints>
+                <ftp:poller service="test:poller"
+                            endpoint="endpoint"
+                            targetService="test:receiver"
+                            uri="ftp://servicemix:rocks@localhost/smx/test" />
+            	</ftp:endpoints>
             </ftp:component>
         </sm:component>
       </sm:activationSpec>
