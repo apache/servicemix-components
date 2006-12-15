@@ -260,11 +260,11 @@ public class ProviderProcessor implements ExchangeProcessor {
             if ((endpoint.getProxy().getProxyHost() != null) && (endpoint.getProxy().getProxyPort() != 0)) {
                 host.setProxy(endpoint.getProxy().getProxyHost(), endpoint.getProxy().getProxyPort());
             }
+            if (endpoint.getProxy().getProxyCredentials() != null) {
+                endpoint.getProxy().getProxyCredentials().applyProxyCredentials(getClient());
+            }
         } else if ((getConfiguration().getProxyHost() != null) && (getConfiguration().getProxyPort() != 0)) {
             host.setProxy(getConfiguration().getProxyHost(), getConfiguration().getProxyPort());
-        }
-        if (endpoint.getProxy().getProxyCredentials() != null) {
-            endpoint.getProxy().getProxyCredentials().applyProxyCredentials(getClient());
         }
         return host;
     }
