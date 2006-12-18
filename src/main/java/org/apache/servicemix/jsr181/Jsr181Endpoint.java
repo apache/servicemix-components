@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -228,35 +227,35 @@ public class Jsr181Endpoint extends Endpoint {
         this.definition = loadDefinition();
         if (definition != null) {
             if (definition.getServices().size() != 1) {
-                throw new InvalidParameterException("The deployed wsdl defines more than one service");
+                throw new IllegalArgumentException("The deployed wsdl defines more than one service");
             }
             javax.wsdl.Service wsdlSvc = (javax.wsdl.Service) definition.getServices().values().iterator().next();
             if (service == null) {
                 service = wsdlSvc.getQName();
             } else if (!service.equals(wsdlSvc.getQName())) {
-                throw new InvalidParameterException("The name of the Service defined by the deployed wsdl does not match the service name of the jbi endpoint");
+                throw new IllegalArgumentException("The name of the Service defined by the deployed wsdl does not match the service name of the jbi endpoint");
             }
             if (wsdlSvc.getPorts().size() != 1) {
-                throw new InvalidParameterException("The Service defined in the deployed wsdl must define exactly one Port");
+                throw new IllegalArgumentException("The Service defined in the deployed wsdl must define exactly one Port");
             }
             Port wsdlPort = (Port) wsdlSvc.getPorts().values().iterator().next();
             if (endpoint == null) {
                 endpoint = wsdlPort.getName();
             } else if (!endpoint.equals(wsdlPort.getName())) {
-                throw new InvalidParameterException("The name of the Port defined by the deployed wsdl does not match the endpoint name of the jbi endpoint");
+                throw new IllegalArgumentException("The name of the Port defined by the deployed wsdl does not match the endpoint name of the jbi endpoint");
             }
             Binding wsdlBinding = wsdlPort.getBinding();
             if (wsdlBinding == null) {
-                throw new InvalidParameterException("The Port defined in the deployed wsdl does not have any binding");
+                throw new IllegalArgumentException("The Port defined in the deployed wsdl does not have any binding");
             }
             PortType wsdlPortType = wsdlBinding.getPortType();
             if (wsdlPortType == null) {
-                throw new InvalidParameterException("The Binding defined in the deployed wsdl does not have reference a PortType");
+                throw new IllegalArgumentException("The Binding defined in the deployed wsdl does not have reference a PortType");
             }
             if (interfaceName == null) {
                 interfaceName = wsdlPortType.getQName();
             } else if (!interfaceName.equals(wsdlPortType.getQName())) {
-                throw new InvalidParameterException("The name of the PortType defined by the deployed wsdl does not match the interface name of the jbi endpoint");
+                throw new IllegalArgumentException("The name of the PortType defined by the deployed wsdl does not match the interface name of the jbi endpoint");
             }
             // Create the DOM document 
             definition = new WSDLFlattener(definition).getDefinition(interfaceName);
