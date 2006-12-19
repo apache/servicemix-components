@@ -133,7 +133,7 @@ public class MessageFilter extends EIPEndpoint {
             fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
         } else {
             NormalizedMessage in = MessageUtil.copyIn(exchange);
-            MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+            MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
             target.configureTarget(me, getContext());
             MessageUtil.transferToIn(in, me);
             if (filter.matches(me)) {
@@ -179,7 +179,7 @@ public class MessageFilter extends EIPEndpoint {
                 done(exchange);
             } else {
                 NormalizedMessage in = MessageUtil.copyIn(exchange);
-                MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+                MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
                 target.configureTarget(me, getContext());
                 MessageUtil.transferToIn(in, me);
                 if (filter.matches(me)) {

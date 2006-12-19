@@ -57,7 +57,7 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
      */
     protected void processSync(MessageExchange exchange) throws Exception {
         // Create exchange for target
-        MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
+        MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
         // Now copy input to new exchange
         // We need to read the message once for finding routing target
         // so ensure we have a re-readable source
@@ -96,7 +96,7 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
         if (exchange.getRole() == MessageExchange.Role.PROVIDER &&
             exchange.getProperty(correlation) == null) {
             // Create exchange for target
-            MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
+            MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
             if (store.hasFeature(Store.CLUSTERED)) {
                 exchange.setProperty(JbiConstants.STATELESS_PROVIDER, Boolean.TRUE);
                 tme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);

@@ -156,10 +156,17 @@ public abstract class AbstractSplitter extends EIPEndpoint {
         if (target == null) {
             throw new IllegalArgumentException("target should be set to a valid ExchangeTarget");
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#start()
+     */
+    public void start() throws Exception {
+        super.start();
         // Create correlation property
         correlation = "Splitter.Correlation." + getContext().getComponentName();
     }
-    
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
@@ -251,7 +258,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     protected MessageExchange createPart(URI pattern,
                                          NormalizedMessage srcMessage, 
                                          Source content) throws Exception {
-        MessageExchange me = exchangeFactory.createExchange(pattern);
+        MessageExchange me = getExchangeFactory().createExchange(pattern);
         NormalizedMessage in = me.createMessage();
         in.setContent(content);
         me.setMessage(in, "in");

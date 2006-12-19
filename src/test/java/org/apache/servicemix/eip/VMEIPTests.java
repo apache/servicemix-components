@@ -32,6 +32,7 @@ public class VMEIPTests {
         suite.addTestSuite(StaticRecipientListTest.class);
         suite.addTestSuite(MessageFilterTest.class);
         suite.addTestSuite(SplitAggregatorTest.class);
+        suite.addTestSuite(ContentEnricherTest.class);
         //$JUnit-END$
         return suite;
     }

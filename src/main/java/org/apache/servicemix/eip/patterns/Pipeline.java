@@ -175,7 +175,7 @@ public class Pipeline extends EIPEndpoint {
             return;
         }
         // Create exchange for target
-        InOut tme = exchangeFactory.createInOutExchange();
+        InOut tme = getExchangeFactory().createInOutExchange();
         transformer.configureTarget(tme, getContext());
         // Send in to listener and target
         MessageUtil.transferInToIn(exchange, tme);
@@ -191,7 +191,7 @@ public class Pipeline extends EIPEndpoint {
         else if (tme.getFault() != null) {
             // Faults must be sent to the target / faultsTarget
             if (faultsTarget != null || sendFaultsToTarget) {
-                MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+                MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
                 (faultsTarget != null ? faultsTarget : target).configureTarget(me, getContext());
                 MessageUtil.transferToIn(tme.getFault(), me);
                 sendSync(me);
@@ -236,7 +236,7 @@ public class Pipeline extends EIPEndpoint {
             throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no correlation set");
         // This is the answer from the transformer
         } else {
-            MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+            MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
             target.configureTarget(me, getContext());
             MessageUtil.transferOutToIn(tme, me);
             sendSync(me);
@@ -298,7 +298,7 @@ public class Pipeline extends EIPEndpoint {
                     return;
                 }
                 // Create exchange for target
-                MessageExchange tme = exchangeFactory.createInOutExchange();
+                MessageExchange tme = getExchangeFactory().createInOutExchange();
                 transformer.configureTarget(tme, getContext());
                 // Set correlations
                 exchange.setProperty(correlationTransformer, tme.getExchangeId());
@@ -336,7 +336,7 @@ public class Pipeline extends EIPEndpoint {
                     if (mep == null) {
                         throw new IllegalStateException("Exchange does not carry the consumer MEP");
                     }
-                    MessageExchange me = exchangeFactory.createExchange(mep);
+                    MessageExchange me = getExchangeFactory().createExchange(mep);
                     (faultsTarget != null ? faultsTarget : target).configureTarget(me, getContext());
                     me.setProperty(correlationConsumer, consumerId);
                     me.setProperty(correlationTransformer, exchange.getExchangeId());
@@ -365,7 +365,7 @@ public class Pipeline extends EIPEndpoint {
                 if (mep == null) {
                     throw new IllegalStateException("Exchange does not carry the consumer MEP");
                 }
-                MessageExchange me = exchangeFactory.createExchange(mep);
+                MessageExchange me = getExchangeFactory().createExchange(mep);
                 target.configureTarget(me, getContext());
                 me.setProperty(correlationConsumer, consumerId);
                 me.setProperty(correlationTransformer, exchange.getExchangeId());

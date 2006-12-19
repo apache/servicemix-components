@@ -154,7 +154,7 @@ public class ContentEnricher extends EIPEndpoint {
             return;
         }
         	        
-    	InOut enricherTargetME = exchangeFactory.createInOutExchange();
+    	InOut enricherTargetME = getExchangeFactory().createInOutExchange();
         enricherTarget.configureTarget(enricherTargetME, getContext());
         MessageUtil.transferInToIn(exchange, enricherTargetME);
                 

@@ -186,7 +186,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     protected void sendAggregate(String correlationId,
                                  Object aggregation,
                                  boolean timeout) throws Exception {
-        InOnly me = exchangeFactory.createInOnlyExchange();
+        InOnly me = getExchangeFactory().createInOnlyExchange();
         target.configureTarget(me, getContext());
         NormalizedMessage nm = me.createMessage();
         me.setInMessage(nm);

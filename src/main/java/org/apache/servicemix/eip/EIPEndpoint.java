@@ -19,13 +19,8 @@ package org.apache.servicemix.eip;
 import java.net.URL;
 
 import javax.jbi.JBIException;
-import javax.jbi.component.ComponentContext;
-import javax.jbi.management.DeploymentException;
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessageExchangeFactory;
-import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
@@ -34,9 +29,7 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 
 import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.common.BaseLifeCycle;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
@@ -54,10 +47,11 @@ import com.ibm.wsdl.Constants;
  * @author gnodet
  * @version $Revision: 376451 $
  */
-public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor {
+public abstract class EIPEndpoint extends ProviderEndpoint {
 
-    private ServiceEndpoint activated;
-    private DeliveryChannel channel;
+    /**
+     * The resource pointing to the WSDL for this endpoint
+     */
     private Resource wsdlResource;
     
     /**
@@ -76,28 +70,12 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
      * The timer manager.
      */
     protected TimerManager timerManager;
-    /**
-     * The exchange factory
-     */
-    protected MessageExchangeFactory exchangeFactory;
     
     /**
      * The ExchangeTarget to use to get the WSDL
      */
     protected ExchangeTarget wsdlExchangeTarget;
     
-    /**
-     * @return Returns the exchangeFactory.
-     */
-    public MessageExchangeFactory getExchangeFactory() {
-        return exchangeFactory;
-    }
-    /**
-     * @param exchangeFactory The exchangeFactory to set.
-     */
-    public void setExchangeFactory(MessageExchangeFactory exchangeFactory) {
-        this.exchangeFactory = exchangeFactory;
-    }
     /**
      * @return Returns the store.
      */
@@ -147,19 +125,8 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
         this.timerManager = timerManager;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.common.Endpoint#getRole()
-     */
-    public Role getRole() {
-        return Role.PROVIDER;
-    }
-
-    public void activate() throws Exception {
-        logger = this.serviceUnit.getComponent().getLogger();
-        ComponentContext ctx = getContext();
-        channel = ctx.getDeliveryChannel();
-        exchangeFactory = channel.createExchangeFactory();
-        activated = ctx.activateEndpoint(service, endpoint);
+    public void start() throws Exception {
+        super.start();
         if (store == null) {
             if (storeFactory == null) {
                 storeFactory = new MemoryStoreFactory();
@@ -173,61 +140,13 @@ public abstract class EIPEndpoint extends Endpoint implements ExchangeProcessor 
             timerManager = new TimerManagerImpl();
         }
         timerManager.start();
-        start();
     }
-
-    public void deactivate() throws Exception {
+    
+    public void stop() throws Exception {
         if (timerManager != null) {
             timerManager.stop();
         }
-        stop();
-        ServiceEndpoint ep = activated;
-        activated = null;
-        ComponentContext ctx = getServiceUnit().getComponent().getComponentContext();
-        ctx.deactivateEndpoint(ep);
-    }
-
-    public ExchangeProcessor getProcessor() {
-        return this;
-    }
-    
-    public void validate() throws DeploymentException {
-    }
-    
-    protected ComponentContext getContext() {
-        return getServiceUnit().getComponent().getComponentContext();
-    }
-    
-    protected void send(MessageExchange me) throws MessagingException {
-        if (me.getRole() == MessageExchange.Role.CONSUMER &&
-            me.getStatus() == ExchangeStatus.ACTIVE) {
-            BaseLifeCycle lf = (BaseLifeCycle) getServiceUnit().getComponent().getLifeCycle();
-            lf.sendConsumerExchange(me, (Endpoint) this);
-        } else {
-            channel.send(me);
-        }
-    }
-    
-    protected void sendSync(MessageExchange me) throws MessagingException {
-        if (!channel.sendSync(me)) {
-            throw new MessagingException("SendSync failed");
-        }
-    }
-    
-    protected void done(MessageExchange me) throws MessagingException {
-        me.setStatus(ExchangeStatus.DONE);
-        send(me);
-    }
-    
-    protected void fail(MessageExchange me, Exception error) throws MessagingException {
-        me.setError(error);
-        send(me);
-    }
-    
-    public void start() throws Exception {
-    }
-    
-    public void stop() {
+        super.stop();
     }
 
     /* (non-Javadoc)

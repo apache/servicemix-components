@@ -99,7 +99,7 @@ public class StaticRoutingSlip extends EIPEndpoint {
         }
         MessageExchange current = exchange;
         for (int i = 0; i < targets.length; i++) {
-            InOut me = exchangeFactory.createInOutExchange();
+            InOut me = getExchangeFactory().createInOutExchange();
             targets[i].configureTarget(me, getContext());
             if (i == 0) {
                 MessageUtil.transferInToIn(current, me);
@@ -156,7 +156,7 @@ public class StaticRoutingSlip extends EIPEndpoint {
             } else if (exchange instanceof InOut == false) {
                 throw new IllegalStateException("Use an InOut MEP");
             } else {
-                MessageExchange me = exchangeFactory.createInOutExchange();
+                MessageExchange me = getExchangeFactory().createInOutExchange();
                 me.setProperty(correlation, exchange.getExchangeId());
                 me.setProperty(index, new Integer(0));
                 targets[0].configureTarget(me, getContext());
@@ -214,7 +214,7 @@ public class StaticRoutingSlip extends EIPEndpoint {
                     }
                 // We still have a target to hit
                 } else {
-                    MessageExchange me = exchangeFactory.createInOutExchange();
+                    MessageExchange me = getExchangeFactory().createInOutExchange();
                     Integer curIndex = new Integer(prevIndex.intValue() + 1);
                     me.setProperty(correlation, correlationId);
                     me.setProperty(index, curIndex);

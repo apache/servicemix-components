@@ -112,7 +112,7 @@ public class StaticRecipientList extends EIPEndpoint {
         }
         NormalizedMessage in = MessageUtil.copyIn(exchange);
         for (int i = 0; i < recipients.length; i++) {
-            MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+            MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
             recipients[i].configureTarget(me, getContext());
             MessageUtil.transferToIn(in, me);
             sendSync(me);
@@ -150,7 +150,7 @@ public class StaticRecipientList extends EIPEndpoint {
             } else {
                 NormalizedMessage in = MessageUtil.copyIn(exchange);
                 for (int i = 0; i < recipients.length; i++) {
-                    MessageExchange me = exchangeFactory.createExchange(exchange.getPattern());
+                    MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
                     recipients[i].configureTarget(me, getContext());
                     MessageUtil.transferToIn(in, me);
                     send(me);

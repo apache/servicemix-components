@@ -141,7 +141,7 @@ public class WireTap extends EIPEndpoint {
      */
     protected void processSync(MessageExchange exchange) throws Exception {
         // Create exchange for target
-        MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
+        MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
         target.configureTarget(tme, getContext());
         sendSyncToListenerAndTarget(exchange, tme, inListener, "in");
         if (tme.getStatus() == ExchangeStatus.DONE) {
@@ -167,7 +167,7 @@ public class WireTap extends EIPEndpoint {
         if (exchange.getRole() == MessageExchange.Role.PROVIDER &&
             exchange.getProperty(correlation) == null) {
             // Create exchange for target
-            MessageExchange tme = exchangeFactory.createExchange(exchange.getPattern());
+            MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
             if (store.hasFeature(Store.CLUSTERED)) {
                 exchange.setProperty(JbiConstants.STATELESS_PROVIDER, Boolean.TRUE);
                 tme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
@@ -221,7 +221,7 @@ public class WireTap extends EIPEndpoint {
                                          String message) throws Exception {
         if (listener != null) {
             NormalizedMessage msg = MessageUtil.copy(source.getMessage(message));
-            InOnly lme = exchangeFactory.createInOnlyExchange();
+            InOnly lme = getExchangeFactory().createInOnlyExchange();
             if (store.hasFeature(Store.CLUSTERED)) {
                 lme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
             }
@@ -242,7 +242,7 @@ public class WireTap extends EIPEndpoint {
                                              String message) throws Exception {
         if (listener != null) {
             NormalizedMessage msg = MessageUtil.copy(source.getMessage(message));
-            InOnly lme = exchangeFactory.createInOnlyExchange();
+            InOnly lme = getExchangeFactory().createInOnlyExchange();
             if (store.hasFeature(Store.CLUSTERED)) {
                 lme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
             }
