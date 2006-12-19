@@ -86,6 +86,22 @@ public class PipelineTest extends AbstractEIPTest {
         listener.assertExchangeCompleted();
     }
     
+    public void testInOnlyWithTransformerFaultSentToTarget() throws Exception {
+        pipeline.setSendFaultsToTarget(true);
+        activateComponent(new ReturnFaultComponent(), "transformer");
+        ReceiverComponent target = activateReceiver("target");
+
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("pipeline"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+        
+        target.getMessageList().assertMessagesReceived(1);
+        
+        listener.assertExchangeCompleted();
+    }
+    
     public void testInOnlyWithTransformerError() throws Exception {
         activateComponent(new ReturnErrorComponent(), "transformer");
         ReceiverComponent target = activateReceiver("target");
@@ -142,6 +158,22 @@ public class PipelineTest extends AbstractEIPTest {
         client.done(me);
         
         target.getMessageList().assertMessagesReceived(0);
+        
+        listener.assertExchangeCompleted();
+    }
+    
+    public void testRobustInOnlyWithTransformerFaultSentToTarget() throws Exception {
+        pipeline.setSendFaultsToTarget(true);
+        activateComponent(new ReturnFaultComponent(), "transformer");
+        ReceiverComponent target = activateReceiver("target");
+
+        RobustInOnly me = client.createRobustInOnlyExchange();
+        me.setService(new QName("pipeline"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+        
+        target.getMessageList().assertMessagesReceived(1);
         
         listener.assertExchangeCompleted();
     }
