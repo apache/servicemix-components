@@ -71,6 +71,9 @@ public class XMPPComponent extends DefaultComponent implements BeanFactoryAware 
         this.password = password;
     }
 
+    /**
+     * @org.apache.xbean.Property hidden="true"
+     */
     public BeanFactory getBeanFactory() {
         return beanFactory;
     }
