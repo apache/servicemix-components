@@ -29,6 +29,7 @@ import java.io.IOException;
  * the <a href="http://jakarta.apache.org/commons/net.html">Jakarta Commons Net</a> library
  *
  * @version $Revision: 426415 $
+ * @org.apache.xbean.XBean element="pool"
  */
 public class FTPClientPool extends SocketClientPoolSupport {
 
