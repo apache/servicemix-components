@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -41,7 +42,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     protected Session session;
     protected Destination destination;
     protected MessageConsumer consumer;
-    protected Map pendingMessages = new ConcurrentHashMap();
+    protected Map pendingMessages;
     protected DeliveryChannel channel;
 
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) throws Exception {
@@ -66,6 +67,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
         }
         consumer = session.createConsumer(destination);
         consumer.setMessageListener(this);
+        pendingMessages = new ConcurrentHashMap();
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
     }
 
@@ -74,6 +76,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
         destination = null;
         consumer = null;
         pendingMessages.clear();
+        pendingMessages = null;
     }
 
     public void onMessage(final Message message) {
@@ -102,27 +105,33 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
 
     public void process(MessageExchange exchange) throws Exception {
         Context context = (Context) pendingMessages.remove(exchange.getExchangeId());
-        Message message = (Message) context.getProperty(Message.class.getName());
-        MessageProducer producer = null;
-        Message response = null;
-        try {
-            response = fromNMSResponse(exchange, context, session);
-            if (response != null) {
-                producer = session.createProducer(message.getJMSReplyTo());
-                if (endpoint.isUseMsgIdInResponse()) {
-                    response.setJMSCorrelationID(message.getJMSMessageID());
-                } else {
-                    response.setJMSCorrelationID(message.getJMSCorrelationID());
+        // if context is null we lost it after a redeploy
+        // SM-782 : If exchange is InOnly and status = done > do nothing
+        if (exchange instanceof InOnly && exchange.getStatus() == ExchangeStatus.DONE) {
+            return;
+        } else {
+            Message message = (Message) context.getProperty(Message.class.getName());
+            MessageProducer producer = null;
+            Message response = null;
+            try {
+                response = fromNMSResponse(exchange, context, session);
+                if (response != null) {
+                    producer = session.createProducer(message.getJMSReplyTo());
+                    if (endpoint.isUseMsgIdInResponse()) {
+                        response.setJMSCorrelationID(message.getJMSMessageID());
+                    } else {
+                        response.setJMSCorrelationID(message.getJMSCorrelationID());
+                    }
+                    producer.send(response);
                 }
-                producer.send(response);
-            }
-        } finally {
-            if (producer != null) {
-                producer.close();
-            }
-            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                exchange.setStatus(ExchangeStatus.DONE);
-                channel.send(exchange);
+            } finally {
+                if (producer != null) {
+                    producer.close();
+                }
+                if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                    exchange.setStatus(ExchangeStatus.DONE);
+                    channel.send(exchange);
+                }
             }
         }
     }
