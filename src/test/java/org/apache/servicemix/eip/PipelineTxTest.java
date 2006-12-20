@@ -77,4 +77,40 @@ public class PipelineTxTest extends AbstractEIPTransactionalTest {
         listener.assertExchangeCompleted();
     }
     
+    public void testInOnlySyncWithError() throws Exception {
+        activateComponent(new ReturnErrorComponent(), "transformer");
+        ReceiverComponent target = activateReceiver("target");
+
+        tm.begin();
+        
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("pipeline"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        
+        tm.commit();
+        
+        listener.assertExchangeCompleted();
+    }
+    
+    public void testInOnlyAsyncWithError() throws Exception {
+        activateComponent(new ReturnErrorComponent(), "transformer");
+        ReceiverComponent target = activateReceiver("target");
+
+        tm.begin();
+        
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("pipeline"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.send(me);
+        
+        tm.commit();
+        
+        me = (InOnly) client.receive();
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        
+        listener.assertExchangeCompleted();
+    }
+    
 }

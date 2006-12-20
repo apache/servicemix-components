@@ -34,16 +34,44 @@ public class SpringConfigurationTest extends SpringTestSupport {
         ActivationSpec as = new ActivationSpec();
         as.setComponentName("client");
         ServiceMixClient client = new DefaultServiceMixClient(jbi, as);
-        InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("http://test", "entryPoint"));
-        me.getInMessage().setContent(new StringSource("<test xmlns=\"http://test\"><echo/><world/><earth/></test>"));
-        client.sendSync(me);
         
-        ((Receiver) getBean("trace1")).getMessageList().assertMessagesReceived(1);
-        ((Receiver) getBean("trace2")).getMessageList().assertMessagesReceived(1);
-        ((Receiver) getBean("trace3")).getMessageList().assertMessagesReceived(1);
-        ((Receiver) getBean("trace4")).getMessageList().assertMessagesReceived(2);
-        ((Receiver) getBean("trace5")).getMessageList().assertMessagesReceived(1);
+        int nbMsgs = 10;
+        for (int i = 0; i < nbMsgs; i++) {
+            InOnly me = client.createInOnlyExchange();
+            me.setService(new QName("http://test", "entryPoint"));
+            me.getInMessage().setContent(new StringSource("<test xmlns=\"http://test\"><echo/><world/><earth/></test>"));
+            client.sendSync(me);
+        }        
+        ((Receiver) getBean("trace1")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        ((Receiver) getBean("trace2")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        ((Receiver) getBean("trace3")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        ((Receiver) getBean("trace4")).getMessageList().assertMessagesReceived(2 * nbMsgs);
+        ((Receiver) getBean("trace5")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        
+        // Wait for all messages to be processed
+        Thread.sleep(50);
+    }
+
+    public void testConfigAsync() throws Exception {
+        ActivationSpec as = new ActivationSpec();
+        as.setComponentName("client");
+        ServiceMixClient client = new DefaultServiceMixClient(jbi, as);
+        
+        int nbMsgs = 100;
+        for (int i = 0; i < nbMsgs; i++) {
+            InOnly me = client.createInOnlyExchange();
+            me.setService(new QName("http://test", "entryPoint"));
+            me.getInMessage().setContent(new StringSource("<test xmlns=\"http://test\"><echo/><world/><earth/></test>"));
+            client.send(me);
+        }
+        for (int i = 0; i < nbMsgs; i++) {
+            client.receive();
+        }
+        ((Receiver) getBean("trace1")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        ((Receiver) getBean("trace2")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        ((Receiver) getBean("trace3")).getMessageList().assertMessagesReceived(1 * nbMsgs);
+        ((Receiver) getBean("trace4")).getMessageList().assertMessagesReceived(2 * nbMsgs);
+        ((Receiver) getBean("trace5")).getMessageList().assertMessagesReceived(1 * nbMsgs);
         
         // Wait for all messages to be processed
         Thread.sleep(50);

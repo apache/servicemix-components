@@ -18,7 +18,6 @@ package org.apache.servicemix.eip;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.eip.patterns.MessageFilter;

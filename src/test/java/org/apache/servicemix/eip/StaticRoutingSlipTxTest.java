@@ -17,16 +17,12 @@
 package org.apache.servicemix.eip;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.RobustInOnly;
 import javax.transaction.Status;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.eip.patterns.StaticRoutingSlip;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-
 
 public class StaticRoutingSlipTxTest extends AbstractEIPTransactionalTest {
 
