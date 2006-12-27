@@ -35,6 +35,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFireException;
 import org.codehaus.xfire.exchange.InMessage;
@@ -44,6 +45,8 @@ import org.codehaus.xfire.fault.XFireFault;
 import org.codehaus.xfire.soap.AbstractSoapBinding;
 import org.codehaus.xfire.transport.AbstractChannel;
 import org.codehaus.xfire.transport.Channel;
+import org.jdom.Element;
+import org.jdom.transform.JDOMResult;
 
 /**
  * Jbi channel, only support local invocations. 
@@ -104,7 +107,14 @@ public class JbiChannel extends AbstractChannel {
                             throw new XFireFault("Unkown Error", XFireFault.RECEIVER);
                         }
                     } else if (me.getFault() != null){
-                        throw new XFireFault(sourceTransformer.contentToString(me.getFault()), XFireFault.RECEIVER);
+                        JDOMResult result = new JDOMResult();
+                        String str = sourceTransformer.contentToString(me.getFault());
+                        sourceTransformer.toResult(new StringSource(str), result);
+                        Element e = result.getDocument().getRootElement();
+                        e = (Element) e.clone();
+                        XFireFault xfireFault = new XFireFault(str, XFireFault.RECEIVER);
+                        xfireFault.getDetail().addContent(e);
+                        throw xfireFault;
                     }
                     Source outSrc = me.getOutMessage().getContent();
 
@@ -116,8 +126,8 @@ public class JbiChannel extends AbstractChannel {
                 } else {
                     // TODO
                 }
-                
-                
+            } catch (XFireException e) {
+                throw e;
             } catch (Exception e) {
                 throw new XFireException("Error sending jbi exchange", e);
             }

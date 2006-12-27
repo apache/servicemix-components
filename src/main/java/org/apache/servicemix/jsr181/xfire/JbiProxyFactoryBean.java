@@ -20,19 +20,20 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.ClientFactory;
-import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jsr181.Jsr181Component;
 import org.codehaus.xfire.XFire;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 
 
 /**
@@ -43,7 +44,9 @@ import org.springframework.beans.factory.FactoryBean;
  *                  description="A jsr181 proxy"
  * 
  */
-public class JbiProxyFactoryBean implements FactoryBean {
+public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, DisposableBean {
+    
+    private static final Log logger = LogFactory.getLog(JbiProxyFactoryBean.class);
 
     private String name = ClientFactory.DEFAULT_JNDI_NAME;
     private JBIContainer container;
@@ -56,6 +59,8 @@ public class JbiProxyFactoryBean implements FactoryBean {
     private QName interfaceName;
     private String endpoint;
     
+    private ServiceMixClient client;
+    
     public Object getObject() throws Exception {
         if( proxy == null ) {
             proxy = createProxy();
@@ -64,14 +69,12 @@ public class JbiProxyFactoryBean implements FactoryBean {
     }
 
     private Object createProxy() throws Exception {
-        
         return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{type}, new InvocationHandler(){
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 InvocationHandler next = getJBIInvocationHandler();
                 return next.invoke(proxy, method, args);
             }
         });
-        
     }
     
     synchronized private InvocationHandler getJBIInvocationHandler() throws Exception {
@@ -94,19 +97,13 @@ public class JbiProxyFactoryBean implements FactoryBean {
     protected ComponentContext getInternalContext() throws Exception {
         if (context == null) {
             if (factory == null) {
-                if (context != null) {
-                    factory = new ClientFactory() {
-                        public ServiceMixClient createClient() throws JBIException {
-                            return new ServiceMixClientFacade(context);
-                        }
-                    };
-                } else if (container != null) {
+                if (container != null) {
                     factory = container.getClientFactory();
                 } else {
                     factory = (ClientFactory) new InitialContext().lookup(name);
                 }
             }
-            DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+            client = factory.createClient();
             context = client.getContext();
         }
         return context;
@@ -198,6 +195,19 @@ public class JbiProxyFactoryBean implements FactoryBean {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void afterPropertiesSet() throws Exception {
+        if (type == null) {
+            throw new IllegalArgumentException("type must be set");
+        }
+    }
+
+    public void destroy() throws Exception {
+        if (client != null) {
+            client.close();
+            client = null;
+        }
     }
 
 }
