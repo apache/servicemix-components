@@ -90,6 +90,8 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
     
             if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
                 producer.send(msg);
+                exchange.setStatus(ExchangeStatus.DONE);
+                channel.send(exchange);
             } else if (exchange instanceof InOut) {
                 Destination replyToDestination;
                 if (destination instanceof Queue) {
