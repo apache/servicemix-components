@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -15,11 +17,7 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-
 -->
-<project
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -152,43 +150,24 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>xfire-maven-plugin</artifactId>
+        <version>${servicemix-version}</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
             <configuration>
-              <tasks>
-                <taskdef classname="org.codehaus.xfire.gen.WsGenTask" name="wsgen">
-                  <classpath>
-                    <pathelement path="${basedir}/target/classes" />
-                    <path refid="maven.test.classpath" />
-                  </classpath>
-                </taskdef>
-                <wsgen 
-                  wsdl="${basedir}/src/main/resources/org/apache/servicemix/wsn/wsn.wsdl"
-                  outputDirectory="${basedir}/target/jaxws" 
-                  profile="org.codehaus.xfire.jaxws.gen.JAXWSProfile"
-                  explicitAnnotation="true" />
-              </tasks>
-              <sourceRoot>${basedir}/target/jaxws</sourceRoot>
+              <wsdls>
+                <wsdl>${basedir}/src/main/resources/org/apache/servicemix/wsn/wsn.wsdl</wsdl>
+              </wsdls>
+              <profile>org.codehaus.xfire.jaxws.gen.JAXWSProfile</profile>
+              <outputDirectory>${basedir}/target/jaxws</outputDirectory>
             </configuration>
             <goals>
-              <goal>run</goal>
+              <goal>wsgen</goal>
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.xfire</groupId>
-            <artifactId>xfire-generator</artifactId>
-            <version>${xfire-version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.codehaus.xfire</groupId>
-            <artifactId>xfire-jaxws</artifactId>
-            <version>${xfire-version}</version>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>
