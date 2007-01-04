@@ -61,7 +61,7 @@
         <version>${servicemix-version}</version>
         <extensions>true</extensions>
         <configuration>
-          <type>service-engine</type>
+          <type>binding-component</type>
           <component>org.apache.servicemix.file.FileComponent</component>
         </configuration>
       </plugin>
