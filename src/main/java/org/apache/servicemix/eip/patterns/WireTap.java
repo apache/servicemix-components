@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.eip.patterns;
 
+import java.util.Iterator;
+
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -65,6 +67,12 @@ public class WireTap extends EIPEndpoint {
      * The correlation property used by this component
      */
     private String correlation;
+    /**
+     * If copyProperties is <code>true</code>, properties
+     * on the in message will be copied to the out / fault
+     * message before it is sent.
+     */
+    private boolean copyProperties;
     
     /**
      * @return Returns the target.
@@ -123,6 +131,20 @@ public class WireTap extends EIPEndpoint {
         this.outListener = outListener;
     }
 
+    /**
+     * @return the copyProperties
+     */
+    public boolean isCopyProperties() {
+        return copyProperties;
+    }
+
+    /**
+     * @param copyProperties the copyProperties to set
+     */
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+    }
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#validate()
      */
@@ -143,16 +165,16 @@ public class WireTap extends EIPEndpoint {
         // Create exchange for target
         MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
         target.configureTarget(tme, getContext());
-        sendSyncToListenerAndTarget(exchange, tme, inListener, "in");
+        sendSyncToListenerAndTarget(exchange, tme, inListener, "in", false);
         if (tme.getStatus() == ExchangeStatus.DONE) {
             done(exchange);
         } else if (tme.getStatus() == ExchangeStatus.ERROR) {
             fail(exchange, tme.getError());
         } else if (tme.getFault() != null) {
-            sendSyncToListenerAndTarget(tme, exchange, faultListener, "fault");
+            sendSyncToListenerAndTarget(tme, exchange, faultListener, "fault", isCopyProperties());
             done(tme);
         } else if (tme.getMessage("out") != null) {
-            sendSyncToListenerAndTarget(tme, exchange, outListener, "out");
+            sendSyncToListenerAndTarget(tme, exchange, outListener, "out", isCopyProperties());
             done(tme);
         } else {
             done(tme);
@@ -179,7 +201,7 @@ public class WireTap extends EIPEndpoint {
             // Put exchange to store
             store.store(exchange.getExchangeId(), exchange);
             // Send in to listener and target
-            sendToListenerAndTarget(exchange, tme, inListener, "in");
+            sendToListenerAndTarget(exchange, tme, inListener, "in", false);
         // Mimic the exchange on the other side and send to needed listener
         } else {
             String id = (String) exchange.getProperty(correlation);
@@ -204,11 +226,11 @@ public class WireTap extends EIPEndpoint {
             // Reproduce faults to the other side and listeners
             } else if (exchange.getFault() != null) {
                 store.store(exchange.getExchangeId(), exchange);
-                sendToListenerAndTarget(exchange, org, faultListener, "fault");
+                sendToListenerAndTarget(exchange, org, faultListener, "fault", isCopyProperties());
             // Reproduce answers to the other side
             } else if (exchange.getMessage("out") != null) {
                 store.store(exchange.getExchangeId(), exchange);
-                sendToListenerAndTarget(exchange, org, outListener, "out");
+                sendToListenerAndTarget(exchange, org, outListener, "out", isCopyProperties());
             } else {
                 throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
             }
@@ -218,7 +240,8 @@ public class WireTap extends EIPEndpoint {
     private void sendToListenerAndTarget(MessageExchange source, 
                                          MessageExchange dest, 
                                          ExchangeTarget listener,
-                                         String message) throws Exception {
+                                         String message,
+                                         boolean copyProperties) throws Exception {
         if (listener != null) {
             NormalizedMessage msg = MessageUtil.copy(source.getMessage(message));
             InOnly lme = getExchangeFactory().createInOnlyExchange();
@@ -229,9 +252,15 @@ public class WireTap extends EIPEndpoint {
             MessageUtil.transferToIn(msg, lme);
             send(lme);
             MessageUtil.transferTo(msg, dest, message);
+            if (copyProperties) {
+                copyExchangeProperties(dest, "in", message);
+            }
             send(dest);
         } else {
             MessageUtil.transferTo(source, dest, message);
+            if (copyProperties) {
+                copyExchangeProperties(dest, "in", message);
+            }
             send(dest);
         }
     }
@@ -239,7 +268,8 @@ public class WireTap extends EIPEndpoint {
     private void sendSyncToListenerAndTarget(MessageExchange source, 
                                              MessageExchange dest, 
                                              ExchangeTarget listener,
-                                             String message) throws Exception {
+                                             String message,
+                                             boolean copyProperties) throws Exception {
         if (listener != null) {
             NormalizedMessage msg = MessageUtil.copy(source.getMessage(message));
             InOnly lme = getExchangeFactory().createInOnlyExchange();
@@ -250,10 +280,37 @@ public class WireTap extends EIPEndpoint {
             MessageUtil.transferToIn(msg, lme);
             sendSync(lme);
             MessageUtil.transferTo(msg, dest, message);
+            if (copyProperties) {
+                copyExchangeProperties(dest, "in", message);
+            }
             sendSync(dest);
         } else {
             MessageUtil.transferTo(source, dest, message);
+            if (copyProperties) {
+                copyExchangeProperties(dest, "in", message);
+            }
             sendSync(dest);
+        }
+    }
+    
+    /**
+     * A utility method to copy properties from the input of the original 
+     * exchange to the output of the original exchange. 
+     * 
+     * @param exchange
+     * @param srcMessage
+     * @param @dstMessage
+     * @throws Exception
+     */
+    private void copyExchangeProperties(MessageExchange exchange, String srcMessage, String dstMessage) {
+        NormalizedMessage src = exchange.getMessage(srcMessage);
+        NormalizedMessage dst = exchange.getMessage(dstMessage);
+        for (Iterator iter = src.getPropertyNames().iterator(); iter.hasNext();) {
+            String name = (String) iter.next();
+            if (dst.getProperty(name) == null) {
+                Object prop = src.getProperty(name);
+                dst.setProperty(name, prop);
+            }
         }
     }
     

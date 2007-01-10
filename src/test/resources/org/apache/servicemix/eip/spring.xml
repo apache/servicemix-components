@@ -35,7 +35,7 @@
           <eip:component>
             <eip:endpoints>
 
-			  <!-- main test entry point -->
+			        <!-- main test entry point -->
               <eip:static-recipient-list service="test:entryPoint" endpoint="endpoint">
                 <eip:recipients>
                   <eip:exchange-target service="test:wireTap" />
@@ -43,13 +43,29 @@
                 </eip:recipients>
               </eip:static-recipient-list>
 
-			  <!-- splitter used to test the aggregator -->
+			        <!-- splitter used to test the aggregator -->
               <eip:xpath-splitter service="test:aggregatorSplitter" endpoint="endpoint" 
                                   xpath="/*/*" namespaceContext="#nsContext">
                 <eip:target>
-                  <eip:exchange-target service="test:aggregator" />
+                  <eip:exchange-target service="test:pipeline-aggregator" />
                 </eip:target>
               </eip:xpath-splitter>
+
+              <eip:pipeline service="test:pipeline-aggregator" endpoint="endpoint">
+                <eip:transformer>
+                  <eip:exchange-target service="test:wiretap-echo" />
+                </eip:transformer>
+                <eip:target>
+                  <eip:exchange-target service="test:aggregator" />
+                </eip:target>
+              </eip:pipeline>
+
+              <eip:wire-tap service="test:wiretap-echo" endpoint="endpoint"
+                            copyProperties="true">
+                <eip:target>
+                  <eip:exchange-target service="test:echo" />
+                </eip:target>
+              </eip:wire-tap>
               
               <!-- START SNIPPET: split-aggregator -->
               <eip:split-aggregator service="test:aggregator" endpoint="endpoint">
@@ -147,7 +163,9 @@
       
       <sm:activationSpec id="echo" service="test:echo">
         <sm:component>
-          <bean class="org.apache.servicemix.components.util.EchoComponent"/>
+          <bean class="org.apache.servicemix.components.util.EchoComponent">
+            <property name="copyProperties" value="false" />
+          </bean>
         </sm:component>
       </sm:activationSpec>
 
