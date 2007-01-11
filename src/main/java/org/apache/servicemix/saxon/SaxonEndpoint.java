@@ -48,7 +48,7 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     private boolean copyProperties = true;
     private boolean copyAttachments = true;
     private boolean copySubject = true;
-    private String result = RESULT_DOM;
+    private String result = RESULT_STRING;
     private Resource resource;
     private Expression expression;
     private Resource wsdlResource;
