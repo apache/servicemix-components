@@ -80,6 +80,7 @@ public class Jsr181Endpoint extends Endpoint {
     protected ExchangeProcessor processor;
     protected Resource wsdlResource;
     protected boolean mtomEnabled = false;
+    protected Map properties;
     
     public Jsr181Endpoint() {
         processor = new Jsr181ExchangeProcessor(this);
@@ -142,6 +143,20 @@ public class Jsr181Endpoint extends Endpoint {
      */
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
+    }
+
+    /**
+     * @return the properties
+     */
+    public Map getProperties() {
+        return properties;
+    }
+
+    /**
+     * @param properties the properties to set
+     */
+    public void setProperties(Map properties) {
+        this.properties = properties;
     }
 
     /**
@@ -279,6 +294,9 @@ public class Jsr181Endpoint extends Endpoint {
         props.put(ObjectServiceFactory.USE, SoapConstants.USE_LITERAL);
         if (serviceInterface != null) {
             props.put(AnnotationServiceFactory.ALLOW_INTERFACE, Boolean.TRUE);
+        }
+        if (properties != null) {
+            props.putAll(properties);
         }
         xfireService = factory.create(serviceClass, svcLocalName, svcNamespace, props);
         xfireService.setInvoker(new BeanInvoker(getPojo()));
