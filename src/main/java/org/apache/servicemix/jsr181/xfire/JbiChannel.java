@@ -90,6 +90,7 @@ public class JbiChannel extends AbstractChannel {
                 if (context.getExchange().hasOutMessage()) {
                     InOut me = factory.createInOutExchange();
                     me.setInterfaceName((QName) context.getService().getProperty(JBI_INTERFACE_NAME));
+                    me.setOperation(context.getExchange().getOperation().getQName());
                     me.setService((QName) context.getService().getProperty(JBI_SERVICE_NAME));
                     me.setEndpoint((ServiceEndpoint) context.getService().getProperty(JBI_ENDPOINT));
                     NormalizedMessage msg = me.createMessage();
