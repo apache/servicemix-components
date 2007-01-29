@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>serviceengines</artifactId>
-    <version>3.1-incubating-SNAPSHOT</version>
+    <version>3.2-incubating-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
