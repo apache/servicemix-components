@@ -195,7 +195,11 @@ public class JettyContextManager implements ContextManager {
             secHandler.setConstraintMappings(new ConstraintMapping[] { constraintMapping });
             secHandler.setHandler(handler);
             secHandler.setAuthMethod(processor.getAuthMethod());
-            secHandler.setUserRealm(new JaasUserRealm());
+            JaasUserRealm realm = new JaasUserRealm();
+            if (configuration.getAuthenticationService() != null) {
+                  realm.setAuthenticationService(configuration.getAuthenticationService());             
+            }
+            secHandler.setUserRealm(realm);
             context.setHandler(secHandler);
         } else {
             context.setHandler(handler);
