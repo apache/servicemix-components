@@ -45,7 +45,7 @@ import org.apache.servicemix.soap.SoapEndpoint;
  *                  description="A jms endpoint"
  * 
  */
-public class JmsEndpoint extends SoapEndpoint {
+public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     
     //
     // Jms informations

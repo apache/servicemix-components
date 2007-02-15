@@ -17,6 +17,7 @@
 package org.apache.servicemix.jms;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,8 @@ import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.jbi.util.IntrospectionSupport;
 import org.apache.servicemix.jbi.util.URISupport;
+import org.apache.servicemix.jms.endpoint.JmsConsumerEndpoint;
+import org.apache.servicemix.jms.endpoint.JmsProviderEndpoint;
 
 /**
  * 
@@ -43,14 +46,16 @@ import org.apache.servicemix.jbi.util.URISupport;
 public class JmsComponent extends DefaultComponent {
 
     protected JmsConfiguration configuration = new JmsConfiguration();
-    protected JmsEndpoint[] endpoints;
+    protected JmsEndpointType[] endpoints;
     
     protected List getConfiguredEndpoints() {
-        return asList(endpoints);
+        return Arrays.asList(endpoints);
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { JmsEndpoint.class };
+        return new Class[] { JmsEndpoint.class, 
+                             JmsConsumerEndpoint.class, 
+                             JmsProviderEndpoint.class };
     }
     
     /**
@@ -65,11 +70,11 @@ public class JmsComponent extends DefaultComponent {
         this.configuration = configuration;
     }
 
-    public JmsEndpoint[] getEndpoints() {
+    public JmsEndpointType[] getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(JmsEndpoint[] endpoints) {
+    public void setEndpoints(JmsEndpointType[] endpoints) {
         this.endpoints = endpoints;
     }
 
