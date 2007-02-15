@@ -38,6 +38,13 @@ public class JmsCreatePullPoint extends AbstractCreatePullPoint {
         }
         super.init();
     }
+
+    public void destroy() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+        super.destroy();
+    }
     
     @Override
     protected AbstractPullPoint createPullPoint(String name) {

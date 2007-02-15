@@ -54,6 +54,10 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
     public void init() throws Exception {
         register();
     }
+
+    public void destroy() throws Exception {
+        unregister();
+    }
     
     @Override
     protected String createAddress() {

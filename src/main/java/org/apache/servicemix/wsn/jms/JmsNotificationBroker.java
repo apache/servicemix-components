@@ -39,8 +39,15 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
     	}
     	super.init();
     }
+
+    public void destroy() throws Exception {
+        if (connection != null) {
+            connection.close();
+        }
+        super.destroy();
+    }
 	
-	@Override
+    @Override
 	protected AbstractPublisher createPublisher(String name) {
 		JmsPublisher publisher = createJmsPublisher(name);
 		publisher.setManager(getManager());

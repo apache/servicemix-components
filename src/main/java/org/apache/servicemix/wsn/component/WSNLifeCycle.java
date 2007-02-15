@@ -76,8 +76,9 @@ public class WSNLifeCycle extends BaseLifeCycle {
 
 	@Override
 	protected void doShutDown() throws Exception {
-		// TODO Auto-generated method stub
-		super.doShutDown();
+		notificationBroker.destroy();
+        createPullPoint.destroy();
+        super.doShutDown();
 	}
 
 	@Override

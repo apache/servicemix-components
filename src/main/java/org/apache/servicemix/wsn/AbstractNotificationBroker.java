@@ -79,8 +79,13 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         anonymousPublisher = createPublisher("Anonymous");
         anonymousPublisher.register();
     }
-    
-	protected String createAddress() {
+
+    public void destroy() throws Exception {
+        anonymousPublisher.destroy();
+        unregister();
+    }
+
+    protected String createAddress() {
 		return "http://servicemix.org/wsnotification/NotificationBroker/" + getName();
 	}
 	
