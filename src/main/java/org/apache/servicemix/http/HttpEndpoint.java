@@ -50,7 +50,7 @@ import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
  *                  description="An http endpoint"
  * 
  */
-public class HttpEndpoint extends SoapEndpoint {
+public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
 
     protected ExtensibilityElement binding;
     protected String locationURI;

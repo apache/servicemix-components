@@ -32,6 +32,8 @@ import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
+import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
+import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
@@ -58,7 +60,7 @@ public class HttpComponent extends DefaultComponent {
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
     protected HttpConfiguration configuration = new HttpConfiguration();
-    protected HttpEndpoint[] endpoints;
+    protected HttpEndpointType[] endpoints;
     
     protected String protocol;
     protected String host;
@@ -124,14 +126,14 @@ public class HttpComponent extends DefaultComponent {
     /**
      * @return the endpoints
      */
-    public HttpEndpoint[] getEndpoints() {
+    public HttpEndpointType[] getEndpoints() {
         return endpoints;
     }
 
     /**
      * @param endpoints the endpoints to set
      */
-    public void setEndpoints(HttpEndpoint[] endpoints) {
+    public void setEndpoints(HttpEndpointType[] endpoints) {
         this.endpoints = endpoints;
     }
 
@@ -316,7 +318,7 @@ public class HttpComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { HttpEndpoint.class };
+        return new Class[] { HttpEndpoint.class, HttpConsumerEndpoint.class, HttpProviderEndpoint.class };
     }
-    
+
 }
