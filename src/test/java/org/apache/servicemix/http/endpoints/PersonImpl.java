@@ -1,12 +1,13 @@
 package org.apache.servicemix.http.endpoints;
 
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-public class PersonImpl implements Person {
+public class PersonImpl implements Person, Serializable {
 	
 	protected String givenName; 
 	protected String surName;
