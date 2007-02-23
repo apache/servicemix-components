@@ -1,5 +1,11 @@
 package org.apache.servicemix.http.endpoints;
 
+import java.io.StringWriter;
+import java.io.Writer;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
 public class PersonImpl implements Person {
 	
 	protected String givenName; 
@@ -37,7 +43,12 @@ public class PersonImpl implements Person {
 	}
 
 	public String toString() {
-		return "Person: " + 
-			"surName [" + surName + "], givenName [" + givenName + "], age [" + age + "]";
+		Writer w = new StringWriter();
+		XStream xstream = new XStream(new DomDriver());
+		xstream.alias("person", PersonImpl.class);
+		xstream.aliasField("given-name", PersonImpl.class, "givenName");
+		xstream.aliasField("sur-name", PersonImpl.class, "surName");
+		xstream.toXML(this, w);
+		return w.toString();
 	}
 }

@@ -75,7 +75,7 @@ public class SerializedMarshalerTest extends TestCase {
         client.sendSync(inout);
         long t1 = System.currentTimeMillis();
         System.out.println("%%%%%%%%%%%%%%% Exchange: " + inout);
-        System.out.println("Error: " + inout.getError());
+        System.out.println("Fault: " + inout.getFault());
         assertTrue(inout.getStatus() == ExchangeStatus.ACTIVE);
         
         System.err.println("Executed in " + (t1 - t0) + "ms");

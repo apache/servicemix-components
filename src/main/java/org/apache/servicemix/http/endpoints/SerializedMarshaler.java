@@ -31,8 +31,8 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
         	context.getDeliveryChannel().createExchangeFactory().createExchange(inOnlyMepUri);
         NormalizedMessage in = me.createMessage();
 
-		String xmlRequest = marshal(request.getInputStream());
-		System.out.println("XML: " + xmlRequest);
+        InputStream is = request.getInputStream();
+		String xmlRequest = marshal(is);
 		in.setContent(new StringSource(xmlRequest));
         me.setMessage(in, "in");
         return me;
