@@ -1,17 +1,12 @@
 package org.apache.servicemix.http.endpoints;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.OutputStreamWriter;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.io.OutputStream;
-import java.io.ObjectOutputStream;
-import java.net.URI;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.MessageExchange;
@@ -21,9 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -38,10 +32,7 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
 	public MessageExchange createExchange(HttpServletRequest request, ComponentContext context) throws Exception {
 		MessageExchange me =
         	context.getDeliveryChannel().createExchangeFactory().createExchange(getDefaultMep());
-        NormalizedMessage in = me.createMessage();
-
-//        InputStream copy = copyInputStream(request.getInputStream());
-
+        NormalizedMessage in = me.createMessage(); 
 		in.setContent(marshal(request.getInputStream()));
         me.setMessage(in, "in");
         return me;
@@ -52,29 +43,6 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
             unmarshal(response.getOutputStream(), outMsg.getContent());
         }
     }
-	
-//	/**
-//	 * Copy the input stream in an attempt to get around 'stream is closed error'.
-//	 *
-//	 * @param in
-//	 * @return
-//	 * @throws IOException
-//	 */
-//	private InputStream copyInputStream(InputStream in) throws IOException {
-//		InputStreamReader input = new InputStreamReader(in);
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		OutputStreamWriter output = new OutputStreamWriter(baos);
-//
-//        char[] buffer1 = new char[1024*2];
-//        int i = 0;
-//        while (-1 != (i = input.read(buffer1))) {
-//            output.write(buffer1, 0, i);
-//        }
-//        output.flush();
-//
-//        InputStream newIn = new ByteArrayInputStream(baos.toByteArray());
-//		return newIn;
-//	}
 
     /**
      * Marshal the byte content of the input stream to an xml source
