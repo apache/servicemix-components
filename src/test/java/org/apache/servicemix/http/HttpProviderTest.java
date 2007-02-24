@@ -38,8 +38,11 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.servicemix.JbiConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class HttpProviderTest extends TestCase {
+    private static Log logger =  LogFactory.getLog(HttpProviderTest.class);
 
     protected JBIContainer container;
 
@@ -229,8 +232,8 @@ public class HttpProviderTest extends TestCase {
                 .getContent());
         String inputMesage = sourceTransformer.toString(new StreamSource(
                 new ByteArrayInputStream(msg.getBytes())));
-        System.out.println("Msg Sent [" + inputMesage + "]");
-        System.out.println("Msg Recieved [" + reply + "]");
+        logger.info("Msg Sent [" + inputMesage + "]");
+        logger.info("Msg Recieved [" + reply + "]");
 
         assertEquals(inputMesage.length(), reply.length());
         assertEquals(inputMesage, reply);
@@ -240,7 +243,7 @@ public class HttpProviderTest extends TestCase {
         component.getServiceUnitManager().undeploy("provider",
                 path.getAbsolutePath());
 
-        System.out.println("Executed in " + (t1 - t0) + "ms");
+        logger.info("Executed in " + (t1 - t0) + "ms");
 
         return reply;
     }
@@ -263,51 +266,51 @@ public class HttpProviderTest extends TestCase {
         testInOut("<hello>world</hello>", true);
     }
 
-	public void testPerfInOnlyWithBigMessage() throws Exception {
-		int nbRuns = 10;
-		int sizeInKb = 64;
+    public void testPerfInOnlyWithBigMessage() throws Exception {
+        int nbRuns = 10;
+        int sizeInKb = 64;
 
-		StringBuffer sb = new StringBuffer();
-		sb.append("<hello>\n");
-		for (int i = 0; i < sizeInKb; i++) {
-			sb.append("\t<hello>");
-			for (int j = 0; j < 1024 - 15; j++) {
-				sb
-						.append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
-			}
-			sb.append("</hello>\n");
-		}
-		sb.append("</hello>\n");
-		String str = sb.toString();
+        StringBuffer sb = new StringBuffer();
+        sb.append("<hello>\n");
+        for (int i = 0; i < sizeInKb; i++) {
+            sb.append("\t<hello>");
+            for (int j = 0; j < 1024 - 15; j++) {
+                sb
+                        .append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
+            }
+            sb.append("</hello>\n");
+        }
+        sb.append("</hello>\n");
+        String str = sb.toString();
 
-		/*
-		 * for(int i = 0; i < nbRuns; i++) { System.gc(); long dt =
-		 * testInOnly(str, false); System.err.println("No Streaming: " + dt);
-		 * tearDown(); setUp(); }
-		 */
+        /*
+           * for(int i = 0; i < nbRuns; i++) { System.gc(); long dt =
+           * testInOnly(str, false); System.err.println("No Streaming: " + dt);
+           * tearDown(); setUp(); }
+           */
 
-		for (int i = 0; i < nbRuns; i++) {
-			System.gc();
-			long dt = testInOnly(str, true);
-			System.err.println("Streaming: " + dt);
-			tearDown();
-			setUp();
-		}
-	}
+        for (int i = 0; i < nbRuns; i++) {
+            System.gc();
+            long dt = testInOnly(str, true);
+            logger.info("Streaming: " + dt);
+            tearDown();
+            setUp();
+        }
+    }
 
-	public void testInOutWithBigMessage() throws Exception {
-		int sizeInKb = 640*1024;
+    public void testInOutWithBigMessage() throws Exception {
+        int sizeInKb = 640*1024;
 
-		StringBuffer sb = new StringBuffer();
-		sb.append("<hello>\n");
+        StringBuffer sb = new StringBuffer();
+        sb.append("<hello>\n");
 
-		for (int j = 0; j < sizeInKb - 15; j++) {
-			sb.append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
-		}
+        for (int j = 0; j < sizeInKb - 15; j++) {
+            sb.append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
+        }
 
-		sb.append("</hello>\n");
-		String str = sb.toString();
+        sb.append("</hello>\n");
+        String str = sb.toString();
 
-		testInOut(str, true);
-	}
+        testInOut(str, true);
+    }
 }

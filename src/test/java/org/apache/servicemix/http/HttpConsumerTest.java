@@ -40,11 +40,14 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class HttpConsumerTest extends TestCase {
+    private static Log logger =  LogFactory.getLog(HttpConsumerTest.class);
 
     protected JBIContainer container;
-    
+
     protected void setUp() throws Exception {
         container = new JBIContainer();
         container.setUseMBeanServer(false);
@@ -52,25 +55,25 @@ public class HttpConsumerTest extends TestCase {
         container.setEmbedded(true);
         container.init();
     }
-    
+
     protected void tearDown() throws Exception {
         if (container != null) {
             container.shutDown();
         }
     }
-    
+
     protected long testInOnly(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
         component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HTTPComponent");
-        
+
         // Add a receiver component
         Receiver receiver = new ReceiverComponent();
         ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
         asReceiver.setService(new QName("http://http.servicemix.org/Test", "ConsumerInOnly"));
         container.activateComponent(asReceiver);
-        
+
         // Add the http invoker
         HttpInvoker invoker = new HttpInvoker();
         invoker.setDefaultInOut(false);
@@ -79,7 +82,7 @@ public class HttpConsumerTest extends TestCase {
         ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
         asInvoker.setService(new QName("urn:test", "invoker"));
         container.activateComponent(asInvoker);
-        
+
         // Start container
         container.start();
 
@@ -89,37 +92,37 @@ public class HttpConsumerTest extends TestCase {
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
-        
+
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         RobustInOnly in = client.createRobustInOnlyExchange();
         in.setService(new QName("urn:test", "invoker"));
         in.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-        
+
         long t0 = System.currentTimeMillis();
         client.sendSync(in);
         long t1 = System.currentTimeMillis();
         assertEquals(ExchangeStatus.DONE, in.getStatus());
-        
+
         // Check we received the message
         receiver.getMessageList().assertMessagesReceived(1);
-        
+
         return t1 - t0;
     }
-        
+
 
     protected long testInOut(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
         component.getConfiguration().setStreamingEnabled(streaming);
         container.activateComponent(component, "HTTPComponent");
-        
+
         // Add a receiver component
         EchoComponent echo = new EchoComponent();
         ActivationSpec asReceiver = new ActivationSpec("echo", echo);
         asReceiver.setService(new QName("http://http.servicemix.org/Test", "ConsumerInOut"));
         container.activateComponent(asReceiver);
-        
+
         // Add the http invoker
         HttpInvoker invoker = new HttpInvoker();
         invoker.setDefaultInOut(true);
@@ -127,7 +130,7 @@ public class HttpConsumerTest extends TestCase {
         ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
         asInvoker.setService(new QName("urn:test", "invoker"));
         container.activateComponent(asInvoker);
-        
+
         // Start container
         container.start();
 
@@ -141,44 +144,44 @@ public class HttpConsumerTest extends TestCase {
         // Retrieve WSDL
         Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL("http://localhost:8192/InOut/?wsdl");
         assertNotNull(def);
-        
+
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inout = client.createInOutExchange();
         inout.setService(new QName("urn:test", "invoker"));
         inout.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-        
+
         long t0 = System.currentTimeMillis();
         client.sendSync(inout);
         long t1 = System.currentTimeMillis();
         assertTrue(inout.getStatus() == ExchangeStatus.ACTIVE);
-        
+
         // Check we received the message
         assertNotNull(inout.getOutMessage());
         assertNotNull(inout.getOutMessage().getContent());
-        System.out.println(new SourceTransformer().toString(inout.getOutMessage().getContent()));
-        
+        logger.info(new SourceTransformer().toString(inout.getOutMessage().getContent()));
+
         return t1 - t0;
     }
-        
+
     public void testInOnly() throws Exception {
         testInOnly("<hello>world</hello>", false);
         // Pause to avoid reusing the same http connection
         // to read the wsdl, has the server has changed
         Thread.sleep(1000);
     }
-    
+
     public void testInOut() throws Exception {
         testInOut("<hello>world</hello>", true);
         // Pause to avoid reusing the same http connection
         // to read the wsdl, has the server has changed
         Thread.sleep(1000);
     }
-    
+
     public void testPerfInOnlyWithBigMessage() throws Exception {
         int nbRuns = 2;
         int sizeInKb = 64;
-        
+
         StringBuffer sb = new StringBuffer();
         sb.append("<hello>");
         for (int i = 0; i < sizeInKb; i++) {
@@ -190,22 +193,22 @@ public class HttpConsumerTest extends TestCase {
         }
         sb.append("</hello>");
         String str = sb.toString();
-        
-        for(int i = 0; i < nbRuns; i++) { 
+
+        for(int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, false);
-            System.err.println("No Streaming: " + dt);
+            logger.info("No Streaming: " + dt);
             tearDown();
             setUp();
         }
-        
-        for(int i = 0; i < nbRuns; i++) { 
+
+        for(int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, true);
-            System.err.println("Streaming: " + dt);
+            logger.info("Streaming: " + dt);
             tearDown();
             setUp();
         }
     }
-        
+
 }

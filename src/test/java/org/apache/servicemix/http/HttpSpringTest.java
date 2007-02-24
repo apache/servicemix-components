@@ -44,7 +44,9 @@ public class HttpSpringTest extends SpringTestSupport {
     private static Log logger =  LogFactory.getLog(HttpSpringTest.class);
 
     protected void setUp() throws Exception {
-        System.setProperty("javax.net.debug", "all");
+        if (logger.isDebugEnabled()) {
+            System.setProperty("javax.net.debug", "all");
+        }
         super.setUp();
     }
     

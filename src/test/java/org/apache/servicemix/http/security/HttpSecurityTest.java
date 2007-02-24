@@ -27,6 +27,8 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.FileUtil;
@@ -36,7 +38,8 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.w3c.dom.Element;
 
 public class HttpSecurityTest extends SpringTestSupport {
-    
+    private static Log logger =  LogFactory.getLog(HttpSecurityTest.class);
+
     static {
         String path = System.getProperty("java.security.auth.login.config");
         if (path == null) {
@@ -46,7 +49,7 @@ public class HttpSecurityTest extends SpringTestSupport {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
-        System.err.println("Path to login config: " + path);
+        logger.info("Path to login config: " + path);
     }
     
     protected void setUp() throws Exception {
@@ -130,7 +133,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             String str = method.getResponseBodyAsString();
-            System.err.println(str);
+            logger.info(str);
             assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
             Element e = new SourceTransformer().toDOMElement(new StringSource(str));
             assertEquals("Envelope", e.getLocalName());
@@ -154,7 +157,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             String str = method.getResponseBodyAsString();
-            System.err.println(str);
+            logger.info(str);
             assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
             Element e = new SourceTransformer().toDOMElement(new StringSource(str));
             assertEquals("Envelope", e.getLocalName());

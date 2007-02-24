@@ -33,10 +33,13 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 public class HttpURITest extends TestCase {
+    private static Log logger =  LogFactory.getLog(HttpURITest.class);
 
     private JBIContainer jbi;
 
@@ -83,7 +86,7 @@ public class HttpURITest extends TestCase {
         Element elem = new SourceTransformer().toDOMElement(msg);
         assertEquals("http://www.w3.org/2003/05/soap-envelope", elem.getNamespaceURI());
         assertEquals("env:Envelope", elem.getNodeName());
-        System.out.println(new SourceTransformer().contentToString(msg));
+        logger.info(new SourceTransformer().contentToString(msg));
     }
 
 }

@@ -25,6 +25,8 @@ import junit.framework.TestCase;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.xbean.spring.context.XmlWebApplicationContext;
 import org.mortbay.jetty.Connector;
@@ -40,6 +42,7 @@ import org.mortbay.jetty.servlet.ServletMapping;
 import org.springframework.web.context.ContextLoaderListener;
 
 public class HttpManagedTest extends TestCase {
+    private static Log logger =  LogFactory.getLog(HttpManagedTest.class);
 
     private Server server;
     
@@ -82,7 +85,7 @@ public class HttpManagedTest extends TestCase {
         server.setHandler(handlers);
         server.start();
         
-        System.err.println("Started");
+        logger.info("Started");
         
         PostMethod post = new PostMethod("http://localhost:8190/test/jbi/Service/");
         post.setRequestEntity(new StringRequestEntity("<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><hello>world</hello></soap:Body></soap:Envelope>"));
@@ -90,7 +93,7 @@ public class HttpManagedTest extends TestCase {
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
-        System.err.println(post.getResponseBodyAsString());
+        logger.info(post.getResponseBodyAsString());
         
     }
 }
