@@ -63,7 +63,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
     
     private String authMethod;
     private SslParameters ssl;
-    private String locationUri;
+    private String locationURI;
     private HttpConsumerMarshaler marshaler = new DefaultHttpConsumerMarshaler();
     private long timeout = 0; // 0 => default to the timeout configured on component
     private URI defaultMep = MessageExchangeSupport.IN_OUT;
@@ -89,14 +89,14 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
      * @return the locationUri
      */
     public String getLocationURI() {
-        return locationUri;
+        return locationURI;
     }
 
     /**
-     * @param locationUri the locationUri to set
+     * @param locationURI the locationUri to set
      */
-    public void setLocationURI(String locationUri) {
-        this.locationUri = locationUri;
+    public void setLocationURI(String locationURI) {
+        this.locationURI = locationURI;
     }
 
     /**
@@ -172,7 +172,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
     public void start() throws Exception {
         super.start();
         loadStaticResources();
-        httpContext = getServerManager().createContext(locationUri, this);
+        httpContext = getServerManager().createContext(locationURI, this);
     }
 
     public void stop() throws Exception {
