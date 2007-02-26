@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.net.URI;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.management.DeploymentException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +46,7 @@ import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
@@ -63,6 +66,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
     private String locationUri;
     private HttpConsumerMarshaler marshaler = new DefaultHttpConsumerMarshaler();
     private long timeout = 0; // 0 => default to the timeout configured on component
+    private URI defaultMep = MessageExchangeSupport.IN_OUT;
 
     private Map<String, Object> resources = new HashMap<String, Object>();
     private Map<String, Continuation> locks = new ConcurrentHashMap<String, Continuation>();
@@ -149,6 +153,20 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
      */
     public void setSsl(SslParameters ssl) {
         this.ssl = ssl;
+    }
+
+    /**
+     * @return defaultMep of the endpoint
+     */
+    public URI getDefaultMep() {
+        return defaultMep;
+    }
+
+    /**
+     * @param defaultMep - defaultMep of the endpoint
+     */
+    public void setDefaultMep(URI defaultMep) {
+        this.defaultMep = defaultMep;
     }
 
     public void start() throws Exception {
@@ -347,5 +365,11 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
     public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
         marshaler.sendOut(exchange, outMsg, request, response);
     }
-    
+
+    public void validate() throws DeploymentException {
+        super.validate();
+        if (marshaler instanceof DefaultHttpConsumerMarshaler) {
+            ((DefaultHttpConsumerMarshaler)marshaler).setDefaultMep(getDefaultMep());
+        }
+    }
 }
