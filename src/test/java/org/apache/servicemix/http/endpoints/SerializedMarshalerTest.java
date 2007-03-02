@@ -47,20 +47,24 @@ public class SerializedMarshalerTest extends TestCase {
     public void testUsingSpringHttpRemoting() throws Exception {
         final Person person = new PersonImpl("Hunter", "Thompson", 67);
 
+        // Create a consumer endpoint 
         HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
         ep.setService(new QName("urn:HttpConsumer", "HttpConsumer"));
         ep.setEndpoint("HttpConsumer");
         ep.setLocationURI("http://localhost:8192/service/");
         ep.setTargetService(new QName("urn:HttpInvoker", "Endpoint"));
 
+        // Configure the SerializedMarshaler and specifiy it on the endpoint 
         SerializedMarshaler marshaler = new SerializedMarshaler();
         marshaler.setDefaultMep(MessageExchangeSupport.IN_OUT);
         ep.setMarshaler(marshaler);
 
+        // Add the endpoint to the component and activate it
         HttpComponent component = new HttpComponent();
         component.setEndpoints(new HttpEndpointType[] { ep });
         container.activateComponent(component, "HttpConsumer");
 
+        // Dummy up a component as a receiver and route it to urn:HttpInvoker/Endpoint
         TransformComponentSupport rmiComponent = new TransformComponentSupport() {
             protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
                 try {
@@ -84,16 +88,19 @@ public class SerializedMarshalerTest extends TestCase {
         };
         ActivationSpec asReceiver = new ActivationSpec("rmiComponent", rmiComponent);
         asReceiver.setService(new QName("urn:HttpInvoker", "Endpoint"));
-
         container.activateComponent(asReceiver);
+        
+        // Start the JBI container
         container.start();
 
+        // Set up the Spring bean to call into the URL specified for the consumer endpoint
         HttpInvokerProxyFactoryBean pfb = new HttpInvokerProxyFactoryBean();
         pfb.setServiceInterface(Person.class);
         pfb.setServiceUrl("http://localhost:8192/service/");
         pfb.setHttpInvokerRequestExecutor(new SimpleHttpInvokerRequestExecutor());
         pfb.afterPropertiesSet();
 
+        // Grab the object via the proxy factory bean 
         Person test = (Person)pfb.getObject();
 
         // Test getters
