@@ -197,7 +197,8 @@ public class ServiceFactoryHelper {
             Annotation[] annotations = method.getAnnotations();
             for (int i = 0; i < annotations.length; i++) {
                 if (annotations[i] instanceof WebMethod) {
-                    if (((WebMethod) annotations[i]).operationName() != null) {
+                    if (((WebMethod) annotations[i]).operationName() != null &&
+                        ((WebMethod) annotations[i]).operationName().length() > 0) {
                         return ((WebMethod) annotations[i]).operationName();
                     }
                 }
