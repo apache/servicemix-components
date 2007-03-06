@@ -106,6 +106,9 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
             msg.setAttachments(attachments);
         }
         JBIContext.setMessageExchange(exchange);
+        if (isInAndOut(exchange)) {
+            
+        }
         try {
             c.receive(ctx, msg);
         } finally {
@@ -117,17 +120,24 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         if (isInAndOut(exchange)) {
             if (ctx.getExchange().hasFaultMessage() && ctx.getExchange().getFaultMessage().getBody() != null) {
                 String charSet = ctx.getExchange().getFaultMessage().getEncoding();
-                Fault fault = exchange.createFault();
+                Fault fault = exchange.getFault();
+                if (fault == null) {
+                    fault = exchange.createFault();
+                    exchange.setFault(fault);
+                }
                 fault.setContent(new StringSource(out.toString(charSet)));
                 XFireFault xFault = (XFireFault) ctx.getExchange().getFaultMessage().getBody();
                 fault.setProperty(SOAP_FAULT_CODE, xFault.getFaultCode());
                 fault.setProperty(SOAP_FAULT_REASON, xFault.getReason());
                 fault.setProperty(SOAP_FAULT_ROLE, xFault.getRole());
                 fault.setProperty(SOAP_FAULT_SUBCODE, xFault.getSubCode());
-                exchange.setFault(fault);
             } else {
                 String charSet = ctx.getOutMessage().getEncoding();
-                NormalizedMessage outMsg = exchange.createMessage();
+                NormalizedMessage outMsg = exchange.getMessage("out");
+                if (outMsg == null) {
+                    outMsg = exchange.createMessage();
+                    exchange.setMessage(outMsg, "out");
+                }
                 Attachments attachments = ctx.getCurrentMessage().getAttachments();
                 if (attachments != null) {
                     for (Iterator it = attachments.getParts(); it.hasNext();) {
@@ -136,7 +146,6 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
                     }
                 }
                 outMsg.setContent(new StringSource(out.toString(charSet)));
-                exchange.setMessage(outMsg, "out");
             }
             if (exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC))) {
                 channel.sendSync(exchange);
