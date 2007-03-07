@@ -17,7 +17,6 @@
 package org.apache.servicemix.jms;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +48,7 @@ public class JmsComponent extends DefaultComponent {
     protected JmsEndpointType[] endpoints;
     
     protected List getConfiguredEndpoints() {
-        return Arrays.asList(endpoints);
+        return asList(endpoints);
     }
 
     protected Class[] getEndpointClasses() {
