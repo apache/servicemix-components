@@ -28,7 +28,6 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
@@ -56,15 +55,21 @@ public class JbiChannel extends AbstractChannel {
     public static final String JBI_INTERFACE_NAME = "jbi.interface";
     public static final String JBI_SERVICE_NAME = "jbi.service";
     public static final String JBI_ENDPOINT = "jbi.endpoint";
-    
-    private StAXSourceTransformer sourceTransformer;
-    private XMLOutputFactory outputFactory;
-    
+
+    private static ThreadLocal transformer = new ThreadLocal();
+
+    protected static StAXSourceTransformer getTransformer() {
+        StAXSourceTransformer t = (StAXSourceTransformer) transformer.get();
+        if (t == null) {
+            t = new StAXSourceTransformer();
+            transformer.set(t);
+        }
+        return t;
+    }
+
     public JbiChannel(String uri, JbiTransport transport) {
         setTransport(transport);
         setUri(uri);
-        this.sourceTransformer = new StAXSourceTransformer();
-        this.outputFactory = XMLOutputFactory.newInstance();
     }
 
     public void open() throws Exception {
@@ -75,7 +80,7 @@ public class JbiChannel extends AbstractChannel {
             final OutputStream out = (OutputStream) context.getProperty(Channel.BACKCHANNEL_URI);
             if (out != null) {
                 try {
-                    final XMLStreamWriter writer = outputFactory.createXMLStreamWriter(out, message.getEncoding());
+                    final XMLStreamWriter writer = getTransformer().getOutputFactory().createXMLStreamWriter(out, message.getEncoding());
                     message.getSerializer().writeMessage(message, writer, context);
                     writer.close();
                 } catch (XMLStreamException e) {
@@ -109,8 +114,8 @@ public class JbiChannel extends AbstractChannel {
                         }
                     } else if (me.getFault() != null){
                         JDOMResult result = new JDOMResult();
-                        String str = sourceTransformer.contentToString(me.getFault());
-                        sourceTransformer.toResult(new StringSource(str), result);
+                        String str = getTransformer().contentToString(me.getFault());
+                        getTransformer().toResult(new StringSource(str), result);
                         Element e = result.getDocument().getRootElement();
                         e = (Element) e.clone();
                         XFireFault xfireFault = new XFireFault(str, XFireFault.RECEIVER);
@@ -119,7 +124,7 @@ public class JbiChannel extends AbstractChannel {
                     }
                     Source outSrc = me.getOutMessage().getContent();
 
-                    InMessage inMessage = new InMessage(sourceTransformer.toXMLStreamReader(outSrc), getUri());
+                    InMessage inMessage = new InMessage(getTransformer().toXMLStreamReader(outSrc), getUri());
                     getEndpoint().onReceive(context, inMessage);
 
                     me.setStatus(ExchangeStatus.DONE);
@@ -137,7 +142,7 @@ public class JbiChannel extends AbstractChannel {
 
     protected Source getContent(MessageContext context, OutMessage message) throws XMLStreamException, IOException, XFireException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        XMLStreamWriter writer = outputFactory.createXMLStreamWriter(outStream, message.getEncoding());
+        XMLStreamWriter writer = getTransformer().getOutputFactory().createXMLStreamWriter(outStream, message.getEncoding());
         MessageSerializer serializer = context.getOutMessage().getSerializer();
         if (serializer == null)
         {
