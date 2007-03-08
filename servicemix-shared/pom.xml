@@ -42,9 +42,12 @@
       <artifactId>servicemix-soap</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-soap2</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
