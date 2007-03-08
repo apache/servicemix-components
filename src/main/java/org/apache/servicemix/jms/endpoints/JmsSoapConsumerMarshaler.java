@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jms.endpoint;
-
-import java.net.URI;
+package org.apache.servicemix.jms.endpoints;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -24,76 +22,71 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Message;
 import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.xml.transform.Source;
+import javax.wsdl.Definition;
+import javax.wsdl.Port;
+import javax.wsdl.Service;
+import javax.wsdl.xml.WSDLReader;
 
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.soap.api.model.Binding;
+import org.apache.servicemix.soap.util.DomUtil;
+import org.apache.servicemix.soap.wsdl.BindingFactory;
+import org.apache.servicemix.soap.wsdl.WSDLUtils;
+import org.springframework.core.io.Resource;
+import org.w3c.dom.Document;
 
-public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
-    
-    private URI mep;
+public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
 
-    public DefaultConsumerMarshaler() {
-        this.mep = MessageExchangeSupport.IN_ONLY;
-    }
-    
-    public DefaultConsumerMarshaler(URI mep) {
-        this.mep = mep;
-    }
+    private Resource wsdlResource;
+    private Binding<?> binding;
     
     /**
-     * @return the mep
+     * @return the wsdlResource
      */
-    public URI getMep() {
-        return mep;
+    public Resource getWsdlResource() {
+        return wsdlResource;
     }
 
     /**
-     * @param mep the mep to set
+     * @param wsdlResource the wsdlResource to set
      */
-    public void setMep(URI mep) {
-        this.mep = mep;
+    public void setWsdlResource(Resource wsdlResource) {
+        this.wsdlResource = wsdlResource;
+    }
+    
+    public void init() throws Exception {
+        Document doc = DomUtil.parse(wsdlResource.getInputStream());
+        if (WSDLUtils.WSDL1_NAMESPACE.equals(doc.getDocumentElement().getNamespaceURI())) {
+            WSDLReader reader = WSDLUtils.createWSDL11Reader();
+            Definition def = reader.readWSDL(wsdlResource.getURL() != null ? wsdlResource.getURL().toString() : null, doc.getDocumentElement());
+            Service svc = (Service) def.getServices().values().iterator().next();
+            Port port = (Port) svc.getPorts().values().iterator().next();
+            binding = BindingFactory.createBinding(port);
+        }
     }
 
     public JmsContext createContext(Message message, ComponentContext context) throws Exception {
-        return new Context(message, context);
+        binding.createMessage();
+        return null;
     }
 
     public MessageExchange createExchange(JmsContext context) throws Exception {
-        Context ctx = (Context) context;
-        MessageExchange exchange = ctx.componentContext.getDeliveryChannel().createExchangeFactory().createExchange(mep);
-        NormalizedMessage inMessage = exchange.createMessage();
-        populateMessage(ctx.message, inMessage);
-        exchange.setMessage(inMessage, "in");
-        return exchange;
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {
-        String text = new SourceTransformer().contentToString(outMsg);
-        TextMessage msg = session.createTextMessage(text);
-        return msg;
+        // TODO Auto-generated method stub
+        return null;
     }
-
+    
     public Message createFault(MessageExchange exchange, Fault fault, Session session, JmsContext context) throws Exception {
-        String text = new SourceTransformer().contentToString(fault);
-        TextMessage msg = session.createTextMessage(text);
-        return msg;
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public Message createError(MessageExchange exchange, Exception error, Session session, JmsContext context) throws Exception {
-        throw error;
-    }
-
-    protected void populateMessage(Message message, NormalizedMessage normalizedMessage) throws Exception {
-        if (message instanceof TextMessage) {
-            TextMessage textMessage = (TextMessage) message;
-            Source source = new StringSource(textMessage.getText());
-            normalizedMessage.setContent(source);
-        } else {
-            throw new UnsupportedOperationException("JMS message is not a TextMessage");
-        }
+        // TODO Auto-generated method stub
+        return null;
     }
 
     protected static class Context implements JmsContext {

@@ -14,16 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jms.endpoint;
+package org.apache.servicemix.jms.endpoints;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Message;
 import javax.jms.Session;
 
-public interface JmsProviderMarshaler {
+public class JmsSoapProviderMarshaler implements JmsProviderMarshaler {
 
-    Object getDestination(MessageExchange exchange);
+    public Message createMessage(MessageExchange exchange, NormalizedMessage in, Session session) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-    Message createMessage(MessageExchange exchange, NormalizedMessage in, Session session) throws Exception;
+    public Object getDestination(MessageExchange exchange) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

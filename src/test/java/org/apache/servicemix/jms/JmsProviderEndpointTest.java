@@ -31,7 +31,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jms.endpoint.JmsProviderEndpoint;
+import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
 import org.jencks.GeronimoPlatformTransactionManager;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jms.core.JmsTemplate;

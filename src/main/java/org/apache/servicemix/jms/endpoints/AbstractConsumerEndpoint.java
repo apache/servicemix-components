@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jms.endpoint;
+package org.apache.servicemix.jms.endpoints;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -31,7 +31,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
-import org.apache.servicemix.jms.endpoint.JmsConsumerMarshaler.JmsContext;
+import org.apache.servicemix.jms.endpoints.JmsConsumerMarshaler.JmsContext;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.SessionCallback;
 import org.springframework.jms.listener.adapter.ListenerExecutionFailedException;

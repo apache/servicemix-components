@@ -14,25 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jms.endpoint;
-
-import javax.jbi.messaging.MessageExchange;
+package org.apache.servicemix.jms.endpoints;
 
 /**
- * A pluggable strategy used to decide which JMS Destination to use for an outbound JMS message
- *
- * @version $Revision$
+ * 
+ * @author gnodet
+ * @since 3.2
+ * @org.apache.xbean.XBean element="soap-consumer"
  */
-public interface DestinationChooser {
+public class JmsSoapConsumerEndpoint extends JmsConsumerEndpoint {
 
-    /**
-     * Chooses which JMS destintation to use for the given message.
-     * The message may be the "in", "out" or "fault" message.
-     * 
-     * @param exchange the exchange
-     * @param message the message can be a javax.jbi.messaging.NormalizedMessage,
-     *                a javax.jbi.messaging.Fault or an Exception
-     * @return a javax.jms.Destination or String for the destination name
-     */
-    Object chooseDestination(MessageExchange exchange, Object message);
+    public JmsSoapConsumerEndpoint() {
+        setMarshaler(new JmsSoapConsumerMarshaler());
+    }
+    
+    protected JmsSoapConsumerMarshaler getSoapMarshaler() {
+        return (JmsSoapConsumerMarshaler) getMarshaler();
+    }
+    
+    public void setMarshaler(JmsConsumerMarshaler marshaler) {
+        if (marshaler instanceof JmsSoapConsumerMarshaler) {
+            super.setMarshaler(marshaler);
+        } else {
+            throw new IllegalArgumentException("marhaler must be a SOAP marshaler");
+        }
+    }
+
 }

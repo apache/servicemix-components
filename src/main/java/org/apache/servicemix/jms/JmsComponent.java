@@ -34,8 +34,8 @@ import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.jbi.util.IntrospectionSupport;
 import org.apache.servicemix.jbi.util.URISupport;
-import org.apache.servicemix.jms.endpoint.JmsConsumerEndpoint;
-import org.apache.servicemix.jms.endpoint.JmsProviderEndpoint;
+import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
+import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
 
 /**
  * 
