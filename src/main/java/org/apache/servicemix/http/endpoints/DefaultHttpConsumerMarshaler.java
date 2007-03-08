@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.http.endpoints;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 
 import javax.jbi.component.ComponentContext;
@@ -24,14 +26,33 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.stream.StreamSource;
 
-import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.apache.servicemix.jbi.jaxp.XMLStreamHelper;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 
+/**
+ * The default consumer marshaler used for non-soap consumer endpoints.
+ * 
+ * @author gnodet
+ * @since 3.2
+ */
 public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
     
-    private URI defaultMep = MessageExchangeSupport.IN_OUT;
+    private StAXSourceTransformer transformer = new StAXSourceTransformer();
+    private URI defaultMep;
 
+    public DefaultHttpConsumerMarshaler() {
+        this(MessageExchangeSupport.IN_OUT);
+    }
+    
+    public DefaultHttpConsumerMarshaler(URI defaultMep) {
+        this.defaultMep = defaultMep;
+    }
+    
     public URI getDefaultMep() {
         return defaultMep;
     }
@@ -44,21 +65,40 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
         MessageExchange me;
         me = context.getDeliveryChannel().createExchangeFactory().createExchange(getDefaultMep());
         NormalizedMessage in = me.createMessage();
+        in.setContent(new StreamSource(request.getInputStream()));
         me.setMessage(in, "in");
         return me;
     }
 
     public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        // TODO Auto-generated method stub
-        
+        XMLStreamReader reader = transformer.toXMLStreamReader(outMsg.getContent());
+        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
+        writer.writeStartDocument();
+        XMLStreamHelper.copy(reader, writer);
+        writer.writeEndDocument();
+        writer.flush();
+        response.setStatus(HttpServletResponse.SC_OK);
     }
     
     public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        throw new FaultException("Fault occured", exchange, fault);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        XMLStreamReader reader = transformer.toXMLStreamReader(fault.getContent());
+        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
+        XMLStreamHelper.copy(reader, writer);
     }
 
     public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        throw error;
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
+        writer.writeStartDocument();
+        writer.writeStartElement("error");
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        error.printStackTrace(pw);
+        pw.close();
+        writer.writeCData(sw.toString());
+        writer.writeEndElement();
+        writer.writeEndDocument();
     }
     
     public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {

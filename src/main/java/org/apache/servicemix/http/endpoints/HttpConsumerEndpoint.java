@@ -53,8 +53,13 @@ import org.mortbay.util.ajax.ContinuationSupport;
 import org.w3c.dom.Node;
 
 /**
+ * Plain HTTP consumer endpoint.
+ * This endpoint can be used to handle plain HTTP request (without SOAP) or
+ * to be able to process the request in a non standard way.  For HTTP requests,
+ * a WSDL2 HTTP binding can be used.
  * 
  * @author gnodet
+ * @since 3.2
  * @org.apache.xbean.XBean element="consumer"
  */
 public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangeProcessor, HttpProcessor, HttpEndpointType {
@@ -267,6 +272,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
                 } catch (Exception e) {
                     exchange.setError(e);
                     send(exchange);
+                    throw e;
                 }
             } else if (exchange.getStatus() == ExchangeStatus.DONE) {
                 // This happens when there is no response to send back

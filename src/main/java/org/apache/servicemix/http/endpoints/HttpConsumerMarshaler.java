@@ -23,6 +23,11 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * 
+ * @author gnodet
+ * @since 3.2
+ */
 public interface HttpConsumerMarshaler {
 
     MessageExchange createExchange(HttpServletRequest request, 

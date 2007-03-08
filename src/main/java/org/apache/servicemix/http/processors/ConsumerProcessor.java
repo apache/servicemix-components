@@ -30,6 +30,7 @@ import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -51,6 +52,7 @@ import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
+import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 import org.w3c.dom.Node;
@@ -192,7 +194,13 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
                     }
                     request.removeAttribute(MessageExchange.class.getName());
                 }
+            } catch (RetryRequest retry) {
+                throw retry;
             } catch (SoapFault fault) {
+                sendFault(fault, request, response);
+                return;
+            } catch (Exception e) {
+                SoapFault fault = new SoapFault(e); 
                 sendFault(fault, request, response);
                 return;
             }
