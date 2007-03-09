@@ -297,6 +297,34 @@ public class HttpSoapTest extends TestCase {
         assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
         e = DOMUtil.getFirstChildElement(e);
         assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
+
+        method = new PostMethod("http://localhost:8193/ep2/");
+        method.setRequestBody("hello");
+        state = new HttpClient().executeMethod(method);
+        String str = method.getResponseBodyAsString();
+        logger.info(str);
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        node = st.toDOMNode(new StringSource(str));
+        e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtil.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
+
+        method = new PostMethod("http://localhost:8193/ep2/");
+        method.setRequestBody("<hello/>");
+        state = new HttpClient().executeMethod(method);
+        str = method.getResponseBodyAsString();
+        logger.info(str);
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        node = st.toDOMNode(new StringSource(str));
+        e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
     }
     
     public void testSoapFault11() throws Exception {
@@ -321,6 +349,7 @@ public class HttpSoapTest extends TestCase {
         ep1.setRoleAsString("consumer");
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep1.setSoap(true);
+        ep1.setSoapVersion("1.1");
         
         HttpEndpoint ep2 = new HttpEndpoint();
         ep2.setService(new QName("urn:test", "http"));
@@ -331,6 +360,7 @@ public class HttpSoapTest extends TestCase {
         ep2.setRoleAsString("consumer");
         ep2.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep2.setSoap(true);
+        ep2.setSoapVersion("1.1");
         
         HttpEndpoint ep3 = new HttpEndpoint();
         ep3.setService(new QName("urn:test", "http"));
@@ -339,6 +369,7 @@ public class HttpSoapTest extends TestCase {
         ep3.setRoleAsString("provider");
         ep3.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep3.setSoap(true);
+        ep3.setSoapVersion("1.1");
         
         HttpComponent http = new HttpComponent();
         http.setEndpoints(new HttpEndpoint[] { ep1, ep2, ep3 });
@@ -356,6 +387,34 @@ public class HttpSoapTest extends TestCase {
         Node node = st.toDOMNode(new StringSource(str));
 
         Element e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
+        
+        method = new PostMethod("http://localhost:8194/ep2/");
+        method.setRequestBody("hello");
+        state = new HttpClient().executeMethod(method);
+        str = method.getResponseBodyAsString();
+        logger.info(str);
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        node = st.toDOMNode(new StringSource(str));
+        e = ((Document) node).getDocumentElement();
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
+        e = DOMUtils.getFirstChildElement(e);
+        assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.FAULT), DOMUtil.getQName(e));
+
+        method = new PostMethod("http://localhost:8194/ep2/");
+        method.setRequestBody("<hello/>");
+        state = new HttpClient().executeMethod(method);
+        str = method.getResponseBodyAsString();
+        logger.info(str);
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        node = st.toDOMNode(new StringSource(str));
+        e = ((Document) node).getDocumentElement();
         assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
         e = DOMUtils.getFirstChildElement(e);
         assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.BODY), DOMUtil.getQName(e));
