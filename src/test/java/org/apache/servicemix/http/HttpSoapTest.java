@@ -317,7 +317,7 @@ public class HttpSoapTest extends TestCase {
         state = new HttpClient().executeMethod(method);
         str = method.getResponseBodyAsString();
         logger.info(str);
-        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        assertEquals(HttpServletResponse.SC_BAD_REQUEST, state);
         node = st.toDOMNode(new StringSource(str));
         e = ((Document) node).getDocumentElement();
         assertEquals(new QName(SoapMarshaler.SOAP_12_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
@@ -412,7 +412,7 @@ public class HttpSoapTest extends TestCase {
         state = new HttpClient().executeMethod(method);
         str = method.getResponseBodyAsString();
         logger.info(str);
-        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
+        assertEquals(HttpServletResponse.SC_BAD_REQUEST, state);
         node = st.toDOMNode(new StringSource(str));
         e = ((Document) node).getDocumentElement();
         assertEquals(new QName(SoapMarshaler.SOAP_11_URI, SoapMarshaler.ENVELOPE), DOMUtil.getQName(e));
