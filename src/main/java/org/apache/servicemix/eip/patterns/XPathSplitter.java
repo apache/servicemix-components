@@ -27,6 +27,7 @@ import org.apache.servicemix.eip.support.AbstractSplitter;
 import org.apache.servicemix.expression.JAXPNodeSetXPathExpression;
 import org.apache.servicemix.expression.MessageVariableResolver;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -46,6 +47,8 @@ public class XPathSplitter extends AbstractSplitter {
      * The xpath expression to use to split 
      */
     private JAXPNodeSetXPathExpression xpathExpression = new JAXPNodeSetXPathExpression();
+    
+    private SourceTransformer sourceTransformer = new SourceTransformer();
 
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#validate()
@@ -64,11 +67,12 @@ public class XPathSplitter extends AbstractSplitter {
      * @see org.apache.servicemix.components.eip.AbstractSplitter#split(javax.xml.transform.Source)
      */
     protected Source[] split(Source main) throws Exception {
-        Node doc = new SourceTransformer().toDOMNode(main);
+        Node doc = sourceTransformer.toDOMNode(main);
         NodeList nodes = (NodeList) xpathExpression.evaluateXPath(doc);
         Source[] parts = new Source[nodes.getLength()];
         for (int i = 0; i < parts.length; i++) {
-            parts[i] = new DOMSource(nodes.item(i));
+            Document part = sourceTransformer.toDOMDocument(nodes.item(i));
+            parts[i] = new DOMSource(part);
         }
         return parts;
     }
