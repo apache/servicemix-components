@@ -23,13 +23,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.xml.namespace.QName;
 
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsConsumerMarshaler.JmsContext;
 import org.springframework.jms.core.JmsTemplate;
@@ -61,6 +65,18 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     
     private Map<String, JmsContext> pendingExchanges;
     
+    public AbstractConsumerEndpoint() {
+        super();
+    }
+
+    public AbstractConsumerEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
+        super(component, endpoint);
+    }
+
+    public AbstractConsumerEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
+        super(serviceUnit, service, endpoint);
+    }
+
     /**
      * @return the destinationChooser
      */

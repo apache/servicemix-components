@@ -17,13 +17,17 @@
 package org.apache.servicemix.jms.endpoints;
 
 import javax.jbi.management.DeploymentException;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.transaction.TransactionManager;
+import javax.xml.namespace.QName;
 
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.jms.JmsEndpointType;
 import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.jms.connection.JmsTransactionManager102;
@@ -86,6 +90,20 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     private ServerSessionFactory serverSessionFactory;
     
     private AbstractMessageListenerContainer listenerContainer;
+    
+
+    public JmsConsumerEndpoint() {
+        super();
+    }
+
+    public JmsConsumerEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
+        super(component, endpoint);
+    }
+
+    public JmsConsumerEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
+        super(serviceUnit, service, endpoint);
+    }
+
     
     /**
      * @return the transacted
