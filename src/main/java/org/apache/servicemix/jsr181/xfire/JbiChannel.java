@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -35,6 +36,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jsr181.JBIContext;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFireException;
 import org.codehaus.xfire.exchange.InMessage;
@@ -55,6 +57,7 @@ public class JbiChannel extends AbstractChannel {
     public static final String JBI_INTERFACE_NAME = "jbi.interface";
     public static final String JBI_SERVICE_NAME = "jbi.service";
     public static final String JBI_ENDPOINT = "jbi.endpoint";
+    public static final String JBI_SECURITY_PROPAGATATION = "jbi.security.propagation";
 
     private static ThreadLocal transformer = new ThreadLocal();
 
@@ -100,6 +103,13 @@ public class JbiChannel extends AbstractChannel {
                     me.setEndpoint((ServiceEndpoint) context.getService().getProperty(JBI_ENDPOINT));
                     NormalizedMessage msg = me.createMessage();
                     me.setInMessage(msg);
+                    if (Boolean.TRUE.equals(context.getService().getProperty(JBI_SECURITY_PROPAGATATION))) {
+                        MessageExchange oldMe = JBIContext.getMessageExchange();
+                        NormalizedMessage oldMsg = (oldMe != null) ? oldMe.getMessage("in") : null;
+                        if (oldMsg != null) {
+                            msg.setSecuritySubject(oldMsg.getSecuritySubject());
+                        }
+                    }
                     msg.setContent(getContent(context, message));
                     if (!channel.sendSync(me)) {
                         throw new XFireException("Unable to send jbi exchange: sendSync returned false");

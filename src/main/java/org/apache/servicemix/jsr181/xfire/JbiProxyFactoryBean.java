@@ -58,6 +58,7 @@ public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, Dispo
     private QName service;
     private QName interfaceName;
     private String endpoint;
+    private boolean propagateSecuritySubject;
     
     private ServiceMixClient client;
     
@@ -80,7 +81,7 @@ public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, Dispo
     synchronized private InvocationHandler getJBIInvocationHandler() throws Exception {
         if( jbiInvocationHandler == null ) {
             XFire xfire = Jsr181Component.createXFire(getInternalContext());
-            Object o = JbiProxy.create(xfire, context, interfaceName, service, endpoint, type);
+            Object o = JbiProxy.create(xfire, context, interfaceName, service, endpoint, type, propagateSecuritySubject);
             jbiInvocationHandler = Proxy.getInvocationHandler(o);
         }
         return jbiInvocationHandler;
@@ -195,6 +196,20 @@ public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, Dispo
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * @return the propagateSecuritySubject
+     */
+    public boolean isPropagateSecuritySubject() {
+        return propagateSecuritySubject;
+    }
+
+    /**
+     * @param propagateSecuritySubject the propagateSecuritySubject to set
+     */
+    public void setPropagateSecuritySubject(boolean propagateSecuritySubject) {
+        this.propagateSecuritySubject = propagateSecuritySubject;
     }
 
     public void afterPropertiesSet() throws Exception {

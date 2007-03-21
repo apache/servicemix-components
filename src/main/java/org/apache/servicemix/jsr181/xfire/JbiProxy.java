@@ -68,6 +68,7 @@ public class JbiProxy {
     protected Class serviceClass;
     protected Definition description;
     protected ServiceEndpoint endpoint;
+    protected boolean propagateSecurityContext;
     
     public static Object create(XFire xfire,
                                 ComponentContext context,
@@ -79,6 +80,17 @@ public class JbiProxy {
         return p.getProxy();
     }
     
+    public static Object create(XFire xfire,
+            ComponentContext context,
+            QName interfaceName,
+            QName serviceName,
+            String endpointName,
+            Class serviceClass,
+            boolean propagateSecurityContext) throws Exception {
+        JbiProxy p = new JbiProxy(xfire, context, serviceClass, interfaceName, serviceName, endpointName, propagateSecurityContext);
+        return p.getProxy();
+    }
+
     public JbiProxy(XFire xfire,
                     ComponentContext context,
                     Class serviceClass,
@@ -103,6 +115,22 @@ public class JbiProxy {
         this.serviceClass = serviceClass;
     }
     
+    public JbiProxy(XFire xfire,
+            ComponentContext context,
+            Class serviceClass,
+            QName interfaceName,
+            QName serviceName,
+            String endpointName,
+            boolean propagateSecurityContext) throws Exception {
+        this.xfire = xfire;
+        this.context = context;
+        this.interfaceName = interfaceName;
+        this.serviceName = serviceName;
+        this.endpointName = endpointName;
+        this.serviceClass = serviceClass;
+        this.propagateSecurityContext = propagateSecurityContext;
+    }
+
     public Object getProxy() throws Exception {
         if (proxy == null) {
             Map props = new HashMap();
@@ -124,6 +152,7 @@ public class JbiProxy {
             if (endpoint != null) {
                 client.getService().setProperty(JbiChannel.JBI_ENDPOINT, endpoint);
             }
+            client.getService().setProperty(JbiChannel.JBI_SECURITY_PROPAGATATION, Boolean.valueOf(propagateSecurityContext));
             XFireProxyFactory xpf = new XFireProxyFactory(xfire);
             proxy = xpf.create(client);
         }
