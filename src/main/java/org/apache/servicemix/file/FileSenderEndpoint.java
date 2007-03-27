@@ -73,6 +73,9 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             else {
                 newFile = new File(directory, name);
             }
+            if (!newFile.getParentFile().exists() && isAutoCreateDirectory()) {
+                newFile.getParentFile().mkdirs();
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("Writing to file: " + newFile.getCanonicalPath());
             }
