@@ -44,6 +44,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     private String uniqueFileName = "ServiceMix";
     private boolean overwrite = false;
     private URI uri;
+    private String uploadSuffix;
 
     public FtpSenderEndpoint() {
     }
@@ -127,12 +128,28 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         this.overwrite = overwrite;
     }
 
+    public String getUploadSuffix() {
+        return uploadSuffix;
+    }
+
+    /**
+     * Set the file name suffix used during upload.  The suffix will be automatically removed as soon as the upload has completed.  
+     * This allows other processes to discern completed files from files that are being uploaded.
+     * 
+     * @param uploadSuffix
+     */
+    public void setUploadSuffix(String uploadSuffix) {
+        this.uploadSuffix = uploadSuffix;
+    }
+
     // Implementation methods
     //-------------------------------------------------------------------------
 
     protected void processInOnly(MessageExchange exchange, NormalizedMessage message) throws Exception {
         FTPClient client = null;
         OutputStream out = null;
+        String name = null;
+        String uploadName = null;
         try {
             client = borrowClient();
             // Change to the directory specified by the URI path if any
@@ -140,7 +157,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                 client.changeWorkingDirectory(uri.getPath());
             }
 
-            String name = marshaler.getOutputName(exchange, message);
+            name = marshaler.getOutputName(exchange, message);
             if (name == null) {
                 if (uniqueFileName != null) {
                     out = client.storeUniqueFileStream(uniqueFileName);
@@ -150,30 +167,37 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                 }
             }
             else {
-                out = client.storeFileStream(name);
-                if (out == null) {
-                    // lets try overwrite the previous file?
+                if (client.listFiles(name).length > 0) {
                     if (overwrite) {
                         client.deleteFile(name);
+                    } else {
+                        throw new IOException("Can not send " + name
+                                + " : file already exists and overwrite has not been enabled");
                     }
-                    out = client.storeFileStream(name);
                 }
+                uploadName = uploadSuffix == null ? name : name + uploadSuffix;
+                out = client.storeFileStream(uploadName);
             }
             if (out == null) {
-                throw new IOException("No output stream available for output name: " + name + ". Maybe the file already exists?");
+                throw new IOException("No output stream available for output name: " + uploadName + ". Maybe the file already exists?");
             }
-            marshaler.writeMessage(exchange, message, out, name);
+            marshaler.writeMessage(exchange, message, out, uploadName);
         }
         finally {
             if (out != null) {
                 try {
                     out.close();
+                    client.completePendingCommand();
+                    if (name != null && !name.equals(uploadName)) {
+                        if (!client.rename(uploadName, name)) {
+                            throw new IOException("File " + uploadName + " could not be renamed to " + name);
+                        }
+                    }
                 }
                 catch (IOException e) {
                     logger.error("Caught exception while closing stream on error: " + e, e);
                 }
             }
-            client.completePendingCommand();
             returnClient(client);
         }
     }
