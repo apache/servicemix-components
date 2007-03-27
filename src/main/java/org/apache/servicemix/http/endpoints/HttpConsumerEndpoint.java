@@ -28,6 +28,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jbi.management.DeploymentException;
+import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +38,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.http.ContextManager;
@@ -45,6 +45,7 @@ import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.SslParameters;
+import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.mortbay.jetty.RetryRequest;
@@ -62,7 +63,7 @@ import org.w3c.dom.Node;
  * @since 3.2
  * @org.apache.xbean.XBean element="consumer"
  */
-public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangeProcessor, HttpProcessor, HttpEndpointType {
+public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProcessor, HttpEndpointType {
 
     public static final String MAIN_WSDL = "main.wsdl";
     
@@ -353,6 +354,12 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements ExchangePr
     public MessageExchange createExchange(HttpServletRequest request) throws Exception {
         MessageExchange me = marshaler.createExchange(request, getContext());
         configureExchangeTarget(me);
+        // If the user has been authenticated, put these informations on
+        // the in NormalizedMessage.
+        if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
+            Subject subject = ((JaasJettyPrincipal) request.getUserPrincipal()).getSubject();
+            me.getMessage("in").setSecuritySubject(subject);
+        }
         return me;
     }
 
