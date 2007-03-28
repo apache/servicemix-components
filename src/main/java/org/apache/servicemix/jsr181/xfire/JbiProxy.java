@@ -40,12 +40,12 @@ import javax.xml.ws.WebFault;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper.FixedJAXWSServiceFactory;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.annotations.AnnotationServiceFactory;
 import org.codehaus.xfire.client.Client;
 import org.codehaus.xfire.client.XFireProxyFactory;
 import org.codehaus.xfire.fault.XFireFault;
+import org.codehaus.xfire.jaxws.JAXWSServiceFactory;
 import org.codehaus.xfire.service.OperationInfo;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.ServiceFactory;
@@ -138,7 +138,7 @@ public class JbiProxy {
             ServiceFactory factory = ServiceFactoryHelper.findServiceFactory(xfire, serviceClass, null, null);
             Service service = factory.create(serviceClass, props);
             JBIClient client;
-            if (factory instanceof FixedJAXWSServiceFactory) {
+            if (factory instanceof JAXWSServiceFactory) {
                 client = new JAXWSJBIClient(xfire, service);
             } else {
                 client = new JBIClient(xfire, service);
