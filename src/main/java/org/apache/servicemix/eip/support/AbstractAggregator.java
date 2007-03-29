@@ -17,6 +17,9 @@
 package org.apache.servicemix.eip.support;
 
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -30,10 +33,6 @@ import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentMap;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 
 /**
  * Aggregator can be used to wait and combine several messages.
@@ -58,7 +57,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     
     private boolean synchronous;
 
-    private ConcurrentMap closedAggregates = new ConcurrentHashMap();
+    private ConcurrentMap<String, Boolean> closedAggregates = new ConcurrentHashMap<String, Boolean>();
     
     /**
      * @return the synchronous

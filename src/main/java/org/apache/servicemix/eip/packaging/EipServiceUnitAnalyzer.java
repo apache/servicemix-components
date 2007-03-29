@@ -36,7 +36,7 @@ import org.apache.servicemix.eip.support.RoutingRule;
 
 public class EipServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 
-	protected List getConsumes(Endpoint endpoint) {
+	protected List<Consumes> getConsumes(Endpoint endpoint) {
 		if (endpoint instanceof ContentBasedRouter)
 			return resolveContentBasedRouter((ContentBasedRouter) endpoint);
 		if (endpoint instanceof MessageFilter)
@@ -53,15 +53,15 @@ public class EipServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 			return resolveWireTap((WireTap) endpoint);
 		if (endpoint instanceof XPathSplitter)
 			return resolveXPathSplitter((XPathSplitter) endpoint);
-		return new ArrayList();
+		return new ArrayList<Consumes>();
 	}
 
-	private List resolveXPathSplitter(XPathSplitter splitter) {
-		return generateConsumesFromTarget(splitter.getTarget(), new ArrayList());
+	private List<Consumes> resolveXPathSplitter(XPathSplitter splitter) {
+		return generateConsumesFromTarget(splitter.getTarget(), new ArrayList<Consumes>());
 	}
 
-	private List resolveWireTap(WireTap tap) {
-		List consumes = new ArrayList();
+	private List<Consumes> resolveWireTap(WireTap tap) {
+		List<Consumes> consumes = new ArrayList<Consumes>();
 		consumes = generateConsumesFromTarget(tap.getTarget(), consumes);
 		consumes = generateConsumesFromTarget(tap.getInListener(), consumes);
 		consumes = generateConsumesFromTarget(tap.getOutListener(), consumes);
@@ -69,8 +69,8 @@ public class EipServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 		return consumes;
 	}
 
-	private List resolveStaticRoutingSlip(StaticRoutingSlip slip) {
-		List consumes = new ArrayList();
+	private List<Consumes> resolveStaticRoutingSlip(StaticRoutingSlip slip) {
+		List<Consumes> consumes = new ArrayList<Consumes>();
 		for (int i = 0; i < slip.getTargets().length; i++) {
 			consumes = generateConsumesFromTarget(slip.getTargets()[i],
 					consumes);
@@ -78,8 +78,8 @@ public class EipServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 		return consumes;
 	}
 
-	private List resolveStaticRecipientList(StaticRecipientList list) {
-		List consumes = new ArrayList();
+	private List<Consumes> resolveStaticRecipientList(StaticRecipientList list) {
+		List<Consumes> consumes = new ArrayList<Consumes>();
 		for (int i = 0; i < list.getRecipients().length; i++) {
 			consumes = generateConsumesFromTarget(list.getRecipients()[i],
 					consumes);
@@ -87,23 +87,23 @@ public class EipServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 		return consumes;
 	}
 
-	private List resolveSplitAggregator(SplitAggregator aggregator) {
+	private List<Consumes> resolveSplitAggregator(SplitAggregator aggregator) {
 		return generateConsumesFromTarget(aggregator.getTarget(),
-				new ArrayList());
+				new ArrayList<Consumes>());
 	}
 
-	private List resolvePipeline(Pipeline pipeline) {
-		List consumes = generateConsumesFromTarget(pipeline.getTarget(), new ArrayList());
+	private List<Consumes> resolvePipeline(Pipeline pipeline) {
+		List<Consumes> consumes = generateConsumesFromTarget(pipeline.getTarget(), new ArrayList<Consumes>());
 		consumes = generateConsumesFromTarget(pipeline.getTransformer(), consumes);
 		return consumes;
 	}
 
-	private List resolveMessageFilter(MessageFilter filter) {
-		return generateConsumesFromTarget(filter.getTarget(), new ArrayList());
+	private List<Consumes> resolveMessageFilter(MessageFilter filter) {
+		return generateConsumesFromTarget(filter.getTarget(), new ArrayList<Consumes>());
 	}
 
-	private List resolveContentBasedRouter(ContentBasedRouter router) {
-		List consumes = new ArrayList();
+	private List<Consumes> resolveContentBasedRouter(ContentBasedRouter router) {
+		List<Consumes> consumes = new ArrayList<Consumes>();
 		for (int i = 0; i < router.getRules().length; i++) {
 			RoutingRule rule = router.getRules()[i];
 			consumes = generateConsumesFromTarget(rule.getTarget(), consumes);
@@ -111,7 +111,7 @@ public class EipServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 		return consumes;
 	}
 
-	private List generateConsumesFromTarget(ExchangeTarget target, List consumes) {
+	private List<Consumes> generateConsumesFromTarget(ExchangeTarget target, List<Consumes> consumes) {
 		if (target != null) {
 			Consumes consume = new Consumes();
 			consume.setEndpointName(target.getEndpoint());
