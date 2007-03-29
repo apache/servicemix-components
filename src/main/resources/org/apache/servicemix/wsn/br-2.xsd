@@ -4,7 +4,7 @@ OASIS takes no position regarding the validity or scope of any intellectual prop
 
 OASIS invites any interested party to bring to its attention any copyrights, patents or patent applications, or other proprietary rights which may cover technology that may be required to implement this specification. Please address the information to the OASIS Executive Director.
 
-Copyright (C) OASIS Open (2005). All Rights Reserved.
+Copyright (C) OASIS Open (2004-2006). All Rights Reserved.
 
 This document and translations of it may be copied and furnished to others, and derivative works that comment on or otherwise explain it or assist in its implementation may be prepared, copied, published and distributed, in whole or in part, without restriction of any kind, provided that the above copyright notice and this paragraph are included on all such copies and derivative works. However, this document itself may not be modified in any way, such as by removing the copyright notice or references to OASIS, except as needed for the purpose of developing OASIS specifications, in which case the procedures for copyrights defined in the OASIS Intellectual Property Rights document must be followed, or as required to translate it into languages other than English. 
 
@@ -27,16 +27,16 @@ This document and the information contained herein is provided on an "AS IS" bas
 
 <!-- ======================== Imports  ============================ -->
   
-  <xsd:import namespace="http://www.w3.org/2005/08/addressing"
+   <xsd:import namespace="http://www.w3.org/2005/08/addressing"
               schemaLocation="ws-addr.xsd"/>
 
-  <xsd:import namespace="http://docs.oasis-open.org/wsrf/bf-2"
+   <xsd:import namespace="http://docs.oasis-open.org/wsrf/bf-2"
               schemaLocation="bf-2.xsd"/>
 
-  <xsd:import namespace="http://docs.oasis-open.org/wsn/b-2"
+   <xsd:import namespace="http://docs.oasis-open.org/wsn/b-2"
               schemaLocation="b-2.xsd"/>
 
-	<xsd:import namespace="http://docs.oasis-open.org/wsn/t-1"
+   <xsd:import namespace="http://docs.oasis-open.org/wsn/t-1"
               schemaLocation="t-1.xsd"/>
 
 <!-- ======== Resource Properties for NotificationBroker ========== -->
@@ -45,7 +45,7 @@ This document and the information contained herein is provided on an "AS IS" bas
 <!-- ====== Resource Properties for PublisherRegistration ========= -->
    <xsd:element name="PublisherReference" 
                       type="wsa:EndpointReferenceType"/>
-	<xsd:element name="ConsumerReference" 
+   <xsd:element name="ConsumerReference" 
                       type="wsa:EndpointReferenceType"/>
    <xsd:element name="Topic"
                       type="wsn-b:TopicExpressionType"/>
@@ -53,7 +53,7 @@ This document and the information contained herein is provided on an "AS IS" bas
                       type="xsd:boolean"/>
    <xsd:element name="CreationTime" 
                       type="xsd:dateTime"/>
-<xsd:element name="NotificationBrokerRP">
+   <xsd:element name="NotificationBrokerRP">
             <xsd:complexType>
                <xsd:sequence>
          <!-- From NotificationProducer -->
@@ -76,13 +76,6 @@ This document and the information contained herein is provided on an "AS IS" bas
    <xsd:element name="PublisherRegistrationRP">
             <xsd:complexType>
                <xsd:sequence>
-         <!-- From WS-ResourceLifetime ScheduledResourceTermination -->
-                  <xsd:element ref="wsn-b:CurrentTime"
-                     minOccurs="0" maxOccurs="1" /> 
-                  <xsd:element ref="wsn-b:TerminationTime" 
-                               minOccurs="1" maxOccurs="1" />
-                               
-         <!-- PublisherRegistration specific  -->
                   <xsd:element ref="wsn-br:PublisherReference"        
                                minOccurs="0" maxOccurs="1" />
                   <xsd:element ref="wsn-br:Topic"        

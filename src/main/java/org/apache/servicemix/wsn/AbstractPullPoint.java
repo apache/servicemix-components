@@ -40,6 +40,7 @@ import org.apache.servicemix.wsn.jaxws.PullPoint;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
 import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPointFault;
 import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPointFault;
+import org.apache.servicemix.wsn.jaxws.UnableToGetMessagesFault;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.PullPointConsumer")
 public abstract class AbstractPullPoint extends AbstractEndpoint 
@@ -81,7 +82,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
     public GetMessagesResponse getMessages(
         @WebParam(name = "GetMessages", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "GetMessagesRequest")
         GetMessages getMessagesRequest)
-        throws ResourceUnknownFault {
+        throws ResourceUnknownFault, UnableToGetMessagesFault {
     	
     	log.debug("GetMessages");
     	BigInteger max = getMessagesRequest.getMaximumNumber();
@@ -103,7 +104,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
     public DestroyPullPointResponse destroyPullPoint(
         @WebParam(name = "DestroyPullPoint", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "DestroyPullPointRequest")
         DestroyPullPoint destroyPullPointRequest)
-        throws UnableToDestroyPullPointFault {
+        throws ResourceUnknownFault, UnableToDestroyPullPointFault {
     	
     	log.debug("Destroy");
         createPullPoint.destroyPullPoint(getAddress());
@@ -115,7 +116,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint
     
 	protected abstract void store(NotificationMessageHolderType messageHolder);
 
-    protected abstract List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault;
+    protected abstract List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault, UnableToGetMessagesFault;
 
     protected void destroy() throws UnableToDestroyPullPointFault {
     	try {

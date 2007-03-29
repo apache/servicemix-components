@@ -5,7 +5,7 @@ OASIS takes no position regarding the validity or scope of any intellectual prop
 
 OASIS invites any interested party to bring to its attention any copyrights, patents or patent applications, or other proprietary rights which may cover technology that may be required to implement this specification. Please address the information to the OASIS Executive Director.
 
-Copyright (C) OASIS Open (2004-2005). All Rights Reserved.
+Copyright (C) OASIS Open (2004-2006). All Rights Reserved.
 
 This document and translations of it may be copied and furnished to others, and derivative works that comment on or otherwise explain it or assist in its implementation may be prepared, copied, published and distributed, in whole or in part, without restriction of any kind, provided that the above copyright notice and this paragraph are included on all such copies and derivative works. However, this document itself may not be modified in any way, such as by removing the copyright notice or references to OASIS, except as needed for the purpose of developing OASIS specifications, in which case the procedures for copyrights defined in the OASIS Intellectual Property Rights document must be followed, or as required to translate it into languages other than English. 
 
@@ -156,6 +156,12 @@ This document and the information contained herein is provided on an "AS IS" bas
       <wsdl:part name="GetMessagesResponse" 
             element="wsnt:GetMessagesResponse"/>
    </wsdl:message>
+
+   <wsdl:message name="UnableToGetMessagesFault">
+      <wsdl:part name="UnableToGetMessagesFault"
+            element="wsnt:UnableToGetMessagesFault"/>
+   </wsdl:message> 
+
 
 <!-- ========== PullPoint::DestroyPullPoint =========== 
   DestroyPullPoint()
@@ -336,7 +342,9 @@ This document and the information contained herein is provided on an "AS IS" bas
          <wsdl:output name="GetMessagesResponse" 
                       message="wsntw:GetMessagesResponse" />
          <wsdl:fault  name="ResourceUnknownFault" 
-                      message="wsrf-rw:ResourceUnknownFault" />
+                      message="wsrf-rw:ResourceUnknownFault" /> 
+         <wsdl:fault  name="UnableToGetMessagesFault" 
+                      message="wsntw:UnableToGetMessagesFault" />
       </wsdl:operation>
 
       <wsdl:operation name="DestroyPullPoint">
@@ -344,6 +352,8 @@ This document and the information contained herein is provided on an "AS IS" bas
                       message="wsntw:DestroyPullPointRequest" />
          <wsdl:output name="DestroyPullPointResponse" 
                       message="wsntw:DestroyPullPointResponse" />
+         <wsdl:fault  name="ResourceUnknownFault" 
+                      message="wsrf-rw:ResourceUnknownFault"/>
          <wsdl:fault  name="UnableToDestroyPullPointFault" 
                       message="wsntw:UnableToDestroyPullPointFault" />
       </wsdl:operation>

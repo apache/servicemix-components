@@ -36,9 +36,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.wsn.AbstractPullPoint;
 import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
+import org.apache.servicemix.wsn.jaxws.UnableToGetMessagesFault;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
-import org.oasis_open.docs.wsrf.r_2.ResourceUnknownFaultType;
+import org.oasis_open.docs.wsn.b_2.UnableToGetMessagesFaultType;
 
 public class JmsPullPoint extends AbstractPullPoint {
 
@@ -96,7 +97,7 @@ public class JmsPullPoint extends AbstractPullPoint {
 	}
 
 	@Override
-	protected synchronized List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault {
+	protected synchronized List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault, UnableToGetMessagesFault {
 		Session session = null;
 		try {
 			if (max == 0) {
@@ -126,12 +127,12 @@ public class JmsPullPoint extends AbstractPullPoint {
 					session = null;
 				}
 			}
-			ResourceUnknownFaultType fault = new ResourceUnknownFaultType();
-			throw new ResourceUnknownFault("Unable to retrieve messages", fault, e);
+            UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
+			throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
 		} catch (JAXBException e) {
 			log.info("Error retrieving messages", e);
-			ResourceUnknownFaultType fault = new ResourceUnknownFaultType();
-			throw new ResourceUnknownFault("Unable to retrieve messages", fault, e);
+            UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
+			throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
 		}
 	}
 	
