@@ -38,7 +38,7 @@ import org.apache.servicemix.components.util.FileMarshaler;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
 
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.Lock;
 
 /**
  * A polling endpoint which looks for a file or files in a directory
