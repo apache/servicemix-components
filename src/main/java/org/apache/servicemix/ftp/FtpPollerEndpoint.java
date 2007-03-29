@@ -22,6 +22,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.concurrent.locks.Lock;
 
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
@@ -41,8 +42,6 @@ import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
-
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 
 /**
  * A polling endpoint which looks for a file or files in a directory
