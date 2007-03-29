@@ -16,17 +16,11 @@
  */
 package org.apache.servicemix.truezip;
 
-// import java.io.BufferedInputStream;
-// import java.io.File;
-// import java.io.FileFilter;
-// import java.io.FileInputStream;
-// import java.io.IOException;
-// import java.io.InputStream;
-
 import java.io.BufferedInputStream;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.locks.Lock;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.InOnly;
@@ -45,7 +39,6 @@ import org.apache.servicemix.locks.impl.SimpleLockManager;
 
 import de.schlichtherle.io.File;
 import de.schlichtherle.io.FileInputStream;
-import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
 
 /**
  * A polling endpoint which looks for a file or files in a directory and sends
