@@ -33,11 +33,16 @@ import java.io.IOException;
  */
 public class FTPClientPool extends SocketClientPoolSupport {
 
+    public static final int DEFAULT_DATA_TIMEOUT = -1;
+    public static final String DEFAULT_CONTROL_ENCODING = FTP.DEFAULT_CONTROL_ENCODING;
+
     private String username;
     private String password;
     private boolean binaryMode = true;
     private boolean passiveMode = false;
     private FTPClientConfig config;
+    private String controlEncoding = DEFAULT_CONTROL_ENCODING;
+    private int dataTimeout = DEFAULT_DATA_TIMEOUT;
 
     public boolean validateObject(Object object) {
         FTPClient client = (FTPClient) object;
@@ -107,6 +112,34 @@ public class FTPClientPool extends SocketClientPoolSupport {
         this.config = config;
     }
 
+    /**
+     * @return the controlEncoding
+     */
+    public String getControlEncoding() {
+        return controlEncoding;
+    }
+
+    /**
+     * @param controlEncoding the controlEncoding to set
+     */
+    public void setControlEncoding(String controlEncoding) {
+        this.controlEncoding = controlEncoding;
+    }
+
+    /**
+     * @return the dataTimeout
+     */
+    public int getDataTimeout() {
+        return dataTimeout;
+    }
+
+    /**
+     * @param dataTimeout the dataTimeout to set
+     */
+    public void setDataTimeout(int dataTimeout) {
+        this.dataTimeout = dataTimeout;
+    }
+
     // Implementation methods
     //-------------------------------------------------------------------------
     protected void connect(SocketClient client) throws Exception {
@@ -115,7 +148,10 @@ public class FTPClientPool extends SocketClientPoolSupport {
         if (config != null) {
             ftp.configure(config);
         }
-        super.connect(client);
+        ftp.setDataTimeout(getDataTimeout());
+        ftp.setControlEncoding(getControlEncoding());
+
+        super.connect(ftp);
 
         int code = ftp.getReplyCode();
         if (!FTPReply.isPositiveCompletion(code)) {
