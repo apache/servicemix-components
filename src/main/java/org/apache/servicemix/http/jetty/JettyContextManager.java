@@ -397,24 +397,24 @@ public class JettyContextManager implements ContextManager {
                         continue;
                     }
                     ContextHandler context = (ContextHandler) handlers[i];
+                    StringBuffer sb = new StringBuffer();
+                    sb.append(serverUri);
+                    if (!context.getContextPath().startsWith("/")) {
+                        sb.append("/");
+                    }
+                    sb.append(context.getContextPath());
+                    if (!context.getContextPath().endsWith("/")) {
+                        sb.append("/");
+                    }
                     if (context.isStarted()) {
                         writer.write("<li><a href=\"");
-                        writer.write(serverUri);
-                        if (!context.getContextPath().startsWith("/")) {
-                            writer.write("/");
-                        }
-                        writer.write(context.getContextPath());
-                        if (!context.getContextPath().endsWith("/")) {
-                            writer.write("/");
-                        }
+                        writer.write(sb.toString());
                         writer.write("?wsdl\">");
-                        writer.write(serverUri);
-                        writer.write(context.getContextPath());
+                        writer.write(sb.toString());
                         writer.write("</a></li>\n");
                     } else {
                         writer.write("<li>");
-                        writer.write(serverUri);
-                        writer.write(context.getContextPath());
+                        writer.write(sb.toString());
                         writer.write(" [Stopped]</li>\n");
                     }
                 }
