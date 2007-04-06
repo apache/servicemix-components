@@ -52,7 +52,7 @@ public class JbiHelper {
                      MessageExchange exchange,
                      WorkingMemory memory) {
         this.endpoint = endpoint;
-        this.exchange = new Exchange(exchange);
+        this.exchange = new Exchange(exchange, endpoint.getNamespaceContext());
         this.memory = memory;
         this.exchangeFactHandle = this.memory.assertObject(this.exchange);
     }

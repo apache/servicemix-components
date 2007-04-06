@@ -25,6 +25,7 @@ import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.DefaultComponent;
@@ -46,7 +47,8 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private RuleBase ruleBase;
     private Resource ruleBaseResource;
     private URL ruleBaseURL;
-    
+    private NamespaceContext namespaceContext;
+
     public DroolsEndpoint() {
         super();
     }
@@ -100,7 +102,21 @@ public class DroolsEndpoint extends ProviderEndpoint {
     public void setRuleBaseURL(URL ruleBaseURL) {
         this.ruleBaseURL = ruleBaseURL;
     }
-    
+
+    /**
+     * @return the namespaceContext
+     */
+    public NamespaceContext getNamespaceContext() {
+        return namespaceContext;
+    }
+
+    /**
+     * @param namespaceContext the namespaceContext to set
+     */
+    public void setNamespaceContext(NamespaceContext namespaceContext) {
+        this.namespaceContext = namespaceContext;
+    }
+
     public void validate() throws DeploymentException {
         super.validate();
         if (ruleBase == null && ruleBaseResource == null && ruleBaseURL == null) {

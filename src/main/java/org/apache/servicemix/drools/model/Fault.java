@@ -16,10 +16,12 @@
  */
 package org.apache.servicemix.drools.model;
 
+import javax.xml.namespace.NamespaceContext;
+
 public class Fault extends Message {
 
-    public Fault(javax.jbi.messaging.Fault message) {
-        super(message);
+    public Fault(javax.jbi.messaging.Fault message, NamespaceContext namespaceContext) {
+        super(message, namespaceContext);
     }
 
 }

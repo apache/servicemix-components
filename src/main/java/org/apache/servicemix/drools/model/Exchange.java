@@ -23,6 +23,7 @@ import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
+import javax.xml.namespace.NamespaceContext;
 
 public class Exchange {
 
@@ -39,9 +40,11 @@ public class Exchange {
     private Message in;
     private Message out;
     private Message fault;
+    private NamespaceContext namespaceContext;
     
-    public Exchange(MessageExchange exchange) {
+    public Exchange(MessageExchange exchange, NamespaceContext namespaceContext) {
         this.exchange = exchange;
+        this.namespaceContext = namespaceContext;
         update();
     }
     
@@ -101,22 +104,23 @@ public class Exchange {
     
     protected Message getMessage(String name) {
         NormalizedMessage msg = exchange.getMessage(name);
-        return msg != null ? new Message(msg) : null;
+        return msg != null ? new Message(msg, this.namespaceContext) : null;
     }
     
     protected void update() {
         if (in == null) {
             NormalizedMessage msg = exchange.getMessage("in");
-            in = msg != null ? new Message(msg) : null;
+            in = msg != null ? new Message(msg, this.namespaceContext) : null;
         }
         if (out == null) {
             NormalizedMessage msg = exchange.getMessage("out");
-            out = msg != null ? new Message(msg) : null;
+            out = msg != null ? new Message(msg, this.namespaceContext) : null;
         }
         if (fault == null) {
             javax.jbi.messaging.Fault msg = exchange.getFault();
-            fault = msg != null ? new Fault(msg) : null;
+            fault = msg != null ? new Fault(msg,this.namespaceContext) : null;
         }
     }
     
 }
+
