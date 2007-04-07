@@ -55,14 +55,14 @@ public class Jsr181Component extends DefaultComponent {
     }
     
     protected Class[] getEndpointClasses() {
-        return new Class[] { Jsr181Endpoint.class };
+        return new Class[] {Jsr181Endpoint.class };
     }
     
     /* (non-Javadoc)
      * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] { new Jsr181XBeanDeployer(this) };
+        Deployer[] deployers = new Deployer[] {new Jsr181XBeanDeployer(this) };
         return new BaseServiceUnitManager(this, deployers);
     }
 

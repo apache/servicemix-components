@@ -31,7 +31,7 @@ import org.codehaus.xfire.jaxws.JAXWSServiceFactory;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.xmlbeans.XmlBeansTypeRegistry;
 
-public class ServiceFactoryHelper {
+public final class ServiceFactoryHelper {
     
     public static final String TM_DEFAULT = "default";
     public static final String TM_XMLBEANS = "xmlbeans";
@@ -42,32 +42,36 @@ public class ServiceFactoryHelper {
     public static final String AN_COMMONS = "commons";
     public static final String AN_NONE = "none";
 
-    private static final Map knownTypeMappings;
-    private static final Map knownAnnotations;
+    private static final Map<String, TypeMappingRegistry> KNOWN_TYPE_MAPPINGS;
+    private static final Map<String, WebAnnotations> KNOWN_ANNOTATIONS;
+    
+    private ServiceFactoryHelper() {
+    }
     
     static {
-        knownTypeMappings = new HashMap();
-        knownTypeMappings.put(TM_DEFAULT, new DefaultTypeMappingRegistry(true));
-        knownTypeMappings.put(TM_XMLBEANS, new XmlBeansTypeRegistry());
+        KNOWN_TYPE_MAPPINGS = new HashMap<String, TypeMappingRegistry>();
+        KNOWN_TYPE_MAPPINGS.put(TM_DEFAULT, new DefaultTypeMappingRegistry(true));
+        KNOWN_TYPE_MAPPINGS.put(TM_XMLBEANS, new XmlBeansTypeRegistry());
         try {
             Class cl = Class.forName("org.codehaus.xfire.jaxb2.JaxbTypeRegistry");
-            Object tr = cl.newInstance();
-            knownTypeMappings.put(TM_JAXB2, tr);
+            TypeMappingRegistry tr = (TypeMappingRegistry) cl.newInstance();
+            KNOWN_TYPE_MAPPINGS.put(TM_JAXB2, tr);
         } catch (Throwable e) {
             // we are in jdk 1.4, do nothing
         }
         
-        knownAnnotations = new HashMap();
-        knownAnnotations.put(AN_COMMONS, new CommonsWebAttributes());
+        KNOWN_ANNOTATIONS = new HashMap<String, WebAnnotations>();
+        KNOWN_ANNOTATIONS.put(AN_COMMONS, new CommonsWebAttributes());
         try {
             Class cl = Class.forName("org.codehaus.xfire.annotations.jsr181.Jsr181WebAnnotations");
-            Object wa = cl.newInstance();
-            knownAnnotations.put(AN_JAVA5, wa);
+            WebAnnotations wa = (WebAnnotations) cl.newInstance();
+            KNOWN_ANNOTATIONS.put(AN_JAVA5, wa);
         } catch (Throwable e) {
             // we are in jdk 1.4, do nothing
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static ObjectServiceFactory findServiceFactory(
                         XFire xfire,
                         Class serviceClass,
@@ -83,13 +87,13 @@ public class ServiceFactoryHelper {
         if (annotations != null) {
             selectedAnnotations = annotations;
             if (!annotations.equals(AN_NONE)) {
-                wa = (WebAnnotations) knownAnnotations.get(annotations);
+                wa = (WebAnnotations) KNOWN_ANNOTATIONS.get(annotations);
                 if (wa == null) {
                     throw new Exception("Unrecognized annotations: " + annotations);
                 }
             }
         } else {
-            for (Iterator it = knownAnnotations.entrySet().iterator(); it.hasNext();) {
+            for (Iterator it = KNOWN_ANNOTATIONS.entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = (Map.Entry) it.next();
                 WebAnnotations w = (WebAnnotations) entry.getValue();
                 if (w.hasWebServiceAnnotation(serviceClass)) {
@@ -107,7 +111,7 @@ public class ServiceFactoryHelper {
         } else {
             selectedTypeMapping = typeMapping;
         }
-        tm = (TypeMappingRegistry) knownTypeMappings.get(selectedTypeMapping);
+        tm = (TypeMappingRegistry) KNOWN_TYPE_MAPPINGS.get(selectedTypeMapping);
         if (tm == null) {
             throw new Exception("Unrecognized typeMapping: " + typeMapping);
         }
@@ -116,8 +120,8 @@ public class ServiceFactoryHelper {
         if (wa == null) {
             factory = new ObjectServiceFactory(xfire.getTransportManager(),
                                                new AegisBindingProvider(tm));
-        } else if (selectedAnnotations.equals(AN_JAVA5) && 
-                   selectedTypeMapping.equals(TM_JAXB2)) {
+        } else if (selectedAnnotations.equals(AN_JAVA5) 
+                   && selectedTypeMapping.equals(TM_JAXB2)) {
             try {
                 factory = new JAXWSServiceFactory(xfire.getTransportManager());
             } catch (Exception e) {

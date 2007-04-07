@@ -36,11 +36,11 @@ import org.codehaus.xfire.wsdl11.WSDL11Transport;
  */
 public class JbiTransport extends AbstractTransport implements WSDL11Transport, SoapTransport {
 
-    private static final Log log = LogFactory.getLog(JbiTransport.class);
+    public static final String JBI_BINDING = "http://java.sun.com/xml/ns/jbi/binding/service+engine";
     
-    public final static String JBI_BINDING = "http://java.sun.com/xml/ns/jbi/binding/service+engine";
+    private static final Log LOG = LogFactory.getLog(JbiTransport.class);
     
-    private final static String URI_PREFIX = "urn:xfire:transport:jbi:";
+    private static final String URI_PREFIX = "urn:xfire:transport:jbi:";
 
     private ComponentContext context;
     
@@ -59,7 +59,7 @@ public class JbiTransport extends AbstractTransport implements WSDL11Transport, 
     }
 
     protected Channel createNewChannel(String uri) {
-        log.debug("Creating new channel for uri: " + uri);
+        LOG.debug("Creating new channel for uri: " + uri);
         JbiChannel c = new JbiChannel(uri, this);
         c.setEndpoint(new DefaultEndpoint());
         return c;
@@ -69,13 +69,12 @@ public class JbiTransport extends AbstractTransport implements WSDL11Transport, 
         return URI_PREFIX;
     }
 
-    public String[] getSupportedBindings()
-    {
-        return new String[] { JBI_BINDING };
+    public String[] getSupportedBindings() {
+        return new String[] {JBI_BINDING };
     }
 
     public String[] getKnownUriSchemes() {
-        return new String[] { "jbi://" };
+        return new String[] {"jbi://" };
     }
 
     public ComponentContext getContext() {
@@ -85,6 +84,9 @@ public class JbiTransport extends AbstractTransport implements WSDL11Transport, 
     public boolean equals(Object o) {
         return o instanceof JbiTransport;
     }
-    
+
+    public int hashCode() {
+        return JbiTransport.class.hashCode();
+    }
 }
 

@@ -18,19 +18,25 @@ package test;
 
 import javax.jbi.component.ComponentContext;
 
-
 /**
  * @@org.codehaus.xfire.annotations.commons.WebService(name = "EchoService")
  * @@org.codehaus.xfire.annotations.commons.soap.SOAPBinding(style = 0)
  */
 public class EchoService {
-    
-    public static EchoService instance;
-    
+
+    private static EchoService instance;
+
     private ComponentContext context;
 
     public EchoService() {
         instance = this;
+    }
+
+    /**
+     * @return the instance
+     */
+    public static EchoService getInstance() {
+        return instance;
     }
     
     /**
@@ -47,5 +53,5 @@ public class EchoService {
     public void setContext(ComponentContext context) {
         this.context = context;
     }
-    
+
 }

@@ -40,6 +40,11 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import com.ibm.wsdl.Constants;
+
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -55,10 +60,6 @@ import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.service.invoker.BeanInvoker;
 import org.codehaus.xfire.soap.SoapConstants;
 import org.springframework.core.io.Resource;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.ibm.wsdl.Constants;
 
 /**
  * 
@@ -81,7 +82,7 @@ public class Jsr181Endpoint extends Endpoint {
     protected Service xfireService;
     protected ExchangeProcessor processor;
     protected Resource wsdlResource;
-    protected boolean mtomEnabled = false;
+    protected boolean mtomEnabled;
     protected Map properties;
     
     public Jsr181Endpoint() {
@@ -201,14 +202,14 @@ public class Jsr181Endpoint extends Endpoint {
 
     protected void injectPojo(ComponentContext context, JBIContainer container) {
         try {
-            Method mth = pojo.getClass().getMethod("setContext", new Class[] { ComponentContext.class });
-            mth.invoke(pojo, new Object[] { context });
+            Method mth = pojo.getClass().getMethod("setContext", new Class[] {ComponentContext.class });
+            mth.invoke(pojo, new Object[] {context });
         } catch (Exception e) {
             logger.debug("Unable to inject ComponentContext: " + e.getMessage());
         }
         try {
-            Method mth = pojo.getClass().getMethod("setContainer", new Class[] { JBIContainer.class });
-            mth.invoke(pojo, new Object[] { container });
+            Method mth = pojo.getClass().getMethod("setContainer", new Class[] {JBIContainer.class });
+            mth.invoke(pojo, new Object[] {container });
         } catch (Exception e) {
             logger.debug("Unable to inject JBIContainer: " + e.getMessage());
         }
@@ -219,8 +220,7 @@ public class Jsr181Endpoint extends Endpoint {
             ComponentContext ctx = getServiceUnit().getComponent().getComponentContext();
             Field field = ctx.getClass().getDeclaredField("container");
             field.setAccessible(true);
-            JBIContainer container = (JBIContainer) field.get(ctx);
-            return container;
+            return (JBIContainer) field.get(ctx);
         } catch (Exception e) {
             logger.debug("Unable to retrieve JBIContainer: " + e.getMessage());
             return null;
@@ -228,7 +228,8 @@ public class Jsr181Endpoint extends Endpoint {
     }
 
     /**
-     * Validate the endpoint at either deployment time for statically defined endpoints or at runtime for dynamic endpoints
+     * Validate the endpoint at either deployment time for statically
+     * defined endpoints or at runtime for dynamic endpoints
      * 
      * @throws DeploymentException
      */
@@ -254,7 +255,8 @@ public class Jsr181Endpoint extends Endpoint {
         }
         // Create factory
         XFire xfire = getXFire();
-        ObjectServiceFactory factory = ServiceFactoryHelper.findServiceFactory(xfire, pojo.getClass(), annotations, typeMapping);
+        ObjectServiceFactory factory = ServiceFactoryHelper.findServiceFactory(xfire, 
+                pojo.getClass(), annotations, typeMapping);
         Class serviceClass = pojo.getClass();
         if (serviceInterface != null) {
             serviceClass = Class.forName(serviceInterface, true, getServiceUnit().getConfigurationClassLoader());
@@ -262,40 +264,7 @@ public class Jsr181Endpoint extends Endpoint {
 
         this.definition = loadDefinition();
         if (definition != null) {
-            if (definition.getServices().size() != 1) {
-                throw new IllegalArgumentException("The deployed wsdl defines more than one service");
-            }
-            javax.wsdl.Service wsdlSvc = (javax.wsdl.Service) definition.getServices().values().iterator().next();
-            if (service == null) {
-                service = wsdlSvc.getQName();
-            } else if (!service.equals(wsdlSvc.getQName())) {
-                throw new IllegalArgumentException("The name of the Service defined by the deployed wsdl does not match the service name of the jbi endpoint");
-            }
-            if (wsdlSvc.getPorts().size() != 1) {
-                throw new IllegalArgumentException("The Service defined in the deployed wsdl must define exactly one Port");
-            }
-            Port wsdlPort = (Port) wsdlSvc.getPorts().values().iterator().next();
-            if (endpoint == null) {
-                endpoint = wsdlPort.getName();
-            } else if (!endpoint.equals(wsdlPort.getName())) {
-                throw new IllegalArgumentException("The name of the Port defined by the deployed wsdl does not match the endpoint name of the jbi endpoint");
-            }
-            Binding wsdlBinding = wsdlPort.getBinding();
-            if (wsdlBinding == null) {
-                throw new IllegalArgumentException("The Port defined in the deployed wsdl does not have any binding");
-            }
-            PortType wsdlPortType = wsdlBinding.getPortType();
-            if (wsdlPortType == null) {
-                throw new IllegalArgumentException("The Binding defined in the deployed wsdl does not have reference a PortType");
-            }
-            if (interfaceName == null) {
-                interfaceName = wsdlPortType.getQName();
-            } else if (!interfaceName.equals(wsdlPortType.getQName())) {
-                throw new IllegalArgumentException("The name of the PortType defined by the deployed wsdl does not match the interface name of the jbi endpoint");
-            }
-            // Create the DOM document 
-            definition = new WSDLFlattener(definition).getDefinition(interfaceName);
-            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+            updateDescription();
         }
         
         String svcLocalName = (service != null) ? service.getLocalPart() : null;
@@ -337,16 +306,16 @@ public class Jsr181Endpoint extends Endpoint {
             if (service == null) {
                 service = serviceName;
             } else if (!service.equals(serviceName)) {
-                logger.warn("The service name defined in the wsdl (" + serviceName + 
-                            ") does not match the service name defined in the endpoint spec (" + service + 
-                            "). WSDL description may be unusable.");
+                logger.warn("The service name defined in the wsdl (" + serviceName
+                            + ") does not match the service name defined in the endpoint spec (" + service 
+                            + "). WSDL description may be unusable.");
             }
             if (interfaceName == null) {
                 interfaceName = interfName;
             } else if (!interfaceName.equals(interfName)) {
-                logger.warn("The interface name defined in the wsdl (" + interfName + 
-                        ") does not match the service name defined in the endpoint spec (" + interfaceName + 
-                        "). WSDL description may be unusable.");
+                logger.warn("The interface name defined in the wsdl (" + interfName 
+                        + ") does not match the service name defined in the endpoint spec (" + interfaceName 
+                        + "). WSDL description may be unusable.");
             }
 
             // Parse the WSDL
@@ -355,18 +324,16 @@ public class Jsr181Endpoint extends Endpoint {
             definition = reader.readWSDL(null, description);
 
             javax.wsdl.Service svc = definition.getService(serviceName);
-            if (svc != null) {
-                if (svc.getPorts().values().size() == 1) {
-                    Port port = (Port) svc.getPorts().values().iterator().next();
-                    // Check if this is the same as defined in endpoint spec
-                    endpointName = port.getName();
-                    if (endpoint == null) {
-                        endpoint = endpointName;
-                    } else if (!endpoint.equals(endpointName)) {
-                        // Override generated WSDL
-                        port.setName(endpoint);
-                        description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
-                    }
+            if (svc != null && svc.getPorts().values().size() == 1) {
+                Port port = (Port) svc.getPorts().values().iterator().next();
+                // Check if this is the same as defined in endpoint spec
+                endpointName = port.getName();
+                if (endpoint == null) {
+                    endpoint = endpointName;
+                } else if (!endpoint.equals(endpointName)) {
+                    // Override generated WSDL
+                    port.setName(endpoint);
+                    description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
                 }
             }
             if (endpoint == null) {
@@ -385,6 +352,49 @@ public class Jsr181Endpoint extends Endpoint {
             }
         }
     }
+
+    protected void updateDescription() throws Exception {
+        if (definition.getServices().size() != 1) {
+            throw new IllegalArgumentException("The deployed wsdl defines more than one service");
+        }
+        javax.wsdl.Service wsdlSvc = (javax.wsdl.Service) definition.getServices().values().iterator().next();
+        if (service == null) {
+            service = wsdlSvc.getQName();
+        } else if (!service.equals(wsdlSvc.getQName())) {
+            throw new IllegalArgumentException("The name of the Service defined by the deployed wsdl"
+                    + " does not match the service name of the jbi endpoint");
+        }
+        if (wsdlSvc.getPorts().size() != 1) {
+            throw new IllegalArgumentException("The Service defined in the deployed wsdl"
+                    + " must define exactly one Port");
+        }
+        Port wsdlPort = (Port) wsdlSvc.getPorts().values().iterator().next();
+        if (endpoint == null) {
+            endpoint = wsdlPort.getName();
+        } else if (!endpoint.equals(wsdlPort.getName())) {
+            throw new IllegalArgumentException("The name of the Port defined by the deployed wsdl does"
+                    + " not match the endpoint name of the jbi endpoint");
+        }
+        Binding wsdlBinding = wsdlPort.getBinding();
+        if (wsdlBinding == null) {
+            throw new IllegalArgumentException("The Port defined in the deployed wsdl"
+                    + " does not have any binding");
+        }
+        PortType wsdlPortType = wsdlBinding.getPortType();
+        if (wsdlPortType == null) {
+            throw new IllegalArgumentException("The Binding defined in the"
+                    + " deployed wsdl does not have reference a PortType");
+        }
+        if (interfaceName == null) {
+            interfaceName = wsdlPortType.getQName();
+        } else if (!interfaceName.equals(wsdlPortType.getQName())) {
+            throw new IllegalArgumentException("The name of the PortType defined by the deployed"
+                    + " wsdl does not match the interface name of the jbi endpoint");
+        }
+        // Create the DOM document 
+        definition = new WSDLFlattener(definition).getDefinition(interfaceName);
+        description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+    }
     
     protected Definition loadDefinition() throws IOException, WSDLException {
         if (wsdlResource != null) {
@@ -401,14 +411,12 @@ public class Jsr181Endpoint extends Endpoint {
         getXFire().generateWSDL(xfireService.getSimpleName(), baos);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        Document doc = factory.newDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
-        return doc;
+        return factory.newDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
     }
     
     public XFire getXFire() {
         Jsr181Component component = (Jsr181Component) this.serviceUnit.getComponent();
-        XFire xfire = component.getXFire();
-        return xfire;
+        return component.getXFire();
     }
     
     public String getPojoClass() {

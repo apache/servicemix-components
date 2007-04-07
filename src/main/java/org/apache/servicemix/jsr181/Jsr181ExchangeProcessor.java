@@ -107,7 +107,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
         }
         JBIContext.setMessageExchange(exchange);
         if (isInAndOut(exchange)) {
-            
+            // TODO ?
         }
         try {
             c.receive(ctx, msg);

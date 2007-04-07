@@ -61,6 +61,11 @@ public class JbiChannel extends AbstractChannel {
 
     private static ThreadLocal transformer = new ThreadLocal();
 
+    public JbiChannel(String uri, JbiTransport transport) {
+        setTransport(transport);
+        setUri(uri);
+    }
+
     protected static StAXSourceTransformer getTransformer() {
         StAXSourceTransformer t = (StAXSourceTransformer) transformer.get();
         if (t == null) {
@@ -68,11 +73,6 @@ public class JbiChannel extends AbstractChannel {
             transformer.set(t);
         }
         return t;
-    }
-
-    public JbiChannel(String uri, JbiTransport transport) {
-        setTransport(transport);
-        setUri(uri);
     }
 
     public void open() throws Exception {
@@ -83,7 +83,8 @@ public class JbiChannel extends AbstractChannel {
             final OutputStream out = (OutputStream) context.getProperty(Channel.BACKCHANNEL_URI);
             if (out != null) {
                 try {
-                    final XMLStreamWriter writer = getTransformer().getOutputFactory().createXMLStreamWriter(out, message.getEncoding());
+                    final XMLStreamWriter writer = getTransformer().getOutputFactory()
+                        .createXMLStreamWriter(out, message.getEncoding());
                     message.getSerializer().writeMessage(message, writer, context);
                     writer.close();
                 } catch (XMLStreamException e) {
@@ -122,7 +123,7 @@ public class JbiChannel extends AbstractChannel {
                         } else {
                             throw new XFireFault("Unkown Error", XFireFault.RECEIVER);
                         }
-                    } else if (me.getFault() != null){
+                    } else if (me.getFault() != null) {
                         JDOMResult result = new JDOMResult();
                         String str = getTransformer().contentToString(me.getFault());
                         getTransformer().toResult(new StringSource(str), result);
@@ -150,15 +151,15 @@ public class JbiChannel extends AbstractChannel {
         }
     }
 
-    protected Source getContent(MessageContext context, OutMessage message) throws XMLStreamException, IOException, XFireException {
+    protected Source getContent(MessageContext context, 
+                                OutMessage message) throws XMLStreamException, IOException, XFireException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        XMLStreamWriter writer = getTransformer().getOutputFactory().createXMLStreamWriter(outStream, message.getEncoding());
+        XMLStreamWriter writer = getTransformer().getOutputFactory()
+            .createXMLStreamWriter(outStream, message.getEncoding());
         MessageSerializer serializer = context.getOutMessage().getSerializer();
-        if (serializer == null)
-        {
-        	AbstractSoapBinding binding = (AbstractSoapBinding) context.getBinding();
-            if (binding == null)
-            {
+        if (serializer == null) {
+            AbstractSoapBinding binding = (AbstractSoapBinding) context.getBinding();
+            if (binding == null) {
                 throw new XFireException("Couldn't find the binding!");
             }
             serializer = AbstractSoapBinding.getSerializer(binding.getStyle(), binding.getUse());
@@ -166,8 +167,7 @@ public class JbiChannel extends AbstractChannel {
         serializer.writeMessage(message, writer, context);
         writer.close();
         outStream.close();
-        StreamSource src = new StreamSource(new ByteArrayInputStream(outStream.toByteArray()));
-        return src;
+        return new StreamSource(new ByteArrayInputStream(outStream.toByteArray()));
     }
     
 }

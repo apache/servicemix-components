@@ -17,19 +17,23 @@
 package test.complex.model;
 
 public class OrderConfirmation {
-	Cart cart;
-	double priceSum;
-	
-	public Cart getCart() {
-		return cart;
-	}
-	public void setCart(Cart cart) {
-		this.cart = cart;
-	}
-	public double getPriceSum() {
-		return priceSum;
-	}
-	public void setPriceSum(double priceSum) {
-		this.priceSum = priceSum;
-	}
+    Cart cart;
+
+    double priceSum;
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
+    }
+
+    public double getPriceSum() {
+        return priceSum;
+    }
+
+    public void setPriceSum(double priceSum) {
+        this.priceSum = priceSum;
+    }
 }

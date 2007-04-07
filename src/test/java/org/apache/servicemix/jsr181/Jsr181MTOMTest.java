@@ -24,6 +24,8 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
+
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -33,7 +35,6 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.ByteArrayDataSource;
 import org.apache.servicemix.jbi.util.FileUtil;
-import org.w3c.dom.Document;
 
 public class Jsr181MTOMTest extends TestCase {
 
@@ -60,7 +61,7 @@ public class Jsr181MTOMTest extends TestCase {
         Jsr181Endpoint ep = new Jsr181Endpoint();
         ep.setPojo(new EchoWithAttachment());
         ep.setMtomEnabled(true);
-        jsr181.setEndpoints(new Jsr181Endpoint[] { ep });
+        jsr181.setEndpoints(new Jsr181Endpoint[] {ep });
         
         container.activateComponent(jsr181, "jsr181");
         container.start();
@@ -74,12 +75,16 @@ public class Jsr181MTOMTest extends TestCase {
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         Destination dest = client.createDestination("service:http://jsr181.servicemix.apache.org/EchoWithAttachment");
         InOut me = dest.createInOutExchange();
-        me.getInMessage().setContent(new StringSource("<echo xmlns:xop='http://www.w3.org/2004/08/xop/include'><msg>hello world</msg><binary><xop:Include href='binary'/></binary></echo>"));
-        me.getInMessage().addAttachment("binary", new DataHandler(new ByteArrayDataSource(new byte[] { 0, 1, 2}, "image/jpg")));
+        me.getInMessage().setContent(new StringSource(
+                "<echo xmlns:xop='http://www.w3.org/2004/08/xop/include'><msg>"
+                + "hello world</msg><binary><xop:Include href='binary'/></binary></echo>"));
+        me.getInMessage().addAttachment("binary", new DataHandler(
+                new ByteArrayDataSource(new byte[] {0, 1, 2}, "image/jpg")));
         client.sendSync(me);
         assertNotNull(me.getOutMessage());
         assertEquals(1, me.getOutMessage().getAttachmentNames().size());
-        DataHandler dh = me.getOutMessage().getAttachment((String) me.getOutMessage().getAttachmentNames().iterator().next());
+        DataHandler dh = me.getOutMessage().getAttachment(
+                (String) me.getOutMessage().getAttachmentNames().iterator().next());
         assertNotNull(dh);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(dh.getInputStream(), baos);

@@ -23,17 +23,20 @@ import javax.jbi.messaging.MessageExchange;
  * 
  * @author gnodet
  */
-public class JBIContext {
+public final class JBIContext {
 
-    private static ThreadLocal exchanges = new ThreadLocal();
+    private static ThreadLocal<MessageExchange> exchanges = new ThreadLocal<MessageExchange>();
     
+    private JBIContext() {
+    }
+
     /**
      * Retrieve the MessageExchange currently being handled
      * 
      * @return the current MessageExchange or null
      */
     public static MessageExchange getMessageExchange() {
-        return (MessageExchange) exchanges.get();
+        return exchanges.get();
     }
     
     protected static void setMessageExchange(MessageExchange exchange) {

@@ -32,7 +32,6 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jsr181.Jsr181Component;
 
 import test.EchoService;
 
@@ -70,8 +69,8 @@ public class Jsr181ComponentTest extends TestCase {
         component.getServiceUnitManager().init("su", getServiceUnitPath("good1"));
         component.getServiceUnitManager().start("su");
         
-        assertNotNull(EchoService.instance);
-        assertNotNull(EchoService.instance.getContext());
+        assertNotNull(EchoService.getInstance());
+        assertNotNull(EchoService.getInstance().getContext());
         
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
@@ -105,8 +104,8 @@ public class Jsr181ComponentTest extends TestCase {
         component.getServiceUnitManager().init("good2", getServiceUnitPath("good2"));
         component.getServiceUnitManager().start("good2");
         
-        assertNotNull(EchoService.instance);
-        assertNotNull(EchoService.instance.getContext());
+        assertNotNull(EchoService.getInstance());
+        assertNotNull(EchoService.getInstance().getContext());
         
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);

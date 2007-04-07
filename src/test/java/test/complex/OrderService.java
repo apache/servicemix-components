@@ -19,7 +19,8 @@ package test.complex;
 import test.complex.model.Cart;
 import test.complex.model.OrderConfirmation;
 
-
 public interface OrderService {
-	public OrderConfirmation order(Cart cart);
+
+    OrderConfirmation order(Cart cart);
+
 }

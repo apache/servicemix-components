@@ -24,8 +24,6 @@ import javax.jbi.component.ComponentContext;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.ClientFactory;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
@@ -46,8 +44,6 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, DisposableBean {
     
-    private static final Log logger = LogFactory.getLog(JbiProxyFactoryBean.class);
-
     private String name = ClientFactory.DEFAULT_JNDI_NAME;
     private JBIContainer container;
     private ClientFactory factory;
@@ -63,25 +59,28 @@ public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, Dispo
     private ServiceMixClient client;
     
     public Object getObject() throws Exception {
-        if( proxy == null ) {
+        if (proxy == null) {
             proxy = createProxy();
         }
         return proxy;
     }
 
     private Object createProxy() throws Exception {
-        return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{type}, new InvocationHandler(){
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                InvocationHandler next = getJBIInvocationHandler();
-                return next.invoke(proxy, method, args);
-            }
-        });
+        return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{type }, 
+                new InvocationHandler() {
+                    public Object invoke(Object p, Method method, Object[] args) throws Throwable {
+                        InvocationHandler next = getJBIInvocationHandler();
+                        return next.invoke(p, method, args);
+                    }
+                }
+        );
     }
     
-    synchronized private InvocationHandler getJBIInvocationHandler() throws Exception {
-        if( jbiInvocationHandler == null ) {
+    private synchronized InvocationHandler getJBIInvocationHandler() throws Exception {
+        if (jbiInvocationHandler == null) {
             XFire xfire = Jsr181Component.createXFire(getInternalContext());
-            Object o = JbiProxy.create(xfire, context, interfaceName, service, endpoint, type, propagateSecuritySubject);
+            Object o = JbiProxy.create(xfire, context, interfaceName, service, 
+                    endpoint, type, propagateSecuritySubject);
             jbiInvocationHandler = Proxy.getInvocationHandler(o);
         }
         return jbiInvocationHandler;

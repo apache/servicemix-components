@@ -58,20 +58,21 @@ public class JbiProxyTest extends TestCase {
         Jsr181Component component1 = new Jsr181Component();
         Jsr181Endpoint endpoint1 = new Jsr181Endpoint();
         endpoint1.setPojo(new EchoService());
-        component1.setEndpoints(new Jsr181Endpoint[] { endpoint1 });
+        component1.setEndpoints(new Jsr181Endpoint[] {endpoint1 });
         container.activateComponent(component1, "JSR181Component-1");
         
         Jsr181Component component2 = new Jsr181Component();
         Jsr181Endpoint endpoint2 = new Jsr181Endpoint();
         endpoint2.setPojo(new ProxyPojoService());
         endpoint2.setServiceInterface(ProxyPojo.class.getName());
-        component2.setEndpoints(new Jsr181Endpoint[] { endpoint2 });
+        component2.setEndpoints(new Jsr181Endpoint[] {endpoint2 });
         container.activateComponent(component2, "JSR181Component-2");
         
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setInterfaceName(new QName("http://xfire.jsr181.servicemix.apache.org", "ProxyPojoPortType"));
-        me.getInMessage().setContent(new StringSource("<echo xmlns='http://jsr181.servicemix.apache.org'><echoin0>world</echoin0></echo>"));
+        me.getInMessage().setContent(new StringSource(
+                "<echo xmlns='http://jsr181.servicemix.apache.org'><echoin0>world</echoin0></echo>"));
         client.sendSync(me);
         if (me.getError() != null) {
             throw me.getError();

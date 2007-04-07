@@ -19,15 +19,13 @@ package test.complex;
 import test.complex.model.Cart;
 import test.complex.model.OrderConfirmation;
 
-
-
 public class OrderServiceImpl implements OrderService {
 
-	public OrderConfirmation order(Cart cart) {
-		OrderConfirmation oc = new OrderConfirmation();
-		oc.setCart(cart);
-		oc.setPriceSum(100);
-		return oc;
-	}
+    public OrderConfirmation order(Cart cart) {
+        OrderConfirmation oc = new OrderConfirmation();
+        oc.setCart(cart);
+        oc.setPriceSum(100);
+        return oc;
+    }
 
 }

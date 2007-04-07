@@ -34,137 +34,131 @@ import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.packaging.Consumes;
+import org.apache.servicemix.common.packaging.Provides;
 import org.apache.servicemix.common.xbean.AbstractXBeanServiceUnitAnalyzer;
 import org.apache.servicemix.common.xbean.ParentBeanFactoryPostProcessor;
 import org.apache.servicemix.jsr181.Jsr181Component;
 import org.apache.servicemix.jsr181.Jsr181Endpoint;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 
 public class Jsr181ServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 
-	protected List getConsumes(Endpoint endpoint) {
-		return new ArrayList();
-	}
+    protected List<Consumes> getConsumes(Endpoint endpoint) {
+        return new ArrayList<Consumes>();
+    }
 
-	protected List getProvides(Endpoint endpoint) {
-		// We need to generate the dummy component to register the services
-		Jsr181Endpoint jsr181Endpoint = (Jsr181Endpoint) endpoint;
-		try {
-			Jsr181Component componentDummy = new Jsr181Component();
-			componentDummy.setEndpoints(new Jsr181Endpoint[] { jsr181Endpoint });
-			componentDummy.getLifeCycle().init(new DummyComponentContext());
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to register JSR-181 service, " + e.getMessage(), e);
-		}
-		return super.getProvides(endpoint);
-	}
+    protected List<Provides> getProvides(Endpoint endpoint) {
+        // We need to generate the dummy component to register the services
+        Jsr181Endpoint jsr181Endpoint = (Jsr181Endpoint) endpoint;
+        try {
+            Jsr181Component componentDummy = new Jsr181Component();
+            componentDummy.setEndpoints(new Jsr181Endpoint[] {jsr181Endpoint });
+            componentDummy.getLifeCycle().init(new DummyComponentContext());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to register JSR-181 service, " + e.getMessage(), e);
+        }
+        return super.getProvides(endpoint);
+    }
 
-	protected String getXBeanFile() {
-		return "xbean.xml";
-	}
+    protected String getXBeanFile() {
+        return "xbean.xml";
+    }
 
-	protected boolean isValidEndpoint(Object bean) {
-		if (bean instanceof Jsr181Endpoint)
-			return true;
-		else
-			return false;
-	}
+    protected boolean isValidEndpoint(Object bean) {
+        return bean instanceof Jsr181Endpoint;
+    }
 
     protected List getBeanFactoryPostProcessors(String absolutePath) {
-        Map beans = new HashMap();
+        Map<String, Object> beans = new HashMap<String, Object>();
         beans.put("context", new DummyComponentContext());
         return Collections.singletonList(new ParentBeanFactoryPostProcessor(beans));
     }
-    
-	public class DummyComponentContext implements ComponentContext {
 
-		public ServiceEndpoint activateEndpoint(QName serviceName,
-				String endpointName) throws JBIException {
-			return null;
-		}
+    public class DummyComponentContext implements ComponentContext {
 
-		public void deactivateEndpoint(ServiceEndpoint endpoint)
-				throws JBIException {
-		}
+        public ServiceEndpoint activateEndpoint(QName serviceName, String endpointName) throws JBIException {
+            return null;
+        }
 
-		public void deregisterExternalEndpoint(ServiceEndpoint externalEndpoint)
-				throws JBIException {
+        public void deactivateEndpoint(ServiceEndpoint endpoint) throws JBIException {
+        }
 
-		}
+        public void deregisterExternalEndpoint(ServiceEndpoint externalEndpoint) throws JBIException {
 
-		public String getComponentName() {
-			return null;
-		}
+        }
 
-		public DeliveryChannel getDeliveryChannel() throws MessagingException {
-			return null;
-		}
+        public String getComponentName() {
+            return null;
+        }
 
-		public ServiceEndpoint getEndpoint(QName service, String name) {
-			return null;
-		}
+        public DeliveryChannel getDeliveryChannel() throws MessagingException {
+            return null;
+        }
 
-		public Document getEndpointDescriptor(ServiceEndpoint endpoint)
-				throws JBIException {
-			return null;
-		}
+        public ServiceEndpoint getEndpoint(QName service, String name) {
+            return null;
+        }
 
-		public ServiceEndpoint[] getEndpoints(QName interfaceName) {
-			return null;
-		}
+        public Document getEndpointDescriptor(ServiceEndpoint endpoint) throws JBIException {
+            return null;
+        }
 
-		public ServiceEndpoint[] getEndpointsForService(QName serviceName) {
-			return null;
-		}
+        public ServiceEndpoint[] getEndpoints(QName interfaceName) {
+            return null;
+        }
 
-		public ServiceEndpoint[] getExternalEndpoints(QName interfaceName) {
-			return null;
-		}
+        public ServiceEndpoint[] getEndpointsForService(QName serviceName) {
+            return null;
+        }
 
-		public ServiceEndpoint[] getExternalEndpointsForService(
-				QName serviceName) {
-			return null;
-		}
+        public ServiceEndpoint[] getExternalEndpoints(QName interfaceName) {
+            return null;
+        }
 
-		public String getInstallRoot() {
-			return null;
-		}
+        public ServiceEndpoint[] getExternalEndpointsForService(QName serviceName) {
+            return null;
+        }
 
-		public Logger getLogger(String suffix, String resourceBundleName)
-				throws MissingResourceException, JBIException {
-			return null;
-		}
+        public String getInstallRoot() {
+            return null;
+        }
 
-		public MBeanNames getMBeanNames() {
-			return null;
-		}
+        public Logger getLogger(String suffix, String resourceBundleName) throws MissingResourceException, 
+                                                                                 JBIException {
+            return null;
+        }
 
-		public MBeanServer getMBeanServer() {
-			return null;
-		}
+        public MBeanNames getMBeanNames() {
+            return null;
+        }
 
-		public InitialContext getNamingContext() {
-			return null;
-		}
+        public MBeanServer getMBeanServer() {
+            return null;
+        }
 
-		public Object getTransactionManager() {
-			return null;
-		}
+        public InitialContext getNamingContext() {
+            return null;
+        }
 
-		public String getWorkspaceRoot() {
-			return null;
-		}
+        public Object getTransactionManager() {
+            return null;
+        }
 
-		public void registerExternalEndpoint(ServiceEndpoint externalEndpoint)
-				throws JBIException {
-		}
+        public String getWorkspaceRoot() {
+            return null;
+        }
 
-		public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
-			return null;
-		}
+        public void registerExternalEndpoint(ServiceEndpoint externalEndpoint) throws JBIException {
+        }
 
-	}
+        public ServiceEndpoint resolveEndpointReference(DocumentFragment epr) {
+            return null;
+        }
+
+    }
 
 }

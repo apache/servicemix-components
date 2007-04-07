@@ -57,7 +57,7 @@ public class Jsr181OverrideTest extends TestCase {
         endpoint.setInterfaceName(itfName);
         endpoint.setEndpoint(epName);
         endpoint.setPojo(new EchoService());
-        component.setEndpoints(new Jsr181Endpoint[] { endpoint });
+        component.setEndpoints(new Jsr181Endpoint[] {endpoint });
         container.activateComponent(component, "JSR181Component");
     }
     
@@ -71,7 +71,7 @@ public class Jsr181OverrideTest extends TestCase {
         endpoint.setInterfaceName(itfName);
         endpoint.setEndpoint(epName);
         endpoint.setPojo(new EchoService2());
-        component.setEndpoints(new Jsr181Endpoint[] { endpoint });
+        component.setEndpoints(new Jsr181Endpoint[] {endpoint });
         container.activateComponent(component, "JSR181Component");
     }
     

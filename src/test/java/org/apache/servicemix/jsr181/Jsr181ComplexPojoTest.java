@@ -16,6 +16,10 @@
  */
 package org.apache.servicemix.jsr181;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.EventListener;
+
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
@@ -28,11 +32,13 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.EventListener;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
 
 import junit.framework.TestCase;
+
+import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -43,11 +49,6 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.view.DotViewEndpointListener;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.traversal.NodeIterator;
-
-import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 public class Jsr181ComplexPojoTest extends TestCase {
 
@@ -55,14 +56,13 @@ public class Jsr181ComplexPojoTest extends TestCase {
     
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
-    private boolean useJmx;
+    protected boolean useJmx;
     protected EventListener[] listeners;
-    
 
     public static void main(String[] args) {
         Jsr181ComplexPojoTest test = new Jsr181ComplexPojoTest();
         test.useJmx = true;
-        test.listeners = new EventListener[] { new DotViewEndpointListener() };
+        test.listeners = new EventListener[] {new DotViewEndpointListener() };
         
         try {
             test.setUp();
@@ -74,10 +74,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             reader.readLine();
 
-            
             test.tearDown();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Caught: " + e);
             e.printStackTrace();
         }
@@ -107,7 +105,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setPojo(new ComplexPojoImpl());
         endpoint.setServiceInterface(ComplexPojo.class.getName());
-        component.setEndpoints(new Jsr181Endpoint[] { endpoint });
+        component.setEndpoints(new Jsr181Endpoint[] {endpoint });
         container.activateComponent(component, "JSR181Component");
         
         ReceiverComponent receiver = new ReceiverComponent();
@@ -118,7 +116,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
-        me.getInMessage().setContent(new StringSource("<oneWay xmlns='http://jsr181.servicemix.apache.org'><in0>world</in0></oneWay>"));
+        me.getInMessage().setContent(new StringSource(
+                "<oneWay xmlns='http://jsr181.servicemix.apache.org'><in0>world</in0></oneWay>"));
         client.sendSync(me);
         
         // Wait all acks being processed
@@ -130,7 +129,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setPojo(new ComplexPojoImpl());
         endpoint.setServiceInterface(ComplexPojo.class.getName());
-        component.setEndpoints(new Jsr181Endpoint[] { endpoint });
+        component.setEndpoints(new Jsr181Endpoint[] {endpoint });
         container.activateComponent(component, "JSR181Component");
         
         EchoComponent echo = new EchoComponent();
@@ -145,7 +144,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setInterfaceName(new QName("http://jsr181.servicemix.apache.org", "ComplexPojoPortType"));
-        me.getInMessage().setContent(new StringSource("<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world ã</in0></twoWay>"));
+        me.getInMessage().setContent(new StringSource(
+                "<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world ã</in0></twoWay>"));
         client.sendSync(me);
         System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
@@ -159,7 +159,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         Jsr181Endpoint endpoint = new Jsr181Endpoint();
         endpoint.setPojo(new ComplexPojoImpl());
         endpoint.setServiceInterface(ComplexPojo.class.getName());
-        component.setEndpoints(new Jsr181Endpoint[] { endpoint });
+        component.setEndpoints(new Jsr181Endpoint[] {endpoint });
         container.activateComponent(component, "JSR181Component");
         
         EchoComponent echo = new EchoComponent();
@@ -196,10 +196,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
             if (element == null) {
                 return "";
             }
-            String text = DOMUtil.getElementText(element);
-            return text;
-        }
-        else if (root != null) {
+            return DOMUtil.getElementText(element);
+        } else if (root != null) {
             return root.getNodeValue();
         } else {
             return null;
@@ -207,8 +205,8 @@ public class Jsr181ComplexPojoTest extends TestCase {
     }
     
     public interface ComplexPojo {
-        public void oneWay(Source src) throws Exception;
-        public Source twoWay(Source src) throws Exception;
+        void oneWay(Source src) throws Exception;
+        Source twoWay(Source src) throws Exception;
     }
     
     public static class ComplexPojoImpl implements ComplexPojo {

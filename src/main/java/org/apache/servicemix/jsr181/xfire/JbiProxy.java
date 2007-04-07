@@ -38,6 +38,10 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.WebFault;
 
+import org.w3c.dom.Document;
+
+import com.ibm.wsdl.Constants;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.xfire.XFire;
@@ -51,13 +55,10 @@ import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.ServiceFactory;
 import org.codehaus.xfire.util.jdom.StaxSerializer;
 import org.jdom.Element;
-import org.w3c.dom.Document;
-
-import com.ibm.wsdl.Constants;
 
 public class JbiProxy {
     
-    private static final Log logger = LogFactory.getLog(JbiProxyFactoryBean.class);
+    private static final Log LOG = LogFactory.getLog(JbiProxyFactoryBean.class);
 
     protected XFire xfire;
     protected ComponentContext context;
@@ -70,27 +71,6 @@ public class JbiProxy {
     protected ServiceEndpoint endpoint;
     protected boolean propagateSecurityContext;
     
-    public static Object create(XFire xfire,
-                                ComponentContext context,
-                                QName interfaceName,
-                                QName serviceName,
-                                String endpointName,
-                                Class serviceClass) throws Exception {
-        JbiProxy p = new JbiProxy(xfire, context, serviceClass, interfaceName, serviceName, endpointName);
-        return p.getProxy();
-    }
-    
-    public static Object create(XFire xfire,
-            ComponentContext context,
-            QName interfaceName,
-            QName serviceName,
-            String endpointName,
-            Class serviceClass,
-            boolean propagateSecurityContext) throws Exception {
-        JbiProxy p = new JbiProxy(xfire, context, serviceClass, interfaceName, serviceName, endpointName, propagateSecurityContext);
-        return p.getProxy();
-    }
-
     public JbiProxy(XFire xfire,
                     ComponentContext context,
                     Class serviceClass,
@@ -131,6 +111,28 @@ public class JbiProxy {
         this.propagateSecurityContext = propagateSecurityContext;
     }
 
+    public static Object create(XFire xfire,
+            ComponentContext context,
+            QName interfaceName,
+            QName serviceName,
+            String endpointName,
+            Class serviceClass) throws Exception {
+        JbiProxy p = new JbiProxy(xfire, context, serviceClass, interfaceName, serviceName, endpointName);
+        return p.getProxy();
+    }
+
+    public static Object create(XFire xfire,
+            ComponentContext context,
+            QName interfaceName,
+            QName serviceName,
+            String endpointName,
+            Class serviceClass,
+            boolean propagateSecurityContext) throws Exception {
+        JbiProxy p = new JbiProxy(xfire, context, serviceClass, interfaceName, 
+                serviceName, endpointName, propagateSecurityContext);
+        return p.getProxy();
+    }
+
     public Object getProxy() throws Exception {
         if (proxy == null) {
             Map props = new HashMap();
@@ -152,7 +154,8 @@ public class JbiProxy {
             if (endpoint != null) {
                 client.getService().setProperty(JbiChannel.JBI_ENDPOINT, endpoint);
             }
-            client.getService().setProperty(JbiChannel.JBI_SECURITY_PROPAGATATION, Boolean.valueOf(propagateSecurityContext));
+            client.getService().setProperty(JbiChannel.JBI_SECURITY_PROPAGATATION, 
+                    Boolean.valueOf(propagateSecurityContext));
             XFireProxyFactory xpf = new XFireProxyFactory(xfire);
             proxy = xpf.create(client);
         }
@@ -163,16 +166,17 @@ public class JbiProxy {
         if (this.description == null) {
             ServiceEndpoint[] endpoints = getEndpoints();
             if (endpoints == null || endpoints.length == 0) {
-                throw new IllegalStateException("No endpoints found for interface " + interfaceName + ", serviceName " + serviceName + " and endpoint " + endpointName);
+                throw new IllegalStateException("No endpoints found for interface "
+                        + interfaceName + ", serviceName " + serviceName + " and endpoint " + endpointName);
             }
-            ServiceEndpoint endpoint = chooseEndpoint(endpoints);
-            if (endpoint == null) {
+            ServiceEndpoint ep = chooseEndpoint(endpoints);
+            if (ep == null) {
                 throw new IllegalStateException("No suitable endpoint found");
             }
             if (serviceName != null && endpointName != null) {
-                this.endpoint = endpoint;
+                this.endpoint = ep;
             }
-            Document doc = context.getEndpointDescriptor(endpoint);
+            Document doc = context.getEndpointDescriptor(ep);
             WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
             reader.setFeature(Constants.FEATURE_VERBOSE, false);
             this.description = reader.readWSDL(null, doc);
@@ -183,12 +187,12 @@ public class JbiProxy {
     protected ServiceEndpoint[] getEndpoints() throws JBIException {
         ServiceEndpoint[] endpoints;
         if (endpointName != null && serviceName != null) {
-            ServiceEndpoint endpoint = context.getEndpoint(serviceName, endpointName);
-            if (endpoint == null) {
+            ServiceEndpoint ep = context.getEndpoint(serviceName, endpointName);
+            if (ep == null) {
                 endpoints = new ServiceEndpoint[0];
             } else {
-                this.endpoint = endpoint;
-                endpoints = new ServiceEndpoint[] { endpoint };
+                this.endpoint = ep;
+                endpoints = new ServiceEndpoint[] {ep };
             }
         } else if (serviceName != null) {
             endpoints = context.getEndpointsForService(serviceName);
@@ -231,13 +235,13 @@ public class JbiProxy {
             }
         }
         protected Exception translateException(Method method, Exception t) {
-            if (t instanceof XFireFault == false) {
-                logger.debug("Exception is not an XFireFault");
+            if (!(t instanceof XFireFault)) {
+                LOG.debug("Exception is not an XFireFault");
                 return t;
             }
             XFireFault xfireFault = (XFireFault) t;
             if (!xfireFault.hasDetails()) {
-                logger.debug("XFireFault has no details");
+                LOG.debug("XFireFault has no details");
                 return t;
             }
             // Get first child element of <detail/>
@@ -250,17 +254,17 @@ public class JbiProxy {
                 }
             }
             if (detail == null) {
-                logger.debug("XFireFault has no element in <detail/>");
+                LOG.debug("XFireFault has no element in <detail/>");
                 return t;
             }
             QName qname = new QName(detail.getNamespaceURI(),
                                     detail.getName());
             Class<?>[] exceptions = method.getExceptionTypes();
             for (int i = 0; i < exceptions.length; i++) {
-                logger.debug("Checking exception: " + exceptions[i]);
+                LOG.debug("Checking exception: " + exceptions[i]);
                 WebFault wf = exceptions[i].getAnnotation(WebFault.class);
                 if (wf == null) {
-                    logger.debug("No WebFault annotation");
+                    LOG.debug("No WebFault annotation");
                     continue;
                 }
                 QName exceptionName = new QName(wf.targetNamespace(), wf.name());
@@ -273,15 +277,15 @@ public class JbiProxy {
                         new StaxSerializer().writeElement(detail, writer);
                         writer.close();
                         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                        JAXBElement<?> obj = JAXBContext.newInstance(infoClass).createUnmarshaller().unmarshal(new StreamSource(bais), infoClass);
+                        JAXBElement<?> obj = JAXBContext.newInstance(infoClass).createUnmarshaller()
+                                .unmarshal(new StreamSource(bais), infoClass);
                         Constructor<?> cst = exceptions[i].getConstructor(String.class, infoClass);
-                        Exception e = (Exception) cst.newInstance(xfireFault.toString(), obj.getValue());
-                        return e;
+                        return (Exception) cst.newInstance(xfireFault.toString(), obj.getValue());
                     } catch (Throwable e) {
-                        logger.debug("Error: " + e);
+                        LOG.debug("Error: " + e);
                     }
                 } else {
-                    logger.debug("QName mismatch: element: " + qname + ", exception: " + exceptionName);
+                    LOG.debug("QName mismatch: element: " + qname + ", exception: " + exceptionName);
                 }
             }
             return t;
