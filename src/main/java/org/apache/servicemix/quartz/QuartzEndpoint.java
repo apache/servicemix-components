@@ -140,8 +140,7 @@ public class QuartzEndpoint extends ConsumerEndpoint {
             exchange.setInMessage(message);
             configureExchangeTarget(exchange);
             send(exchange);
-        }
-        catch (MessagingException e) {
+        } catch (MessagingException e) {
             throw new JobExecutionException(e);
         }
     }
@@ -189,17 +188,16 @@ public class QuartzEndpoint extends ConsumerEndpoint {
             scheduler.addCalendar(e.getKey(), e.getValue(), true, true);
         }
         scheduler.addJob(getJobDetail(), true);
-        for (Trigger trigger : getTriggers()) {
-            boolean triggerExists = (scheduler.getTrigger(trigger.getName(), trigger.getGroup()) != null);
+        for (Trigger trg : getTriggers()) {
+            boolean triggerExists = scheduler.getTrigger(trg.getName(), trg.getGroup()) != null;
             if (!triggerExists) {
                 try {
-                    scheduler.scheduleJob(trigger);
-                }
-                catch (ObjectAlreadyExistsException ex) {
-                    scheduler.rescheduleJob(trigger.getName(), trigger.getGroup(), trigger);
+                    scheduler.scheduleJob(trg);
+                } catch (ObjectAlreadyExistsException ex) {
+                    scheduler.rescheduleJob(trg.getName(), trg.getGroup(), trg);
                 }
             } else {
-                scheduler.rescheduleJob(trigger.getName(), trigger.getGroup(), trigger);
+                scheduler.rescheduleJob(trg.getName(), trg.getGroup(), trg);
             }
         }
         super.start();
@@ -208,8 +206,8 @@ public class QuartzEndpoint extends ConsumerEndpoint {
     public void stop() throws Exception {
         super.stop();
         Scheduler scheduler = ((QuartzComponent) getServiceUnit().getComponent()).getScheduler();
-        for (Trigger trigger : getTriggers()) {
-            scheduler.unscheduleJob(trigger.getName(), trigger.getGroup());
+        for (Trigger trg : getTriggers()) {
+            scheduler.unscheduleJob(trg.getName(), trg.getGroup());
         }
         scheduler.deleteJob(getJobDetail().getName(), getJobDetail().getGroup());
         for (Map.Entry<String, Calendar> e : getCalendars().entrySet()) {

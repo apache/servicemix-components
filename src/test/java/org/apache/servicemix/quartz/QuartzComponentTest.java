@@ -22,7 +22,6 @@ import junit.framework.TestCase;
 
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.quartz.Trigger;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
 
 public class QuartzComponentTest extends TestCase {
@@ -42,7 +41,7 @@ public class QuartzComponentTest extends TestCase {
         trigger.setName("trigger");
         trigger.afterPropertiesSet();
         endpoint.setTrigger(trigger);
-        quartz.setEndpoints(new QuartzEndpoint[] { endpoint });
+        quartz.setEndpoints(new QuartzEndpoint[] {endpoint });
         jbi.activateComponent(quartz, "servicemix-quartz");
         
         ReceiverComponent receiver = new ReceiverComponent(new QName("receiver"), "endpoint");

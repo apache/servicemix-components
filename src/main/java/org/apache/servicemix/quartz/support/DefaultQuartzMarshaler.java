@@ -24,14 +24,15 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import org.apache.servicemix.components.util.MarshalerSupport;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * The default implementation of the Quartz marshaler
@@ -40,15 +41,17 @@ import org.w3c.dom.Element;
  */
 public class DefaultQuartzMarshaler extends MarshalerSupport implements QuartzMarshaler {
 
-    public void populateNormalizedMessage(NormalizedMessage message, JobExecutionContext context) throws JobExecutionException, MessagingException {
+    public void populateNormalizedMessage(NormalizedMessage message, JobExecutionContext context) 
+        throws JobExecutionException, MessagingException {
+
         JobDetail detail = context.getJobDetail();
         JobDataMap dataMap = detail.getJobDataMap();
-        for (Iterator iter = dataMap.entrySet().iterator(); iter.hasNext(); ) {
+        for (Iterator iter = dataMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             String key = (String) entry.getKey();
             if (!key.equals(ServiceMixJob.COMPONENT_NAME) && !key.equals(ServiceMixJob.ENDPOINT_NAME)) {
-	            Object value = entry.getValue();
-	            message.setProperty(key, value);
+                Object value = entry.getValue();
+                message.setProperty(key, value);
             }
         }
         try {
@@ -61,8 +64,7 @@ public class DefaultQuartzMarshaler extends MarshalerSupport implements QuartzMa
             DOMUtil.addChildElement(root, "description", detail.getDescription());
             DOMUtil.addChildElement(root, "fireTime", context.getFireTime());
             message.setContent(new DOMSource(document));
-        }
-        catch (ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
             throw new MessagingException("Failed to create content: " + e, e);
         }
     }

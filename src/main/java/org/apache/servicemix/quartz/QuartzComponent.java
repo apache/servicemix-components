@@ -87,7 +87,7 @@ public class QuartzComponent extends DefaultComponent {
      */
     @Override
     protected Class[] getEndpointClasses() {
-        return new Class[] { QuartzEndpoint.class };
+        return new Class[] {QuartzEndpoint.class };
     }
     
     /* (non-Javadoc)

@@ -18,12 +18,13 @@ package org.apache.servicemix.quartz;
 
 import javax.jbi.messaging.NormalizedMessage;
 
+import org.w3c.dom.Element;
+
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.Element;
 
 public class QuartzSpringTest extends SpringTestSupport {
 

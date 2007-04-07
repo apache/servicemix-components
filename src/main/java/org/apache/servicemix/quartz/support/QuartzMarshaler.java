@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.quartz.support;
 
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessagingException;
 
 /**
  * @version $Revision$
@@ -35,5 +35,7 @@ public interface QuartzMarshaler {
      * @throws JobExecutionException
      * @throws MessagingException
      */
-    void populateNormalizedMessage(NormalizedMessage message, JobExecutionContext context) throws JobExecutionException, MessagingException;
+    void populateNormalizedMessage(NormalizedMessage message, JobExecutionContext context)
+        throws JobExecutionException, MessagingException;
+
 }

@@ -30,8 +30,8 @@ import org.quartz.SchedulerException;
  */
 public class ServiceMixJob implements Job {
     
-    public static String COMPONENT_NAME = "org.apache.servicemix.quartz.ComponentName";
-    public static String ENDPOINT_NAME = "org.apache.servicemix.quartz.EndpointName";
+    public static final String COMPONENT_NAME = "org.apache.servicemix.quartz.ComponentName";
+    public static final String ENDPOINT_NAME = "org.apache.servicemix.quartz.EndpointName";
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
         try {
@@ -41,7 +41,8 @@ public class ServiceMixJob implements Job {
             }
             QuartzComponent component = (QuartzComponent) context.getScheduler().getContext().get(componentName);
             if (component == null) {
-                throw new JobExecutionException("No quartz JBI component available for key: " + componentName + ". Bad job data map");
+                throw new JobExecutionException("No quartz JBI component available for key: " + componentName + "."
+                        + " Bad job data map");
             }
             String endpointName = (String) context.getJobDetail().getJobDataMap().get(ENDPOINT_NAME);
             if (endpointName == null) {
@@ -49,7 +50,8 @@ public class ServiceMixJob implements Job {
             }
             QuartzEndpoint endpoint = (QuartzEndpoint) component.getRegistry().getEndpoint(endpointName);
             if (endpoint == null) {
-                throw new JobExecutionException("No quartz JBI endpoint available for key: " + endpointName + ". Bad job data map");
+                throw new JobExecutionException("No quartz JBI endpoint available for key: " + endpointName + "."
+                        + " Bad job data map");
             }
             endpoint.onJobExecute(context);
         } catch (SchedulerException e) {
