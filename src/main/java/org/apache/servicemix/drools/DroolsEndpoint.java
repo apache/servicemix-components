@@ -131,12 +131,11 @@ public class DroolsEndpoint extends ProviderEndpoint {
             try {
                 if (ruleBaseResource != null) {
                     is = ruleBaseResource.getInputStream();
-                }
-                else if (ruleBaseURL != null) {
+                } else if (ruleBaseURL != null) {
                     is = ruleBaseURL.openStream();
-                }
-                else {
-                    throw new IllegalArgumentException("Property ruleBase, ruleBaseResource or ruleBaseURL must be set");
+                } else {
+                    throw new IllegalArgumentException("Property ruleBase, ruleBaseResource "
+                            + "or ruleBaseURL must be set");
                 }
                 RuleBaseLoader loader = RuleBaseLoader.getInstance();
                 ruleBase = loader.loadFromReader(new InputStreamReader(is));
@@ -151,7 +150,8 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage)
+     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(
+     *      javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage)
      */
     public void process(MessageExchange exchange) throws Exception {
         drools(exchange);
@@ -167,8 +167,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
     
     protected WorkingMemory createWorkingMemory(MessageExchange exchange) throws Exception {
-        WorkingMemory memory = ruleBase.newWorkingMemory();
-        return memory;
+        return ruleBase.newWorkingMemory();
     }
 
     protected void populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {

@@ -101,50 +101,50 @@ public class JbiHelper {
     */
 
     public void route(String uri) throws MessagingException {
-        MessageExchange exchange = this.exchange.getInternalExchange();
-        NormalizedMessage in = exchange.getMessage("in");
-        MessageExchange me = getChannel().createExchangeFactory().createExchange(exchange.getPattern());
-        URIResolver.configureExchange(me, getContext(), uri);
-        MessageUtil.transferToIn(in, me);
-        getChannel().sendSync(me);
-        if (me.getStatus() == ExchangeStatus.DONE) {
-            exchange.setStatus(ExchangeStatus.DONE);
-            getChannel().send(exchange);
-        } else if (me.getStatus() == ExchangeStatus.ERROR) {
-            exchange.setStatus(ExchangeStatus.ERROR);
-            exchange.setError(me.getError());
-            getChannel().send(exchange);
+        MessageExchange me = this.exchange.getInternalExchange();
+        NormalizedMessage in = me.getMessage("in");
+        MessageExchange newMe = getChannel().createExchangeFactory().createExchange(me.getPattern());
+        URIResolver.configureExchange(newMe, getContext(), uri);
+        MessageUtil.transferToIn(in, newMe);
+        getChannel().sendSync(newMe);
+        if (newMe.getStatus() == ExchangeStatus.DONE) {
+            me.setStatus(ExchangeStatus.DONE);
+            getChannel().send(me);
+        } else if (newMe.getStatus() == ExchangeStatus.ERROR) {
+            me.setStatus(ExchangeStatus.ERROR);
+            me.setError(newMe.getError());
+            getChannel().send(me);
         } else {
-            if (me.getFault() != null) {
-                MessageUtil.transferFaultToFault(me, exchange);
+            if (newMe.getFault() != null) {
+                MessageUtil.transferFaultToFault(newMe, me);
             } else {
-                MessageUtil.transferOutToOut(me, exchange);
+                MessageUtil.transferOutToOut(newMe, me);
             }
-            getChannel().sendSync(exchange);
+            getChannel().sendSync(me);
         }
         update();
     }
 
     public void fault(String content) throws Exception {
-        MessageExchange exchange = this.exchange.getInternalExchange();
-        if (exchange instanceof InOnly) {
-            exchange.setError(new Exception(content));
-            getChannel().send(exchange);
+        MessageExchange me = this.exchange.getInternalExchange();
+        if (me instanceof InOnly) {
+            me.setError(new Exception(content));
+            getChannel().send(me);
         } else {
-            Fault fault = exchange.createFault();
+            Fault fault = me.createFault();
             fault.setContent(new StringSource(content));
-            exchange.setFault(fault);
-            getChannel().sendSync(exchange);
+            me.setFault(fault);
+            getChannel().sendSync(me);
         }
         update();
     }
 
     public void answer(String content) throws Exception {
-        MessageExchange exchange = this.exchange.getInternalExchange();
-        NormalizedMessage out = exchange.createMessage();
+        MessageExchange me = this.exchange.getInternalExchange();
+        NormalizedMessage out = me.createMessage();
         out.setContent(new StringSource(content));
-        exchange.setMessage(out, "out");
-        getChannel().sendSync(exchange);
+        me.setMessage(out, "out");
+        getChannel().sendSync(me);
         update();
     }
 

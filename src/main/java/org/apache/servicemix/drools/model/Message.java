@@ -21,14 +21,15 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
+import org.w3c.dom.Element;
+
 import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
 import org.apache.servicemix.expression.JAXPStringXPathExpression;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.w3c.dom.Element;
 
 public class Message {
 
-    private final static SourceTransformer TRANFORMER = new SourceTransformer();
+    private static final SourceTransformer TRANFORMER = new SourceTransformer();
     
     private final NormalizedMessage message;
     private final NamespaceContext namespaceContext;
@@ -65,10 +66,9 @@ public class Message {
     public String valueOf(String xpath) throws Exception {
         JAXPStringXPathExpression expression = new JAXPStringXPathExpression(xpath);
         if (this.namespaceContext != null) {
-        	expression.setNamespaceContext(this.namespaceContext);
+            expression.setNamespaceContext(this.namespaceContext);
         }
-        String res = (String)expression.evaluate(null, message);
-        return res;
+        return (String)expression.evaluate(null, message);
     }
     
     

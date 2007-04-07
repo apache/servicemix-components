@@ -21,6 +21,8 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Element;
+
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -31,7 +33,6 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.core.io.ClassPathResource;
-import org.w3c.dom.Element;
 
 public class DroolsComponentTest extends TestCase {
 
@@ -56,7 +57,7 @@ public class DroolsComponentTest extends TestCase {
         DroolsEndpoint endpoint = new DroolsEndpoint(drools.getServiceUnit(),
                                                      new QName("drools"), "endpoint");
         endpoint.setRuleBaseResource(new ClassPathResource("router.drl"));
-        drools.setEndpoints(new DroolsEndpoint[] { endpoint });
+        drools.setEndpoints(new DroolsEndpoint[] {endpoint });
         jbi.activateComponent(drools, "servicemix-drools");
         
         ReceiverComponent r1 = new ReceiverComponent(new QName("target1"), "endpoint");
@@ -108,7 +109,7 @@ public class DroolsComponentTest extends TestCase {
         DroolsEndpoint endpoint = new DroolsEndpoint(drools.getServiceUnit(),
                                                      new QName("drools"), "endpoint");
         endpoint.setRuleBaseResource(new ClassPathResource("router.drl"));
-        drools.setEndpoints(new DroolsEndpoint[] { endpoint });
+        drools.setEndpoints(new DroolsEndpoint[] {endpoint });
         jbi.activateComponent(drools, "servicemix-drools");
         
         MockServiceComponent m1 = new MockServiceComponent(new QName("target1"), "endpoint");
@@ -169,7 +170,7 @@ public class DroolsComponentTest extends TestCase {
         DroolsEndpoint endpoint = new DroolsEndpoint(drools.getServiceUnit(),
                                                      new QName("drools"), "endpoint");
         endpoint.setRuleBaseResource(new ClassPathResource("fibonacci.drl"));
-        drools.setEndpoints(new DroolsEndpoint[] { endpoint });
+        drools.setEndpoints(new DroolsEndpoint[] {endpoint });
         jbi.activateComponent(drools, "servicemix-drools");
         
         jbi.start();

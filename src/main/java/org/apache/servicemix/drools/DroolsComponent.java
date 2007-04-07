@@ -34,7 +34,7 @@ public class DroolsComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { DroolsEndpoint.class };
+        return new Class[] {DroolsEndpoint.class };
     }
 
     /**

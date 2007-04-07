@@ -45,7 +45,18 @@ public class Exchange {
     public Exchange(MessageExchange exchange, NamespaceContext namespaceContext) {
         this.exchange = exchange;
         this.namespaceContext = namespaceContext;
-        update();
+        if (in == null) {
+            NormalizedMessage msg = exchange.getMessage("in");
+            in = msg != null ? new Message(msg, this.namespaceContext) : null;
+        }
+        if (out == null) {
+            NormalizedMessage msg = exchange.getMessage("out");
+            out = msg != null ? new Message(msg, this.namespaceContext) : null;
+        }
+        if (fault == null) {
+            javax.jbi.messaging.Fault msg = exchange.getFault();
+            fault = msg != null ? new Fault(msg, this.namespaceContext) : null;
+        }
     }
     
     public MessageExchange getInternalExchange() {
@@ -105,21 +116,6 @@ public class Exchange {
     protected Message getMessage(String name) {
         NormalizedMessage msg = exchange.getMessage(name);
         return msg != null ? new Message(msg, this.namespaceContext) : null;
-    }
-    
-    protected void update() {
-        if (in == null) {
-            NormalizedMessage msg = exchange.getMessage("in");
-            in = msg != null ? new Message(msg, this.namespaceContext) : null;
-        }
-        if (out == null) {
-            NormalizedMessage msg = exchange.getMessage("out");
-            out = msg != null ? new Message(msg, this.namespaceContext) : null;
-        }
-        if (fault == null) {
-            javax.jbi.messaging.Fault msg = exchange.getFault();
-            fault = msg != null ? new Fault(msg,this.namespaceContext) : null;
-        }
     }
     
 }

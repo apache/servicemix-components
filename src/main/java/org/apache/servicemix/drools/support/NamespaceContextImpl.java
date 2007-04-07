@@ -41,13 +41,14 @@ public class NamespaceContextImpl implements NamespaceContext {
      * is used to ensure that {@link #getPrefix(String)} always returns the same
      * prefix, unless that prefix is removed.
      */
-    private Map namespaces = new LinkedHashMap();
+    private Map<String, String> namespaces;
     
     /**
      * Constructs a SimpleNamespaceContext with no parent context or namespace
      * declarations.
      */
     public NamespaceContextImpl() {
+        this.namespaces = new LinkedHashMap<String, String>();
     }
     
     /**
@@ -56,8 +57,8 @@ public class NamespaceContextImpl implements NamespaceContext {
      * 
      * @param namespaces A Map of namespace URIs, keyed by their prefixes.
      */
-    public NamespaceContextImpl(Map namespaces) {
-        setNamespaces(namespaces);
+    public NamespaceContextImpl(Map<String, String> namespaces) {
+        this.namespaces = new LinkedHashMap<String, String>(namespaces);
     }
     
     /**
@@ -71,7 +72,7 @@ public class NamespaceContextImpl implements NamespaceContext {
     /**
      * @param namespaces The namespaces to set.
      */
-    public void setNamespaces(Map namespaces) {
+    public void setNamespaces(Map<String, String> namespaces) {
         this.namespaces.clear();
         if (namespaces != null) {
             this.namespaces.putAll(namespaces);
@@ -131,7 +132,7 @@ public class NamespaceContextImpl implements NamespaceContext {
     /* (non-Javadoc)
      * @see javax.xml.namespace.NamespaceContext#getPrefixes(java.lang.String)
      */
-    public Iterator getPrefixes(String nsURI) {
+    public Iterator<String> getPrefixes(String nsURI) {
         if (nsURI == null) {
             throw new IllegalArgumentException("nsURI was null");
         } else if (nsURI.length() == 0) {
@@ -141,14 +142,12 @@ public class NamespaceContextImpl implements NamespaceContext {
         } else if (nsURI.equals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI)) {
             return Collections.singleton(XMLConstants.XMLNS_ATTRIBUTE).iterator();
         }
-        Set prefixes = null;
-        Iterator iter = namespaces.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            String uri = (String) entry.getValue();
+        Set<String> prefixes = null;
+        for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+            String uri = entry.getValue();
             if (uri.equals(nsURI)) {
                 if (prefixes == null) {
-                    prefixes = new HashSet();
+                    prefixes = new HashSet<String>();
                 }
                 prefixes.add(entry.getKey());
             }
@@ -158,7 +157,8 @@ public class NamespaceContextImpl implements NamespaceContext {
         } else if (nsURI.length() == 0) {
             return Collections.singleton("").iterator();
         } else {
-            return Collections.EMPTY_LIST.iterator();
+            prefixes = Collections.emptySet();
+            return prefixes.iterator();
         }
     }
     
