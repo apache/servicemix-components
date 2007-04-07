@@ -28,30 +28,27 @@ import javax.jbi.messaging.MessagingException;
  */
 public class ScriptExchangeHelper implements ScriptHelper {
 
-	private ScriptExchangeProcessorEndpoint endpoint;
+    private ScriptExchangeProcessorEndpoint endpoint;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.servicemix.script.ScriptHelper#setScriptExchangeProcessorEndpoint(org.apache.servicemix.script.ScriptExchangeProcessorEndpoint)
-	 */
-	public void setScriptExchangeProcessorEndpoint(
-			ScriptExchangeProcessorEndpoint endpoint) {
-		this.endpoint = endpoint;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.script.ScriptHelper#setScriptExchangeProcessorEndpoint(
+     *          org.apache.servicemix.script.ScriptExchangeProcessorEndpoint)
+     */
+    public void setScriptExchangeProcessorEndpoint(ScriptExchangeProcessorEndpoint ep) {
+        this.endpoint = ep;
+    }
 
-	public void doneExchange(MessageExchange exchange)
-			throws MessagingException {
-		endpoint.done(exchange);
-	}
+    public void doneExchange(MessageExchange exchange) throws MessagingException {
+        endpoint.done(exchange);
+    }
 
-	public void failExchange(MessageExchange exchange, Exception exception)
-			throws MessagingException {
-		endpoint.fail(exchange, exception);
-	}
+    public void failExchange(MessageExchange exchange, Exception exception) throws MessagingException {
+        endpoint.fail(exchange, exception);
+    }
 
-	public void sendExchange(MessageExchange exchange)
-			throws MessagingException {
-		endpoint.send(exchange);
-	}
+    public void sendExchange(MessageExchange exchange) throws MessagingException {
+        endpoint.send(exchange);
+    }
 }
