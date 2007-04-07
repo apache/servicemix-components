@@ -30,7 +30,7 @@ import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
  */
 public class XPathPredicate extends JAXPBooleanXPathExpression implements Predicate {
 
-    private static final Log log = LogFactory.getLog(XPathPredicate.class);
+    private static final Log LOG = LogFactory.getLog(XPathPredicate.class);
     
     public XPathPredicate() {
     }
@@ -48,7 +48,7 @@ public class XPathPredicate extends JAXPBooleanXPathExpression implements Predic
             Boolean match = (Boolean) evaluate(exchange, in);
             return Boolean.TRUE.equals(match);
         } catch (Exception e) {
-            log.warn("Could not evaluate xpath expression", e);
+            LOG.warn("Could not evaluate xpath expression", e);
             return false;
         }
     }

@@ -24,14 +24,15 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import org.apache.servicemix.eip.support.AbstractAggregator;
 import org.apache.servicemix.eip.support.AbstractSplitter;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * Aggregator can be used to wait and combine several messages.
@@ -180,40 +181,46 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /*(non-Javadoc)
-     * @see org.apache.servicemix.eip.support.AggregationFactory#getCorrelationID(javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage)
+     * @see org.apache.servicemix.eip.support.AggregationFactory#getCorrelationID(
+     *      javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage)
      */
     public String getCorrelationID(MessageExchange exchange, NormalizedMessage message) throws Exception {
         return (String) corrId.evaluate(exchange, message);
     }
     
     /* (non-Javadoc)
-     * @see org.apache.servicemix.eip.support.Aggregation#addMessage(javax.jbi.messaging.NormalizedMessage, javax.jbi.messaging.MessageExchange)
+     * @see org.apache.servicemix.eip.support.Aggregation#addMessage(
+     *      javax.jbi.messaging.NormalizedMessage, javax.jbi.messaging.MessageExchange)
      */
-    public boolean addMessage(Object aggregation, NormalizedMessage message, MessageExchange exchange) throws Exception {
+    public boolean addMessage(Object aggregation, NormalizedMessage message, MessageExchange exchange) 
+        throws Exception {
         NormalizedMessage[] messages = ((SplitterAggregation) aggregation).messages;
         // Retrieve count, index
-        Integer count = (Integer) SplitAggregator.this.count.evaluate(exchange, message);
-        if (count == null) {
-            throw new IllegalArgumentException("Property " + AbstractSplitter.SPLITTER_COUNT + " not specified on message");
+        Integer cnt = (Integer) SplitAggregator.this.count.evaluate(exchange, message);
+        if (cnt == null) {
+            throw new IllegalArgumentException("Property " + AbstractSplitter.SPLITTER_COUNT
+                    + " not specified on message");
         }
         if (messages == null) {
-            messages = new NormalizedMessage[count.intValue()];
+            messages = new NormalizedMessage[cnt];
             ((SplitterAggregation) aggregation).messages = messages;
-        } else if (count.intValue() != messages.length) {
-            throw new IllegalArgumentException("Property " + AbstractSplitter.SPLITTER_COUNT + " is not consistent (received " + count.intValue() + ", was " + messages.length + ")");
+        } else if (cnt != messages.length) {
+            throw new IllegalArgumentException("Property " + AbstractSplitter.SPLITTER_COUNT
+                    + " is not consistent (received " + cnt + ", was " + messages.length + ")");
         }
-        Integer index = (Integer) SplitAggregator.this.index.evaluate(exchange, message);
-        if (index == null) {
-            throw new IllegalArgumentException("Property " + AbstractSplitter.SPLITTER_INDEX + " not specified on message");
+        Integer idx = (Integer) SplitAggregator.this.index.evaluate(exchange, message);
+        if (idx == null) {
+            throw new IllegalArgumentException("Property " + AbstractSplitter.SPLITTER_INDEX
+                    + " not specified on message");
         }
-        if (index.intValue() < 0 || index.intValue() >= messages.length) {
-            throw new IllegalArgumentException("Index is ouf of bound: " + index + " [0.." + messages.length + "]");
+        if (idx < 0 || idx >= messages.length) {
+            throw new IllegalArgumentException("Index is ouf of bound: " + idx + " [0.." + messages.length + "]");
         }
-        if (messages[index.intValue()] != null) {
-            throw new IllegalStateException("Message with index " + index.intValue() + " has already been received");
+        if (messages[idx] != null) {
+            throw new IllegalStateException("Message with index " + idx + " has already been received");
         }
         // Store message
-        messages[index.intValue()] = message;
+        messages[idx] = message;
         // Check if all messages have been received
         for (int i = 0; i < messages.length; i++) {
             if (messages[i] == null) {
@@ -224,9 +231,11 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.eip.support.Aggregation#buildAggregate(javax.jbi.messaging.NormalizedMessage, javax.jbi.messaging.MessageExchange, boolean)
+     * @see org.apache.servicemix.eip.support.Aggregation#buildAggregate(
+     *      javax.jbi.messaging.NormalizedMessage, javax.jbi.messaging.MessageExchange, boolean)
      */
-    public void buildAggregate(Object aggregation, NormalizedMessage message, MessageExchange exchange, boolean timeout) throws Exception {
+    public void buildAggregate(Object aggregation, NormalizedMessage message, 
+            MessageExchange exchange, boolean doTimeout) throws Exception {
         NormalizedMessage[] messages = ((SplitterAggregation) aggregation).messages;
         String correlationId = ((SplitterAggregation) aggregation).correlationId;
         SourceTransformer st = new SourceTransformer();

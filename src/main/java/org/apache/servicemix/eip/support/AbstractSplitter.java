@@ -71,7 +71,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     /**
      * The correlation property used by this component
      */
-    private String correlation;
+    //private String correlation;
     /**
      * Specifies wether exchanges for all parts are sent synchronously or not.
      */
@@ -164,15 +164,15 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     public void start() throws Exception {
         super.start();
         // Create correlation property
-        correlation = "Splitter.Correlation." + getContext().getComponentName();
+        //correlation = "Splitter.Correlation." + getContext().getComponentName();
     }
 
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
     protected void processSync(MessageExchange exchange) throws Exception {
-        if (exchange instanceof InOnly == false && 
-            exchange instanceof RobustInOnly == false) {
+        if (!(exchange instanceof InOnly)
+            && !(exchange instanceof RobustInOnly)) {
             fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             return;
         }
@@ -198,7 +198,8 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                         done(parts[i]);
                     }
                 } else {
-                    throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Fault message");
+                    throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
+                            + " but has no Fault message");
                 }
             } else {
                 send(parts[i]);
@@ -225,8 +226,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                 return;
             } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 return;
-            } else if (exchange instanceof InOnly == false &&
-                       exchange instanceof RobustInOnly == false) {
+            } else if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             } else if (exchange.getFault() != null) {
                 done(exchange);

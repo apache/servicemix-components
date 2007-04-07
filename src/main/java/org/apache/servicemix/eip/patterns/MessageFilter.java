@@ -53,7 +53,7 @@ public class MessageFilter extends EIPEndpoint {
     /**
      * The correlation property used by this component
      */
-    private String correlation;
+    //private String correlation;
     /**
      * Indicates if faults and errors from recipients should be sent
      * back to the consumer.  In such a case, only the first fault or
@@ -121,15 +121,15 @@ public class MessageFilter extends EIPEndpoint {
             throw new IllegalArgumentException("filter property should be set");
         }
         // Create correlation property
-        correlation = "MessageFilter.Correlation." + getService() + "." + getEndpoint();
+        //correlation = "MessageFilter.Correlation." + getService() + "." + getEndpoint();
     }
 
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
     protected void processSync(MessageExchange exchange) throws Exception {
-        if (exchange instanceof InOnly == false &&
-            exchange instanceof RobustInOnly == false) {
+        if (!(exchange instanceof InOnly)
+            && !(exchange instanceof RobustInOnly)) {
             fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
         } else {
             NormalizedMessage in = MessageUtil.copyIn(exchange);
@@ -172,8 +172,8 @@ public class MessageFilter extends EIPEndpoint {
                 return;
             } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 return;
-            } else if (exchange instanceof InOnly == false &&
-                       exchange instanceof RobustInOnly == false) {
+            } else if (!(exchange instanceof InOnly)
+                       && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             } else if (exchange.getFault() != null) {
                 done(exchange);

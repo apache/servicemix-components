@@ -69,7 +69,7 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         store = storeFactory.open("store");
         
         jbi = new JBIContainer();
-        jbi.setFlows(new Flow[] { new SedaFlow(), new JCAFlow() });
+        jbi.setFlows(new Flow[] {new SedaFlow(), new JCAFlow() });
         jbi.setEmbedded(true);
         jbi.setUseMBeanServer(false);
         jbi.setCreateMBeanServer(false);

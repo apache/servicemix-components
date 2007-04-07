@@ -24,6 +24,6 @@ import javax.jbi.messaging.MessageExchange;
  */
 public interface Predicate {
 
-    public boolean matches(MessageExchange exchange);
+    boolean matches(MessageExchange exchange);
 
 }

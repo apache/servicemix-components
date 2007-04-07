@@ -85,7 +85,8 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
             sendSync(exchange);
         } else {
             done(tme);
-            throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
+            throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
+                    + " but has no Out nor Fault message");
         }
     }
 
@@ -93,8 +94,8 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
      * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
      */
     protected void processAsync(MessageExchange exchange) throws Exception {
-        if (exchange.getRole() == MessageExchange.Role.PROVIDER &&
-            exchange.getProperty(correlation) == null) {
+        if (exchange.getRole() == MessageExchange.Role.PROVIDER
+            && exchange.getProperty(correlation) == null) {
             // Create exchange for target
             MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
             if (store.hasFeature(Store.CLUSTERED)) {
@@ -143,7 +144,8 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
                 MessageUtil.transferTo(exchange, org, "out"); 
                 send(org);
             } else {
-                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE + " but has no Out nor Fault message");
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
+                        + " but has no Out nor Fault message");
             }
         }
     }

@@ -36,7 +36,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class ExchangeTarget implements InitializingBean {
 
-    private QName _interface;
+    private QName interf;
 
     private QName operation;
 
@@ -65,15 +65,15 @@ public class ExchangeTarget implements InitializingBean {
      * @return Returns the interface name.
      */
     public QName getInterface() {
-        return _interface;
+        return interf;
     }
 
     /**
      * @param interface name
      *            The interface name to set.
      */
-    public void setInterface(QName _interface) {
-        this._interface = _interface;
+    public void setInterface(QName itf) {
+        this.interf = itf;
     }
 
     /**
@@ -126,14 +126,14 @@ public class ExchangeTarget implements InitializingBean {
      * @throws MessagingException if the target could not be configured
      */
     public void configureTarget(MessageExchange exchange, ComponentContext context) throws MessagingException {
-        if (_interface == null && service == null && uri == null) {
+        if (interf == null && service == null && uri == null) {
             throw new MessagingException("interface, service or uri should be specified");
         }
         if (uri != null) {
             URIResolver.configureExchange(exchange, context, uri);
         }
-        if (_interface != null) {
-            exchange.setInterfaceName(_interface);
+        if (interf != null) {
+            exchange.setInterfaceName(interf);
         }
         if (operation != null) {
             exchange.setOperation(operation);
@@ -151,7 +151,7 @@ public class ExchangeTarget implements InitializingBean {
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception {
-        if (_interface == null && service == null && uri == null) {
+        if (interf == null && service == null && uri == null) {
             throw new MessagingException("interface, service or uri should be specified");
         }
     }

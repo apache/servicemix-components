@@ -75,8 +75,8 @@ public class ContentBasedRouter extends AbstractContentBasedRouter {
      */
     protected ExchangeTarget getDestination(MessageExchange exchange) throws Exception {
         for (int i = 0; i < rules.length; i++) {
-            if (rules[i].getPredicate() == null ||
-                rules[i].getPredicate().matches(exchange)) {
+            if (rules[i].getPredicate() == null
+                || rules[i].getPredicate().matches(exchange)) {
                 return rules[i].getTarget();
             }
         }

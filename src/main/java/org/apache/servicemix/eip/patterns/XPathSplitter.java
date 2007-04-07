@@ -23,13 +23,14 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFunctionResolver;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.apache.servicemix.eip.support.AbstractSplitter;
 import org.apache.servicemix.expression.JAXPNodeSetXPathExpression;
 import org.apache.servicemix.expression.MessageVariableResolver;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * The XPathSplitter component implements the 
@@ -120,35 +121,40 @@ public class XPathSplitter extends AbstractSplitter {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setFactory(javax.xml.xpath.XPathFactory)
+     * @see org.apache.servicemix.expression.JAXPXPathExpression#setFactory(
+     *      javax.xml.xpath.XPathFactory)
      */
     public void setFactory(XPathFactory factory) {
         xpathExpression.setFactory(factory);
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setFunctionResolver(javax.xml.xpath.XPathFunctionResolver)
+     * @see org.apache.servicemix.expression.JAXPXPathExpression#setFunctionResolver(
+     *      javax.xml.xpath.XPathFunctionResolver)
      */
     public void setFunctionResolver(XPathFunctionResolver functionResolver) {
         xpathExpression.setFunctionResolver(functionResolver);
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setNamespaceContext(javax.xml.namespace.NamespaceContext)
+     * @see org.apache.servicemix.expression.JAXPXPathExpression#setNamespaceContext(
+     *      javax.xml.namespace.NamespaceContext)
      */
     public void setNamespaceContext(NamespaceContext namespaceContext) {
         xpathExpression.setNamespaceContext(namespaceContext);
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setTransformer(org.apache.servicemix.jbi.jaxp.SourceTransformer)
+     * @see org.apache.servicemix.expression.JAXPXPathExpression#setTransformer(
+     *      org.apache.servicemix.jbi.jaxp.SourceTransformer)
      */
     public void setTransformer(SourceTransformer transformer) {
         xpathExpression.setTransformer(transformer);
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setVariableResolver(org.apache.servicemix.expression.MessageVariableResolver)
+     * @see org.apache.servicemix.expression.JAXPXPathExpression#setVariableResolver(
+     *      org.apache.servicemix.expression.MessageVariableResolver)
      */
     public void setVariableResolver(MessageVariableResolver variableResolver) {
         xpathExpression.setVariableResolver(variableResolver);

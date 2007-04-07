@@ -19,7 +19,10 @@ package org.apache.servicemix.eip;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class VMEIPTests {
+public final class VMEIPTests {
+
+    private VMEIPTests() {
+    }
 
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for org.apache.servicemix.eip");

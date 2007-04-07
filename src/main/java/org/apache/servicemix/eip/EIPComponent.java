@@ -81,7 +81,7 @@ public class EIPComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { EIPEndpoint.class };
+        return new Class[] {EIPEndpoint.class };
     }
 
 }

@@ -49,7 +49,7 @@ import org.apache.servicemix.timers.TimerListener;
  */
 public abstract class AbstractAggregator extends EIPEndpoint {
 
-    private static final Log log = LogFactory.getLog(AbstractAggregator.class);
+    private static final Log LOG = LogFactory.getLog(AbstractAggregator.class);
 
     private ExchangeTarget target;
     
@@ -127,54 +127,11 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             return;
         // Handle an ACTIVE exchange as a PROVIDER
         } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
-            if (exchange instanceof InOnly == false &&
-                exchange instanceof RobustInOnly == false) {
+            if (!(exchange instanceof InOnly)
+                && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             } else {
-                NormalizedMessage in = MessageUtil.copyIn(exchange);
-                final String correlationId = getCorrelationID(exchange, in);
-                if (correlationId == null || correlationId.length() == 0) {
-                    throw new IllegalArgumentException("Could not retrieve correlation id for incoming exchange");
-                }
-                // Load existing aggregation
-                Lock lock = getLockManager().getLock(correlationId);
-                lock.lock();
-                try {
-                    Object aggregation = store.load(correlationId);
-                    Date timeout = null;
-                    // Create a new aggregate
-                    if (aggregation == null) {
-                        if (isAggregationClosed(correlationId)) {
-                            // TODO: should we return an error here ?
-                        } else {
-                            aggregation = createAggregation(correlationId);
-                            timeout = getTimeout(aggregation);
-                        }
-                    } else if (isRescheduleTimeouts()) {
-                        timeout = getTimeout(aggregation);
-                    }
-                    // If the aggregation is not closed
-                    if (aggregation != null) {
-                        if (addMessage(aggregation, in, exchange)) {
-                            sendAggregate(correlationId, aggregation, false);
-                        } else {
-                            store.store(correlationId, aggregation);
-                            if (timeout != null) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
-                                }
-                                getTimerManager().schedule(new TimerListener() {
-                                    public void timerExpired(Timer timer) {
-                                        AbstractAggregator.this.onTimeout(correlationId);
-                                    }
-                                }, timeout);
-                            }
-                        }
-                    }
-                    done(exchange);
-                } finally {
-                    lock.unlock();
-                }
+                processProvider(exchange);
             }
         // Handle an ACTIVE exchange as a CONSUMER
         } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
@@ -182,6 +139,53 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         }
     }
     
+    private void processProvider(MessageExchange exchange) throws Exception {
+        NormalizedMessage in = MessageUtil.copyIn(exchange);
+        final String correlationId = getCorrelationID(exchange, in);
+        if (correlationId == null || correlationId.length() == 0) {
+            throw new IllegalArgumentException("Could not retrieve correlation id for incoming exchange");
+        }
+        // Load existing aggregation
+        Lock lock = getLockManager().getLock(correlationId);
+        lock.lock();
+        try {
+            Object aggregation = store.load(correlationId);
+            Date timeout = null;
+            // Create a new aggregate
+            if (aggregation == null) {
+                if (isAggregationClosed(correlationId)) {
+                    // TODO: should we return an error here ?
+                } else {
+                    aggregation = createAggregation(correlationId);
+                    timeout = getTimeout(aggregation);
+                }
+            } else if (isRescheduleTimeouts()) {
+                timeout = getTimeout(aggregation);
+            }
+            // If the aggregation is not closed
+            if (aggregation != null) {
+                if (addMessage(aggregation, in, exchange)) {
+                    sendAggregate(correlationId, aggregation, false);
+                } else {
+                    store.store(correlationId, aggregation);
+                    if (timeout != null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
+                        }
+                        getTimerManager().schedule(new TimerListener() {
+                            public void timerExpired(Timer timer) {
+                                AbstractAggregator.this.onTimeout(correlationId);
+                            }
+                        }, timeout);
+                    }
+                }
+            }
+            done(exchange);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     protected void sendAggregate(String correlationId,
                                  Object aggregation,
                                  boolean timeout) throws Exception {
@@ -199,8 +203,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     protected void onTimeout(String correlationId) {
-        if (log.isDebugEnabled()) {
-            log.debug("Timeout expired for aggregate " + correlationId);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Timeout expired for aggregate " + correlationId);
         }
         Lock lock = getLockManager().getLock(correlationId);
         lock.lock();
@@ -211,12 +215,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             } else if (!isAggregationClosed(correlationId)) {
                 throw new IllegalStateException("Aggregation is not closed, but can not be retrieved from the store");
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Aggregate " + correlationId + " is closed");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Aggregate " + correlationId + " is closed");
                 }
             }
         } catch (Exception e) {
-            log.info("Caught exception while processing timeout aggregation", e);
+            LOG.info("Caught exception while processing timeout aggregation", e);
         } finally {
             lock.unlock();
         }
@@ -286,7 +290,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
      * @param aggregate
      * @param message
      * @param exchange
-     * @param timeout <code>false</code> if the aggregation has completed or <code>true</code> if this aggregation has timed out
+     * @param timeout <code>false</code> if the aggregation has completed or <code>true</code> 
+     *                  if this aggregation has timed out
      */
     protected abstract void buildAggregate(Object aggregate,
                                            NormalizedMessage message, 

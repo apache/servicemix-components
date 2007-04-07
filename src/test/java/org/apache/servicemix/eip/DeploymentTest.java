@@ -20,9 +20,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
-import org.apache.servicemix.jbi.container.JBIContainer;
-
 import junit.framework.TestCase;
+
+import org.apache.servicemix.jbi.container.JBIContainer;
 
 public class DeploymentTest extends TestCase {
 

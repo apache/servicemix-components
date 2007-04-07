@@ -42,13 +42,14 @@ public class NamespaceContextImpl implements NamespaceContext {
      * is used to ensure that {@link #getPrefix(String)} always returns the same
      * prefix, unless that prefix is removed.
      */
-    private Map<String,String> namespaces = new LinkedHashMap<String,String>();
+    private Map<String, String> namespaces;
     
     /**
      * Constructs a SimpleNamespaceContext with no parent context or namespace
      * declarations.
      */
     public NamespaceContextImpl() {
+        this.namespaces = new LinkedHashMap<String, String>();
     }
     
     /**
@@ -58,21 +59,21 @@ public class NamespaceContextImpl implements NamespaceContext {
      * @param namespaces A Map of namespace URIs, keyed by their prefixes.
      */
     public NamespaceContextImpl(Map<String, String> namespaces) {
-        setNamespaces(namespaces);
+        this.namespaces = new LinkedHashMap<String, String>(namespaces);
     }
     
     /**
      * @org.apache.xbean.Map entryName="namespace" keyName="prefix"
      * @return Returns the namespaces.
      */
-    public Map<String,String> getNamespaces() {
+    public Map<String, String> getNamespaces() {
         return namespaces;
     }
 
     /**
      * @param namespaces The namespaces to set.
      */
-    public void setNamespaces(Map<String,String> namespaces) {
+    public void setNamespaces(Map<String, String> namespaces) {
         this.namespaces.clear();
         if (namespaces != null) {
             this.namespaces.putAll(namespaces);
@@ -143,7 +144,7 @@ public class NamespaceContextImpl implements NamespaceContext {
             return Collections.singleton(XMLConstants.XMLNS_ATTRIBUTE).iterator();
         }
         Set<String> prefixes = null;
-        for (Map.Entry<String,String> entry : namespaces.entrySet()) {
+        for (Map.Entry<String, String> entry : namespaces.entrySet()) {
             String uri = entry.getValue();
             if (uri.equals(nsURI)) {
                 if (prefixes == null) {

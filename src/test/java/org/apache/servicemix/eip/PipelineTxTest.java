@@ -79,7 +79,7 @@ public class PipelineTxTest extends AbstractEIPTransactionalTest {
     
     public void testInOnlySyncWithError() throws Exception {
         activateComponent(new ReturnErrorComponent(), "transformer");
-        ReceiverComponent target = activateReceiver("target");
+        activateReceiver("target");
 
         tm.begin();
         
@@ -96,7 +96,7 @@ public class PipelineTxTest extends AbstractEIPTransactionalTest {
     
     public void testInOnlyAsyncWithError() throws Exception {
         activateComponent(new ReturnErrorComponent(), "transformer");
-        ReceiverComponent target = activateReceiver("target");
+        activateReceiver("target");
 
         tm.begin();
         

@@ -23,11 +23,12 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import org.apache.servicemix.eip.patterns.ContentEnricher;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class ContentEnricherTest extends AbstractEIPTest {
 

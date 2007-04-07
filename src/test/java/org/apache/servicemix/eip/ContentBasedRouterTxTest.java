@@ -21,12 +21,13 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Node;
+
 import org.apache.servicemix.eip.patterns.ContentBasedRouter;
 import org.apache.servicemix.eip.support.RoutingRule;
 import org.apache.servicemix.eip.support.XPathPredicate;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.w3c.dom.Node;
 
 public class ContentBasedRouterTxTest extends AbstractEIPTransactionalTest {
 
@@ -37,15 +38,15 @@ public class ContentBasedRouterTxTest extends AbstractEIPTransactionalTest {
 
         router = new ContentBasedRouter();
         router.setRules(new RoutingRule[] {
-                new RoutingRule(
-                        new XPathPredicate("/hello/@id = '1'"),
-                        createServiceExchangeTarget(new QName("target1"))),
-                new RoutingRule(
-                        new XPathPredicate("/hello/@id = '2'"),
-                        createServiceExchangeTarget(new QName("target2"))),
-                new RoutingRule(
-                        null,
-                        createServiceExchangeTarget(new QName("target3")))
+            new RoutingRule(
+                    new XPathPredicate("/hello/@id = '1'"),
+                    createServiceExchangeTarget(new QName("target1"))),
+            new RoutingRule(
+                    new XPathPredicate("/hello/@id = '2'"),
+                    createServiceExchangeTarget(new QName("target2"))),
+            new RoutingRule(
+                    null,
+                    createServiceExchangeTarget(new QName("target3")))
         });
         configurePattern(router);
         activateComponent(router, "router");

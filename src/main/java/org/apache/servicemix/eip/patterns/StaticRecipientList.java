@@ -58,7 +58,7 @@ public class StaticRecipientList extends EIPEndpoint {
     /**
      * The correlation property used by this component
      */
-    private String correlation;
+    //private String correlation;
 
     /**
      * @return Returns the recipients.
@@ -98,15 +98,15 @@ public class StaticRecipientList extends EIPEndpoint {
             throw new IllegalArgumentException("recipients should contain at least one ExchangeTarget");
         }
         // Create correlation property
-        correlation = "StaticRecipientList.Correlation." + getService() + "." + getEndpoint();
+        //correlation = "StaticRecipientList.Correlation." + getService() + "." + getEndpoint();
     }
     
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
     protected void processSync(MessageExchange exchange) throws Exception {
-        if (exchange instanceof InOnly == false &&
-            exchange instanceof RobustInOnly == false) {
+        if (!(exchange instanceof InOnly)
+            && !(exchange instanceof RobustInOnly)) {
             fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             return;
         }
@@ -142,8 +142,8 @@ public class StaticRecipientList extends EIPEndpoint {
                 return;
             } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 return;
-            } else if (exchange instanceof InOnly == false &&
-                       exchange instanceof RobustInOnly == false) {
+            } else if (!(exchange instanceof InOnly)
+                       && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             } else if (exchange.getFault() != null) {
                 done(exchange);

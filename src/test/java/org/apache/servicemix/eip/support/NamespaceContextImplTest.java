@@ -16,15 +16,16 @@
  */
 package org.apache.servicemix.eip.support;
 
+import junit.framework.TestCase;
+
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
-
-import junit.framework.TestCase;
 
 public class NamespaceContextImplTest extends TestCase {
 
     public void testNsContext() throws Exception {
-        AbstractApplicationContext springContext = new ClassPathXmlApplicationContext("org/apache/servicemix/eip/support/nscontext.xml");
+        AbstractApplicationContext springContext = 
+            new ClassPathXmlApplicationContext("org/apache/servicemix/eip/support/nscontext.xml");
         Object objNsContext = springContext.getBean("nsContext");
         assertNotNull(objNsContext);
         assertTrue(objNsContext instanceof NamespaceContextImpl);

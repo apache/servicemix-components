@@ -71,6 +71,6 @@ public class SplitAggregatorTest extends AbstractEIPTest {
     
     public void testWithTimeout() throws Exception {
         aggregator.setTimeout(500);
-        testRun(new boolean[] { true, false, true });
+        testRun(new boolean[] {true, false, true });
     }
 }
