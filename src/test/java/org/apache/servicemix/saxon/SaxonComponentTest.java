@@ -24,6 +24,8 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
+import org.w3c.dom.Element;
+
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -31,10 +33,9 @@ import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.Element;
 
 public class SaxonComponentTest extends SpringTestSupport {
-    
+
     public void testXslt() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -55,7 +56,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("2005", textValueOfXPath(el, "/transformed/bookstore/book[1]/year"));
         client.done(me);
     }
-    
+
     public void testXsltWithElement() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -78,7 +79,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("2005", textValueOfXPath(el, "/transformed/book/year"));
         client.done(me);
     }
-    
+
     public void testXsltDynamic() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -102,12 +103,13 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("2005", textValueOfXPath(el, "/transformed/book/year"));
         client.done(me);
     }
-    
+
     public void testXsltWithParam() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "xslt-params"));
-        me.getInMessage().setContent(new StringSource("<sample id='777888' sent='" + new Date() + "'>hello world!</sample>"));
+        me.getInMessage().setContent(new StringSource("<sample id='777888' sent='"
+                + new Date() + "'>hello world!</sample>"));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
@@ -122,8 +124,8 @@ public class SaxonComponentTest extends SpringTestSupport {
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("cheeseyCheese", textValueOfXPath(el, "//param"));
         assertEquals("4002", textValueOfXPath(el, "//integer"));
-     }
-    
+    }
+
     public void testXQuery() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -144,7 +146,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
         client.done(me);
     }
-    
+
     public void testXQueryInline() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -170,7 +172,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("XQuery Kick Start", DOMUtil.getElementText(el));
         client.done(me);
     }
-    
+
     public void testXQueryDynamic() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -192,9 +194,9 @@ public class SaxonComponentTest extends SpringTestSupport {
         assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
         client.done(me);
     }
-    
+
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("spring.xml");
     }
-    
+
 }

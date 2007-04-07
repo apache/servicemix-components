@@ -119,7 +119,8 @@ public class XQueryEndpoint extends SaxonEndpoint {
         queryContent(expression, exchange, in, out);
     }
     
-    protected void queryContent(XQueryExpression expression, MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+    protected void queryContent(XQueryExpression expression, MessageExchange exchange, 
+            NormalizedMessage in, NormalizedMessage out) throws Exception {
         Configuration config = getConfiguration();
         DynamicQueryContext dynamicEnv = new DynamicQueryContext(config);
         DocumentInfo doc = staticEnv.buildDocument(in.getContent());
@@ -131,8 +132,7 @@ public class XQueryEndpoint extends SaxonEndpoint {
             Result result = new StreamResult(buffer);
             expression.pull(dynamicEnv, result, props);
             out.setContent(new BytesSource(buffer.toByteArray()));
-        }
-        else if (RESULT_STRING.equalsIgnoreCase(getResult())) {
+        } else if (RESULT_STRING.equalsIgnoreCase(getResult())) {
             StringWriter buffer = new StringWriter();
             Result result = new StreamResult(buffer);
             expression.pull(dynamicEnv, result, props);
@@ -144,7 +144,8 @@ public class XQueryEndpoint extends SaxonEndpoint {
         }
     }
     
-    protected void configureQuery(DynamicQueryContext dynamicEnv, MessageExchange exchange, NormalizedMessage in) throws Exception {
+    protected void configureQuery(DynamicQueryContext dynamicEnv, MessageExchange exchange, NormalizedMessage in) 
+            throws Exception {
         for (Iterator iter = exchange.getPropertyNames().iterator(); iter.hasNext();) {
             String name = (String) iter.next();
             Object value = exchange.getProperty(name);

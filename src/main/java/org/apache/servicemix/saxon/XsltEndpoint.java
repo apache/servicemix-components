@@ -74,7 +74,8 @@ public class XsltEndpoint extends SaxonEndpoint {
         transformContent(transformer, exchange, in, out);
     }
     
-    protected void transformContent(Transformer transformer, MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+    protected void transformContent(Transformer transformer, MessageExchange exchange, 
+            NormalizedMessage in, NormalizedMessage out) throws Exception {
         Source src = in.getContent();
         if (src instanceof DOMSource) {
             src = new DOMSource(getSourceTransformer().toDOMDocument(src));
@@ -84,8 +85,7 @@ public class XsltEndpoint extends SaxonEndpoint {
             Result result = new StreamResult(buffer);
             transformer.transform(src, result);
             out.setContent(new BytesSource(buffer.toByteArray()));
-        }
-        else if (RESULT_STRING.equalsIgnoreCase(getResult())) {
+        } else if (RESULT_STRING.equalsIgnoreCase(getResult())) {
             StringWriter buffer = new StringWriter();
             Result result = new StreamResult(buffer);
             transformer.transform(src, result);

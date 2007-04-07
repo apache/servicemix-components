@@ -27,6 +27,8 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.w3c.dom.Document;
+
 import net.sf.saxon.Configuration;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
@@ -36,13 +38,12 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.w3c.dom.Document;
 
 public abstract class SaxonEndpoint extends ProviderEndpoint {
 
-    public static String RESULT_BYTES = "bytes";
-    public static String RESULT_STRING = "string";
-    public static String RESULT_DOM = "dom";
+    public static final String RESULT_BYTES = "bytes";
+    public static final String RESULT_STRING = "string";
+    public static final String RESULT_DOM = "dom";
     
     private Configuration configuration;
     private boolean copyProperties = true;
@@ -212,7 +213,8 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     /**
      * Transform the content and send it back
      */
-    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) 
+            throws Exception {
         copyPropertiesAndAttachments(in, out);
         transform(exchange, in, out);
     }
@@ -239,7 +241,8 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
         }
     }
     
-    protected abstract void transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception;
+    protected abstract void transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) 
+        throws Exception;
 
     protected Resource getDynamicResource(MessageExchange exchange, NormalizedMessage in) throws Exception {
         Object res = getExpression().evaluate(exchange, in);

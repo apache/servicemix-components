@@ -31,7 +31,7 @@ import org.apache.servicemix.common.Endpoint;
  */
 public class SaxonComponent extends DefaultComponent {
 
-    public final static String[] EPR_PROTOCOLS = { "xslt:", "xquery:" };
+    public static final String[] EPR_PROTOCOLS = {"xslt:", "xquery:" };
 
     private SaxonEndpoint[] endpoints;
 
@@ -44,7 +44,7 @@ public class SaxonComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { SaxonEndpoint.class };
+        return new Class[] {SaxonEndpoint.class };
     }
 
     protected List getConfiguredEndpoints() {
