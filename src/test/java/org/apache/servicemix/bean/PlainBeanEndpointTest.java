@@ -16,22 +16,23 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.bean.beans.PlainBean;
-import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.w3c.dom.DocumentFragment;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-
-import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
+
+import org.w3c.dom.DocumentFragment;
+
+import org.apache.servicemix.bean.beans.PlainBean;
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.tck.SpringTestSupport;
+import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class PlainBeanEndpointTest extends SpringTestSupport {
 
@@ -128,7 +129,8 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         PlainBean bean = (PlainBean) getBean("plainBean");
         Object property = bean.getPropertyParameter();
         Object xpath = bean.getXpathParameter();
-        log.info("Bean's methodWithPropertyParameterAndXPath() method has been with property: " + property + " and xpath: " + xpath);
+        log.info("Bean's methodWithPropertyParameterAndXPath() method has been with property: "
+                + property + " and xpath: " + xpath);
 
         assertEquals("property parameter", "James", property);
         assertEquals("xpath parameter", "London", xpath);
@@ -155,7 +157,8 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         PlainBean bean = (PlainBean) getBean("plainBean");
         Object property = bean.getPropertyParameter();
         Object body = bean.getBody();
-        log.info("Bean's methodWithPropertyParameterAndContent() method has been with property: " + property + " and body: " + body);
+        log.info("Bean's methodWithPropertyParameterAndContent() method has been with property: "
+                + property + " and body: " + body);
 
         assertEquals("property parameter", "James", property);
         // TODO need to add a marshalling example
@@ -166,12 +169,10 @@ public class PlainBeanEndpointTest extends SpringTestSupport {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            }
-            else {
+            } else {
                 fail("Received ERROR status");
             }
-        }
-        else if (me.getFault() != null) {
+        } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }

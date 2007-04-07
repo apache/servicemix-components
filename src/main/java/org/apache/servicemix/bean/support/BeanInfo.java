@@ -16,6 +16,17 @@
  */
 package org.apache.servicemix.bean.support;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
+
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,25 +40,15 @@ import org.apache.servicemix.expression.JAXPStringXPathExpression;
 import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.jbi.messaging.PojoMarshaler;
 
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.namespace.QName;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * Represents the metadata about a bean type created via a combination of introspection and annotations together with some
- * useful sensible defaults
+ * Represents the metadata about a bean type created via a combination of
+ * introspection and annotations together with some useful sensible defaults
  *
  * @version $Revision: $
  */
 public class BeanInfo {
 
-    private static final Log log = LogFactory.getLog(BeanInfo.class);
+    private static final Log LOG = LogFactory.getLog(BeanInfo.class);
 
     private Class type;
     private MethodInvocationStrategy strategy;
@@ -58,7 +59,14 @@ public class BeanInfo {
     public BeanInfo(Class type, MethodInvocationStrategy strategy) {
         this.type = type;
         this.strategy = strategy;
-        introspect(type);
+    }
+
+    public Class getType() {
+        return type;
+    }
+    
+    public void introspect() {
+        introspect(getType());
         if (operations.size() == 1) {
             Collection<MethodInfo> methodInfos = operations.values();
             for (MethodInfo methodInfo : methodInfos) {
@@ -72,8 +80,7 @@ public class BeanInfo {
         MethodInfo methodInfo = null;
         if (operation == null) {
             methodInfo = defaultExpression;
-        }
-        else {
+        } else {
             methodInfo = operations.get(operation.getLocalPart());
         }
         if (methodInfo != null) {
@@ -82,28 +89,29 @@ public class BeanInfo {
         return null;
     }
 
-    protected void introspect(Class type) {
-        Method[] methods = type.getDeclaredMethods();
+    protected void introspect(Class clazz) {
+        Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
-            introspect(type, method);
+            introspect(clazz, method);
         }
-
-        Class superclass = type.getSuperclass();
+        Class superclass = clazz.getSuperclass();
         if (superclass != null && !superclass.equals(Object.class)) {
             introspect(superclass);
         }
     }
 
-    protected void introspect(Class type, Method method) {
+    protected void introspect(Class clazz, Method method) {
         Class[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         final Expression[] parameterExpressions = new Expression[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Class parameterType = parameterTypes[i];
-            Expression expression = createParameterUnmarshalExpression(type, method, parameterType, parameterAnnotations[i]);
+            Expression expression = createParameterUnmarshalExpression(clazz, method, 
+                    parameterType, parameterAnnotations[i]);
             if (expression == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("No expression available for method: " + method.toString() + " parameter: " + i + " so ignoring method");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("No expression available for method: "
+                            + method.toString() + " parameter: " + i + " so ignoring method");
                 }
                 return;
             }
@@ -119,13 +127,14 @@ public class BeanInfo {
             }
         }
         Expression parametersExpression = createMethodParametersExpression(parameterExpressions);
-        operations.put(opName, new MethodInfo(type, method, parametersExpression));
+        operations.put(opName, new MethodInfo(clazz, method, parametersExpression));
     }
 
     protected Expression createMethodParametersExpression(final Expression[] parameterExpressions) {
         return new Expression() {
 
-            public Object evaluate(MessageExchange messageExchange, NormalizedMessage normalizedMessage) throws MessagingException {
+            public Object evaluate(MessageExchange messageExchange, 
+                                   NormalizedMessage normalizedMessage) throws MessagingException {
                 Object[] answer = new Object[parameterExpressions.length];
                 for (int i = 0; i < parameterExpressions.length; i++) {
                     Expression parameterExpression = parameterExpressions[i];
@@ -137,13 +146,16 @@ public class BeanInfo {
     }
 
     /**
-     * Creates an expression for the given parameter type if the parameter can be mapped automatically or null
-     * if the parameter cannot be mapped due to unsufficient annotations or not fitting with the default type conventions.
+     * Creates an expression for the given parameter type if the parameter can be mapped 
+     * automatically or null if the parameter cannot be mapped due to unsufficient 
+     * annotations or not fitting with the default type conventions.
      */
-    protected Expression createParameterUnmarshalExpression(Class type, Method method, Class parameterType, Annotation[] parameterAnnotation) {
+    protected Expression createParameterUnmarshalExpression(Class clazz, Method method,
+                Class parameterType, Annotation[] parameterAnnotation) {
         // TODO look for a parameter annotation that converts into an expression
         for (Annotation annotation : parameterAnnotation) {
-            Expression answer = createParameterUnmarshalExpressionForAnnotation(type, method, parameterType, annotation);
+            Expression answer = createParameterUnmarshalExpressionForAnnotation(
+                    clazz, method, parameterType, annotation);
             if (answer != null) {
                 return answer;
             }
@@ -151,17 +163,16 @@ public class BeanInfo {
         return strategy.getDefaultParameterTypeExpression(parameterType);
     }
 
-    protected Expression createParameterUnmarshalExpressionForAnnotation(Class type, Method method, Class parameterType, Annotation annotation) {
+    protected Expression createParameterUnmarshalExpressionForAnnotation(Class clazz, Method method, 
+                Class parameterType, Annotation annotation) {
         if (annotation instanceof Property) {
             Property propertyAnnotation = (Property) annotation;
             return new PropertyExpression(propertyAnnotation.name());
-        }
-        else if (annotation instanceof Content) {
+        } else if (annotation instanceof Content) {
             Content content = (Content) annotation;
             final PojoMarshaler marshaller = newInstance(content);
             return createContentExpression(marshaller);
-        }
-        else if (annotation instanceof XPath) {
+        } else if (annotation instanceof XPath) {
             XPath xpathAnnotation = (XPath) annotation;
             return new JAXPStringXPathExpression(xpathAnnotation.xpath());
         }
@@ -179,11 +190,9 @@ public class BeanInfo {
     protected PojoMarshaler newInstance(Content content) {
         try {
             return content.marshalType().newInstance();
-        }
-        catch (InstantiationException e) {
+        } catch (InstantiationException e) {
             throw new RuntimeException(e);
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

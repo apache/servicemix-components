@@ -24,8 +24,9 @@ import javax.jbi.messaging.MessageExchange;
  * @version $Revision: $
  */
 public class UnknownMessageExchangeTypeException extends IllegalArgumentException {
-    private MessageExchange messageExchange;
-    private BeanEndpoint endpoint;
+
+    private final MessageExchange messageExchange;
+    private final BeanEndpoint endpoint;
 
     public UnknownMessageExchangeTypeException(MessageExchange messageExchange, BeanEndpoint endpoint) {
         super("Unknown message exchange: " + messageExchange + " on endpoint: " + endpoint);

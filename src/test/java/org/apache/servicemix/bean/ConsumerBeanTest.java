@@ -48,7 +48,7 @@ public class ConsumerBeanTest extends TestCase {
         ep.setService(new QName("bean"));
         ep.setEndpoint("endpoint");
         ep.setBeanType(ConsumerBean.class);
-        bc.setEndpoints(new BeanEndpoint[] { ep });
+        bc.setEndpoints(new BeanEndpoint[] {ep });
         jbi.activateComponent(bc, "servicemix-bean");
         
         EchoComponent echo1 = new EchoComponent(new QName("urn", "service1"), "endpoint");
@@ -74,12 +74,10 @@ public class ConsumerBeanTest extends TestCase {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            }
-            else {
+            } else {
                 fail("Received ERROR status");
             }
-        }
-        else if (me.getFault() != null) {
+        } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }

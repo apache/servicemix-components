@@ -43,10 +43,10 @@ public class ConsumerBean {
     @Resource
     private DeliveryChannel channel;
     
-    @ExchangeTarget(uri="service:urn:service1")
+    @ExchangeTarget(uri = "service:urn:service1")
     private Destination service1;
 
-    @ExchangeTarget(uri="service:urn:service2")
+    @ExchangeTarget(uri = "service:urn:service2")
     private Destination service2;  
     
     /**
@@ -80,10 +80,10 @@ public class ConsumerBean {
         request2 = service2.send(MessageUtil.copy(message));
     }
     
-    @Callback(condition="this.request1.done && this.request2.done")
+    @Callback(condition = "this.request1.done && this.request2.done")
     public NormalizedMessage answer() throws InterruptedException, ExecutionException {
-        NormalizedMessage answer1 = request1.get();
-        NormalizedMessage answer2 = request2.get();
+        request1.get();
+        request2.get();
         return null;
     }
     

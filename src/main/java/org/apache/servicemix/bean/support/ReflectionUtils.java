@@ -31,11 +31,13 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
                     try {
                         method.invoke(bean, (Object[]) null);
                     } catch (IllegalArgumentException ex) {
-                        throw new IllegalStateException("Failure to invoke " + method + " on " + bean.getClass() + ": args=[]", ex);
+                        throw new IllegalStateException("Failure to invoke " + method + " on "
+                                + bean.getClass() + ": args=[]", ex);
                     } catch (IllegalAccessException ex) {
                         throw new UnsupportedOperationException(ex.toString());
                     } catch (InvocationTargetException ex) {
-                        throw new UnsupportedOperationException("PostConstruct method on bean threw exception", ex.getTargetException());
+                        throw new UnsupportedOperationException("PostConstruct method on bean threw exception", 
+                                ex.getTargetException());
                     }
                 }
             }
@@ -45,7 +47,7 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
     public static void setField(Field f, Object instance, Object value) {
         try {
             boolean oldAccessible = f.isAccessible();
-            boolean shouldSetAccessible = (!Modifier.isPublic(f.getModifiers()) && !oldAccessible);
+            boolean shouldSetAccessible = !Modifier.isPublic(f.getModifiers()) && !oldAccessible;
             if (shouldSetAccessible) {
                 f.setAccessible(true);
             }
@@ -54,7 +56,8 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
                 f.setAccessible(oldAccessible);
             }
         } catch (IllegalArgumentException ex) {
-            throw new UnsupportedOperationException("Cannot inject value of class '" + value.getClass() + "' into " + f);
+            throw new UnsupportedOperationException("Cannot inject value of class '"
+                    + value.getClass() + "' into " + f);
         } catch (IllegalAccessException ex) {
             ReflectionUtils.handleReflectionException(ex);
         }

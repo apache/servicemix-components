@@ -16,13 +16,13 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.servicemix.jbi.messaging.PojoMarshaler;
-import org.apache.servicemix.jbi.messaging.DefaultMarshaler;
-
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
+
+import org.apache.servicemix.jbi.messaging.DefaultMarshaler;
+import org.apache.servicemix.jbi.messaging.PojoMarshaler;
 
 /**
  * Binds a method parameter to the payload of a message exchange
@@ -30,7 +30,7 @@ import java.lang.annotation.ElementType;
  * @version $Revision: $
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER})
+@Target({ElementType.PARAMETER })
 public @interface Content {
 
     /**

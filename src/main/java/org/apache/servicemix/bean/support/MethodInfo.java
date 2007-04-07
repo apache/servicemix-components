@@ -16,14 +16,15 @@
  */
 package org.apache.servicemix.bean.support;
 
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.servicemix.expression.Expression;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.servicemix.expression.Expression;
 
 /**
  * @version $Revision: $
@@ -40,26 +41,23 @@ public class MethodInfo {
     }
 
 
-    public MethodInvocation createMethodInvocation(final Object pojo, final MessageExchange messageExchange) throws MessagingException {
-        final Object[] arguments = (Object[]) parametersExpression.evaluate(messageExchange, messageExchange.getMessage("in"));
-
+    public MethodInvocation createMethodInvocation(final Object pojo, 
+            final MessageExchange messageExchange) throws MessagingException {
+        final Object[] arguments = (Object[]) parametersExpression.evaluate(
+                messageExchange, messageExchange.getMessage("in"));
         return new MethodInvocation() {
             public Method getMethod() {
                 return method;
             }
-
             public Object[] getArguments() {
                 return arguments;
             }
-
             public Object proceed() throws Throwable {
                 return invoke(method, pojo, arguments, messageExchange);
             }
-
             public Object getThis() {
                 return pojo;
             }
-
             public AccessibleObject getStaticPart() {
                 return method;
             }
@@ -79,7 +77,8 @@ public class MethodInfo {
         return parametersExpression;
     }
 
-    protected Object invoke(Method method, Object pojo, Object[] arguments, MessageExchange exchange) throws IllegalAccessException, InvocationTargetException {
-        return method.invoke(pojo, arguments);
+    protected Object invoke(Method mth, Object pojo, Object[] arguments, 
+            MessageExchange exchange) throws IllegalAccessException, InvocationTargetException {
+        return mth.invoke(pojo, arguments);
     }
 }

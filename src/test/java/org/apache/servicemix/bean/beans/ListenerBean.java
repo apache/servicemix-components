@@ -16,15 +16,15 @@
  */
 package org.apache.servicemix.bean.beans;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.MessageExchangeListener;
-
 import javax.annotation.Resource;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.MessageExchangeListener;
 
 /**
  * A simple POJO which implements the {@link MessageExchangeListener} interface
@@ -33,7 +33,7 @@ import javax.jbi.messaging.MessagingException;
  */
 public class ListenerBean implements MessageExchangeListener {
 
-    private static final Log log = LogFactory.getLog(ListenerBean.class);
+    private static final Log LOG = LogFactory.getLog(ListenerBean.class);
 
     @Resource
     private DeliveryChannel channel;
@@ -43,7 +43,7 @@ public class ListenerBean implements MessageExchangeListener {
 
     public void onMessageExchange(MessageExchange exchange) throws MessagingException {
         this.lastExchange = exchange;
-        log.info("Received exchange: " + exchange);
+        LOG.info("Received exchange: " + exchange);
         exchange.setStatus(ExchangeStatus.DONE);
         channel.send(exchange);
     }

@@ -30,9 +30,9 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
 import org.aopalliance.intercept.MethodInvocation;
@@ -55,10 +55,8 @@ import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.jbi.util.MessageUtil;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Represents a bean endpoint which consists of a together with a {@link MethodInvocationStrategy}
@@ -89,7 +87,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
 
     public BeanEndpoint(BeanComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
-        setApplicationContext(component.getApplicationContext());
+        this.applicationContext = component.getApplicationContext();
     }
 
     public void start() throws Exception {
@@ -172,6 +170,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     public BeanInfo getBeanInfo() {
         if (beanInfo == null) {
             beanInfo = new BeanInfo(beanType, getMethodInvocationStrategy());
+            beanInfo.introspect();
         }
         return beanInfo;
     }
@@ -226,16 +225,16 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             // Exchange is finished
             if (exchange.getStatus() == ExchangeStatus.DONE) {
                 return;
-            }
             // Exchange has been aborted with an exception
-            else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 return;
-                // Fault message
+            // Fault message
             } else if (exchange.getFault() != null) {
                 // TODO: find a way to send it back to the bean before setting the DONE status
                 done(exchange);
             } else {
-                MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(req.getBean(), getBeanInfo(), exchange, this);
+                MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(
+                        req.getBean(), getBeanInfo(), exchange, this);
                 if (invocation == null) {
                     throw new UnknownMessageExchangeTypeException(exchange, this);
                 }
@@ -309,27 +308,29 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     }
 
     protected MethodInvocationStrategy createMethodInvocationStrategy() {
-        return new DefaultMethodInvocationStrategy();
+        DefaultMethodInvocationStrategy st = new DefaultMethodInvocationStrategy();
+        st.loadDefaultRegistry();
+        return st;
     }
 
     /**
      * A strategy method to allow implementations to perform some custom JBI based injection of the POJO
      *
-     * @param bean the bean to be injected
+     * @param target the bean to be injected
      */
-    protected void injectBean(final Object bean) {
+    protected void injectBean(final Object target) {
         // Inject fields
-        ReflectionUtils.doWithFields(bean.getClass(), new ReflectionUtils.FieldCallback() {
+        ReflectionUtils.doWithFields(target.getClass(), new ReflectionUtils.FieldCallback() {
             public void doWith(Field f) throws IllegalArgumentException, IllegalAccessException {
                 ExchangeTarget et = f.getAnnotation(ExchangeTarget.class);
                 if (et != null) {
-                    ReflectionUtils.setField(f, bean, new DestinationImpl(et.uri(), BeanEndpoint.this));
+                    ReflectionUtils.setField(f, target, new DestinationImpl(et.uri(), BeanEndpoint.this));
                 }
                 if (f.getAnnotation(Resource.class) != null) {
                     if (ComponentContext.class.isAssignableFrom(f.getType())) {
-                        ReflectionUtils.setField(f, bean, context);
+                        ReflectionUtils.setField(f, target, context);
                     } else if (DeliveryChannel.class.isAssignableFrom(f.getType())) {
-                        ReflectionUtils.setField(f, bean, channel);
+                        ReflectionUtils.setField(f, target, channel);
                     }
                 }
             }
@@ -337,24 +338,25 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     }
     
     protected void evaluateCallbacks(final Request req) {
-        final Object bean = req.getBean();
-        ReflectionUtils.doWithMethods(bean.getClass(), new ReflectionUtils.MethodCallback() {
+        final Object obj = req.getBean();
+        ReflectionUtils.doWithMethods(obj.getClass(), new ReflectionUtils.MethodCallback() {
             @SuppressWarnings("unchecked")
             public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
                 if (method.getAnnotation(Callback.class) != null) {
                     try {
-                        Expression e = ExpressionFactory.createExpression(method.getAnnotation(Callback.class).condition());
+                        Expression e = ExpressionFactory.createExpression(
+                                method.getAnnotation(Callback.class).condition());
                         JexlContext jc = JexlHelper.createContext();
-                        jc.getVars().put("this", bean);
+                        jc.getVars().put("this", obj);
                         Object r = e.evaluate(jc);
-                        if (r instanceof Boolean == false) {
+                        if (!(r instanceof Boolean)) {
                             throw new RuntimeException("Expression did not returned a boolean value but: " + r);
                         }
                         Boolean oldVal = req.getCallbacks().get(method);
                         Boolean newVal = (Boolean) r;
-                        if ((oldVal == null || oldVal == false) && newVal == true) {
+                        if ((oldVal == null || !oldVal) && newVal) {
                             req.getCallbacks().put(method, newVal);
-                            Object o = method.invoke(bean, new Object[0]);
+                            method.invoke(obj, new Object[0]);
                             // TODO: handle return value and sent it as the answer
                         }
                     } catch (Exception e) {
@@ -411,7 +413,8 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             }
             if (correlationExpression == null) {
                 correlationExpression = new org.apache.servicemix.expression.Expression() {
-                    public Object evaluate(MessageExchange exchange, NormalizedMessage message) throws MessagingException {
+                    public Object evaluate(MessageExchange exchange, NormalizedMessage message) 
+                        throws MessagingException {
                         return exchange.getExchangeId();
                     }
                 };

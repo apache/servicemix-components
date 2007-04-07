@@ -16,21 +16,27 @@
  */
 package org.apache.servicemix.bean;
 
-import org.aopalliance.intercept.MethodInvocation;
-
 import javax.jbi.messaging.MessageExchange;
+
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * @version $Revision: $
  */
+@SuppressWarnings("serial")
 public class MethodInvocationFailedException extends Exception {
-    private Object pojo;
-    private MethodInvocation invocation;
-    private MessageExchange messageExchange;
-    private BeanEndpoint endpoint;
 
-    public MethodInvocationFailedException(Object pojo, MethodInvocation invocation, MessageExchange messageExchange, BeanEndpoint endpoint, Throwable cause) {
-        super("Failed to invoke method: " + invocation + " on object: " + pojo + " on exchange: " + messageExchange + " with endpoint: " + endpoint
+    private final Object pojo;
+    private final MethodInvocation invocation;
+    private final MessageExchange messageExchange;
+    private final BeanEndpoint endpoint;
+
+    public MethodInvocationFailedException(Object pojo, MethodInvocation invocation, 
+            MessageExchange messageExchange, BeanEndpoint endpoint, Throwable cause) {
+        super("Failed to invoke method: " + invocation
+                + " on object: " + pojo
+                + " on exchange: " + messageExchange
+                + " with endpoint: " + endpoint
                 + ". Reason: " + cause, cause);
         this.pojo = pojo;
         this.invocation = invocation;

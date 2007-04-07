@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -7,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,22 +16,17 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.bean.beans.PlainBean;
-import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.w3c.dom.DocumentFragment;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-
-import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.namespace.QName;
+
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.SpringTestSupport;
+import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class AutoDeployedEndpointTest extends SpringTestSupport {
 
@@ -83,12 +77,10 @@ public class AutoDeployedEndpointTest extends SpringTestSupport {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            }
-            else {
+            } else {
                 fail("Received ERROR status");
             }
-        }
-        else if (me.getFault() != null) {
+        } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }

@@ -16,21 +16,22 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.bean.beans.AnnotatedBean;
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.DocumentFragment;
-
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
+
+import org.w3c.dom.DocumentFragment;
+
+import org.apache.servicemix.bean.beans.AnnotatedBean;
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.tck.SpringTestSupport;
+import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class AnnotatedBeanEndpointTest extends SpringTestSupport {
 
@@ -107,7 +108,8 @@ public class AnnotatedBeanEndpointTest extends SpringTestSupport {
         assertEquals("Bean's methodWithPropertyParameter() method should bave been invoked", "James", answer);
     }
 
-    public void testSendingToDynamicEndpointForAnnotatedBeanWithPropertyAndXPathExpressionParamameter() throws Exception {
+    public void testSendingToDynamicEndpointForAnnotatedBeanWithPropertyAndXPathExpressionParamameter()
+            throws Exception {
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
@@ -128,7 +130,8 @@ public class AnnotatedBeanEndpointTest extends SpringTestSupport {
         AnnotatedBean bean = (AnnotatedBean) getBean("annotatedBean");
         Object property = bean.getPropertyParameter();
         Object xpath = bean.getXpathParameter();
-        log.info("Bean's methodWithPropertyParameterAndXPath() method has been with property: " + property + " and xpath: " + xpath);
+        log.info("Bean's methodWithPropertyParameterAndXPath() method has been with property: "
+                + property + " and xpath: " + xpath);
 
         assertEquals("property parameter", "James", property);
         assertEquals("xpath parameter", "London", xpath);
@@ -139,12 +142,10 @@ public class AnnotatedBeanEndpointTest extends SpringTestSupport {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            }
-            else {
+            } else {
                 fail("Received ERROR status");
             }
-        }
-        else if (me.getFault() != null) {
+        } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }

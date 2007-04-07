@@ -16,15 +16,15 @@
  */
 package org.apache.servicemix.bean.beans;
 
-import org.apache.servicemix.MessageExchangeListener;
-import org.apache.servicemix.jbi.util.MessageUtil;
-
 import javax.annotation.Resource;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
+
+import org.apache.servicemix.MessageExchangeListener;
+import org.apache.servicemix.jbi.util.MessageUtil;
 
 public class ConsumerListener implements MessageExchangeListener {
 
@@ -36,11 +36,9 @@ public class ConsumerListener implements MessageExchangeListener {
         InOut io = factory.createInOutExchange();
         try {
             MessageUtil.transferInToIn(exchange, io);
-        }
-        catch (MessagingException e) {
+        } catch (MessagingException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new MessagingException(e);
         }
     }

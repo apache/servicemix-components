@@ -70,6 +70,7 @@ public class BeanComponent extends DefaultComponent implements ApplicationContex
         this.searchPackages = searchPackages;
     }
 
+    @SuppressWarnings("unchecked")
     protected List getConfiguredEndpoints() {
         List list = new ArrayList(asList(getEndpoints()));
         if (searchPackages != null) {
@@ -99,16 +100,15 @@ public class BeanComponent extends DefaultComponent implements ApplicationContex
         if (uri.getHost() != null) {
             // it must start bean://host/path
             beanName = uri.getHost();
-        }
-        else {
+        } else {
             // it must be an absolute URI of the form bean:name
             beanName = uri.getSchemeSpecificPart();
         }
         if (beanName != null) {
             endpoint.setBeanName(beanName);
-        }
-        else {
-            throw new IllegalArgumentException("No bean name defined for URI: " + uri + ". Please use a URI of bean:name or bean://name?property=value");
+        } else {
+            throw new IllegalArgumentException("No bean name defined for URI: "
+                    + uri + ". Please use a URI of bean:name or bean://name?property=value");
         }
 
         Map map = URISupport.parseQuery(uri.getQuery());

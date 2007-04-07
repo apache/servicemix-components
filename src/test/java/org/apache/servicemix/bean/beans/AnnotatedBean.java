@@ -29,7 +29,7 @@ import org.apache.servicemix.bean.Operation;
  */
 public class AnnotatedBean {
 
-    private static final Log log = LogFactory.getLog(AnnotatedBean.class);
+    private static final Log LOG = LogFactory.getLog(AnnotatedBean.class);
 
     private MessageExchange myExchangeMethod;
 
@@ -37,7 +37,7 @@ public class AnnotatedBean {
     public void myExchangeMethod(MessageExchange messageExchange) {
         this.myExchangeMethod = messageExchange;
 
-        log.info("myExchangeMethod() received exchange: " + messageExchange);
+        LOG.info("myExchangeMethod() received exchange: " + messageExchange);
     }
     
     public MessageExchange getMyExchangeMethod() {

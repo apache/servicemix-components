@@ -16,19 +16,19 @@
  */
 package org.apache.servicemix.bean;
 
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
+
 import org.apache.servicemix.bean.beans.ListenerBean;
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.xml.namespace.QName;
 
 public class SpringComponentTest extends SpringTestSupport {
 

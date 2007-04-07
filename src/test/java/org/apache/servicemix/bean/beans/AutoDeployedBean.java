@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -7,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,35 +16,27 @@
  */
 package org.apache.servicemix.bean.beans;
 
+import javax.jbi.messaging.MessageExchange;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.bean.Property;
-import org.apache.servicemix.bean.XPath;
-import org.apache.servicemix.bean.Content;
 import org.apache.servicemix.bean.Endpoint;
-
-import javax.jbi.messaging.MessageExchange;
 
 /**
  * A simple POJO which uses annotations to expose it on a JBI bus
  *
  * @version $Revision$
  */
-@Endpoint(name="cheese", targetNamespace = "urn:test", serviceName = "service")
+@Endpoint(name = "cheese", targetNamespace = "urn:test", serviceName = "service")
 public class AutoDeployedBean {
 
-    private static final Log log = LogFactory.getLog(AutoDeployedBean.class);
-
-    private MessageExchange foo;
-    private MessageExchange bar;
+    private static final Log LOG = LogFactory.getLog(AutoDeployedBean.class);
 
     public void foo(MessageExchange messageExchange) {
-        this.foo = messageExchange;
-        log.info("foo() called with exchange: " + messageExchange);
+        LOG.info("foo() called with exchange: " + messageExchange);
     }
 
     public void bar(MessageExchange messageExchange) {
-        this.bar = messageExchange;
-        log.info("bar() called with exchange: " + messageExchange);
+        LOG.info("bar() called with exchange: " + messageExchange);
     }
 }

@@ -1,10 +1,12 @@
-/* Copyright 2005-2006 Tim Fennell
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +16,9 @@
  */
 package org.apache.servicemix.bean.support;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+/*
+ * Copyright 2005-2006 Tim Fennell
+ */
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +31,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>ResolverUtil is used to locate classes that are available in the/a class path and meet
@@ -62,7 +68,8 @@ import java.util.jar.JarInputStream;
  * @author Tim Fennell
  */
 public class ResolverUtil<T> {
-    private static final transient Log log = LogFactory.getLog(ResolverUtil.class);
+
+    private static final transient Log LOG = LogFactory.getLog(ResolverUtil.class);
 
     /**
      * A simple interface that specifies how to test classes to determine if they
@@ -149,9 +156,11 @@ public class ResolverUtil<T> {
      * Sets an explicit ClassLoader that should be used when scanning for classes. If none
      * is set then the context classloader will be used.
      *
-     * @param classloader a ClassLoader to use when scanning for classes
+     * @param cl a ClassLoader to use when scanning for classes
      */
-    public void setClassLoader(ClassLoader classloader) { this.classloader = classloader; }
+    public void setClassLoader(ClassLoader cl) {
+        this.classloader = cl;
+    }
 
     /**
      * Attempts to discover classes that are assignable to the type provided. In the case
@@ -163,8 +172,9 @@ public class ResolverUtil<T> {
      * @param packageNames one or more package names to scan (including subpackages) for classes
      */
     public void findImplementations(Class parent, String... packageNames) {
-        if (packageNames == null) return;
-
+        if (packageNames == null) {
+            return;
+        }
         Test test = new IsA(parent);
         for (String pkg : packageNames) {
             find(test, pkg);
@@ -179,8 +189,9 @@ public class ResolverUtil<T> {
      * @param packageNames one or more package names to scan (including subpackages) for classes
      */
     public void findAnnotated(Class<? extends Annotation> annotation, String... packageNames) {
-        if (packageNames == null) return;
-
+        if (packageNames == null) {
+            return;
+        }
         Test test = new AnnotatedWith(annotation);
         for (String pkg : packageNames) {
             find(test, pkg);
@@ -201,41 +212,33 @@ public class ResolverUtil<T> {
         packageName = packageName.replace('.', '/');
         ClassLoader loader = getClassLoader();
         Enumeration<URL> urls;
-
         try {
             urls = loader.getResources(packageName);
-        }
-        catch (IOException ioe) {
-            log.warn("Could not read package: " + packageName, ioe);
+        } catch (IOException ioe) {
+            LOG.warn("Could not read package: " + packageName, ioe);
             return;
         }
-
         while (urls.hasMoreElements()) {
             try {
                 String urlPath = urls.nextElement().getFile();
                 urlPath = URLDecoder.decode(urlPath, "UTF-8");
-
                 // If it's a file in a directory, trim the stupid file: spec
-                if ( urlPath.startsWith("file:") ) {
+                if (urlPath.startsWith("file:")) {
                     urlPath = urlPath.substring(5);
                 }
-
                 // Else it's in a JAR, grab the path to the jar
                 if (urlPath.indexOf('!') > 0) {
                     urlPath = urlPath.substring(0, urlPath.indexOf('!'));
                 }
-
-                log.info("Scanning for classes in [" + urlPath + "] matching criteria: " + test);
+                LOG.info("Scanning for classes in [" + urlPath + "] matching criteria: " + test);
                 File file = new File(urlPath);
-                if ( file.isDirectory() ) {
+                if (file.isDirectory()) {
                     loadImplementationsInDirectory(test, packageName, file);
-                }
-                else {
+                } else {
                     loadImplementationsInJar(test, packageName, file);
                 }
-            }
-            catch (IOException ioe) {
-                log.warn("could not read entries", ioe);
+            } catch (IOException ioe) {
+                LOG.warn("could not read entries", ioe);
             }
         }
     }
@@ -256,16 +259,13 @@ public class ResolverUtil<T> {
     private void loadImplementationsInDirectory(Test test, String parent, File location) {
         File[] files = location.listFiles();
         StringBuilder builder = null;
-
         for (File file : files) {
             builder = new StringBuilder(100);
             builder.append(parent).append("/").append(file.getName());
-            String packageOrClass = ( parent == null ? file.getName() : builder.toString() );
-
+            String packageOrClass = parent == null ? file.getName() : builder.toString();
             if (file.isDirectory()) {
                 loadImplementationsInDirectory(test, packageOrClass, file);
-            }
-            else if (file.getName().endsWith(".class")) {
+            } else if (file.getName().endsWith(".class")) {
                 addIfMatching(test, packageOrClass);
             }
         }
@@ -283,19 +283,16 @@ public class ResolverUtil<T> {
     private void loadImplementationsInJar(Test test, String parent, File jarfile) {
 
         try {
-            JarEntry entry;
             JarInputStream jarStream = new JarInputStream(new FileInputStream(jarfile));
-
-            while ( (entry = jarStream.getNextJarEntry() ) != null) {
+            for (JarEntry entry = jarStream.getNextJarEntry(); entry != null; entry = jarStream.getNextJarEntry()) {
                 String name = entry.getName();
                 if (!entry.isDirectory() && name.startsWith(parent) && name.endsWith(".class")) {
                     addIfMatching(test, name);
                 }
             }
-        }
-        catch (IOException ioe) {
-            log.error("Could not search jar file '" + jarfile + "' for classes matching criteria: " +
-                      test + "due to an IOException: " + ioe.getMessage());
+        } catch (IOException ioe) {
+            LOG.error("Could not search jar file '" + jarfile + "' for classes matching criteria: "
+                      + test + "due to an IOException: " + ioe.getMessage());
         }
     }
 
@@ -310,16 +307,15 @@ public class ResolverUtil<T> {
         try {
             String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
             ClassLoader loader = getClassLoader();
-            log.trace("Checking to see if class " + externalName + " matches criteria [" + test+ "]");
+            LOG.trace("Checking to see if class " + externalName + " matches criteria ["  + test + "]");
 
             Class type = loader.loadClass(externalName);
-            if (test.matches(type) ) {
-                matches.add( (Class<T>) type);
+            if (test.matches(type)) {
+                matches.add((Class<T>) type);
             }
-        }
-        catch (Throwable t) {
-            log.warn("Could not examine class '"+ fqn + "' due to a " +
-                     t.getClass().getName()+ " with message: " + t.getMessage());
+        } catch (Throwable t) {
+            LOG.warn("Could not examine class '" + fqn + "' due to a "
+                     + t.getClass().getName() + " with message: " + t.getMessage());
         }
     }
 }

@@ -22,8 +22,9 @@ package org.apache.servicemix.bean;
  * @version $Revision: $
  */
 public class NoSuchBeanException extends IllegalArgumentException {
-    private String beanName;
-    private BeanEndpoint endpoint;
+
+    private final String beanName;
+    private final BeanEndpoint endpoint;
 
     public NoSuchBeanException(String beanName, BeanEndpoint endpoint) {
         super("No such bean named '" + beanName + "' for endpoint: " + endpoint);

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.servicemix.bean.support;
 
 import java.util.concurrent.ExecutionException;
@@ -38,7 +37,8 @@ public class Holder implements Future<NormalizedMessage> {
         }
         return extract(object);
     }
-    public synchronized NormalizedMessage get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
+    public synchronized NormalizedMessage get(long timeout, TimeUnit unit) 
+        throws InterruptedException, ExecutionException {
         if (object == null) {
             wait(unit.toMillis(timeout));
         }

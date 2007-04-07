@@ -16,10 +16,10 @@
  */
 package org.apache.servicemix.bean;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
 
 /**
  * Binds a method parameter to an XPath expression on the inbound message
@@ -27,7 +27,7 @@ import java.lang.annotation.ElementType;
  * @version $Revision: $
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER})
+@Target({ElementType.PARAMETER })
 public @interface Property {
 
     String name() default "";
