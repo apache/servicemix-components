@@ -213,8 +213,9 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     /**
      * Transform the content and send it back
      */
-    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) 
-            throws Exception {
+    protected void processInOut(MessageExchange exchange, 
+                                NormalizedMessage in, 
+                                NormalizedMessage out) throws Exception {
         copyPropertiesAndAttachments(in, out);
         transform(exchange, in, out);
     }

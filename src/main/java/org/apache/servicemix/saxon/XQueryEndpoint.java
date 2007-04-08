@@ -144,8 +144,9 @@ public class XQueryEndpoint extends SaxonEndpoint {
         }
     }
     
-    protected void configureQuery(DynamicQueryContext dynamicEnv, MessageExchange exchange, NormalizedMessage in) 
-            throws Exception {
+    protected void configureQuery(DynamicQueryContext dynamicEnv, 
+                                  MessageExchange exchange, 
+                                  NormalizedMessage in) throws Exception {
         for (Iterator iter = exchange.getPropertyNames().iterator(); iter.hasNext();) {
             String name = (String) iter.next();
             Object value = exchange.getProperty(name);
