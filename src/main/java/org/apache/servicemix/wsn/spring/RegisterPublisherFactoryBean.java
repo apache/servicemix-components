@@ -30,9 +30,11 @@ import org.springframework.beans.factory.FactoryBean;
 public class RegisterPublisherFactoryBean implements FactoryBean {
 
     private String publisher;
+
     private String topic;
+
     private boolean demand;
-    
+
     /**
      * @return Returns the demand.
      */
@@ -86,7 +88,7 @@ public class RegisterPublisherFactoryBean implements FactoryBean {
             topicExp.getContent().add(topic);
             registerPublisher.getTopic().add(topicExp);
         }
-        registerPublisher.setDemand(new Boolean(demand));
+        registerPublisher.setDemand(Boolean.valueOf(demand));
         return registerPublisher;
     }
 

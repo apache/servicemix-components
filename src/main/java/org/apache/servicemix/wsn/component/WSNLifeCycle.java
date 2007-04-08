@@ -16,7 +16,7 @@
  */
 package org.apache.servicemix.wsn.component;
 
-import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
@@ -33,26 +33,30 @@ import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
 
 public class WSNLifeCycle extends BaseLifeCycle {
 
-	private JbiNotificationBroker notificationBroker;
+    private JbiNotificationBroker notificationBroker;
+
     private JmsCreatePullPoint createPullPoint;
-	private WSNConfiguration configuration;
-	private ConnectionFactory connectionFactory;
-	private ServiceUnit serviceUnit;
-	
-	public WSNLifeCycle(BaseComponent component) {
-		super(component);
-		configuration = new WSNConfiguration();
-		serviceUnit = new ServiceUnit();
-		serviceUnit.setComponent(component);
-	}
+
+    private WSNConfiguration configuration;
+
+    private ConnectionFactory connectionFactory;
+
+    private ServiceUnit serviceUnit;
+
+    public WSNLifeCycle(BaseComponent component) {
+        super(component);
+        configuration = new WSNConfiguration();
+        serviceUnit = new ServiceUnit();
+        serviceUnit.setComponent(component);
+    }
 
     protected Object getExtensionMBean() throws Exception {
         return configuration;
     }
-    
-	@Override
-	protected void doInit() throws Exception {
-		super.doInit();
+
+    @Override
+    protected void doInit() throws Exception {
+        super.doInit();
         configuration.setRootDir(context.getWorkspaceRoot());
         configuration.load();
         // Notification Broker
@@ -72,79 +76,78 @@ public class WSNLifeCycle extends BaseLifeCycle {
         }
         createPullPoint.setConnectionFactory(connectionFactory);
         createPullPoint.init();
-	}
+    }
 
-	@Override
-	protected void doShutDown() throws Exception {
-		notificationBroker.destroy();
+    @Override
+    protected void doShutDown() throws Exception {
+        notificationBroker.destroy();
         createPullPoint.destroy();
         super.doShutDown();
-	}
+    }
 
-	@Override
-	protected void doStart() throws Exception {
-		super.doStart();
-	}
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
+    }
 
-	@Override
-	protected void doStop() throws Exception {
-		// TODO Auto-generated method stub
-		super.doStop();
-	}
+    @Override
+    protected void doStop() throws Exception {
+        // TODO Auto-generated method stub
+        super.doStop();
+    }
 
-	public WSNConfiguration getConfiguration() {
-		return configuration;
-	}
+    public WSNConfiguration getConfiguration() {
+        return configuration;
+    }
 
-	public void setConfiguration(WSNConfiguration configuration) {
-		this.configuration = configuration;
-	}
+    public void setConfiguration(WSNConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
-	public ConnectionFactory getConnectionFactory() {
-		return connectionFactory;
-	}
+    public ConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
 
-	public void setConnectionFactory(ConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-	}
-	
-	protected ConnectionFactory lookupConnectionFactory() throws NamingException {
-		Hashtable<String,String> props = new Hashtable<String,String>();
-		if (configuration.getInitialContextFactory() != null && configuration.getJndiProviderURL() != null) {
-			props.put(Context.INITIAL_CONTEXT_FACTORY, configuration.getInitialContextFactory());
-			props.put(Context.PROVIDER_URL, configuration.getJndiProviderURL());
-		}
-		InitialContext ctx = new InitialContext(props);
-		ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(configuration.getJndiConnectionFactoryName());
-		return connectionFactory;
-	}
-	
-	public class WSNEndpointManager implements EndpointManager {
+    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
 
-		public Object register(String address, Object service) throws EndpointRegistrationException {
-			try {
-				WSNEndpoint endpoint = new WSNEndpoint(address, service);
-				endpoint.setServiceUnit(serviceUnit);
-				serviceUnit.addEndpoint(endpoint);
+    protected ConnectionFactory lookupConnectionFactory() throws NamingException {
+        Properties props = new Properties();
+        if (configuration.getInitialContextFactory() != null && configuration.getJndiProviderURL() != null) {
+            props.put(Context.INITIAL_CONTEXT_FACTORY, configuration.getInitialContextFactory());
+            props.put(Context.PROVIDER_URL, configuration.getJndiProviderURL());
+        }
+        InitialContext ctx = new InitialContext(props);
+        return (ConnectionFactory) ctx.lookup(configuration.getJndiConnectionFactoryName());
+    }
+
+    public class WSNEndpointManager implements EndpointManager {
+
+        public Object register(String address, Object service) throws EndpointRegistrationException {
+            try {
+                WSNEndpoint endpoint = new WSNEndpoint(address, service);
+                endpoint.setServiceUnit(serviceUnit);
+                serviceUnit.addEndpoint(endpoint);
                 component.getRegistry().registerEndpoint(endpoint);
                 endpoint.activate();
-				return endpoint;
-			} catch (Exception e) {
-				throw new EndpointRegistrationException("Unable to activate endpoint", e);
-			}
-		}
+                return endpoint;
+            } catch (Exception e) {
+                throw new EndpointRegistrationException("Unable to activate endpoint", e);
+            }
+        }
 
-		public void unregister(Object endpoint) throws EndpointRegistrationException {
-			try {
+        public void unregister(Object endpoint) throws EndpointRegistrationException {
+            try {
                 serviceUnit.getEndpoints().remove(endpoint);
                 component.getRegistry().unregisterEndpoint((WSNEndpoint) endpoint);
-				((WSNEndpoint) endpoint).deactivate();
-			} catch (Exception e) {
-				throw new EndpointRegistrationException("Unable to activate endpoint", e);
-			}
-		}
+                ((WSNEndpoint) endpoint).deactivate();
+            } catch (Exception e) {
+                throw new EndpointRegistrationException("Unable to activate endpoint", e);
+            }
+        }
 
-	}
+    }
 
     public JbiNotificationBroker getNotificationBroker() {
         return notificationBroker;

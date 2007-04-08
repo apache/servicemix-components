@@ -60,19 +60,22 @@ import org.w3._2005._08.addressing.EndpointReferenceType;
 @WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.NotificationBroker")
 public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker {
 
-	private static Log log = LogFactory.getLog(AbstractNotificationBroker.class);
-	
-    private IdGenerator idGenerator;
-    private AbstractPublisher anonymousPublisher;
-    private Map<String,AbstractPublisher> publishers;
-    private Map<String,AbstractSubscription> subscriptions;
+    private static Log log = LogFactory.getLog(AbstractNotificationBroker.class);
 
-	public AbstractNotificationBroker(String name) {
-		super(name);
+    private IdGenerator idGenerator;
+
+    private AbstractPublisher anonymousPublisher;
+
+    private Map<String, AbstractPublisher> publishers;
+
+    private Map<String, AbstractSubscription> subscriptions;
+
+    public AbstractNotificationBroker(String name) {
+        super(name);
         idGenerator = new IdGenerator();
-        subscriptions = new ConcurrentHashMap<String,AbstractSubscription>();
+        subscriptions = new ConcurrentHashMap<String, AbstractSubscription>();
         publishers = new ConcurrentHashMap<String, AbstractPublisher>();
-	}
+    }
 
     public void init() throws Exception {
         register();
@@ -86,9 +89,9 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
     }
 
     protected String createAddress() {
-		return "http://servicemix.org/wsnotification/NotificationBroker/" + getName();
-	}
-	
+        return "http://servicemix.org/wsnotification/NotificationBroker/" + getName();
+    }
+
     /**
      * 
      * @param notify
@@ -96,42 +99,42 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
     @WebMethod(operationName = "Notify")
     @Oneway
     public void notify(
-        @WebParam(name = "Notify", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "Notify")
-        Notify notify) {
-    	
-    	log.debug("Notify");
-    	handleNotify(notify);
+            @WebParam(name = "Notify", 
+                      targetNamespace = "http://docs.oasis-open.org/wsn/b-1", 
+                      partName = "Notify")
+            Notify notify) {
+
+        log.debug("Notify");
+        handleNotify(notify);
     }
-    
-	protected void handleNotify(Notify notify) {
-		for (NotificationMessageHolderType messageHolder : notify.getNotificationMessage()) {
+
+    protected void handleNotify(Notify notify) {
+        for (NotificationMessageHolderType messageHolder : notify.getNotificationMessage()) {
             EndpointReferenceType producerReference = messageHolder.getProducerReference();
             AbstractPublisher publisher = getPublisher(producerReference);
             if (publisher != null) {
-            	publisher.notify(messageHolder);
+                publisher.notify(messageHolder);
             }
-		}
-	}
+        }
+    }
 
-	protected AbstractPublisher getPublisher(EndpointReferenceType producerReference) {
-		AbstractPublisher publisher = null;
-		if (producerReference != null && 
-			producerReference.getAddress() != null &&
-			producerReference.getAddress().getValue() != null) {
-			String address = producerReference.getAddress().getValue();
-			publisher = publishers.get(address);
-		}
-		if (publisher == null) {
-			publisher = anonymousPublisher;
-		}
-		return publisher;
-	}
-	
+    protected AbstractPublisher getPublisher(EndpointReferenceType producerReference) {
+        AbstractPublisher publisher = null;
+        if (producerReference != null && producerReference.getAddress() != null
+                && producerReference.getAddress().getValue() != null) {
+            String address = producerReference.getAddress().getValue();
+            publisher = publishers.get(address);
+        }
+        if (publisher == null) {
+            publisher = anonymousPublisher;
+        }
+        return publisher;
+    }
+
     /**
      * 
      * @param subscribeRequest
-     * @return
-     *     returns org.oasis_open.docs.wsn.b_1.SubscribeResponse
+     * @return returns org.oasis_open.docs.wsn.b_1.SubscribeResponse
      * @throws SubscribeCreationFailedFault
      * @throws InvalidTopicExpressionFault
      * @throws TopicNotSupportedFault
@@ -144,60 +147,69 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
      * @throws UnacceptableInitialTerminationTimeFault
      */
     @WebMethod(operationName = "Subscribe")
-    @WebResult(name = "SubscribeResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "SubscribeResponse")
+    @WebResult(name = "SubscribeResponse", 
+               targetNamespace = "http://docs.oasis-open.org/wsn/b-1", 
+               partName = "SubscribeResponse")
     public SubscribeResponse subscribe(
-        @WebParam(name = "Subscribe", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "SubscribeRequest")
-        Subscribe subscribeRequest)
-        throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, ResourceUnknownFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
-    	
-    	log.debug("Subscribe");
-    	return handleSubscribe(subscribeRequest, null);
+            @WebParam(name = "Subscribe", 
+                      targetNamespace = "http://docs.oasis-open.org/wsn/b-1", 
+                      partName = "SubscribeRequest")
+            Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault,
+            InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, ResourceUnknownFault,
+            SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault,
+            UnacceptableInitialTerminationTimeFault {
+
+        log.debug("Subscribe");
+        return handleSubscribe(subscribeRequest, null);
     }
-    
-	public SubscribeResponse handleSubscribe(Subscribe subscribeRequest,
-                                             EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
-		AbstractSubscription subscription = null;
-		boolean success = false;
-		try {
-			subscription = createSubcription(idGenerator.generateSanitizedId());
+
+    public SubscribeResponse handleSubscribe(
+                Subscribe subscribeRequest, 
+                EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault, 
+                                                InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault,
+                                                SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
+                                                TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+        AbstractSubscription subscription = null;
+        boolean success = false;
+        try {
+            subscription = createSubcription(idGenerator.generateSanitizedId());
             subscription.setBroker(this);
-			subscriptions.put(subscription.getAddress(), subscription);
-			subscription.create(subscribeRequest);
+            subscriptions.put(subscription.getAddress(), subscription);
+            subscription.create(subscribeRequest);
             if (manager != null) {
                 subscription.setManager(manager);
             }
             subscription.register();
-			SubscribeResponse response = new SubscribeResponse();
-			response.setSubscriptionReference(createEndpointReference(subscription.getAddress()));
-			success = true;
-			return response;
-		} catch (EndpointRegistrationException e) {
-			SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
-			throw new SubscribeCreationFailedFault("Unable to register endpoint", fault, e);
-		} finally {
-			if (!success && subscription != null) {
-				subscriptions.remove(subscription);
-				try {
-					subscription.unsubscribe();
-				} catch (UnableToDestroySubscriptionFault e) {
-					log.info("Error destroying subscription", e);
-				}
-			}
-		}
-	}
-    
+            SubscribeResponse response = new SubscribeResponse();
+            response.setSubscriptionReference(createEndpointReference(subscription.getAddress()));
+            success = true;
+            return response;
+        } catch (EndpointRegistrationException e) {
+            SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
+            throw new SubscribeCreationFailedFault("Unable to register endpoint", fault, e);
+        } finally {
+            if (!success && subscription != null) {
+                subscriptions.remove(subscription);
+                try {
+                    subscription.unsubscribe();
+                } catch (UnableToDestroySubscriptionFault e) {
+                    log.info("Error destroying subscription", e);
+                }
+            }
+        }
+    }
+
     public void unsubscribe(String address) throws UnableToDestroySubscriptionFault {
         AbstractSubscription subscription = (AbstractSubscription) subscriptions.remove(address);
         if (subscription != null) {
             subscription.unsubscribe();
         }
     }
-	
-	/**
+
+    /**
      * 
      * @param getCurrentMessageRequest
-     * @return
-     *     returns org.oasis_open.docs.wsn.b_1.GetCurrentMessageResponse
+     * @return returns org.oasis_open.docs.wsn.b_1.GetCurrentMessageResponse
      * @throws MultipleTopicsSpecifiedFault
      * @throws TopicNotSupportedFault
      * @throws InvalidTopicExpressionFault
@@ -206,22 +218,26 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
      * @throws NoCurrentMessageOnTopicFault
      */
     @WebMethod(operationName = "GetCurrentMessage")
-    @WebResult(name = "GetCurrentMessageResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "GetCurrentMessageResponse")
+    @WebResult(name = "GetCurrentMessageResponse", 
+               targetNamespace = "http://docs.oasis-open.org/wsn/b-1", 
+               partName = "GetCurrentMessageResponse")
     public GetCurrentMessageResponse getCurrentMessage(
-        @WebParam(name = "GetCurrentMessage", targetNamespace = "http://docs.oasis-open.org/wsn/b-1", partName = "GetCurrentMessageRequest")
-        GetCurrentMessage getCurrentMessageRequest)
-        throws InvalidTopicExpressionFault, MultipleTopicsSpecifiedFault, NoCurrentMessageOnTopicFault, ResourceUnknownFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault {
-    	
-    	log.debug("GetCurrentMessage");
-    	NoCurrentMessageOnTopicFaultType fault = new NoCurrentMessageOnTopicFaultType();
-    	throw new NoCurrentMessageOnTopicFault("There is no current message on this topic.", fault);
+            @WebParam(name = "GetCurrentMessage", 
+                      targetNamespace = "http://docs.oasis-open.org/wsn/b-1", 
+                      partName = "GetCurrentMessageRequest")
+            GetCurrentMessage getCurrentMessageRequest) throws InvalidTopicExpressionFault,
+            MultipleTopicsSpecifiedFault, NoCurrentMessageOnTopicFault, ResourceUnknownFault,
+            TopicExpressionDialectUnknownFault, TopicNotSupportedFault {
+
+        log.debug("GetCurrentMessage");
+        NoCurrentMessageOnTopicFaultType fault = new NoCurrentMessageOnTopicFaultType();
+        throw new NoCurrentMessageOnTopicFault("There is no current message on this topic.", fault);
     }
 
     /**
      * 
      * @param registerPublisherRequest
-     * @return
-     *     returns org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse
+     * @return returns org.oasis_open.docs.wsn.br_1.RegisterPublisherResponse
      * @throws PublisherRegistrationRejectedFault
      * @throws InvalidTopicExpressionFault
      * @throws TopicNotSupportedFault
@@ -229,23 +245,24 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
      * @throws PublisherRegistrationFailedFault
      */
     @WebMethod(operationName = "RegisterPublisher")
-    @WebResult(name = "RegisterPublisherResponse", targetNamespace = "http://docs.oasis-open.org/wsn/br-1", partName = "RegisterPublisherResponse")
+    @WebResult(name = "RegisterPublisherResponse", 
+               targetNamespace = "http://docs.oasis-open.org/wsn/br-1", 
+               partName = "RegisterPublisherResponse")
     public RegisterPublisherResponse registerPublisher(
-        @WebParam(name = "RegisterPublisher", targetNamespace = "http://docs.oasis-open.org/wsn/br-1", partName = "RegisterPublisherRequest")
-        RegisterPublisher registerPublisherRequest)
-        throws InvalidTopicExpressionFault, PublisherRegistrationFailedFault, PublisherRegistrationRejectedFault, ResourceUnknownFault, TopicNotSupportedFault {
-    	
-    	log.debug("RegisterPublisher");
+            @WebParam(name = "RegisterPublisher", 
+                      targetNamespace = "http://docs.oasis-open.org/wsn/br-1", 
+                      partName = "RegisterPublisherRequest")
+            RegisterPublisher registerPublisherRequest) throws InvalidTopicExpressionFault,
+            PublisherRegistrationFailedFault, PublisherRegistrationRejectedFault, ResourceUnknownFault,
+            TopicNotSupportedFault {
+
+        log.debug("RegisterPublisher");
         return handleRegisterPublisher(registerPublisherRequest, null);
     }
-    
-    public RegisterPublisherResponse handleRegisterPublisher(
-                        RegisterPublisher registerPublisherRequest,
-                        EndpointManager manager) throws InvalidTopicExpressionFault, 
-                                                        PublisherRegistrationFailedFault, 
-                                                        PublisherRegistrationRejectedFault, 
-                                                        ResourceUnknownFault, 
-                                                        TopicNotSupportedFault {
+
+    public RegisterPublisherResponse handleRegisterPublisher(RegisterPublisher registerPublisherRequest,
+            EndpointManager manager) throws InvalidTopicExpressionFault, PublisherRegistrationFailedFault,
+            PublisherRegistrationRejectedFault, ResourceUnknownFault, TopicNotSupportedFault {
         AbstractPublisher publisher = null;
         boolean success = false;
         try {
@@ -256,7 +273,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
             }
             publisher.register();
             publisher.create(registerPublisherRequest);
-            RegisterPublisherResponse response = new RegisterPublisherResponse(); 
+            RegisterPublisherResponse response = new RegisterPublisherResponse();
             response.setPublisherRegistrationReference(createEndpointReference(publisher.getAddress()));
             success = true;
             return response;
@@ -275,8 +292,8 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         }
     }
 
-	protected abstract AbstractPublisher createPublisher(String name);
-	
-	protected abstract AbstractSubscription createSubcription(String name);
+    protected abstract AbstractPublisher createPublisher(String name);
+
+    protected abstract AbstractSubscription createSubcription(String name);
 
 }

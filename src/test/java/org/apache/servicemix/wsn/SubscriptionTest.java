@@ -32,81 +32,83 @@ import org.oasis_open.docs.wsn.b_2.Subscribe;
 
 public class SubscriptionTest extends TestCase {
 
-	private JAXBContext context;
-	private Unmarshaller unmarshaller;
-	private AbstractSubscription subscription;
-	
-	protected void setUp() throws Exception {
-		context = JAXBContext.newInstance(Subscribe.class);
-		unmarshaller = context.createUnmarshaller();
-		subscription = new DummySubscription("mySubscription");
-	}
-	
-	protected Subscribe getSubscription(String file) throws JAXBException, IOException {
-		InputStream is = getClass().getResourceAsStream(file);
-		Subscribe subscribe = (Subscribe) unmarshaller.unmarshal(is);
-		is.close();
-		return subscribe;
-	}
-	
-	public void testWithNilITT() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-nil-itt.xml");
-		subscription.validateSubscription(subscribe);
-	}
-	
-	public void testWithAbsoluteITT() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-abs-itt.xml");
-		try {
-			subscription.validateSubscription(subscribe);
-			fail("Invalid initial termination time used. Fault was expected.");
-		} catch (UnacceptableInitialTerminationTimeFault e) {
-			// OK
-		}
-	}
-	
-	public void testWithEmptyITT() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-empty-itt.xml");
-		try {
-			subscription.validateSubscription(subscribe);
-			fail("Invalid initial termination time used. Fault was expected.");
-		} catch (UnacceptableInitialTerminationTimeFault e) {
-			// OK
-		}
-	}
-	
-	public void testWithNoITT() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-no-itt.xml");
-		subscription.validateSubscription(subscribe);
-	}
-	
-	public void testWithUseRaw() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-raw.xml");
-		subscription.validateSubscription(subscribe);
-	}
-	
-	public void testWithProducerProperties() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-pp.xml");
-		try {
-			subscription.validateSubscription(subscribe);
-			fail("ProducerProperties used. Fault was expected.");
-		} catch (InvalidProducerPropertiesExpressionFault e) {
-			// OK
-		}
-	}
-	
-	public void testWithNoTopic() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-no-topic.xml");
-		try {
-			subscription.validateSubscription(subscribe);
-			fail("ProducerProperties used. Fault was expected.");
-		} catch (InvalidFilterFault e) {
-			// OK
-		}
-	}
-	
-	public void testWithEPR() throws Exception {
-		Subscribe subscribe = getSubscription("subscribe-epr.xml");
-		subscription.validateSubscription(subscribe);
-	}
-	
+    private JAXBContext context;
+
+    private Unmarshaller unmarshaller;
+
+    private AbstractSubscription subscription;
+
+    protected void setUp() throws Exception {
+        context = JAXBContext.newInstance(Subscribe.class);
+        unmarshaller = context.createUnmarshaller();
+        subscription = new DummySubscription("mySubscription");
+    }
+
+    protected Subscribe getSubscription(String file) throws JAXBException, IOException {
+        InputStream is = getClass().getResourceAsStream(file);
+        Subscribe subscribe = (Subscribe) unmarshaller.unmarshal(is);
+        is.close();
+        return subscribe;
+    }
+
+    public void testWithNilITT() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-nil-itt.xml");
+        subscription.validateSubscription(subscribe);
+    }
+
+    public void testWithAbsoluteITT() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-abs-itt.xml");
+        try {
+            subscription.validateSubscription(subscribe);
+            fail("Invalid initial termination time used. Fault was expected.");
+        } catch (UnacceptableInitialTerminationTimeFault e) {
+            // OK
+        }
+    }
+
+    public void testWithEmptyITT() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-empty-itt.xml");
+        try {
+            subscription.validateSubscription(subscribe);
+            fail("Invalid initial termination time used. Fault was expected.");
+        } catch (UnacceptableInitialTerminationTimeFault e) {
+            // OK
+        }
+    }
+
+    public void testWithNoITT() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-no-itt.xml");
+        subscription.validateSubscription(subscribe);
+    }
+
+    public void testWithUseRaw() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-raw.xml");
+        subscription.validateSubscription(subscribe);
+    }
+
+    public void testWithProducerProperties() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-pp.xml");
+        try {
+            subscription.validateSubscription(subscribe);
+            fail("ProducerProperties used. Fault was expected.");
+        } catch (InvalidProducerPropertiesExpressionFault e) {
+            // OK
+        }
+    }
+
+    public void testWithNoTopic() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-no-topic.xml");
+        try {
+            subscription.validateSubscription(subscribe);
+            fail("ProducerProperties used. Fault was expected.");
+        } catch (InvalidFilterFault e) {
+            // OK
+        }
+    }
+
+    public void testWithEPR() throws Exception {
+        Subscribe subscribe = getSubscription("subscribe-epr.xml");
+        subscription.validateSubscription(subscribe);
+    }
+
 }

@@ -25,8 +25,9 @@ import org.apache.servicemix.wsn.AbstractPullPoint;
 public class JmsCreatePullPoint extends AbstractCreatePullPoint {
 
     private ConnectionFactory connectionFactory;
+
     private Connection connection;
-    
+
     public JmsCreatePullPoint(String name) {
         super(name);
     }
@@ -45,7 +46,7 @@ public class JmsCreatePullPoint extends AbstractCreatePullPoint {
         }
         super.destroy();
     }
-    
+
     @Override
     protected AbstractPullPoint createPullPoint(String name) {
         JmsPullPoint pullPoint = new JmsPullPoint(name);

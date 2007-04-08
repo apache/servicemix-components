@@ -32,23 +32,23 @@ import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class PullPoint extends AbstractWSAClient {
 
-	public PullPoint(EndpointReferenceType pullPoint, ServiceMixClient client) {
-		super(pullPoint, client);
-	}
+    public PullPoint(EndpointReferenceType pullPoint, ServiceMixClient client) {
+        super(pullPoint, client);
+    }
 
     public PullPoint(EndpointReferenceType pullPoint, JBIContainer container) throws JBIException, JAXBException {
         super(pullPoint, createJaxbClient(container));
     }
 
-	public List<NotificationMessageHolderType> getMessages(int max) throws JBIException {
-		GetMessages getMessages = new GetMessages();
-		getMessages.setMaximumNumber(BigInteger.valueOf(max));
-		GetMessagesResponse response = (GetMessagesResponse) request(getMessages);
-		return response.getNotificationMessage();
-	}
-	
-	public void destroy() throws JBIException {
-		request(new DestroyPullPoint());
-	}
-	
+    public List<NotificationMessageHolderType> getMessages(int max) throws JBIException {
+        GetMessages getMessages = new GetMessages();
+        getMessages.setMaximumNumber(BigInteger.valueOf(max));
+        GetMessagesResponse response = (GetMessagesResponse) request(getMessages);
+        return response.getNotificationMessage();
+    }
+
+    public void destroy() throws JBIException {
+        request(new DestroyPullPoint());
+    }
+
 }

@@ -29,47 +29,46 @@ import org.apache.servicemix.jbi.messaging.DefaultMarshaler;
 
 public class JAXBMarshaler extends DefaultMarshaler {
 
-	private JAXBContext context;
-	
-	public JAXBMarshaler(JAXBContext context) {
-		this.context = context;
-	}
+    private JAXBContext context;
 
-	public JAXBContext getContext() {
-		return context;
-	}
+    public JAXBMarshaler(JAXBContext context) {
+        this.context = context;
+    }
 
-	public void setContext(JAXBContext context) {
-		this.context = context;
-	}
-	
+    public JAXBContext getContext() {
+        return context;
+    }
+
+    public void setContext(JAXBContext context) {
+        this.context = context;
+    }
+
     protected Object defaultUnmarshal(MessageExchange exchange, NormalizedMessage message) {
         try {
-        	Source content = message.getContent();
-        	return context.createUnmarshaller().unmarshal(content);
+            Source content = message.getContent();
+            return context.createUnmarshaller().unmarshal(content);
         } catch (Exception e) {
-        	throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
     protected Source asContent(NormalizedMessage message, Object body) {
-    	try {
-	    	StringWriter writer = new StringWriter();
-	    	context.createMarshaller().marshal(body, writer);
-	    	return new StringSource(writer.toString());
+        try {
+            StringWriter writer = new StringWriter();
+            context.createMarshaller().marshal(body, writer);
+            return new StringSource(writer.toString());
         } catch (Exception e) {
-        	throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
-	@Override
-	public void marshal(MessageExchange exchange, NormalizedMessage message, Object body) throws MessagingException {
-		if (body instanceof Source) {
+    @Override
+    public void marshal(MessageExchange exchange, NormalizedMessage message, Object body) throws MessagingException {
+        if (body instanceof Source) {
             message.setContent((Source) body);
-        }
-        else {
+        } else {
             Source content = asContent(message, body);
             message.setContent(content);
-    	}
-	}
+        }
+    }
 }

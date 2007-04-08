@@ -30,6 +30,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.ExchangeProcessor;
@@ -45,32 +50,33 @@ import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
 import org.apache.servicemix.wsn.jms.JmsSubscription;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 public class JbiSubscription extends JmsSubscription {
 
-	private static Log log = LogFactory.getLog(JbiSubscription.class);
-	
-	private WSNLifeCycle lifeCycle;
-	private ServiceEndpoint endpoint;
+    private static Log log = LogFactory.getLog(JbiSubscription.class);
+
+    private WSNLifeCycle lifeCycle;
+
+    private ServiceEndpoint endpoint;
+
     private ExchangeProcessor processor;
-	
-	public JbiSubscription(String name) {
-		super(name);
+
+    public JbiSubscription(String name) {
+        super(name);
         processor = new NoOpProcessor();
-	}
+    }
 
     @Override
     protected void start() throws SubscribeCreationFailedFault {
         super.start();
     }
-    
-	@Override
-	protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
-		super.validateSubscription(subscribeRequest);
+
+    @Override
+    protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault,
+            InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault,
+            InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
+            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+        super.validateSubscription(subscribeRequest);
         try {
             endpoint = resolveConsumer(subscribeRequest);
         } catch (Exception e) {
@@ -81,8 +87,8 @@ public class JbiSubscription extends JmsSubscription {
             SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
             throw new SubscribeCreationFailedFault("Unable to resolve consumer reference endpoint", fault);
         }
-	}
-    
+    }
+
     protected ServiceEndpoint resolveConsumer(Subscribe subscribeRequest) throws Exception {
         // Try to resolve the WSA endpoint
         JAXBContext ctx = JAXBContext.newInstance(Subscribe.class);
@@ -91,38 +97,39 @@ public class JbiSubscription extends JmsSubscription {
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.newDocument();
         ctx.createMarshaller().marshal(subscribeRequest, doc);
-        NodeList nl = doc.getDocumentElement().getElementsByTagNameNS("http://docs.oasis-open.org/wsn/b-2", "ConsumerReference");
+        NodeList nl = doc.getDocumentElement().getElementsByTagNameNS("http://docs.oasis-open.org/wsn/b-2",
+                "ConsumerReference");
         if (nl.getLength() != 1) {
             throw new Exception("Subscribe request must have exactly one ConsumerReference node");
         }
         Element el = (Element) nl.item(0);
         DocumentFragment epr = doc.createDocumentFragment();
         epr.appendChild(el);
-        ServiceEndpoint endpoint = getContext().resolveEndpointReference(epr);
-        if (endpoint == null) {
+        ServiceEndpoint ep = getContext().resolveEndpointReference(epr);
+        if (ep == null) {
             String[] parts = split(subscribeRequest.getConsumerReference().getAddress().getValue().trim());
-            endpoint = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
+            ep = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
         }
-        return endpoint;
+        return ep;
     }
 
     protected String[] split(String uri) {
-		char sep;
-		if (uri.indexOf('/') > 0) {
-			sep = '/';
-		} else {
-			sep = ':';
-		}
-		int idx1 = uri.lastIndexOf(sep);
-		int idx2 = uri.lastIndexOf(sep, idx1 - 1);
-		String epName = uri.substring(idx1 + 1);
-		String svcName = uri.substring(idx2 + 1, idx1);
-		String nsUri   = uri.substring(0, idx2);
-    	return new String[] { nsUri, svcName, epName };
+        char sep;
+        if (uri.indexOf('/') > 0) {
+            sep = '/';
+        } else {
+            sep = ':';
+        }
+        int idx1 = uri.lastIndexOf(sep);
+        int idx2 = uri.lastIndexOf(sep, idx1 - 1);
+        String epName = uri.substring(idx1 + 1);
+        String svcName = uri.substring(idx2 + 1, idx1);
+        String nsUri = uri.substring(0, idx2);
+        return new String[] {nsUri, svcName, epName };
     }
-	
-	@Override
-	protected void doNotify(final Element content) {
+
+    @Override
+    protected void doNotify(final Element content) {
         try {
             DeliveryChannel channel = getContext().getDeliveryChannel();
             MessageExchangeFactory factory = channel.createExchangeFactory(endpoint);
@@ -134,11 +141,11 @@ public class JbiSubscription extends JmsSubscription {
         } catch (JBIException e) {
             log.warn("Could not deliver notification", e);
         }
-	}
+    }
 
-	public ComponentContext getContext() {
-		return lifeCycle.getContext();
-	}
+    public ComponentContext getContext() {
+        return lifeCycle.getContext();
+    }
 
     public WSNLifeCycle getLifeCycle() {
         return lifeCycle;

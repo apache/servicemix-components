@@ -32,11 +32,12 @@ import javax.management.ObjectName;
 public class WSNBootstrap implements Bootstrap {
 
     protected InstallationContext context;
+
     protected ObjectName mbeanName;
-    
+
     public WSNBootstrap() {
     }
-    
+
     public ObjectName getExtensionMBeanName() {
         return mbeanName;
     }
@@ -44,7 +45,7 @@ public class WSNBootstrap implements Bootstrap {
     protected Object getExtensionMBean() throws Exception {
         return null;
     }
-    
+
     protected ObjectName createExtensionMBeanName() throws Exception {
         return this.context.getContext().getMBeanNames().createCustomComponentMBeanName("bootstrap");
     }
@@ -77,7 +78,7 @@ public class WSNBootstrap implements Bootstrap {
             server.registerMBean(mbean, this.mbeanName);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see javax.jbi.component.Bootstrap#cleanUp()
      */
@@ -118,7 +119,7 @@ public class WSNBootstrap implements Bootstrap {
 
     protected void doOnInstall() throws Exception {
     }
-    
+
     /* (non-Javadoc)
      * @see javax.jbi.component.Bootstrap#onUninstall()
      */
@@ -134,5 +135,5 @@ public class WSNBootstrap implements Bootstrap {
 
     protected void doOnUninstall() throws Exception {
     }
-    
+
 }

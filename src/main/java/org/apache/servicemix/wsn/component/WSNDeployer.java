@@ -53,6 +53,7 @@ import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
 public class WSNDeployer extends AbstractDeployer implements Deployer {
 
     protected FilenameFilter filter;
+
     protected JAXBContext context;
 
     public WSNDeployer(BaseComponent component) {
@@ -86,7 +87,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
                 url = xmls[i].toURL();
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
-                throw new DeploymentException("Error deploying xml file", e); 
+                throw new DeploymentException("Error deploying xml file", e);
             }
             ep = createEndpoint(url);
             ep.setServiceUnit(su);
@@ -124,6 +125,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
     public class WSNSubscriptionEndpoint extends Endpoint implements EndpointManager {
 
         private Subscribe request;
+
         private SubscribeResponse response;
 
         public WSNSubscriptionEndpoint(Subscribe request) throws DeploymentException {
@@ -139,13 +141,15 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
+            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+                    .getNotificationBroker();
             response = broker.handleSubscribe(request, this);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
+            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+                    .getNotificationBroker();
             broker.unsubscribe(response.getSubscriptionReference().getAddress().getValue());
         }
 
@@ -166,6 +170,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
     public class WSNPullPointEndpoint extends Endpoint implements EndpointManager {
 
         private CreatePullPoint request;
+
         private CreatePullPointResponse response;
 
         public WSNPullPointEndpoint(CreatePullPoint request) throws DeploymentException {
@@ -181,13 +186,15 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getCreatePullPoint();
+            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+                    .getCreatePullPoint();
             response = createPullPoint.createPullPoint(request);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getCreatePullPoint();
+            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+                    .getCreatePullPoint();
             createPullPoint.destroyPullPoint(response.getPullPoint().getAddress().getValue());
         }
 
@@ -208,8 +215,9 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
     public static class WSNPublisherEndpoint extends Endpoint implements EndpointManager {
 
         private RegisterPublisher request;
+
         private RegisterPublisherResponse response;
-        
+
         public WSNPublisherEndpoint(RegisterPublisher request) {
             this.service = new QName("http://servicemix.org/wsnotification", "Publisher");
             this.endpoint = new IdGenerator().generateSanitizedId();
@@ -223,13 +231,15 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
+            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+                    .getNotificationBroker();
             response = broker.handleRegisterPublisher(request, this);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle()).getNotificationBroker();
+            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+                    .getNotificationBroker();
             broker.unsubscribe(response.getPublisherRegistrationReference().getAddress().getValue());
         }
 
@@ -279,13 +289,13 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
             }
         }
     }
-    
+
     public static class XmlFilter implements FilenameFilter {
 
         public boolean accept(File dir, String name) {
             return name.endsWith(".xml");
         }
-        
+
     }
-    
+
 }

@@ -36,10 +36,13 @@ import org.springframework.beans.factory.FactoryBean;
 public class SubscribeFactoryBean implements FactoryBean {
 
     private String consumer;
+
     private String topic;
+
     private String xpath;
+
     private boolean raw;
-    
+
     /**
      * @return Returns the consumer.
      */
@@ -48,7 +51,8 @@ public class SubscribeFactoryBean implements FactoryBean {
     }
 
     /**
-     * @param consumer The consumer to set.
+     * @param consumer
+     *            The consumer to set.
      */
     public void setConsumer(String consumer) {
         this.consumer = consumer;
@@ -62,7 +66,8 @@ public class SubscribeFactoryBean implements FactoryBean {
     }
 
     /**
-     * @param topic The topic to set.
+     * @param topic
+     *            The topic to set.
      */
     public void setTopic(String topic) {
         this.topic = topic;
@@ -76,7 +81,8 @@ public class SubscribeFactoryBean implements FactoryBean {
     }
 
     /**
-     * @param xpath The xpath to set.
+     * @param xpath
+     *            The xpath to set.
      */
     public void setXpath(String xpath) {
         this.xpath = xpath;
@@ -90,13 +96,16 @@ public class SubscribeFactoryBean implements FactoryBean {
     }
 
     /**
-     * @param raw The raw to set.
+     * @param raw
+     *            The raw to set.
      */
     public void setRaw(boolean raw) {
         this.raw = raw;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.springframework.beans.factory.FactoryBean#getObject()
      */
     public Object getObject() throws Exception {
@@ -106,13 +115,17 @@ public class SubscribeFactoryBean implements FactoryBean {
         if (topic != null) {
             TopicExpressionType topicExp = new TopicExpressionType();
             topicExp.getContent().add(topic);
-            subscribe.getFilter().getAny().add(new JAXBElement<TopicExpressionType>(AbstractSubscription.QNAME_TOPIC_EXPRESSION, TopicExpressionType.class, topicExp));
+            subscribe.getFilter().getAny().add(
+                    new JAXBElement<TopicExpressionType>(AbstractSubscription.QNAME_TOPIC_EXPRESSION,
+                            TopicExpressionType.class, topicExp));
         }
         if (xpath != null) {
             QueryExpressionType xpathExp = new QueryExpressionType();
             xpathExp.setDialect(AbstractSubscription.XPATH1_URI);
             xpathExp.getContent().add(xpath);
-            subscribe.getFilter().getAny().add(new JAXBElement<QueryExpressionType>(AbstractSubscription.QNAME_MESSAGE_CONTENT, QueryExpressionType.class, xpathExp));
+            subscribe.getFilter().getAny().add(
+                    new JAXBElement<QueryExpressionType>(AbstractSubscription.QNAME_MESSAGE_CONTENT,
+                            QueryExpressionType.class, xpathExp));
         }
         if (raw) {
             subscribe.setSubscriptionPolicy(new Subscribe.SubscriptionPolicy());
@@ -121,14 +134,18 @@ public class SubscribeFactoryBean implements FactoryBean {
         return subscribe;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.springframework.beans.factory.FactoryBean#getObjectType()
      */
     public Class getObjectType() {
         return Subscribe.class;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.springframework.beans.factory.FactoryBean#isSingleton()
      */
     public boolean isSingleton() {

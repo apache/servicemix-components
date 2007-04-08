@@ -24,12 +24,12 @@ import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class Publisher extends AbstractWSAClient {
 
-	public Publisher(EndpointReferenceType publisherRegistrationReference, ServiceMixClient client) {
-		super(publisherRegistrationReference, client);
-	}
+    public Publisher(EndpointReferenceType publisherRegistrationReference, ServiceMixClient client) {
+        super(publisherRegistrationReference, client);
+    }
 
-	public void destroy() throws JBIException {
-		request(new DestroyRegistration());
-	}
-	
+    public void destroy() throws JBIException {
+        request(new DestroyRegistration());
+    }
+
 }

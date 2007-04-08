@@ -25,19 +25,20 @@ import org.apache.servicemix.wsn.AbstractSubscription;
 
 public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
 
-	private ConnectionFactory connectionFactory;
-	private Connection connection;
-	
-	public JmsNotificationBroker(String name) {
-		super(name);
-	}
+    private ConnectionFactory connectionFactory;
+
+    private Connection connection;
+
+    public JmsNotificationBroker(String name) {
+        super(name);
+    }
 
     public void init() throws Exception {
-    	if (connection == null) {
-    		connection = connectionFactory.createConnection();
-			connection.start();
-    	}
-    	super.init();
+        if (connection == null) {
+            connection = connectionFactory.createConnection();
+            connection.start();
+        }
+        super.init();
     }
 
     public void destroy() throws Exception {
@@ -46,33 +47,33 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
         }
         super.destroy();
     }
-	
+
     @Override
-	protected AbstractPublisher createPublisher(String name) {
-		JmsPublisher publisher = createJmsPublisher(name);
-		publisher.setManager(getManager());
-		publisher.setConnection(connection);
-		return publisher;
-	}
+    protected AbstractPublisher createPublisher(String name) {
+        JmsPublisher publisher = createJmsPublisher(name);
+        publisher.setManager(getManager());
+        publisher.setConnection(connection);
+        return publisher;
+    }
 
-	@Override
-	protected AbstractSubscription createSubcription(String name) {
-		JmsSubscription subscription = createJmsSubscription(name);
-		subscription.setManager(getManager());
-		subscription.setConnection(connection);
-		return subscription;
-	}
-	
-	protected abstract JmsSubscription createJmsSubscription(String name);
+    @Override
+    protected AbstractSubscription createSubcription(String name) {
+        JmsSubscription subscription = createJmsSubscription(name);
+        subscription.setManager(getManager());
+        subscription.setConnection(connection);
+        return subscription;
+    }
 
-	protected abstract JmsPublisher createJmsPublisher(String name);
+    protected abstract JmsSubscription createJmsSubscription(String name);
 
-	public ConnectionFactory getConnectionFactory() {
-		return connectionFactory;
-	}
+    protected abstract JmsPublisher createJmsPublisher(String name);
 
-	public void setConnectionFactory(ConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-	}
+    public ConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
+
+    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
 
 }

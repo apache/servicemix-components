@@ -21,51 +21,50 @@ import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public abstract class AbstractEndpoint {
 
-	protected String name;
-	protected String address;
-	protected EndpointManager manager;
-	protected Object endpoint;
-	
-	public AbstractEndpoint(String name) {
-		setName(name);
-	}
-	
-	public String getName() {
-		return name;
-	}
+    protected final String name;
 
-	public void setName(String name) {
-		this.name = name;
-		this.address = createAddress();
-	}
+    protected String address;
 
-	public String getAddress() {
-		return address;
-	}
-    
+    protected EndpointManager manager;
+
+    protected Object endpoint;
+
+    public AbstractEndpoint(String name) {
+        this.name = name;
+        this.address = createAddress();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
     public void setAddress(String address) {
         this.address = address;
     }
-	
-	public void register() throws EndpointRegistrationException {
-		endpoint = manager.register(getAddress(), this);
-	}
-	
-	public void unregister() throws EndpointRegistrationException {
-		if (endpoint != null) {
-			manager.unregister(endpoint);
-		}
-	}
 
-	public EndpointManager getManager() {
-		return manager;
-	}
+    public void register() throws EndpointRegistrationException {
+        endpoint = manager.register(getAddress(), this);
+    }
 
-	public void setManager(EndpointManager manager) {
-		this.manager = manager;
-	}
-	
-	protected abstract String createAddress();
+    public void unregister() throws EndpointRegistrationException {
+        if (endpoint != null) {
+            manager.unregister(endpoint);
+        }
+    }
+
+    public EndpointManager getManager() {
+        return manager;
+    }
+
+    public void setManager(EndpointManager manager) {
+        this.manager = manager;
+    }
+
+    protected abstract String createAddress();
 
     public static EndpointReferenceType createEndpointReference(String address) {
         EndpointReferenceType epr = new EndpointReferenceType();

@@ -23,26 +23,26 @@ import org.apache.servicemix.wsn.jms.JmsSubscription;
 
 public class JbiNotificationBroker extends JmsNotificationBroker {
 
-	private WSNLifeCycle lifeCycle;
-	
-	public JbiNotificationBroker(String name) {
-		super(name);
-	}
-	
-	@Override
-	protected JmsSubscription createJmsSubscription(String name) {
-		JbiSubscription subscription = new JbiSubscription(name);
-		subscription.setLifeCycle(lifeCycle);
-		return subscription;
-	}
+    private WSNLifeCycle lifeCycle;
 
-	@Override
-	protected JmsPublisher createJmsPublisher(String name) {
-		JbiPublisher publisher = new JbiPublisher(name);
-		publisher.setLifeCycle(lifeCycle);
-		publisher.setNotificationBrokerAddress(address);
-		return publisher;
-	}
+    public JbiNotificationBroker(String name) {
+        super(name);
+    }
+
+    @Override
+    protected JmsSubscription createJmsSubscription(String name) {
+        JbiSubscription subscription = new JbiSubscription(name);
+        subscription.setLifeCycle(lifeCycle);
+        return subscription;
+    }
+
+    @Override
+    protected JmsPublisher createJmsPublisher(String name) {
+        JbiPublisher publisher = new JbiPublisher(name);
+        publisher.setLifeCycle(lifeCycle);
+        publisher.setNotificationBrokerAddress(address);
+        return publisher;
+    }
 
     public WSNLifeCycle getLifeCycle() {
         return lifeCycle;

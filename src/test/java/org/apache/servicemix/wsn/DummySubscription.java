@@ -25,24 +25,24 @@ import org.apache.servicemix.wsn.jaxws.UnacceptableTerminationTimeFault;
 
 public class DummySubscription extends AbstractSubscription {
 
-	public DummySubscription(String name) {
-		super(name);
-	}
+    public DummySubscription(String name) {
+        super(name);
+    }
 
-	@Override
-	protected void start() throws SubscribeCreationFailedFault {
-	}
+    @Override
+    protected void start() throws SubscribeCreationFailedFault {
+    }
 
-	@Override
-	protected void pause() throws PauseFailedFault {
-	}
+    @Override
+    protected void pause() throws PauseFailedFault {
+    }
 
-	@Override
-	protected void resume() throws ResumeFailedFault {
-	}
+    @Override
+    protected void resume() throws ResumeFailedFault {
+    }
 
-	@Override
-	protected void renew(XMLGregorianCalendar terminationTime) throws UnacceptableTerminationTimeFault {
-	}
-	
+    @Override
+    protected void renew(XMLGregorianCalendar terminationTime) throws UnacceptableTerminationTimeFault {
+    }
+
 }

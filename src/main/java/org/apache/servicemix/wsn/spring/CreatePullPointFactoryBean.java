@@ -18,11 +18,12 @@ package org.apache.servicemix.wsn.spring;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
-import org.springframework.beans.factory.FactoryBean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
+
+import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
+import org.springframework.beans.factory.FactoryBean;
 
 /**
  * 
@@ -33,7 +34,7 @@ import org.w3c.dom.Text;
 public class CreatePullPointFactoryBean implements FactoryBean {
 
     private String address;
-    
+
     /**
      * @return Returns the address.
      */

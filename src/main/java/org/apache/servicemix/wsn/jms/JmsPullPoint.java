@@ -43,105 +43,111 @@ import org.oasis_open.docs.wsn.b_2.UnableToGetMessagesFaultType;
 
 public class JmsPullPoint extends AbstractPullPoint {
 
-	private static Log log = LogFactory.getLog(JmsPullPoint.class);
-	
-	private JAXBContext jaxbContext;
-	private Connection connection;
-	private Session session;
-	private Queue queue;
-	private MessageProducer producer;
-	private MessageConsumer consumer;
+    private static Log log = LogFactory.getLog(JmsPullPoint.class);
 
-	public JmsPullPoint(String name)  {
-		super(name);
-		try {
-			jaxbContext = JAXBContext.newInstance(Notify.class);
-		} catch (JAXBException e) {
-			throw new RuntimeException("Could not create PullEndpoint", e);
-		}
-	}
-	
-	protected void initSession() throws JMSException {
-		if (session == null) {
-			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			queue = session.createQueue(getName());
-			producer = session.createProducer(queue);
-			consumer = session.createConsumer(queue);
-		}
-	}
+    private JAXBContext jaxbContext;
 
-	@Override
-	protected synchronized void store(NotificationMessageHolderType messageHolder) {
-		try {
-			initSession();
+    private Connection connection;
+
+    private Session session;
+
+    private Queue queue;
+
+    private MessageProducer producer;
+
+    private MessageConsumer consumer;
+
+    public JmsPullPoint(String name) {
+        super(name);
+        try {
+            jaxbContext = JAXBContext.newInstance(Notify.class);
+        } catch (JAXBException e) {
+            throw new RuntimeException("Could not create PullEndpoint", e);
+        }
+    }
+
+    protected void initSession() throws JMSException {
+        if (session == null) {
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            queue = session.createQueue(getName());
+            producer = session.createProducer(queue);
+            consumer = session.createConsumer(queue);
+        }
+    }
+
+    @Override
+    protected synchronized void store(NotificationMessageHolderType messageHolder) {
+        try {
+            initSession();
             Notify notify = new Notify();
             notify.getNotificationMessage().add(messageHolder);
             StringWriter writer = new StringWriter();
             jaxbContext.createMarshaller().marshal(notify, writer);
             Message message = session.createTextMessage(writer.toString());
             producer.send(message);
-		} catch (JMSException e) {
-			log.warn("Error storing message", e);
-			if (session != null) {
-				try {
-					session.close();
-				} catch (JMSException inner) {
-					log.debug("Error closing session", inner);
-				} finally {
-					session = null;
-				}
-			}
-		} catch (JAXBException e) {
-			log.warn("Error storing message", e);
-		}
-	}
+        } catch (JMSException e) {
+            log.warn("Error storing message", e);
+            if (session != null) {
+                try {
+                    session.close();
+                } catch (JMSException inner) {
+                    log.debug("Error closing session", inner);
+                } finally {
+                    session = null;
+                }
+            }
+        } catch (JAXBException e) {
+            log.warn("Error storing message", e);
+        }
+    }
 
-	@Override
-	protected synchronized List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault, UnableToGetMessagesFault {
-		Session session = null;
-		try {
-			if (max == 0) {
-				max = 256;
-			}
-			initSession();
-			List<NotificationMessageHolderType> messages = new ArrayList<NotificationMessageHolderType>();
-			for (int i = 0; i < max; i++) {
-				Message msg = consumer.receiveNoWait();
-				if (msg == null) {
-					break;
-				}
-				TextMessage txtMsg = (TextMessage) msg;
-				StringReader reader = new StringReader(txtMsg.getText());
-				Notify notify = (Notify) jaxbContext.createUnmarshaller().unmarshal(reader);
-				messages.addAll(notify.getNotificationMessage());
-			}
-			return messages;
-		} catch (JMSException e) {
-			log.info("Error retrieving messages", e);
-			if (session != null) {
-				try {
-					session.close();
-				} catch (JMSException inner) {
-					log.debug("Error closing session", inner);
-				} finally {
-					session = null;
-				}
-			}
+    @Override
+    protected synchronized List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault,
+            UnableToGetMessagesFault {
+        Session jmsSession = null;
+        try {
+            if (max == 0) {
+                max = 256;
+            }
+            initSession();
+            List<NotificationMessageHolderType> messages = new ArrayList<NotificationMessageHolderType>();
+            for (int i = 0; i < max; i++) {
+                Message msg = consumer.receiveNoWait();
+                if (msg == null) {
+                    break;
+                }
+                TextMessage txtMsg = (TextMessage) msg;
+                StringReader reader = new StringReader(txtMsg.getText());
+                Notify notify = (Notify) jaxbContext.createUnmarshaller().unmarshal(reader);
+                messages.addAll(notify.getNotificationMessage());
+            }
+            return messages;
+        } catch (JMSException e) {
+            log.info("Error retrieving messages", e);
+            if (jmsSession != null) {
+                try {
+                    jmsSession.close();
+                } catch (JMSException inner) {
+                    log.debug("Error closing session", inner);
+                } finally {
+                    jmsSession = null;
+                }
+            }
             UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
-			throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
-		} catch (JAXBException e) {
-			log.info("Error retrieving messages", e);
+            throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
+        } catch (JAXBException e) {
+            log.info("Error retrieving messages", e);
             UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
-			throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
-		}
-	}
-	
-	public Connection getConnection() {
-		return connection;
-	}
+            throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
+        }
+    }
 
-	public void setConnection(Connection connection) {
-		this.connection = connection;
-	}
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
 }

@@ -36,9 +36,9 @@ import org.springframework.core.io.Resource;
 public class WSNSpringComponent extends BaseComponent {
 
     private Resource[] resources;
-    
-    private Object[] requests; 
-    
+
+    private Object[] requests;
+
     /**
      * @return Returns the endpoints.
      */
@@ -52,7 +52,7 @@ public class WSNSpringComponent extends BaseComponent {
     public void setResources(Resource[] endpoints) {
         this.resources = endpoints;
     }
-    
+
     /**
      * @return Returns the requests.
      */
@@ -80,7 +80,7 @@ public class WSNSpringComponent extends BaseComponent {
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
         ((WSNLifeCycle) lifeCycle).setConnectionFactory(connectionFactory);
     }
-    
+
     /* (non-Javadoc)
      * @see org.servicemix.common.BaseComponent#createLifeCycle()
      */
@@ -91,11 +91,11 @@ public class WSNSpringComponent extends BaseComponent {
     public class LifeCycle extends WSNLifeCycle {
 
         protected ServiceUnit su;
-        
+
         public LifeCycle() {
             super(WSNSpringComponent.this);
         }
-        
+
         /* (non-Javadoc)
          * @see org.servicemix.common.BaseLifeCycle#doInit()
          */
@@ -128,7 +128,7 @@ public class WSNSpringComponent extends BaseComponent {
             super.doStart();
             su.start();
         }
-        
+
         /* (non-Javadoc)
          * @see org.servicemix.common.BaseLifeCycle#doStop()
          */
@@ -136,7 +136,7 @@ public class WSNSpringComponent extends BaseComponent {
             su.stop();
             super.doStop();
         }
-        
+
         /* (non-Javadoc)
          * @see org.servicemix.common.BaseLifeCycle#doShutDown()
          */

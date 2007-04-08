@@ -25,6 +25,8 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 
+import org.w3c.dom.Element;
+
 import org.apache.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,7 +36,6 @@ import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPointFault;
 import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPointFault;
 import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_2.UnableToCreatePullPointFaultType;
-import org.w3c.dom.Element;
 
 @WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.CreatePullPoint")
 public abstract class AbstractCreatePullPoint extends AbstractEndpoint implements CreatePullPoint {
@@ -58,25 +59,29 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
     public void destroy() throws Exception {
         unregister();
     }
-    
+
     @Override
     protected String createAddress() {
         return "http://servicemix.org/wsnotification/CreatePullPoint/" + getName();
     }
 
     @WebMethod(operationName = "CreatePullPoint")
-    @WebResult(name = "CreatePullPointResponse", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "CreatePullPointResponse")
+    @WebResult(name = "CreatePullPointResponse", 
+               targetNamespace = "http://docs.oasis-open.org/wsn/b-2", 
+               partName = "CreatePullPointResponse")
     public CreatePullPointResponse createPullPoint(
-        @WebParam(name = "CreatePullPoint", targetNamespace = "http://docs.oasis-open.org/wsn/b-2", partName = "CreatePullPointRequest")
-        org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest)
-            throws UnableToCreatePullPointFault {
+            @WebParam(name = "CreatePullPoint", 
+                      targetNamespace = "http://docs.oasis-open.org/wsn/b-2", 
+                      partName = "CreatePullPointRequest")
+            org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest) throws UnableToCreatePullPointFault {
 
         log.debug("CreatePullEndpoint");
         return handleCreatePullPoint(createPullPointRequest, null);
     }
 
-    public CreatePullPointResponse handleCreatePullPoint(org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest, EndpointManager manager)
-            throws UnableToCreatePullPointFault {
+    public CreatePullPointResponse handleCreatePullPoint(
+            org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest, 
+            EndpointManager manager) throws UnableToCreatePullPointFault {
         AbstractPullPoint pullPoint = null;
         boolean success = false;
         try {

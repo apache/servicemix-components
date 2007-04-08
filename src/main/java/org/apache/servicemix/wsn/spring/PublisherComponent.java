@@ -26,6 +26,8 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.transform.Source;
 
+import org.w3c.dom.Element;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.MessageExchangeListener;
@@ -38,7 +40,6 @@ import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
-import org.w3c.dom.Element;
 
 /**
  * 
@@ -48,14 +49,18 @@ import org.w3c.dom.Element;
  */
 public class PublisherComponent extends ComponentSupport implements MessageExchangeListener {
 
-    private static final Log log = LogFactory.getLog(PublisherComponent.class);
-    
+    private static final Log LOG = LogFactory.getLog(PublisherComponent.class);
+
     private NotificationBroker wsnBroker;
+
     private String topic;
+
     private boolean demand;
+
     private String subscriptionEndpoint = "subscription";
+
     private Subscribe subscription;
-    
+
     /**
      * @return Returns the demand.
      */
@@ -98,7 +103,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
         super.init();
         getContext().activateEndpoint(getService(), subscriptionEndpoint);
     }
-    
+
     /* (non-Javadoc)
      * @see javax.jbi.management.LifeCycleMBean#start()
      */
@@ -107,24 +112,23 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
             public void run() {
                 try {
                     wsnBroker = new NotificationBroker(getContext());
-                    String wsaAddress = getService().getNamespaceURI() + "/" + getService().getLocalPart() + "/" + subscriptionEndpoint;
-                    wsnBroker.registerPublisher(AbstractWSAClient.createWSA(wsaAddress),
-                                                topic,
-                                                demand);
+                    String wsaAddress = getService().getNamespaceURI() + "/" + getService().getLocalPart() + "/"
+                            + subscriptionEndpoint;
+                    wsnBroker.registerPublisher(AbstractWSAClient.createWSA(wsaAddress), topic, demand);
                 } catch (Exception e) {
-                    log.error("Could not create wsn client", e);
+                    LOG.error("Could not create wsn client", e);
                 }
             }
-        }.start();
+        } .start();
     }
-    
+
     /* (non-Javadoc)
      * @see javax.jbi.management.LifeCycleMBean#shutDown()
      */
     public void shutDown() throws JBIException {
         super.shutDown();
     }
-    
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.MessageExchangeListener#onMessageExchange(javax.jbi.messaging.MessageExchange)
      */
@@ -141,7 +145,8 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
                 if (input instanceof Subscribe) {
                     subscription = (Subscribe) input;
                     SubscribeResponse response = new SubscribeResponse();
-                    String wsaAddress = getService().getNamespaceURI() + "/" + getService().getLocalPart() + "/" + subscriptionEndpoint;
+                    String wsaAddress = getService().getNamespaceURI() + "/" + getService().getLocalPart() + "/"
+                            + subscriptionEndpoint;
                     response.setSubscriptionReference(AbstractWSAClient.createWSA(wsaAddress));
                     StringWriter writer = new StringWriter();
                     jaxbContext.createMarshaller().marshal(response, writer);
@@ -164,7 +169,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
             } catch (Exception e) {
                 fail(exchange, e);
             }
-        // This is a notification to publish
+            // This is a notification to publish
         } else {
             try {
                 if (!demand || subscription != null) {
@@ -172,7 +177,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
                     wsnBroker.notify(topic, elem);
                     done(exchange);
                 } else {
-                    log.info("Ingore notification as the publisher is no subscribers");
+                    LOG.info("Ingore notification as the publisher is no subscribers");
                 }
             } catch (Exception e) {
                 fail(exchange, e);

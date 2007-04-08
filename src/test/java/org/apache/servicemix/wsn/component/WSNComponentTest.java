@@ -28,6 +28,11 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+
 import junit.framework.TestCase;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -47,14 +52,11 @@ import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.w3._2005._08.addressing.AttributedURIType;
 import org.w3._2005._08.addressing.EndpointReferenceType;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 
 public class WSNComponentTest extends TestCase {
 
-    public static QName NOTIFICATION_BROKER = new QName("http://servicemix.org/wsnotification", "NotificationBroker");
+    public static final QName NOTIFICATION_BROKER =
+        new QName("http://servicemix.org/wsnotification", "NotificationBroker");
 
     private JBIContainer jbi;
     private BrokerService jmsBroker;
