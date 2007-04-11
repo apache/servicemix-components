@@ -16,18 +16,18 @@
  */
 package org.apache.servicemix.eip.support;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.beans.factory.InitializingBean;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import javax.jbi.messaging.MessageExchange;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+
+
 
 /**
  * switch (on/off) predicate based on a property that can come from
@@ -45,22 +45,22 @@ import java.util.Properties;
  */
 public class SwitchPredicate implements InitializingBean, Predicate {
 
-    private static final Log log = LogFactory.getLog(SwitchPredicate.class);
+    private static Log log = LogFactory.getLog(SwitchPredicate.class);
 
     // property resource optionally
     private Resource propertyResource;
 
     // use property from exchange
-    private boolean fromExchange = false;
+    private boolean fromExchange;
 
     // property name
     private String propertyName = "on";
 
     private Boolean on = Boolean.FALSE;
 
-    private File propertyFile = null;
+    private File propertyFile;
 
-    private boolean dirty = false;
+    private boolean dirty;
 
     public void afterPropertiesSet() throws Exception {
         try {
@@ -93,7 +93,7 @@ public class SwitchPredicate implements InitializingBean, Predicate {
     }
 
     public void setOn(boolean status) {
-        on = new Boolean(status);
+        on = Boolean.valueOf(status);
     }
 
     public String getPropertyName() {
@@ -152,7 +152,6 @@ public class SwitchPredicate implements InitializingBean, Predicate {
         if (fromExchange) {
             // property comes from exchange
             try {
-                NormalizedMessage in = exchange.getMessage("in");
                 Object value = exchange.getProperty(propertyName);
                 if (value != null) {
                     match = Boolean.valueOf(value.toString());
