@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.apache.servicemix</groupId>
+		<artifactId>serviceengines</artifactId>
+		<version>3.2-incubating-SNAPSHOT</version>
+	</parent>
+
+	<groupId>org.apache.servicemix</groupId>
+	<artifactId>servicemix-cxf-se</artifactId>
+	<packaging>jbi-component</packaging>
+
+	<name>ServiceMix :: CXF Service Engine</name>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.servicemix</groupId>
+			<artifactId>servicemix-shared</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<version>2.0-incubator-RC-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.servicemix</groupId>
+			<artifactId>servicemix-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-support</artifactId>
+			<version>${spring-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${spring-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring-version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring-version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring-version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-jbi</artifactId>
+			<version>2.0-incubator-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-bindings-jbi</artifactId>
+			<version>2.0-incubator-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-testutils</artifactId>
+			<version>2.0-incubator-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.servicemix.tooling</groupId>
+				<artifactId>jbi-maven-plugin</artifactId>
+				<version>${servicemix-version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<type>service-engine</type>
+					<component>org.apache.servicemix.cxfse.CxfSeComponent</component>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.xbean</groupId>
+				<artifactId>maven-xbean-plugin</artifactId>
+				<version>${xbean-version}</version>
+				<executions>
+					<execution>
+						<configuration>
+							<namespace>
+								http://servicemix.apache.org/cxfse/1.0
+							</namespace>
+						</configuration>
+						<goals>
+							<goal>mapping</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
