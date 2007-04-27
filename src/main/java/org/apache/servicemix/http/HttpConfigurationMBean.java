@@ -70,4 +70,8 @@ public interface HttpConfigurationMBean {
 
     void setProxyPort(int name);
 
+    boolean isWantHeadersFromHttpIntoExchange();
+
+    void setWantHeadersFromHttpIntoExchange(boolean wantHeadersFromHttpIntoExchange);
+    
 }

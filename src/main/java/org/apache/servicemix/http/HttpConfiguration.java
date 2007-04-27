@@ -119,6 +119,13 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private int proxyPort;
 
     /**
+     * This field is used to decide if the http prover processor can copy the http headers from the http response
+     * into the exchange as property. Be careful if the headers will be used for a new http reuquest, it leads to an
+     * error.
+     */
+    private boolean wantHeadersFromHttpIntoExchange;
+
+    /**
      * @return Returns the rootDir.
      * @org.apache.xbean.Property hidden="true"
      */
@@ -362,6 +369,23 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         save();
     }
 
+    /**
+     *
+     * @return Returns the it the http headers will be copied into the exchange
+     */
+    public boolean isWantHeadersFromHttpIntoExchange() {
+        return wantHeadersFromHttpIntoExchange;
+    }
+
+    /**
+     *
+     * @param wantHeadersFromHttpIntoExchange true if the headers should be copied into the exchange
+     */
+    public void setWantHeadersFromHttpIntoExchange(boolean wantHeadersFromHttpIntoExchange) {
+        this.wantHeadersFromHttpIntoExchange = wantHeadersFromHttpIntoExchange;
+    }
+
+
     public void save() {
         setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);
@@ -376,6 +400,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         setProperty(componentName + ".retryCount", Integer.toString(retryCount));
         setProperty(componentName + ".proxyHost", proxyHost);
         setProperty(componentName + ".proxyPort", Integer.toString(proxyPort));
+        setProperty(componentName + ".wantHeadersFromHttpIntoExchange", Boolean.toString(wantHeadersFromHttpIntoExchange));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -459,6 +484,10 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         }
         if (properties.getProperty(componentName + ".proxyPort") != null) {
             proxyPort = Integer.parseInt(properties.getProperty(componentName + ".proxyPort"));
+        }
+        if (properties.getProperty(componentName + ".wantHeadersFromHttpIntoExchange") != null) {
+            wantHeadersFromHttpIntoExchange =
+                    Boolean.valueOf(properties.getProperty(componentName + ".wantHeadersFromHttpIntoExchange")).booleanValue();
         }
         return true;
     }

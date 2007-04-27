@@ -149,7 +149,9 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                 request.setAttribute(Context.class.getName(), ctx);
                 exchange = soapHelper.onReceive(ctx);
                 NormalizedMessage inMessage = exchange.getMessage("in");
-                inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
+                if (getConfiguration().isWantHeadersFromHttpIntoExchange()) {
+                    inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
+                }
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 synchronized (cont) {
