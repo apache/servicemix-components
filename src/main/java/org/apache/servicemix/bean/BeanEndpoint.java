@@ -217,45 +217,47 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             requests.put(corId, req);
         }
         currentRequest.set(req);
-        // If the bean implements MessageExchangeListener,
-        // just call the method
-        if (req.getBean() instanceof MessageExchangeListener) {
-            ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
-        } else {
-            // Exchange is finished
-            if (exchange.getStatus() == ExchangeStatus.DONE) {
-                return;
-            // Exchange has been aborted with an exception
-            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                return;
-            // Fault message
-            } else if (exchange.getFault() != null) {
-                // TODO: find a way to send it back to the bean before setting the DONE status
-                done(exchange);
+        synchronized (req) {
+            // If the bean implements MessageExchangeListener,
+            // just call the method
+            if (req.getBean() instanceof MessageExchangeListener) {
+                ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
             } else {
-                MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(
-                        req.getBean(), getBeanInfo(), exchange, this);
-                if (invocation == null) {
-                    throw new UnknownMessageExchangeTypeException(exchange, this);
-                }
-                try {
-                    invocation.proceed();
-                } catch (Exception e) {
-                    throw e;
-                } catch (Throwable throwable) {
-                    throw new MethodInvocationFailedException(req.getBean(), invocation, exchange, this, throwable);
-                }
-                if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                    send(exchange);
-                }
-                if (exchange.getFault() == null && exchange.getMessage("out") == null)  {
-                    // TODO: handle MEP correctly (DONE should only be sent for InOnly)
+                // Exchange is finished
+                if (exchange.getStatus() == ExchangeStatus.DONE) {
+                    return;
+                // Exchange has been aborted with an exception
+                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                    return;
+                // Fault message
+                } else if (exchange.getFault() != null) {
+                    // TODO: find a way to send it back to the bean before setting the DONE status
                     done(exchange);
+                } else {
+                    MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(
+                            req.getBean(), getBeanInfo(), exchange, this);
+                    if (invocation == null) {
+                        throw new UnknownMessageExchangeTypeException(exchange, this);
+                    }
+                    try {
+                        invocation.proceed();
+                    } catch (Exception e) {
+                        throw e;
+                    } catch (Throwable throwable) {
+                        throw new MethodInvocationFailedException(req.getBean(), invocation, exchange, this, throwable);
+                    }
+                    if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                        send(exchange);
+                    }
+                    if (exchange.getFault() == null && exchange.getMessage("out") == null)  {
+                        // TODO: handle MEP correctly (DONE should only be sent for InOnly)
+                        done(exchange);
+                    }
                 }
             }
+            checkEndOfRequest(req);
+            currentRequest.set(null);
         }
-        checkEndOfRequest(req);
-        currentRequest.set(null);
     }
     
     protected void onConsumerExchange(MessageExchange exchange) throws Exception {
