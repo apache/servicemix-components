@@ -60,6 +60,11 @@ public class Jsr181SpringTest extends SpringTestSupport {
         assertEquals("world", result);
     }
     
+    public void testProxyOneWay() throws Exception {
+        Echo echo = (Echo) context.getBean("proxy");
+        echo.oneWay("world");
+    }
+    
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/jsr181/spring.xml");
     }

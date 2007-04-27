@@ -37,5 +37,9 @@ public class EchoProxy implements Echo {
     public String echo(String input) {
         return echo.echo(input);
     }
+    
+    public void oneWay(String param) {
+        echo.oneWay(param);
+    }
 
 }

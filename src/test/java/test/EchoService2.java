@@ -25,4 +25,6 @@ public class EchoService2 implements Echo {
         return input;
     }
 
+    public void oneWay(String param) {
+    }
 }

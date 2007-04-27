@@ -16,11 +16,15 @@
  */
 package test;
 
+import javax.jws.Oneway;
 import javax.jws.WebService;
 
 @WebService
 public interface Echo {
 
     String echo(String input);
+    
+    @Oneway
+    void oneWay(String param);
     
 }
