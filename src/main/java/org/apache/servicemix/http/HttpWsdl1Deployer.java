@@ -29,7 +29,7 @@ import org.apache.servicemix.common.wsdl1.JbiEndpoint;
 
 /**
  * @author gnodet
- *
+ * 
  */
 public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
 
@@ -37,12 +37,14 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
         super(component);
     }
 
-    /* (non-Javadoc)
-     * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#createEndpoint(javax.wsdl.extensions.ExtensibilityElement, javax.wsdl.extensions.ExtensibilityElement)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#createEndpoint(javax.wsdl.extensions.ExtensibilityElement,
+     *      javax.wsdl.extensions.ExtensibilityElement)
      */
-    protected Endpoint createEndpoint(ExtensibilityElement portElement, 
-                                      ExtensibilityElement bindingElement,
-                                      JbiEndpoint jbiEndpoint) {
+    protected Endpoint createEndpoint(ExtensibilityElement portElement, ExtensibilityElement bindingElement,
+                    JbiEndpoint jbiEndpoint) {
         if (jbiEndpoint == null) {
             return null;
         }
@@ -70,7 +72,9 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#filterPortElement(javax.wsdl.extensions.ExtensibilityElement)
      */
     protected boolean filterPortElement(ExtensibilityElement element) {
@@ -86,7 +90,9 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
         return false;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#filterBindingElement(javax.wsdl.extensions.ExtensibilityElement)
      */
     protected boolean filterBindingElement(ExtensibilityElement element) {

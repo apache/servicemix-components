@@ -30,6 +30,7 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
 import javax.xml.namespace.QName;
 
+import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.ManagementSupport;
@@ -39,8 +40,6 @@ import org.apache.servicemix.http.tools.PortTypeDecorator;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
-
-import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 
 /**
  * 
@@ -68,7 +67,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param soapAction the soapAction to set
+     * @param soapAction
+     *            the soapAction to set
      */
     public void setSoapAction(String soapAction) {
         this.soapAction = soapAction;
@@ -82,7 +82,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param authMethod the authMethod to set
+     * @param authMethod
+     *            the authMethod to set
      */
     public void setAuthMethod(String authMethod) {
         this.authMethod = authMethod;
@@ -96,7 +97,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param ssl The ssl to set.
+     * @param ssl
+     *            The ssl to set.
      */
     public void setSsl(SslParameters ssl) {
         this.ssl = ssl;
@@ -119,8 +121,7 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * Authentication parameters used for provider endpoints using BASIC 
-     * authentication.
+     * Authentication parameters used for provider endpoints using BASIC authentication.
      * 
      * @return Returns the basicAuthentication.
      */
@@ -129,12 +130,13 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param basicAuthentication The basicAuthentication to set.
+     * @param basicAuthentication
+     *            The basicAuthentication to set.
      */
     public void setBasicAuthentication(BasicAuthCredentials basicAuthCredentials) {
         this.basicAuthentication = basicAuthCredentials;
     }
-    
+
     /**
      * @return Returns the proxy.
      */
@@ -143,12 +145,13 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param proxy The proxy to set.
+     * @param proxy
+     *            The proxy to set.
      */
     public void setProxy(ProxyParameters proxy) {
         this.proxy = proxy;
     }
-	
+
     /**
      * @org.apache.xbean.Property alias="role"
      * @param role
@@ -252,23 +255,18 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
             }
             if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
                 if (isSoap()) {
-                    PortTypeDecorator.decorate(
-                            def, 
-                            portType, 
-                            location, 
-                            endpoint + "Binding",
-                            service.getLocalPart(),
-                            endpoint);       
+                    PortTypeDecorator.decorate(def, portType, location, endpoint + "Binding", service.getLocalPart(),
+                                    endpoint);
                     definition = def;
                 } else {
-                    Binding binding = def.createBinding();
-                    binding.setPortType(portType);
-                    binding.setQName(new QName(service.getNamespaceURI(), endpoint + "Binding"));
-                    binding.setUndefined(false);
-                    def.addBinding(binding);
+                    Binding bnd = def.createBinding();
+                    bnd.setPortType(portType);
+                    bnd.setQName(new QName(service.getNamespaceURI(), endpoint + "Binding"));
+                    bnd.setUndefined(false);
+                    def.addBinding(bnd);
                     Port port = def.createPort();
                     port.setName(endpoint);
-                    port.setBinding(binding);
+                    port.setBinding(bnd);
                     HTTPAddress address = new HTTPAddressImpl();
                     address.setLocationURI(location);
                     port.addExtensibilityElement(address);
@@ -281,13 +279,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
                 }
             } else {
                 definition = PortTypeDecorator.createImportDef(def, service.getNamespaceURI(), "porttypedef.wsdl");
-                PortTypeDecorator.decorate(
-                        definition, 
-                        portType, 
-                        location, 
-                        endpoint + "Binding",
-                        service.getLocalPart(),
-                        endpoint);       
+                PortTypeDecorator.decorate(definition, portType, location, endpoint + "Binding",
+                                service.getLocalPart(), endpoint);
             }
         }
     }
@@ -301,11 +294,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     protected ServiceEndpoint createExternalEndpoint() {
-        return new ExternalEndpoint(getServiceUnit().getComponent().getEPRElementName(),
-                                    getLocationURI(),
-                                    getService(),
-                                    getEndpoint(),
-                                    getInterfaceName());
+        return new ExternalEndpoint(getServiceUnit().getComponent().getEPRElementName(), getLocationURI(),
+                        getService(), getEndpoint(), getInterfaceName());
     }
 
     public AuthenticationService getAuthenticationService() {

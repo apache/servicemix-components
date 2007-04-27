@@ -31,6 +31,8 @@ import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
+
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
@@ -41,14 +43,13 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.w3c.dom.Document;
 
 public class HttpXBeanDeployerTest extends TestCase {
 
-    private static Log logger =  LogFactory.getLog(HttpXBeanDeployerTest.class);
+    private static Log logger = LogFactory.getLog(HttpXBeanDeployerTest.class);
 
     protected JBIContainer container;
-    
+
     protected void setUp() throws Exception {
         container = new JBIContainer();
         container.setUseMBeanServer(false);
@@ -56,7 +57,7 @@ public class HttpXBeanDeployerTest extends TestCase {
         container.setEmbedded(true);
         container.init();
     }
-    
+
     protected void tearDown() throws Exception {
         if (container != null) {
             container.shutDown();
@@ -67,7 +68,7 @@ public class HttpXBeanDeployerTest extends TestCase {
         // HTTP Component
         HttpComponent component = new HttpComponent();
         container.activateComponent(component, "HTTPComponent");
-        
+
         // Add a receiver component
         ActivationSpec asEcho = new ActivationSpec("echo", new EchoComponent() {
             public Document getServiceDescription(ServiceEndpoint endpoint) {
@@ -101,7 +102,7 @@ public class HttpXBeanDeployerTest extends TestCase {
         asEcho.setEndpoint("myConsumer");
         asEcho.setService(new QName("http://test", "MyConsumerService"));
         container.activateComponent(asEcho);
-        
+
         // Start container
         container.start();
 
@@ -111,19 +112,19 @@ public class HttpXBeanDeployerTest extends TestCase {
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
         component.getServiceUnitManager().start("xbean");
-        
+
         // Test wsdls
         assertNotNull(container.getRegistry().getEndpointDescriptor(
-                container.getRegistry().getEndpoint(
-                        new QName("http://test", "MyProviderService"), "myProvider")));
+                        container.getRegistry()
+                                        .getEndpoint(new QName("http://test", "MyProviderService"), "myProvider")));
         assertNotNull(container.getRegistry().getEndpointDescriptor(
-                container.getRegistry().getExternalEndpointsForService(
-                        new QName("http://test", "MyConsumerService"))[0]));
+                        container.getRegistry().getExternalEndpointsForService(
+                                        new QName("http://test", "MyConsumerService"))[0]));
         assertNotNull(container.getRegistry().getEndpointDescriptor(
-                container.getRegistry().getExternalEndpointsForService(
-                        new QName("http://test", "MySoapService"))[0]));
-        
-        // Test 
+                        container.getRegistry().getExternalEndpointsForService(
+                                        new QName("http://test", "MySoapService"))[0]));
+
+        // Test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setService(new QName("http://test", "MyProviderService"));
@@ -142,5 +143,5 @@ public class HttpXBeanDeployerTest extends TestCase {
         }
         client.done(me);
     }
-    
+
 }

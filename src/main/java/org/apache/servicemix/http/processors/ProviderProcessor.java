@@ -34,13 +34,13 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -54,7 +54,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.HttpComponent;
-import org.apache.servicemix.http.HttpConfiguration;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapHelper;
@@ -62,25 +61,22 @@ import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-
 /**
  * 
  * @author Guillaume Nodet
  * @version $Revision: 370186 $
  * @since 3.0
  */
-public class ProviderProcessor implements ExchangeProcessor {
+public class ProviderProcessor extends AbstractProcessor implements ExchangeProcessor {
 
     private static Log log = LogFactory.getLog(ProviderProcessor.class);
 
-    protected HttpEndpoint endpoint;
     protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
     private Map methods;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
-        this.endpoint = endpoint;
+        super(endpoint);
         this.soapHelper = new SoapHelper(endpoint);
         this.methods = new ConcurrentHashMap();
     }
@@ -101,8 +97,7 @@ public class ProviderProcessor implements ExchangeProcessor {
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        if (exchange.getStatus() == ExchangeStatus.DONE || 
-            exchange.getStatus() == ExchangeStatus.ERROR) {
+        if (exchange.getStatus() == ExchangeStatus.DONE || exchange.getStatus() == ExchangeStatus.ERROR) {
             PostMethod method = (PostMethod) methods.remove(exchange.getExchangeId());
             if (method != null) {
                 method.releaseConnection();
@@ -130,28 +125,21 @@ public class ProviderProcessor implements ExchangeProcessor {
         Context context = soapHelper.createContext(soapMessage);
         soapHelper.onSend(context);
         SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapMessage);
-        Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
-        if (headers != null) {
-            for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
-                String name = (String) it.next();
-                String value = (String) headers.get(name);
-                method.addRequestHeader(name, value);
-            }
-        }
+        copyHeaderInformation(nm, method);
         RequestEntity entity = writeMessage(writer);
         // remove content-type header that may have been part of the in message
-        method.removeRequestHeader(Constants.HEADER_CONTENT_TYPE);
-        method.addRequestHeader(Constants.HEADER_CONTENT_TYPE, entity.getContentType());
+        method.removeRequestHeader(HEADER_CONTENT_TYPE);
+        method.addRequestHeader(HEADER_CONTENT_TYPE, entity.getContentType());
         if (entity.getContentLength() < 0) {
-            method.removeRequestHeader(Constants.HEADER_CONTENT_LENGTH);
+            method.removeRequestHeader(HEADER_CONTENT_LENGTH);
         } else {
-            method.setRequestHeader(Constants.HEADER_CONTENT_LENGTH, Long.toString(entity.getContentLength()));
+            method.setRequestHeader(HEADER_CONTENT_LENGTH, Long.toString(entity.getContentLength()));
         }
-        if (endpoint.isSoap() && method.getRequestHeader(Constants.HEADER_SOAP_ACTION) == null) {
+        if (endpoint.isSoap() && method.getRequestHeader(HEADER_SOAP_ACTION) == null) {
             if (endpoint.getSoapAction() != null) {
-                method.setRequestHeader(Constants.HEADER_SOAP_ACTION, endpoint.getSoapAction());
+                method.setRequestHeader(HEADER_SOAP_ACTION, endpoint.getSoapAction());
             } else {
-                method.setRequestHeader(Constants.HEADER_SOAP_ACTION, "\"\"");
+                method.setRequestHeader(HEADER_SOAP_ACTION, "\"\"");
             }
         }
         method.setRequestEntity(entity);
@@ -162,14 +150,14 @@ public class ProviderProcessor implements ExchangeProcessor {
             method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(retries, true));
             // Set authentication
             if (endpoint.getBasicAuthentication() != null) {
-                endpoint.getBasicAuthentication().applyCredentials( getClient() );
+                endpoint.getBasicAuthentication().applyCredentials(getClient());
             }
             // Execute the HTTP method
             int response = getClient().executeMethod(getHostConfiguration(locationURI), method);
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
-                if (exchange instanceof InOnly == false) {
+                if (!(exchange instanceof InOnly)) {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                    Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);
+                    Header contentType = method.getResponseHeader(HEADER_CONTENT_TYPE);
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
                     context.setFaultMessage(soapMessage);
@@ -191,45 +179,9 @@ public class ProviderProcessor implements ExchangeProcessor {
                 }
             }
             if (exchange instanceof InOut) {
-                NormalizedMessage msg = exchange.createMessage();
-                SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);
-                soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                                          contentType != null ? contentType.getValue() : null);
-                context.setOutMessage(soapMessage);
-                soapHelper.onAnswer(context);
-                msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-                soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
-                ((InOut) exchange).setOutMessage(msg);
-                if (txSync) {
-                    channel.sendSync(exchange);
-                } else {
-                    methods.put(exchange.getExchangeId(), method);
-                    channel.send(exchange);
-                    close = false;
-                }
+                close = processInOut(exchange, method, context, txSync, close);
             } else if (exchange instanceof InOptionalOut) {
-                if (method.getResponseContentLength() == 0) {
-                    exchange.setStatus(ExchangeStatus.DONE);
-                    channel.send(exchange);
-                } else {
-                    NormalizedMessage msg = exchange.createMessage();
-                    SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                    soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                                              method.getResponseHeader(Constants.HEADER_CONTENT_TYPE).getValue());
-                    context.setOutMessage(soapMessage);
-                    soapHelper.onAnswer(context);
-                    msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
-                    soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
-                    ((InOptionalOut) exchange).setOutMessage(msg);
-                    if (txSync) {
-                        channel.sendSync(exchange);
-                    } else {
-                        methods.put(exchange.getExchangeId(), method);
-                        channel.send(exchange);
-                        close = false;
-                    }
-                }
+                close = processInOptionalOut(method, exchange, context, txSync, close);
             } else {
                 exchange.setStatus(ExchangeStatus.DONE);
                 channel.send(exchange);
@@ -239,6 +191,64 @@ public class ProviderProcessor implements ExchangeProcessor {
                 method.releaseConnection();
             }
         }
+    }
+
+    private void copyHeaderInformation(NormalizedMessage nm, PostMethod method) {
+        Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
+        if (headers != null) {
+            for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
+                String name = (String) it.next();
+                String value = (String) headers.get(name);
+                method.addRequestHeader(name, value);
+            }
+        }
+    }
+
+    private boolean processInOptionalOut(PostMethod method, MessageExchange exchange, Context context, boolean txSync,
+                                         boolean close) throws Exception {
+        if (method.getResponseContentLength() == 0) {
+            exchange.setStatus(ExchangeStatus.DONE);
+            channel.send(exchange);
+        } else {
+            NormalizedMessage msg = exchange.createMessage();
+            SoapReader reader = soapHelper.getSoapMarshaler().createReader();
+            SoapMessage soapMessage = reader.read(method.getResponseBodyAsStream(),
+                                      method.getResponseHeader(HEADER_CONTENT_TYPE).getValue());
+            context.setOutMessage(soapMessage);
+            soapHelper.onAnswer(context);
+            msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
+            soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
+            ((InOptionalOut) exchange).setOutMessage(msg);
+            if (txSync) {
+                channel.sendSync(exchange);
+            } else {
+                methods.put(exchange.getExchangeId(), method);
+                channel.send(exchange);
+                close = false;
+            }
+        }
+        return close;
+    }
+
+    private boolean processInOut(MessageExchange exchange, PostMethod method, Context context, boolean txSync,
+                                 boolean close) throws Exception {
+        NormalizedMessage msg = exchange.createMessage();
+        SoapReader reader = soapHelper.getSoapMarshaler().createReader();
+        Header contentType = method.getResponseHeader(HEADER_CONTENT_TYPE);
+        SoapMessage soapMessage = reader.read(method.getResponseBodyAsStream(), contentType != null ? contentType.getValue() : null);
+        context.setOutMessage(soapMessage);
+        soapHelper.onAnswer(context);
+        msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
+        soapHelper.getJBIMarshaler().toNMS(msg, soapMessage);
+        ((InOut) exchange).setOutMessage(msg);
+        if (txSync) {
+            channel.sendSync(exchange);
+        } else {
+            methods.put(exchange.getExchangeId(), method);
+            channel.send(exchange);
+            close = false;
+        }
+        return close;
     }
 
     private HostConfiguration getHostConfiguration(String locationURI) throws Exception {
@@ -272,11 +282,6 @@ public class ProviderProcessor implements ExchangeProcessor {
     public void start() throws Exception {
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
     }
-    
-    protected HttpConfiguration getConfiguration() {
-        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
-        return comp.getConfiguration();
-    }
 
     public void stop() throws Exception {
     }
@@ -300,7 +305,7 @@ public class ProviderProcessor implements ExchangeProcessor {
         }
         return headers;
     }
-	
+
     protected RequestEntity writeMessage(SoapWriter writer) throws Exception {
         if (getConfiguration().isStreamingEnabled()) {
             return new StreamingRequestEntity(writer);

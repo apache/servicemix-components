@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.security.auth.Subject;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
@@ -29,17 +31,15 @@ import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.security.UserRealm;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-
 /**
  * A JAAS based implementation of a realm for jetty 6.
  * 
  * @author gnodet
  */
 public class JaasUserRealm implements UserRealm {
-    
-    private static final Log log = LogFactory.getLog(JaasUserRealm.class);
-    
+
+    private static final Log LOG = LogFactory.getLog(JaasUserRealm.class);
+
     private String name = getClass().getName();
     private String domain = "servicemix-domain";
     private AuthenticationService authenticationService = new JAASAuthenticationService();
@@ -53,7 +53,8 @@ public class JaasUserRealm implements UserRealm {
     }
 
     /**
-     * @param authenticationService the authenticationService to set
+     * @param authenticationService
+     *            the authenticationService to set
      */
     public void setAuthenticationService(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
@@ -67,7 +68,8 @@ public class JaasUserRealm implements UserRealm {
     }
 
     /**
-     * @param domain the domain to set
+     * @param domain
+     *            the domain to set
      */
     public void setDomain(String domain) {
         this.domain = domain;
@@ -81,28 +83,29 @@ public class JaasUserRealm implements UserRealm {
     }
 
     /**
-     * @param name the name to set
+     * @param name
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public Principal authenticate(final String username, final Object credentials, Request request) {
         try {
             if ((username != null) && (!username.equals(""))) {
 
                 JaasJettyPrincipal userPrincipal = (JaasJettyPrincipal) userMap.get(username);
 
-                //user has been previously authenticated, but
-                //re-authentication has been requested, so remove them
+                // user has been previously authenticated, but
+                // re-authentication has been requested, so remove them
                 if (userPrincipal != null) {
                     userMap.remove(username);
                 }
 
-                //set up the login context
+                // set up the login context
                 Subject subject = new Subject();
                 authenticationService.authenticate(subject, domain, username, credentials);
-                //login success
+                // login success
                 userPrincipal = new JaasJettyPrincipal(username);
                 userPrincipal.setSubject(subject);
 
@@ -110,12 +113,12 @@ public class JaasUserRealm implements UserRealm {
 
                 return userPrincipal;
             } else {
-                log.debug("Login Failed - null userID");
+                LOG.debug("Login Failed - null userID");
                 return null;
             }
 
         } catch (GeneralSecurityException e) {
-            log.debug("Login Failed", e);
+            LOG.debug("Login Failed", e);
             return null;
         }
     }
@@ -149,7 +152,7 @@ public class JaasUserRealm implements UserRealm {
 
     public boolean reauthenticate(Principal user) {
         // get the user out of the cache
-        return (userMap.get(user.getName()) != null);
+        return userMap.get(user.getName()) != null;
     }
 
 }

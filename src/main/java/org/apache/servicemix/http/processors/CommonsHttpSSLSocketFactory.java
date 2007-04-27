@@ -42,7 +42,7 @@ import org.springframework.core.io.ClassPathResource;
 public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory {
 
     private SSLSocketFactory factory;
-    
+
     public CommonsHttpSSLSocketFactory(SslParameters ssl, KeystoreManager keystoreManager) throws Exception {
         if (ssl.isManaged()) {
             createManagedFactory(ssl, keystoreManager);
@@ -50,18 +50,13 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
             createUnmanagedFactory(ssl);
         }
     }
-    
-    protected void createManagedFactory(SslParameters ssl, KeystoreManager keystoreManager) throws Exception {
-        factory = keystoreManager.createSSLFactory(
-                        ssl.getProvider(), 
-                        ssl.getProtocol(), 
-                        ssl.getKeyManagerFactoryAlgorithm(), 
-                        ssl.getKeyStore(), 
-                        ssl.getKeyAlias(), 
-                        ssl.getTrustStore());
+
+    protected final void createManagedFactory(SslParameters ssl, KeystoreManager keystoreManager) throws Exception {
+        factory = keystoreManager.createSSLFactory(ssl.getProvider(), ssl.getProtocol(), ssl
+                        .getKeyManagerFactoryAlgorithm(), ssl.getKeyStore(), ssl.getKeyAlias(), ssl.getTrustStore());
     }
-    
-    protected void createUnmanagedFactory(SslParameters ssl) throws Exception {
+
+    protected final void createUnmanagedFactory(SslParameters ssl) throws Exception {
         SSLContext context;
         if (ssl.getProvider() == null) {
             context = SSLContext.getInstance(ssl.getProtocol());
@@ -89,7 +84,8 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
         if (keyStorePassword == null) {
             keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
             if (keyStorePassword == null) {
-                throw new IllegalArgumentException("keyStorePassword or system property javax.net.ssl.keyStorePassword must be set");
+                throw new IllegalArgumentException(
+                                "keyStorePassword or system property javax.net.ssl.keyStorePassword must be set");
             }
         }
         String trustStore = ssl.getTrustStore();
@@ -111,34 +107,41 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
             if (trustStorePassword == null) {
                 trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
                 if (trustStorePassword == null) {
-                    throw new IllegalArgumentException("trustStorePassword or system property javax.net.ssl.trustStorePassword must be set");
+                    throw new IllegalArgumentException(
+                          "trustStorePassword or system property javax.net.ssl.trustStorePassword must be set");
                 }
             }
         }
         KeyStore ks = KeyStore.getInstance(ssl.getKeyStoreType());
         ks.load(Resource.newResource(keyStore).getInputStream(), keyStorePassword.toCharArray());
-        keyManagerFactory.init(ks, ssl.getKeyPassword() != null ? ssl.getKeyPassword().toCharArray() : keyStorePassword.toCharArray());
+        keyManagerFactory.init(ks, ssl.getKeyPassword() != null ? ssl.getKeyPassword().toCharArray() : keyStorePassword
+                        .toCharArray());
         if (trustStore != null) {
             KeyStore ts = KeyStore.getInstance(ssl.getTrustStoreType());
             ts.load(Resource.newResource(trustStore).getInputStream(), trustStorePassword.toCharArray());
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(ssl.getTrustManagerFactoryAlgorithm());
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(ssl
+                            .getTrustManagerFactoryAlgorithm());
             trustManagerFactory.init(ts);
-            context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new java.security.SecureRandom());
+            context.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(),
+                            new java.security.SecureRandom());
         } else {
             context.init(keyManagerFactory.getKeyManagers(), null, new java.security.SecureRandom());
         }
         factory = context.getSocketFactory();
     }
-    
-    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
+
+    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException,
+                    UnknownHostException {
         return factory.createSocket(socket, host, port, autoClose);
     }
 
-    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException, UnknownHostException {
+    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException,
+                    UnknownHostException {
         return factory.createSocket(host, port, localAddress, localPort);
     }
 
-    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort, HttpConnectionParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
+    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort,
+                    HttpConnectionParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
         if (params == null) {
             throw new IllegalArgumentException("Parameters may not be null");
         }
@@ -158,6 +161,5 @@ public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory 
     public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
         return factory.createSocket(host, port);
     }
-    
-}
 
+}

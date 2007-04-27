@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.http.tools;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +46,17 @@ import com.ibm.wsdl.extensions.soap.SOAPBodyImpl;
 import com.ibm.wsdl.extensions.soap.SOAPFaultImpl;
 import com.ibm.wsdl.extensions.soap.SOAPOperationImpl;
 
-public class PortTypeDecorator {
+public final class PortTypeDecorator {
 
-    public static Definition createImportDef(Definition definition,
-                                             String targetNamespace,
-                                             String importUri) throws Exception {
+    private PortTypeDecorator() {
+    }
+    
+    public static Definition createImportDef(Definition definition, String targetNamespace, String importUri)
+        throws Exception {
         // Create definition
         Definition def = WSDLFactory.newInstance().newDefinition();
         def.setTargetNamespace(targetNamespace);
-        
+
         // Add namespaces
         Map namespaces = definition.getNamespaces();
         for (Iterator iter = namespaces.keySet().iterator(); iter.hasNext();) {
@@ -66,34 +66,25 @@ public class PortTypeDecorator {
         }
         def.addNamespace("tns", targetNamespace);
         def.addNamespace("tnspt", definition.getTargetNamespace());
-        
+
         // Create import
         Import imp = def.createImport();
         imp.setNamespaceURI(definition.getTargetNamespace());
         imp.setLocationURI(importUri);
         imp.setDefinition(definition);
         def.addImport(imp);
-        
+
         return def;
     }
-    
-    public static void decorate(Definition def,
-                                PortType portType,
-                                String locationUri) throws Exception {
-        decorate(def,
-                 portType,
-                 locationUri,
-                 portType.getQName().getLocalPart() + "Binding",
-                 portType.getQName().getLocalPart() + "Service",
-                 "JBI");
+
+    public static void decorate(Definition def, PortType portType, String locationUri) throws Exception {
+        decorate(def, portType, locationUri, portType.getQName().getLocalPart() + "Binding", portType.getQName()
+                        .getLocalPart()
+                        + "Service", "JBI");
     }
-    
-    public static void decorate(Definition def,
-                                PortType portType,
-                                String locationUri,
-                                String bindingName,
-                                String serviceName,
-                                String portName) throws Exception {
+
+    public static void decorate(Definition def, PortType portType, String locationUri, String bindingName,
+                    String serviceName, String portName) throws Exception {
         def.addNamespace("wsdlsoap", "http://schemas.xmlsoap.org/wsdl/soap/");
         // Create binding
         Binding binding = def.createBinding();
@@ -155,14 +146,12 @@ public class PortTypeDecorator {
         service.addPort(port);
         def.addService(service);
     }
-    
-    public static Definition decorate(Definition definition,
-                                      String importUri,
-                                      String targetNamespace,
-                                      String locationUri) throws Exception {
+
+    public static Definition decorate(Definition definition, String importUri, String targetNamespace,
+                    String locationUri) throws Exception {
         // Create definition
         Definition def = createImportDef(definition, targetNamespace, importUri);
-        
+
         // Iterator through port types
         for (Iterator it = definition.getPortTypes().values().iterator(); it.hasNext();) {
             PortType portType = (PortType) it.next();
@@ -170,5 +159,5 @@ public class PortTypeDecorator {
         }
         return def;
     }
-    
+
 }

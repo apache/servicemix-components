@@ -45,28 +45,27 @@ import org.apache.servicemix.jbi.util.URISupport;
 /**
  * 
  * @author gnodet
- * @org.apache.xbean.XBean element="component"
- *                  description="An http component"
+ * @org.apache.xbean.XBean element="component" description="An http component"
  */
 public class HttpComponent extends DefaultComponent {
 
-    public final static String[] EPR_PROTOCOLS = { "http:", "https" };
-    
+    public static final String[] EPR_PROTOCOLS = {"http:", "https"};
+
     static {
         JCLLogger.init();
     }
-    
+
     protected ContextManager server;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
     protected HttpConfiguration configuration = new HttpConfiguration();
     protected HttpEndpointType[] endpoints;
-    
+
     protected String protocol;
     protected String host;
     protected int port = 80;
     protected String path;
-    
+
     /**
      * @return the host
      */
@@ -75,7 +74,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param host the host to set
+     * @param host
+     *            the host to set
      */
     public void setHost(String host) {
         this.host = host;
@@ -89,7 +89,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param path the path to set
+     * @param path
+     *            the path to set
      */
     public void setPath(String path) {
         this.path = path;
@@ -103,7 +104,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param port the port to set
+     * @param port
+     *            the port to set
      */
     public void setPort(int port) {
         this.port = port;
@@ -117,7 +119,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param protocol the protocol to set
+     * @param protocol
+     *            the protocol to set
      */
     public void setProtocol(String protocol) {
         this.protocol = protocol;
@@ -131,7 +134,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param endpoints the endpoints to set
+     * @param endpoints
+     *            the endpoints to set
      */
     public void setEndpoints(HttpEndpointType[] endpoints) {
         this.endpoints = endpoints;
@@ -148,7 +152,7 @@ public class HttpComponent extends DefaultComponent {
     public HttpClient getClient() {
         return client;
     }
-    
+
     public void setClient(HttpClient client) {
         this.client = client;
     }
@@ -160,12 +164,14 @@ public class HttpComponent extends DefaultComponent {
     public HttpConfiguration getConfiguration() {
         return configuration;
     }
-    
+
     public void setConfiguration(HttpConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.servicemix.common.BaseComponentLifeCycle#getExtensionMBean()
      */
     protected Object getExtensionMBean() throws Exception {
@@ -182,8 +188,8 @@ public class HttpComponent extends DefaultComponent {
         if (configuration.getKeystoreManager() == null) {
             try {
                 String name = configuration.getKeystoreManagerName();
-                Object km =  context.getNamingContext().lookup(name);
-                configuration.setKeystoreManager((KeystoreManager) km); 
+                Object km = context.getNamingContext().lookup(name);
+                configuration.setKeystoreManager((KeystoreManager) km);
             } catch (Throwable e) {
                 // ignore
             }
@@ -191,8 +197,8 @@ public class HttpComponent extends DefaultComponent {
         if (configuration.getAuthenticationService() == null) {
             try {
                 String name = configuration.getAuthenticationServiceName();
-                Object as =  context.getNamingContext().lookup(name);
-                configuration.setAuthenticationService((AuthenticationService) as); 
+                Object as = context.getNamingContext().lookup(name);
+                configuration.setAuthenticationService((AuthenticationService) as);
             } catch (Throwable e) {
                 configuration.setAuthenticationService(new JAASAuthenticationService());
             }
@@ -210,9 +216,9 @@ public class HttpComponent extends DefaultComponent {
         if (configuration.isManaged()) {
             server = new ManagedContextManager();
         } else {
-            JettyContextManager server = new JettyContextManager();
-            server.setMBeanServer(context.getMBeanServer());
-            this.server = server;
+            JettyContextManager jcm = new JettyContextManager();
+            jcm.setMBeanServer(context.getMBeanServer());
+            this.server = jcm;
         }
         server.setConfiguration(configuration);
         server.init();
@@ -256,7 +262,7 @@ public class HttpComponent extends DefaultComponent {
         httpEp.setRole(MessageExchange.Role.PROVIDER);
         URI uri = new URI(ep.getEndpointName());
         Map map = URISupport.parseQuery(uri.getQuery());
-        if( IntrospectionSupport.setProperties(httpEp, map, "http.") ) {
+        if (IntrospectionSupport.setProperties(httpEp, map, "http.")) {
             uri = URISupport.createRemainingURI(uri, map);
         }
         if (httpEp.getLocationURI() == null) {
@@ -274,7 +280,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param keystoreManager the keystoreManager to set
+     * @param keystoreManager
+     *            the keystoreManager to set
      */
     public void setKeystoreManager(KeystoreManager keystoreManager) {
         this.configuration.setKeystoreManager(keystoreManager);
@@ -288,28 +295,32 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param authenticationService the authenticationService to set
+     * @param authenticationService
+     *            the authenticationService to set
      */
     public void setAuthenticationService(AuthenticationService authenticationService) {
         this.configuration.setAuthenticationService(authenticationService);
     }
 
     /**
-     * When servicemix-http is embedded inside a web application and configured
-     * to reuse the existing servlet container, this method will create and
-     * return the HTTPProcessor which will handle all servlet calls
-     * @param mappings 
+     * When servicemix-http is embedded inside a web application and configured to reuse the existing servlet container,
+     * this method will create and return the HTTPProcessor which will handle all servlet calls
+     * 
+     * @param mappings
      */
     public HttpProcessor getMainProcessor() {
         return server.getMainProcessor();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] { new BaseXBeanDeployer(this, getEndpointClasses()), 
-                                                new HttpWsdl1Deployer(this) };
+        Deployer[] deployers = 
+            new Deployer[] {new BaseXBeanDeployer(this, getEndpointClasses()),
+                            new HttpWsdl1Deployer(this)};
         return new BaseServiceUnitManager(this, deployers);
     }
 
@@ -318,7 +329,7 @@ public class HttpComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { HttpEndpoint.class, HttpConsumerEndpoint.class, HttpProviderEndpoint.class };
+        return new Class[] {HttpEndpoint.class, HttpConsumerEndpoint.class, HttpProviderEndpoint.class};
     }
 
 }

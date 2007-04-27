@@ -22,6 +22,8 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.w3c.dom.Element;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -35,10 +37,9 @@ import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.Element;
 
 public class HttpSecurityTest extends SpringTestSupport {
-    private static Log logger =  LogFactory.getLog(HttpSecurityTest.class);
+    private static final Log LOGGER =  LogFactory.getLog(HttpSecurityTest.class);
 
     static {
         String path = System.getProperty("java.security.auth.login.config");
@@ -49,7 +50,7 @@ public class HttpSecurityTest extends SpringTestSupport {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
-        logger.info("Path to login config: " + path);
+        LOGGER.info("Path to login config: " + path);
     }
     
     protected void setUp() throws Exception {
@@ -85,9 +86,8 @@ public class HttpSecurityTest extends SpringTestSupport {
     protected void testAuthenticate(final String username, final String password) throws Exception {
         HttpClient client = new HttpClient();
         client.getState().setCredentials(
-                        new AuthScope(AuthScope.ANY),
-                        new UsernamePasswordCredentials(username, password)
-                    );
+            new AuthScope(AuthScope.ANY),
+            new UsernamePasswordCredentials(username, password));
         
         PostMethod method = new PostMethod("http://localhost:8192/Service/");
         try {
@@ -133,7 +133,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             String str = method.getResponseBodyAsString();
-            logger.info(str);
+            LOGGER.info(str);
             assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
             Element e = new SourceTransformer().toDOMElement(new StringSource(str));
             assertEquals("Envelope", e.getLocalName());
@@ -157,7 +157,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             String str = method.getResponseBodyAsString();
-            logger.info(str);
+            LOGGER.info(str);
             assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
             Element e = new SourceTransformer().toDOMElement(new StringSource(str));
             assertEquals("Envelope", e.getLocalName());

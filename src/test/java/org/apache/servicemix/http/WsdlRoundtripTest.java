@@ -27,6 +27,8 @@ import javax.wsdl.extensions.soap.SOAPOperation;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 
+import org.w3c.dom.Document;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -34,20 +36,19 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.Document;
 
 public class WsdlRoundtripTest extends SpringTestSupport {
 
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/http/wsdlroundtrip.xml");
     }
-    
+
     public void test() throws Exception {
         GetMethod get = new GetMethod("http://localhost:8192/Service/?wsdl");
         int state = new HttpClient().executeMethod(get);
         assertEquals(HttpServletResponse.SC_OK, state);
         Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
-        
+
         // Test WSDL
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();

@@ -27,9 +27,21 @@ import org.mortbay.log.Logger;
  */
 public class JCLLogger implements Logger {
 
+    static final char DELIM_START = '{';
+    static final char DELIM_STOP = '}';
+    
     private final String name;
     private final Log log;
-    
+
+    public JCLLogger() {
+        this("org.mortbay.jetty");
+    }
+
+    public JCLLogger(String name) {
+        this.name = name;
+        this.log = LogFactory.getLog(name);
+    }
+
     public static void init() {
         // TODO: use org.mortbay.log.Log#setLog when available (beta18)
         String old = System.getProperty("org.mortbay.log.class");
@@ -49,15 +61,6 @@ public class JCLLogger implements Logger {
         }
     }
     
-    public JCLLogger() {
-        this("org.mortbay.jetty");
-    }
-    
-    public JCLLogger(String name) {
-        this.name = name;
-        this.log = LogFactory.getLog(name);
-    }
-    
     public void debug(String msg, Throwable th) {
         log.debug(msg, th);
     }
@@ -68,11 +71,11 @@ public class JCLLogger implements Logger {
         }
     }
 
-    public Logger getLogger(String name) {
-        if (name == null) {
+    public Logger getLogger(String loggerName) {
+        if (loggerName == null) {
             return null;
         }
-        return new JCLLogger(this.name + "." + name);
+        return new JCLLogger(this.name + "." + loggerName);
     }
 
     public void info(String msg, Object arg0, Object arg1) {
@@ -98,10 +101,7 @@ public class JCLLogger implements Logger {
             log.warn(arrayFormat(msg, new Object[] {arg0, arg1}));
         }
     }
-    
-    static final char DELIM_START = '{';
-    static final char DELIM_STOP = '}';
-    
+
     public static String arrayFormat(String messagePattern, Object[] argArray) {
         if (messagePattern == null) {
             return null;
@@ -112,7 +112,7 @@ public class JCLLogger implements Logger {
 
         StringBuffer sbuf = new StringBuffer(messagePattern.length() + 50);
 
-        for (int L = 0; L < argArray.length; L++) {
+        for (int index = 0; index < argArray.length; index++) {
 
             char escape = 'x';
 
@@ -123,7 +123,7 @@ public class JCLLogger implements Logger {
                 if (i == 0) { // this is a simple string
                     return messagePattern;
                 } else { // add the tail string which contains no variables
-                            // and return the result.
+                    // and return the result.
                     sbuf.append(messagePattern.substring(i, messagePattern.length()));
                     return sbuf.toString();
                 }
@@ -134,19 +134,19 @@ public class JCLLogger implements Logger {
                 }
 
                 if (escape == '\\') {
-                    L--; // DELIM_START was escaped, thus should not be
-                            // incremented
+                    index--; // DELIM_START was escaped, thus should not be
+                    // incremented
                     sbuf.append(messagePattern.substring(i, j - 1));
                     sbuf.append(DELIM_START);
                     i = j + 1;
-                } else if ((delimStop != DELIM_STOP)) {
+                } else if (delimStop != DELIM_STOP) {
                     // invalid DELIM_START/DELIM_STOP pair
                     sbuf.append(messagePattern.substring(i, messagePattern.length()));
                     return sbuf.toString();
                 } else {
                     // normal case
                     sbuf.append(messagePattern.substring(i, j));
-                    sbuf.append(argArray[L]);
+                    sbuf.append(argArray[index]);
                     i = j + 2;
                 }
             }

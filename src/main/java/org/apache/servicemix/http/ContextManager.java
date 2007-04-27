@@ -16,24 +16,22 @@
  */
 package org.apache.servicemix.http;
 
-
 public interface ContextManager {
 
-    public void init() throws Exception;
+    void init() throws Exception;
 
-    public void shutDown() throws Exception;
+    void shutDown() throws Exception;
 
-    public void start() throws Exception;
+    void start() throws Exception;
 
-    public void stop() throws Exception;
-    
-    public Object createContext(String strUrl, 
-                                HttpProcessor processor) throws Exception;
-    
-    public void remove(Object context) throws Exception;
+    void stop() throws Exception;
 
-    public void setConfiguration(HttpConfiguration configuration);
-    
-    public HttpProcessor getMainProcessor();
+    Object createContext(String strUrl, HttpProcessor processor) throws Exception;
+
+    void remove(Object context) throws Exception;
+
+    void setConfiguration(HttpConfiguration configuration);
+
+    HttpProcessor getMainProcessor();
 
 }

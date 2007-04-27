@@ -23,10 +23,8 @@ import org.apache.commons.httpclient.HttpMethod;
 
 public interface HttpProviderMarshaler {
 
-    String getDestinationUri(MessageExchange exchange,
-                             NormalizedMessage inMsg) throws Exception;
-    
-    HttpMethod createMethod(MessageExchange exchange,
-                            NormalizedMessage inMsg) throws Exception;
+    String getDestinationUri(MessageExchange exchange, NormalizedMessage inMsg) throws Exception;
+
+    HttpMethod createMethod(MessageExchange exchange, NormalizedMessage inMsg) throws Exception;
 
 }

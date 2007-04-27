@@ -34,15 +34,17 @@ public class HttpBootstrap implements Bootstrap {
     protected InstallationContext context;
     protected ObjectName mbeanName;
     protected HttpConfiguration configuration;
-    
+
     public HttpBootstrap() {
     }
-    
+
     public ObjectName getExtensionMBeanName() {
         return mbeanName;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.jbi.component.Bootstrap#init(javax.jbi.component.InstallationContext)
      */
     public void init(InstallationContext installContext) throws JBIException {
@@ -71,8 +73,10 @@ public class HttpBootstrap implements Bootstrap {
         }
         server.registerMBean(configuration, this.mbeanName);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.jbi.component.Bootstrap#cleanUp()
      */
     public void cleanUp() throws JBIException {
@@ -97,13 +101,17 @@ public class HttpBootstrap implements Bootstrap {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.jbi.component.Bootstrap#onInstall()
      */
     public void onInstall() throws JBIException {
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javax.jbi.component.Bootstrap#onUninstall()
      */
     public void onUninstall() throws JBIException {

@@ -30,26 +30,18 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface HttpConsumerMarshaler {
 
-    MessageExchange createExchange(HttpServletRequest request, 
-                                   ComponentContext context) throws Exception;
+    MessageExchange createExchange(HttpServletRequest request, ComponentContext context) throws Exception;
 
-    void sendOut(MessageExchange exchange, 
-                 NormalizedMessage outMsg, 
-                 HttpServletRequest request, 
-                 HttpServletResponse response) throws Exception;
+    void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
+        HttpServletResponse response) throws Exception;
 
-    void sendFault(MessageExchange exchange, 
-                   Fault fault, 
-                   HttpServletRequest request, 
-                   HttpServletResponse response) throws Exception;
+    void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response)
+        throws Exception;
 
-    void sendError(MessageExchange exchange, 
-                   Exception error, 
-                   HttpServletRequest request, 
-                   HttpServletResponse response) throws Exception;
+    void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response)
+        throws Exception;
 
-    void sendAccepted(MessageExchange exchange, 
-                      HttpServletRequest request, 
-                      HttpServletResponse response) throws Exception;
+    void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
+        throws Exception;
 
 }

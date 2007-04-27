@@ -29,30 +29,31 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * This servlet is meant to be used when embedding ServiceMix in a web application
- * so that so servicemix-http component will reuse the web container.
- *  
+ * This servlet is meant to be used when embedding ServiceMix in a web application so that so servicemix-http component
+ * will reuse the web container.
+ * 
  * @author gnodet
  */
 public class HttpManagedServlet extends javax.servlet.http.HttpServlet {
 
     public static final String CONTAINER_PROPERTY = "container";
     public static final String CONTAINER_DEFAULT = "jbi";
-    
+
     public static final String COMPONENT_PROPERTY = "component";
     public static final String COMPONENT_DEFAULT = "servicemix-http";
-    
+
     public static final String MAPPING_PROPERTY = "mapping";
-    
+
     private HttpProcessor processor;
-    
+
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        
+
         // Retrieve spring application context
-        ApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        
-        // Retrieve 
+        ApplicationContext applicationContext = WebApplicationContextUtils
+                        .getRequiredWebApplicationContext(getServletContext());
+
+        // Retrieve
         String containerName = config.getInitParameter(CONTAINER_PROPERTY);
         if (containerName == null) {
             containerName = CONTAINER_DEFAULT;
@@ -65,7 +66,7 @@ public class HttpManagedServlet extends javax.servlet.http.HttpServlet {
         if (componentName == null) {
             componentName = COMPONENT_DEFAULT;
         }
-        ComponentMBeanImpl componentMBean  = container.getComponent(componentName);
+        ComponentMBeanImpl componentMBean = container.getComponent(componentName);
         if (componentMBean == null) {
             throw new IllegalStateException("Unable to find component " + componentName);
         }
@@ -74,10 +75,11 @@ public class HttpManagedServlet extends javax.servlet.http.HttpServlet {
         if (mapping != null) {
             component.getConfiguration().setMapping(mapping);
         }
-        processor = component.getMainProcessor(); 
+        processor = component.getMainProcessor();
     }
-    
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+                    IOException {
         try {
             processor.process(request, response);
         } catch (IOException e) {

@@ -31,6 +31,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.http.HttpInvoker;
 import org.apache.servicemix.components.http.HttpSoapClientMarshaler;
@@ -40,11 +42,9 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class HttpConsumerTest extends TestCase {
-    private static Log logger =  LogFactory.getLog(HttpConsumerTest.class);
+    private static Log logger = LogFactory.getLog(HttpConsumerTest.class);
 
     protected JBIContainer container;
 
@@ -109,7 +109,6 @@ public class HttpConsumerTest extends TestCase {
 
         return t1 - t0;
     }
-
 
     protected long testInOut(String msg, boolean streaming) throws Exception {
         // HTTP Component
@@ -187,14 +186,14 @@ public class HttpConsumerTest extends TestCase {
         for (int i = 0; i < sizeInKb; i++) {
             sb.append("<hello>");
             for (int j = 0; j < 1024 - 15; j++) {
-                sb.append((char) ('A' + (int)(Math.random() * ('Z' - 'A' + 1))));
+                sb.append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
             }
             sb.append("</hello>");
         }
         sb.append("</hello>");
         String str = sb.toString();
 
-        for(int i = 0; i < nbRuns; i++) {
+        for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, false);
             logger.info("No Streaming: " + dt);
@@ -202,7 +201,7 @@ public class HttpConsumerTest extends TestCase {
             setUp();
         }
 
-        for(int i = 0; i < nbRuns; i++) {
+        for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, true);
             logger.info("Streaming: " + dt);

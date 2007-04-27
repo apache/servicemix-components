@@ -24,8 +24,13 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -33,13 +38,9 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 
 public class HttpURITest extends TestCase {
-    private static Log logger =  LogFactory.getLog(HttpURITest.class);
+    private static Log logger = LogFactory.getLog(HttpURITest.class);
 
     private JBIContainer jbi;
 
@@ -63,7 +64,7 @@ public class HttpURITest extends TestCase {
         ep.setEndpoint(ReceiverComponent.ENDPOINT);
         ep.setLocationURI("http://localhost:8192/");
         ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
-        http.setEndpoints(new HttpEndpoint[] { ep });
+        http.setEndpoints(new HttpEndpoint[] {ep});
         jbi.activateComponent(http, "servicemix-http");
 
         ReceiverComponent receiver = new ReceiverComponent();

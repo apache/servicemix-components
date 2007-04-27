@@ -30,9 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.soap.api.InterceptorChain;
+import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.Policy;
-import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.model.Binding;
 import org.apache.servicemix.soap.bindings.http.HttpConstants;
 import org.apache.servicemix.soap.bindings.soap.SoapFault;
@@ -95,15 +95,16 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         request.setAttribute(Message.class.getName(), msg);
         InterceptorChain phase = getChain(Phase.ServerIn);
         phase.doIntercept(msg);
-        MessageExchange me = msg.getContent(MessageExchange.class);
-        return me;
+        return msg.getContent(MessageExchange.class);
     }
 
-    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 
-    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
         msg.setContent(OutputStream.class, response.getOutputStream());
@@ -113,10 +114,11 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         InterceptorChain phase = getChain(Phase.ServerOut);
         phase.doIntercept(msg);
-        // TODO: handle http headers: Content-Type, ... 
+        // TODO: handle http headers: Content-Type, ...
     }
-    
-    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
@@ -135,7 +137,8 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         phase.doIntercept(msg);
     }
 
-    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
@@ -150,7 +153,7 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         SoapFault soapFault = new SoapFault(code, reason, null, null, fault.getContent());
         msg.setContent(Exception.class, soapFault);
         phase.doIntercept(msg);
-        // TODO: handle http headers: Content-Type, ... 
+        // TODO: handle http headers: Content-Type, ...
     }
 
     protected InterceptorChain getChain(Phase phase) {

@@ -30,7 +30,7 @@ public class HttpBridgeServlet extends HttpServlet {
      * Generated serial version UID
      */
     private static final long serialVersionUID = -7995806514300732777L;
-    
+
     private HttpProcessor processor;
 
     public HttpProcessor getProcessor() {
@@ -51,7 +51,6 @@ public class HttpBridgeServlet extends HttpServlet {
         }
     }
 
-    
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             getProcessor().process(request, response);
@@ -66,7 +65,8 @@ public class HttpBridgeServlet extends HttpServlet {
         }
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+                    IOException {
         try {
             getProcessor().process(request, response);
         } catch (IOException e) {

@@ -41,18 +41,18 @@ import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
  * @since 3.2
  */
 public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
-    
+
     private StAXSourceTransformer transformer = new StAXSourceTransformer();
     private URI defaultMep;
 
     public DefaultHttpConsumerMarshaler() {
         this(MessageExchangeSupport.IN_OUT);
     }
-    
+
     public DefaultHttpConsumerMarshaler(URI defaultMep) {
         this.defaultMep = defaultMep;
     }
-    
+
     public URI getDefaultMep() {
         return defaultMep;
     }
@@ -70,7 +70,8 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
         return me;
     }
 
-    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         XMLStreamReader reader = transformer.toXMLStreamReader(outMsg.getContent());
         XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
         writer.writeStartDocument();
@@ -79,15 +80,17 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
         writer.flush();
         response.setStatus(HttpServletResponse.SC_OK);
     }
-    
-    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         XMLStreamReader reader = transformer.toXMLStreamReader(fault.getContent());
         XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
         XMLStreamHelper.copy(reader, writer);
     }
 
-    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
         writer.writeStartDocument();
@@ -100,8 +103,9 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
         writer.writeEndElement();
         writer.writeEndDocument();
     }
-    
-    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 

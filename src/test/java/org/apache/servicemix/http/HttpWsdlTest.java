@@ -24,13 +24,13 @@ import javax.wsdl.Message;
 import javax.wsdl.Operation;
 import javax.wsdl.Output;
 import javax.wsdl.Part;
-import javax.wsdl.Port;
 import javax.wsdl.PortType;
-import javax.wsdl.Service;
 import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
+
+import org.w3c.dom.Document;
 
 import junit.framework.TestCase;
 
@@ -43,12 +43,11 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.springframework.core.io.UrlResource;
-import org.w3c.dom.Document;
 
 public class HttpWsdlTest extends TestCase {
 
     protected JBIContainer container;
-    
+
     protected void setUp() throws Exception {
         container = new JBIContainer();
         container.setUseMBeanServer(false);
@@ -56,7 +55,7 @@ public class HttpWsdlTest extends TestCase {
         container.setEmbedded(true);
         container.init();
     }
-    
+
     protected void tearDown() throws Exception {
         if (container != null) {
             container.shutDown();
@@ -78,7 +77,7 @@ public class HttpWsdlTest extends TestCase {
         asEcho.setEndpoint("myConsumer");
         asEcho.setService(new QName("http://test", "MyConsumerService"));
         container.activateComponent(asEcho);
-        
+
         // HTTP Component
         HttpEndpoint ep = new HttpEndpoint();
         ep.setService(new QName("http://test", "MyConsumerService"));
@@ -87,9 +86,9 @@ public class HttpWsdlTest extends TestCase {
         ep.setLocationURI("http://localhost:" + portNumber + "/Service");
         ep.setSoap(true);
         HttpComponent http = new HttpComponent();
-        http.setEndpoints(new HttpEndpoint[] { ep });
+        http.setEndpoints(new HttpEndpoint[] {ep});
         container.activateComponent(http, "HttpWsdlTest");
-        
+
         // Start container
         container.start();
 
@@ -98,7 +97,7 @@ public class HttpWsdlTest extends TestCase {
         assertEquals(HttpServletResponse.SC_OK, state);
         Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
         get.releaseConnection();
-        
+
         // Test WSDL
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();
@@ -108,10 +107,8 @@ public class HttpWsdlTest extends TestCase {
         assertNotNull(definition.getImports());
         assertEquals(1, definition.getImports().size());
         WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, System.err);
-        Service svc = (Service) definition.getServices().values().iterator().next();
-        Port port = (Port) svc.getPorts().values().iterator().next();
     }
-    
+
     protected Definition createDefinition(boolean rpc) throws WSDLException {
         Definition def = WSDLFactory.newInstance().newDefinition();
         def.setTargetNamespace("http://porttype.test");
@@ -159,21 +156,21 @@ public class HttpWsdlTest extends TestCase {
         WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, System.err);
         return def;
     }
-    
+
     public void testWithNonStandaloneWsdlDoc() throws Exception {
         testWSDL(createDefinition(false), 8192);
     }
-    
+
     public void testWithNonStandaloneWsdlRpc() throws Exception {
         testWSDL(createDefinition(true), 8193);
     }
-    
+
     public void testWithExistingBinding() throws Exception {
         String uri = getClass().getResource("bound-wsdl.wsdl").toString();
         Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL(uri);
         testWSDL(def, 8194);
     }
-    
+
     public void testExternalNonStandaloneWsdl() throws Exception {
         // HTTP Component
         HttpEndpoint ep = new HttpEndpoint();
@@ -182,11 +179,12 @@ public class HttpWsdlTest extends TestCase {
         ep.setRoleAsString("consumer");
         ep.setLocationURI("http://localhost:8196/Service/");
         ep.setDefaultMep(MessageExchangeSupport.IN_OUT);
-        ep.setWsdlResource(new UrlResource("http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl"));
+        ep.setWsdlResource(new UrlResource(
+                        "http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl"));
         HttpComponent http = new HttpComponent();
-        http.setEndpoints(new HttpEndpoint[] { ep });
+        http.setEndpoints(new HttpEndpoint[] {ep});
         container.activateComponent(http, "HttpWsdlTest");
-        
+
         // Start container
         container.start();
 
@@ -195,7 +193,7 @@ public class HttpWsdlTest extends TestCase {
         assertEquals(HttpServletResponse.SC_OK, state);
         Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
         get.releaseConnection();
-        
+
         // Test WSDL
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();
@@ -205,5 +203,5 @@ public class HttpWsdlTest extends TestCase {
         assertNotNull(def.getImports());
         assertEquals(1, def.getImports().size());
     }
-    
+
 }

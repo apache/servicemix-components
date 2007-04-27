@@ -24,7 +24,6 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jbi.JBIException;
 import javax.management.MBeanServer;
@@ -68,37 +67,38 @@ import org.springframework.core.io.ClassPathResource;
 
 public class JettyContextManager implements ContextManager {
 
-    private static final Log logger = LogFactory.getLog(JettyContextManager.class);
-    
-    private Map servers;
+    private static final Log LOGGER = LogFactory.getLog(JettyContextManager.class);
+
+    private Map<String, Server> servers;
     private HttpConfiguration configuration;
     private BoundedThreadPool threadPool;
     private Map sslParams;
-    private MBeanServer mbeanServer;
+    private MBeanServer mBeanServer;
     private MBeanContainer mbeanContainer;
-    
+
     /**
      * @return the mbeanServer
      */
     public MBeanServer getMBeanServer() {
-        return mbeanServer;
+        return mBeanServer;
     }
 
     /**
-     * @param mbeanServer the mbeanServer to set
+     * @param mBeanServer
+     *            the mbeanServer to set
      */
-    public void setMBeanServer(MBeanServer mbeanServer) {
-        this.mbeanServer = mbeanServer;
+    public void setMBeanServer(MBeanServer mBeanServer) {
+        this.mBeanServer = mBeanServer;
     }
 
     public void init() throws Exception {
         if (configuration == null) {
             configuration = new HttpConfiguration();
         }
-        if (mbeanServer != null && !configuration.isManaged() && configuration.isJettyManagement()) {
-            mbeanContainer = new MBeanContainer(mbeanServer);
+        if (mBeanServer != null && !configuration.isManaged() && configuration.isJettyManagement()) {
+            mbeanContainer = new MBeanContainer(mBeanServer);
         }
-        servers = new HashMap();
+        servers = new HashMap<String, Server>();
         sslParams = new HashMap();
         BoundedThreadPool btp = new BoundedThreadPool();
         btp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
@@ -134,9 +134,8 @@ public class JettyContextManager implements ContextManager {
         }
         threadPool.stop();
     }
-    
-    public synchronized Object createContext(String strUrl, 
-                                                     HttpProcessor processor) throws Exception {
+
+    public synchronized Object createContext(String strUrl, HttpProcessor processor) throws Exception {
         URL url = new URL(strUrl);
         Server server = getServer(url);
         if (server == null) {
@@ -145,7 +144,8 @@ public class JettyContextManager implements ContextManager {
             // Check ssl params
             SslParameters ssl = (SslParameters) sslParams.get(getKey(url));
             if (ssl != null && !ssl.equals(processor.getSsl())) {
-                throw new Exception("An https server is already created on port " + url.getPort() + " but SSL parameters do not match");
+                throw new Exception("An https server is already created on port " + url.getPort()
+                                + " but SSL parameters do not match");
             }
         }
         String path = url.getPath();
@@ -165,9 +165,9 @@ public class JettyContextManager implements ContextManager {
                 if (handlers[i] instanceof ContextHandler) {
                     ContextHandler h = (ContextHandler) handlers[i];
                     String handlerPath = h.getContextPath() + "/";
-                    if (handlerPath.startsWith(pathSlash) ||
-                        pathSlash.startsWith(handlerPath)) {
-                        throw new Exception("The requested context for path '" + path + "' overlaps with an existing context for path: '" + h.getContextPath() + "'");
+                    if (handlerPath.startsWith(pathSlash) || pathSlash.startsWith(handlerPath)) {
+                        throw new Exception("The requested context for path '" + path
+                                        + "' overlaps with an existing context for path: '" + h.getContextPath() + "'");
                     }
                 }
             }
@@ -179,25 +179,25 @@ public class JettyContextManager implements ContextManager {
         holder.setName("jbiServlet");
         holder.setClassName(HttpBridgeServlet.class.getName());
         ServletHandler handler = new ServletHandler();
-        handler.setServlets(new ServletHolder[] { holder });
+        handler.setServlets(new ServletHolder[] {holder});
         ServletMapping mapping = new ServletMapping();
         mapping.setServletName("jbiServlet");
         mapping.setPathSpec("/*");
-        handler.setServletMappings(new ServletMapping[] { mapping });
+        handler.setServletMappings(new ServletMapping[] {mapping});
         if (processor.getAuthMethod() != null) {
             SecurityHandler secHandler = new SecurityHandler();
             ConstraintMapping constraintMapping = new ConstraintMapping();
             Constraint constraint = new Constraint();
             constraint.setAuthenticate(true);
-            constraint.setRoles(new String[] { "*" });
+            constraint.setRoles(new String[] {"*"});
             constraintMapping.setConstraint(constraint);
             constraintMapping.setPathSpec("/");
-            secHandler.setConstraintMappings(new ConstraintMapping[] { constraintMapping });
+            secHandler.setConstraintMappings(new ConstraintMapping[] {constraintMapping});
             secHandler.setHandler(handler);
             secHandler.setAuthMethod(processor.getAuthMethod());
             JaasUserRealm realm = new JaasUserRealm();
             if (configuration.getAuthenticationService() != null) {
-                  realm.setAuthenticationService(configuration.getAuthenticationService());             
+                realm.setAuthenticationService(configuration.getAuthenticationService());
             }
             secHandler.setUserRealm(realm);
             context.setHandler(secHandler);
@@ -211,7 +211,7 @@ public class JettyContextManager implements ContextManager {
         context.start();
         return context;
     }
-    
+
     public synchronized void remove(Object context) throws Exception {
         ((ContextHandler) context).stop();
         for (Iterator it = servers.values().iterator(); it.hasNext();) {
@@ -220,16 +220,15 @@ public class JettyContextManager implements ContextManager {
             ContextHandlerCollection contexts = (ContextHandlerCollection) handlerCollection.getHandlers()[0];
             Handler[] handlers = contexts.getHandlers();
             if (handlers != null && handlers.length > 0) {
-                contexts.setHandlers((Handler[])LazyList.removeFromArray(handlers, context));
+                contexts.setHandlers((Handler[]) LazyList.removeFromArray(handlers, context));
             }
         }
     }
 
     protected Server getServer(URL url) {
-        Server server = (Server) servers.get(getKey(url));
-        return server;
+        return (Server) servers.get(getKey(url));
     }
-    
+
     protected String getKey(URL url) {
         String host = url.getHost();
         try {
@@ -238,11 +237,11 @@ public class JettyContextManager implements ContextManager {
                 host = InetAddress.getLocalHost().getHostName();
             }
         } catch (UnknownHostException e) {
+            //unable to lookup host name, using IP address instead
         }
-        String key = url.getProtocol() + "://" + host + ":" + url.getPort();
-        return key;
+        return url.getProtocol() + "://" + host + ":" + url.getPort();
     }
-    
+
     protected Server createServer(URL url, SslParameters ssl) throws Exception {
         boolean isSsl = false;
         if (url.getProtocol().equals("https")) {
@@ -257,76 +256,21 @@ public class JettyContextManager implements ContextManager {
         // Create a new server
         Connector connector;
         if (isSsl && ssl.isManaged()) {
-            String keyStore = ssl.getKeyStore();
-            if (keyStore == null) {
-                throw new IllegalArgumentException("keyStore must be set");
-            }
-            ServiceMixSslSocketConnector sslConnector = new ServiceMixSslSocketConnector();
-            sslConnector.setSslKeyManagerFactoryAlgorithm(ssl.getKeyManagerFactoryAlgorithm());
-            sslConnector.setSslTrustManagerFactoryAlgorithm(ssl.getTrustManagerFactoryAlgorithm());
-            sslConnector.setProtocol(ssl.getProtocol());
-            sslConnector.setConfidentialPort(url.getPort());
-            sslConnector.setKeystore(keyStore);
-            sslConnector.setKeyAlias(ssl.getKeyAlias());
-            sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
-            sslConnector.setWantClientAuth(ssl.isWantClientAuth());
-            sslConnector.setKeystoreManager(getConfiguration().getKeystoreManager());
-            // important to set this values for selfsigned keys 
-            // otherwise the standard truststore of the jre is used
-            sslConnector.setTruststore(ssl.getTrustStore());
-            if (ssl.getTrustStorePassword() != null) {
-                // check is necessary because if a null password is set
-                // jetty would ask for a password on the comandline
-                sslConnector.setTrustPassword(ssl.getTrustStorePassword());
-            }
-            sslConnector.setTruststoreType(ssl.getTrustStoreType());
-            connector = sslConnector;
+            connector = setupManagerSslConnector(url, ssl);
         } else if (isSsl) {
-            String keyStore = ssl.getKeyStore();
-            if (keyStore == null) {
-                keyStore = System.getProperty("javax.net.ssl.keyStore", "");
-                if (keyStore == null) {
-                    throw new IllegalArgumentException("keyStore or system property javax.net.ssl.keyStore must be set");
-                }
-            }
-            if (keyStore.startsWith("classpath:")) {
-                try {
-                    String res = keyStore.substring(10);
-                    URL resurl = new ClassPathResource(res).getURL();
-                    keyStore = resurl.toString();
-                } catch (IOException e) {
-                    throw new JBIException("Unable to find keystore " + keyStore, e);
-                }
-            }
-            String keyStorePassword = ssl.getKeyStorePassword();
-            if (keyStorePassword == null) {
-                keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
-                if (keyStorePassword == null) {
-                    throw new IllegalArgumentException("keyStorePassword or system property javax.net.ssl.keyStorePassword must be set");
-                }
-            }
-            SslSocketConnector sslConnector = new SslSocketConnector();
-            sslConnector.setSslKeyManagerFactoryAlgorithm(ssl.getKeyManagerFactoryAlgorithm());
-            sslConnector.setSslTrustManagerFactoryAlgorithm(ssl.getTrustManagerFactoryAlgorithm());
-            sslConnector.setProtocol(ssl.getProtocol());
-            sslConnector.setConfidentialPort(url.getPort());
-            sslConnector.setPassword(ssl.getKeyStorePassword());
-            sslConnector.setKeyPassword(ssl.getKeyPassword() != null ? ssl.getKeyPassword() : keyStorePassword);
-            sslConnector.setKeystore(keyStore);
-            sslConnector.setKeystoreType(ssl.getKeyStoreType());
-            sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
-            sslConnector.setWantClientAuth(ssl.isWantClientAuth());
-            connector = sslConnector;
+            connector = setupSslConnector(url, ssl);
         } else {
             String connectorClassName = configuration.getJettyConnectorClassName();
             try {
                 connector = (Connector) Class.forName(connectorClassName).newInstance();
             } catch (Exception e) {
-                logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to " + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Reason: " + e.getMessage(), e);
+                LOGGER.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to "
+                                + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Reason: " + e.getMessage(), e);
                 }
-                connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME).newInstance();
+                connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME)
+                                .newInstance();
             }
         }
         connector.setHost(url.getHost());
@@ -334,10 +278,10 @@ public class JettyContextManager implements ContextManager {
         connector.setMaxIdleTime(this.configuration.getConnectorMaxIdleTime());
         Server server = new Server();
         server.setThreadPool(new ThreadPoolWrapper());
-        server.setConnectors(new Connector[] { connector });
+        server.setConnectors(new Connector[] {connector});
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         HandlerCollection handlers = new HandlerCollection();
-        handlers.setHandlers(new Handler[] { contexts, new DisplayServiceHandler() });
+        handlers.setHandlers(new Handler[] {contexts, new DisplayServiceHandler()});
         server.setHandler(handlers);
         server.start();
         servers.put(getKey(url), server);
@@ -346,6 +290,77 @@ public class JettyContextManager implements ContextManager {
             server.getContainer().addEventListener(mbeanContainer);
         }
         return server;
+    }
+
+    private Connector setupSslConnector(URL url, SslParameters ssl) throws JBIException {
+        Connector connector;
+        String keyStore = ssl.getKeyStore();
+        if (keyStore == null) {
+            keyStore = System.getProperty("javax.net.ssl.keyStore", "");
+            if (keyStore == null) {
+                throw new IllegalArgumentException(
+                               "keyStore or system property javax.net.ssl.keyStore must be set");
+            }
+        }
+        if (keyStore.startsWith("classpath:")) {
+            try {
+                String res = keyStore.substring(10);
+                URL resurl = new ClassPathResource(res).getURL();
+                keyStore = resurl.toString();
+            } catch (IOException e) {
+                throw new JBIException("Unable to find keystore " + keyStore, e);
+            }
+        }
+        String keyStorePassword = ssl.getKeyStorePassword();
+        if (keyStorePassword == null) {
+            keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+            if (keyStorePassword == null) {
+                throw new IllegalArgumentException(
+                    "keyStorePassword or system property javax.net.ssl.keyStorePassword must be set");
+            }
+        }
+        SslSocketConnector sslConnector = new SslSocketConnector();
+        sslConnector.setSslKeyManagerFactoryAlgorithm(ssl.getKeyManagerFactoryAlgorithm());
+        sslConnector.setSslTrustManagerFactoryAlgorithm(ssl.getTrustManagerFactoryAlgorithm());
+        sslConnector.setProtocol(ssl.getProtocol());
+        sslConnector.setConfidentialPort(url.getPort());
+        sslConnector.setPassword(ssl.getKeyStorePassword());
+        sslConnector.setKeyPassword(ssl.getKeyPassword() != null ? ssl.getKeyPassword() : keyStorePassword);
+        sslConnector.setKeystore(keyStore);
+        sslConnector.setKeystoreType(ssl.getKeyStoreType());
+        sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
+        sslConnector.setWantClientAuth(ssl.isWantClientAuth());
+        connector = sslConnector;
+        return connector;
+    }
+
+    private Connector setupManagerSslConnector(URL url, SslParameters ssl) {
+        Connector connector;
+        String keyStore = ssl.getKeyStore();
+        if (keyStore == null) {
+            throw new IllegalArgumentException("keyStore must be set");
+        }
+        ServiceMixSslSocketConnector sslConnector = new ServiceMixSslSocketConnector();
+        sslConnector.setSslKeyManagerFactoryAlgorithm(ssl.getKeyManagerFactoryAlgorithm());
+        sslConnector.setSslTrustManagerFactoryAlgorithm(ssl.getTrustManagerFactoryAlgorithm());
+        sslConnector.setProtocol(ssl.getProtocol());
+        sslConnector.setConfidentialPort(url.getPort());
+        sslConnector.setKeystore(keyStore);
+        sslConnector.setKeyAlias(ssl.getKeyAlias());
+        sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
+        sslConnector.setWantClientAuth(ssl.isWantClientAuth());
+        sslConnector.setKeystoreManager(getConfiguration().getKeystoreManager());
+        // important to set this values for selfsigned keys
+        // otherwise the standard truststore of the jre is used
+        sslConnector.setTruststore(ssl.getTrustStore());
+        if (ssl.getTrustStorePassword() != null) {
+            // check is necessary because if a null password is set
+            // jetty would ask for a password on the comandline
+            sslConnector.setTrustPassword(ssl.getTrustStorePassword());
+        }
+        sslConnector.setTruststoreType(ssl.getTrustStoreType());
+        connector = sslConnector;
+        return connector;
     }
 
     public HttpConfiguration getConfiguration() {
@@ -359,37 +374,37 @@ public class JettyContextManager implements ContextManager {
     public ThreadPool getThreadPool() {
         return threadPool;
     }
-    
+
     protected class DisplayServiceHandler extends AbstractHandler {
 
-        public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
-            if (response.isCommitted() || HttpConnection.getCurrentConnection().getRequest().isHandled())
+        public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch)
+            throws IOException, ServletException {
+            if (response.isCommitted() || HttpConnection.getCurrentConnection().getRequest().isHandled()) {
                 return;
-            
+            }
+                
             String method = request.getMethod();
-            
+
             if (!method.equals(HttpMethods.GET) || !request.getRequestURI().equals("/")) {
                 response.sendError(404);
-                return;   
+                return;
             }
 
             response.setStatus(404);
             response.setContentType(MimeTypes.TEXT_HTML);
-            
+
             ByteArrayISO8859Writer writer = new ByteArrayISO8859Writer(1500);
 
             String uri = request.getRequestURI();
             uri = StringUtil.replace(uri, "<", "&lt;");
             uri = StringUtil.replace(uri, ">", "&gt;");
-            
+
             writer.write("<HTML>\n<HEAD>\n<TITLE>Error 404 - Not Found");
             writer.write("</TITLE>\n<BODY>\n<H2>Error 404 - Not Found.</H2>\n");
             writer.write("No service matched or handled this request.<BR>");
             writer.write("Known services are: <ul>");
 
-            Set servers = JettyContextManager.this.servers.keySet();
-            for (Iterator iter = servers.iterator(); iter.hasNext();) {
-                String serverUri = (String) iter.next();
+            for (String serverUri : servers.keySet()) {
                 Server server = (Server) JettyContextManager.this.servers.get(serverUri);
                 Handler[] handlers = server.getChildHandlersByClass(ContextHandler.class);
                 for (int i = 0; handlers != null && i < handlers.length; i++) {
@@ -419,11 +434,11 @@ public class JettyContextManager implements ContextManager {
                     }
                 }
             }
-            
-            for (int i=0; i < 10; i++) {
+
+            for (int i = 0; i < 10; i++) {
                 writer.write("\n<!-- Padding for IE                  -->");
             }
-            
+
             writer.write("\n</BODY>\n</HTML>\n");
             writer.flush();
             response.setContentLength(writer.size());
@@ -431,14 +446,14 @@ public class JettyContextManager implements ContextManager {
             writer.writeTo(out);
             out.close();
         }
-        
+
     }
-    
+
     protected class ThreadPoolWrapper extends AbstractLifeCycle implements ThreadPool {
 
         public boolean dispatch(Runnable job) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Dispatching job: " + job);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Dispatching job: " + job);
             }
             return threadPool.dispatch(job);
         }
@@ -462,5 +477,5 @@ public class JettyContextManager implements ContextManager {
     public HttpProcessor getMainProcessor() {
         throw new IllegalStateException("ServerManager is not managed");
     }
-    
+
 }

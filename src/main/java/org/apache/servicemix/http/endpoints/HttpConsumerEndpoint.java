@@ -17,17 +17,17 @@
 package org.apache.servicemix.http.endpoints;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.net.URI;
 
+import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.jbi.management.DeploymentException;
 import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +36,8 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Node;
 
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
@@ -51,13 +53,10 @@ import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
-import org.w3c.dom.Node;
 
 /**
- * Plain HTTP consumer endpoint.
- * This endpoint can be used to handle plain HTTP request (without SOAP) or
- * to be able to process the request in a non standard way.  For HTTP requests,
- * a WSDL2 HTTP binding can be used.
+ * Plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP request (without SOAP) or to be able to
+ * process the request in a non standard way. For HTTP requests, a WSDL2 HTTP binding can be used.
  * 
  * @author gnodet
  * @since 3.2
@@ -66,19 +65,19 @@ import org.w3c.dom.Node;
 public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProcessor, HttpEndpointType {
 
     public static final String MAIN_WSDL = "main.wsdl";
-    
+
     private String authMethod;
     private SslParameters ssl;
     private String locationURI;
     private HttpConsumerMarshaler marshaler = new DefaultHttpConsumerMarshaler();
-    private long timeout = 0; // 0 => default to the timeout configured on component
+    private long timeout; // 0 => default to the timeout configured on component
     private URI defaultMep = MessageExchangeSupport.IN_OUT;
 
     private Map<String, Object> resources = new HashMap<String, Object>();
     private Map<String, Continuation> locks = new ConcurrentHashMap<String, Continuation>();
     private Map<String, MessageExchange> exchanges = new ConcurrentHashMap<String, MessageExchange>();
     private Object httpContext;
-    
+
     public HttpConsumerEndpoint() {
         super();
     }
@@ -99,7 +98,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param locationURI the locationUri to set
+     * @param locationURI
+     *            the locationUri to set
      */
     public void setLocationURI(String locationURI) {
         this.locationURI = locationURI;
@@ -113,7 +113,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param timeout the timeout to set
+     * @param timeout
+     *            the timeout to set
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
@@ -127,7 +128,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param marshaler the marshaler to set
+     * @param marshaler
+     *            the marshaler to set
      */
     public void setMarshaler(HttpConsumerMarshaler marshaler) {
         this.marshaler = marshaler;
@@ -141,7 +143,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param authMethod the authMethod to set
+     * @param authMethod
+     *            the authMethod to set
      */
     public void setAuthMethod(String authMethod) {
         this.authMethod = authMethod;
@@ -155,7 +158,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param ssl the sslParameters to set
+     * @param ssl
+     *            the sslParameters to set
      */
     public void setSsl(SslParameters ssl) {
         this.ssl = ssl;
@@ -169,7 +173,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param defaultMep - defaultMep of the endpoint
+     * @param defaultMep -
+     *            defaultMep of the endpoint
      */
     public void setDefaultMep(URI defaultMep) {
         this.defaultMep = defaultMep;
@@ -224,11 +229,12 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                         if (logger.isDebugEnabled()) {
                             logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
                         }
-                        long timeout = this.timeout;
-                        if (timeout == 0) {
-                            timeout = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration().getConsumerProcessorSuspendTime();
+                        long to = this.timeout;
+                        if (to == 0) {
+                            to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration()
+                                            .getConsumerProcessorSuspendTime();
                         }
-                        boolean result = cont.suspend(timeout);
+                        boolean result = cont.suspend(to);
                         if (!result) {
                             locks.remove(exchange.getExchangeId());
                             throw new Exception("Exchange timed out");
@@ -242,7 +248,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                 locks.remove(id);
                 exchange = exchanges.remove(id);
                 request.removeAttribute(MessageExchange.class.getName());
-                boolean result = cont.suspend(0); 
+                boolean result = cont.suspend(0);
                 // Check if this is a timeout
                 if (exchange == null) {
                     throw new IllegalStateException("Exchange not found");
@@ -289,17 +295,20 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     protected void loadStaticResources() {
         // TODO: load wsdl
     }
-    
+
     /**
      * Handle static resources
      * 
-     * @param request the http request
-     * @param response the http response
+     * @param request
+     *            the http request
+     * @param response
+     *            the http response
      * @return <code>true</code> if the request has been handled
      * @throws IOException
      * @throws ServletException
      */
-    protected boolean handleStaticResource(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    protected boolean handleStaticResource(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
         if (!"GET".equals(request.getMethod())) {
             return false;
         }
@@ -325,7 +334,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             response.setStatus(200);
             response.setContentType("text/xml");
             try {
-                new SourceTransformer().toResult(new DOMSource((Node) res), new StreamResult(response.getOutputStream()));
+                new SourceTransformer().toResult(new DOMSource((Node) res),
+                                new StreamResult(response.getOutputStream()));
             } catch (TransformerException e) {
                 throw new ServletException("Error while sending xml resource", e);
             }
@@ -341,13 +351,13 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     protected Object getResource(String path) {
         return resources.get(path);
     }
-    
+
     protected void addResource(String path, Object resource) {
         resources.put(path, resource);
     }
 
     protected ContextManager getServerManager() {
-        HttpComponent comp =  (HttpComponent) getServiceUnit().getComponent();
+        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
         return comp.getServer();
     }
 
@@ -363,26 +373,30 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         return me;
     }
 
-    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
         marshaler.sendAccepted(exchange, request, response);
     }
 
-    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         marshaler.sendError(exchange, error, request, response);
     }
 
-    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         marshaler.sendFault(exchange, fault, request, response);
     }
 
-    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         marshaler.sendOut(exchange, outMsg, request, response);
     }
 
     public void validate() throws DeploymentException {
         super.validate();
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
-            ((DefaultHttpConsumerMarshaler)marshaler).setDefaultMep(getDefaultMep());
+            ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
         }
     }
 }

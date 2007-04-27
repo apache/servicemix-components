@@ -42,20 +42,20 @@ import org.mortbay.jetty.servlet.ServletMapping;
 import org.springframework.web.context.ContextLoaderListener;
 
 public class HttpManagedTest extends TestCase {
-    private static Log logger =  LogFactory.getLog(HttpManagedTest.class);
+    private static Log logger = LogFactory.getLog(HttpManagedTest.class);
 
     private Server server;
-    
+
     protected void shutDown() throws Exception {
         if (server != null) {
             server.stop();
         }
     }
-    
+
     public void test() throws Exception {
         ContextHandler context = new ContextHandler();
         context.setContextPath("/test");
-        context.setEventListeners(new EventListener[] { new ContextLoaderListener() });
+        context.setEventListeners(new EventListener[] {new ContextLoaderListener()});
         Map initParams = new HashMap();
         initParams.put("contextConfigLocation", "classpath:org/apache/servicemix/http/spring-web.xml");
         initParams.put("contextClass", XmlWebApplicationContext.class.getName());
@@ -64,36 +64,38 @@ public class HttpManagedTest extends TestCase {
         holder.setName("jbiServlet");
         holder.setClassName(HttpManagedServlet.class.getName());
         ServletHandler handler = new ServletHandler();
-        handler.setServlets(new ServletHolder[] { holder });
+        handler.setServlets(new ServletHolder[] {holder});
         ServletMapping mapping = new ServletMapping();
         mapping.setServletName("jbiServlet");
         mapping.setPathSpec("/*");
-        handler.setServletMappings(new ServletMapping[] { mapping });
+        handler.setServletMappings(new ServletMapping[] {mapping});
         context.setHandler(handler);
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         HandlerCollection handlers = new HandlerCollection();
-        handlers.setHandlers(new Handler[] { contexts });
+        handlers.setHandlers(new Handler[] {contexts});
         contexts.addHandler(context);
 
         SelectChannelConnector connector = new SelectChannelConnector();
         connector.setHost("localhost");
         connector.setPort(8190);
-        
+
         server = new Server();
-        server.setConnectors(new Connector[] { connector });
+        server.setConnectors(new Connector[] {connector});
         server.setHandler(handlers);
         server.start();
-        
+
         logger.info("Started");
-        
+
         PostMethod post = new PostMethod("http://localhost:8190/test/jbi/Service/");
-        post.setRequestEntity(new StringRequestEntity("<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><hello>world</hello></soap:Body></soap:Envelope>"));
+        post.setRequestEntity(new StringRequestEntity(
+                        "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'>"
+                                        + "<soap:Body><hello>world</hello></soap:Body>" + "</soap:Envelope>"));
         new HttpClient().executeMethod(post);
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
         logger.info(post.getResponseBodyAsString());
-        
+
     }
 }

@@ -23,7 +23,6 @@ import javax.jbi.messaging.MessageExchange;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.packaging.Consumes;
-import org.apache.servicemix.common.packaging.ServiceUnitAnalyzer;
 import org.apache.servicemix.common.xbean.AbstractXBeanServiceUnitAnalyzer;
 import org.apache.servicemix.http.HttpEndpoint;
 
@@ -31,46 +30,42 @@ import org.apache.servicemix.http.HttpEndpoint;
  * Implementation of the ServiceUnitAnalyzer can be used in tooling to provide a
  * way to parse the artifact for the service unit and provide a list of consumes
  * and provides
- * 
+ *
  * @author Philip Dodds
- * @since 3.0
  * @see ServiceUnitAnalyzer, {@link ServiceUnitAnalyzer}
- * 
+ * @since 3.0
  */
 public class HttpServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 
-	protected List getConsumes(Endpoint endpoint) {
-		List consumesList = new ArrayList();
-		Consumes consumes;
-		if (endpoint.getRole().equals(MessageExchange.Role.CONSUMER)) {
-			consumes = new Consumes();
-			HttpEndpoint httpEndpoint = (HttpEndpoint) endpoint;
-			consumes.setEndpointName(httpEndpoint.getTargetEndpoint());
-			consumes.setInterfaceName(httpEndpoint.getTargetInterfaceName());
-			consumes.setServiceName(httpEndpoint.getTargetService());
-			if (consumes.isValid())
-				consumesList.add(consumes);
-			else {
-				consumes = new Consumes();
-				consumes.setEndpointName(endpoint.getEndpoint());
-				consumes.setInterfaceName(endpoint.getInterfaceName());
-				consumes.setServiceName(endpoint.getService());
-				consumesList.add(consumes);
-			}
-		}		
+    protected List getConsumes(Endpoint endpoint) {
+        List consumesList = new ArrayList();
+        Consumes consumes;
+        if (endpoint.getRole().equals(MessageExchange.Role.CONSUMER)) {
+            consumes = new Consumes();
+            HttpEndpoint httpEndpoint = (HttpEndpoint) endpoint;
+            consumes.setEndpointName(httpEndpoint.getTargetEndpoint());
+            consumes.setInterfaceName(httpEndpoint.getTargetInterfaceName());
+            consumes.setServiceName(httpEndpoint.getTargetService());
+            if (consumes.isValid()) {
+                consumesList.add(consumes);
+            } else {
+                consumes = new Consumes();
+                consumes.setEndpointName(endpoint.getEndpoint());
+                consumes.setInterfaceName(endpoint.getInterfaceName());
+                consumes.setServiceName(endpoint.getService());
+                consumesList.add(consumes);
+            }
+        }
 
-		return consumesList;
-	}
+        return consumesList;
+    }
 
-	protected String getXBeanFile() {
-		return "xbean.xml";
-	}
+    protected String getXBeanFile() {
+        return "xbean.xml";
+    }
 
-	protected boolean isValidEndpoint(Object bean) {
-		if (bean instanceof HttpEndpoint)
-			return true;
-		else
-			return false;
-	}
+    protected boolean isValidEndpoint(Object bean) {
+        return bean instanceof HttpEndpoint;
+    }
 
 }

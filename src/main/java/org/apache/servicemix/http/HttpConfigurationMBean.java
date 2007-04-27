@@ -18,56 +18,56 @@ package org.apache.servicemix.http;
 
 public interface HttpConfigurationMBean {
 
-    public boolean isStreamingEnabled();
+    boolean isStreamingEnabled();
 
-    public void setStreamingEnabled(boolean streamingEnabled);
+    void setStreamingEnabled(boolean streamingEnabled);
 
-    public String getJettyConnectorClassName();
+    String getJettyConnectorClassName();
 
-    public void setJettyConnectorClassName(String jettyConnectorClassName);
+    void setJettyConnectorClassName(String jettyConnectorClassName);
 
-    public int getJettyThreadPoolSize();
+    int getJettyThreadPoolSize();
 
-    public void setJettyThreadPoolSize(int jettyThreadPoolSize);
-    
-    public int getMaxConnectionsPerHost();
-    
-    public void setMaxConnectionsPerHost(int maxConnectionsPerHost);
-    
-    public int getMaxTotalConnections();
-    
-    public void setMaxTotalConnections(int maxTotalConnections);
-    
-    public String getKeystoreManagerName();
-    
-    public void setKeystoreManagerName(String name);
-    
-    public String getAuthenticationServiceName();
-    
-    public void setAuthenticationServiceName(String name);
-    
-    public boolean isJettyManagement();
-    
-    public void setJettyManagement(boolean jettyManagement);
+    void setJettyThreadPoolSize(int jettyThreadPoolSize);
 
-    public int getConnectorMaxIdleTime();
+    int getMaxConnectionsPerHost();
 
-    public void setConnectorMaxIdleTime(int connectorMaxIdleTime);
+    void setMaxConnectionsPerHost(int maxConnectionsPerHost);
 
-    public int getConsumerProcessorSuspendTime();
+    int getMaxTotalConnections();
 
-    public void setConsumerProcessorSuspendTime(int consumerProcessorSuspendTime);
+    void setMaxTotalConnections(int maxTotalConnections);
 
-    public int getRetryCount();
+    String getKeystoreManagerName();
 
-    public void setRetryCount(int retryCount);
+    void setKeystoreManagerName(String name);
 
-    public String getProxyHost();
+    String getAuthenticationServiceName();
 
-    public void setProxyHost(String name);
+    void setAuthenticationServiceName(String name);
 
-    public int getProxyPort();
+    boolean isJettyManagement();
 
-    public void setProxyPort(int name);
+    void setJettyManagement(boolean jettyManagement);
+
+    int getConnectorMaxIdleTime();
+
+    void setConnectorMaxIdleTime(int connectorMaxIdleTime);
+
+    int getConsumerProcessorSuspendTime();
+
+    void setConsumerProcessorSuspendTime(int consumerProcessorSuspendTime);
+
+    int getRetryCount();
+
+    void setRetryCount(int retryCount);
+
+    String getProxyHost();
+
+    void setProxyHost(String name);
+
+    int getProxyPort();
+
+    void setProxyPort(int name);
 
 }

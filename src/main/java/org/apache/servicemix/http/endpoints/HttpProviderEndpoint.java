@@ -16,46 +16,24 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.Fault;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOptionalOut;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
-import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.http.BasicAuthCredentials;
-import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.SslParameters;
-import org.apache.servicemix.http.processors.CommonsHttpSSLSocketFactory;
-import org.apache.servicemix.http.processors.Constants;
-import org.apache.servicemix.soap.Context;
-import org.apache.servicemix.soap.marshalers.SoapMessage;
-import org.apache.servicemix.soap.marshalers.SoapReader;
-import org.apache.servicemix.soap.marshalers.SoapWriter;
 
 /**
  * 
@@ -98,24 +76,23 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements ExchangePr
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        if (exchange.getStatus() == ExchangeStatus.DONE || 
-            exchange.getStatus() == ExchangeStatus.ERROR) {
-                HttpMethod method = methods.remove(exchange.getExchangeId());
-                if (method != null) {
-                    method.releaseConnection();
-                }
-                return;
+        if (exchange.getStatus() == ExchangeStatus.DONE || exchange.getStatus() == ExchangeStatus.ERROR) {
+            HttpMethod method = methods.remove(exchange.getExchangeId());
+            if (method != null) {
+                method.releaseConnection();
             }
-            boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
-            NormalizedMessage nm = exchange.getMessage("in");
-            if (nm == null) {
-                throw new IllegalStateException("Exchange has no input message");
-            }
-            String locationUri = marshaler.getDestinationUri(exchange, nm);
-            HttpMethod method = marshaler.createMethod(exchange, nm);
-            method.setURI(new URI(getRelUri(locationUri), false));
-            boolean close = true;
-            try {
+            return;
+        }
+        //boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+        NormalizedMessage nm = exchange.getMessage("in");
+        if (nm == null) {
+            throw new IllegalStateException("Exchange has no input message");
+        }
+        String locationUri = marshaler.getDestinationUri(exchange, nm);
+        HttpMethod method = marshaler.createMethod(exchange, nm);
+        method.setURI(new URI(getRelUri(locationUri), false));
+        boolean close = true;
+        try {
                 /*
                 // Uncomment to avoid the http request being sent several times.
                 // Can be useful when debugging
@@ -132,7 +109,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements ExchangePr
                 if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                     if (exchange instanceof InOnly == false) {
                         SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                        Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);
+                        Header contentType = method.getResponseHeader(AbstractProcessor.HEADER_CONTENT_TYPE);
                         soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                                   contentType != null ? contentType.getValue() : null);
                         context.setFaultMessage(soapMessage);
@@ -156,7 +133,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements ExchangePr
                 if (exchange instanceof InOut) {
                     NormalizedMessage msg = exchange.createMessage();
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                    Header contentType = method.getResponseHeader(Constants.HEADER_CONTENT_TYPE);
+                    Header contentType = method.getResponseHeader(AbstractProcessor.HEADER_CONTENT_TYPE);
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
                     context.setOutMessage(soapMessage);
@@ -179,7 +156,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements ExchangePr
                         NormalizedMessage msg = exchange.createMessage();
                         SoapReader reader = soapHelper.getSoapMarshaler().createReader();
                         soapMessage = reader.read(method.getResponseBodyAsStream(), 
-                                                  method.getResponseHeader(Constants.HEADER_CONTENT_TYPE).getValue());
+                                                  method.getResponseHeader(AbstractProcessor.HEADER_CONTENT_TYPE).getValue());
                         context.setOutMessage(soapMessage);
                         soapHelper.onAnswer(context);
                         msg.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(method));
@@ -198,11 +175,11 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements ExchangePr
                     channel.send(exchange);
                 }
                 */
-            } finally {
-                if (close) {
-                    method.releaseConnection();
-                }
+        } finally {
+            if (close) {
+                method.releaseConnection();
             }
+        }
     }
 
     private String getRelUri(String locationUri) {

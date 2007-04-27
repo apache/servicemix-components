@@ -16,43 +16,32 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
+
 import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.client.Destination;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.components.util.TransformComponentSupport;
-import org.apache.servicemix.http.endpoints.DefaultHttpConsumerMarshaler;
 import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpSoapConsumerEndpoint;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
-import org.apache.servicemix.jbi.util.ByteArrayDataSource;
 import org.apache.servicemix.jbi.util.DOMUtil;
-import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.soap.bindings.soap.Soap11;
 import org.apache.servicemix.soap.bindings.soap.Soap12;
 import org.apache.servicemix.soap.bindings.soap.SoapConstants;
@@ -61,17 +50,12 @@ import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.xpath.CachedXPathAPI;
 import org.springframework.core.io.ClassPathResource;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.traversal.NodeIterator;
 
 public class ConsumerEndpointTest extends TestCase {
 
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
-    
+
     protected void setUp() throws Exception {
         container = new JBIContainer();
         container.setUseMBeanServer(false);
@@ -79,13 +63,13 @@ public class ConsumerEndpointTest extends TestCase {
         container.setEmbedded(true);
         container.init();
     }
-    
+
     protected void tearDown() throws Exception {
         if (container != null) {
             container.shutDown();
         }
     }
-    
+
     protected String textValueOfXPath(Node node, String xpath) throws TransformerException {
         CachedXPathAPI cachedXPathAPI = new CachedXPathAPI();
         NodeIterator iterator = cachedXPathAPI.selectNodeIterator(node, xpath);
@@ -95,10 +79,8 @@ public class ConsumerEndpointTest extends TestCase {
             if (element == null) {
                 return "";
             }
-            String text = DOMUtil.getElementText(element);
-            return text;
-        }
-        else if (root != null) {
+            return DOMUtil.getElementText(element);
+        } else if (root != null) {
             return root.getNodeValue();
         } else {
             return null;
@@ -113,15 +95,15 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setTargetService(new QName("urn:test", "recv"));
         ep.setLocationURI("http://localhost:8192/ep1/");
         ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
-        http.setEndpoints(new HttpEndpointType[] { ep });
+        http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
-        
+
         ReceiverComponent recv = new ReceiverComponent();
         recv.setService(new QName("urn:test", "recv"));
         container.activateComponent(recv, "recv");
 
         container.start();
-        
+
         PostMethod post = new PostMethod("http://localhost:8192/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
@@ -131,7 +113,7 @@ public class ConsumerEndpointTest extends TestCase {
         if (post.getStatusCode() != 202) {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
-        
+
         recv.getMessageList().assertMessagesReceived(1);
     }
 
@@ -142,16 +124,16 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "echo"));
         ep.setLocationURI("http://localhost:8192/ep1/");
-        http.setEndpoints(new HttpEndpointType[] { ep });
+        http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
-        
+
         EchoComponent echo = new EchoComponent();
         echo.setService(new QName("urn:test", "echo"));
         echo.setEndpoint("endpoint");
         container.activateComponent(echo, "echo");
 
         container.start();
-        
+
         PostMethod post = new PostMethod("http://localhost:8192/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
@@ -164,7 +146,7 @@ public class ConsumerEndpointTest extends TestCase {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
     }
-    
+
     protected void initSoapEndpoints(boolean useJbiWrapper) throws Exception {
         HttpComponent http = new HttpComponent();
         HttpSoapConsumerEndpoint ep1 = new HttpSoapConsumerEndpoint();
@@ -183,14 +165,14 @@ public class ConsumerEndpointTest extends TestCase {
         ep2.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC.wsdl"));
         ep2.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep2.setUseJbiWrapper(useJbiWrapper);
-        http.setEndpoints(new HttpEndpointType[] { ep1, ep2 });
+        http.setEndpoints(new HttpEndpointType[] {ep1, ep2});
         container.activateComponent(http, "http");
         container.start();
     }
-    
+
     public void testHttpSoap11FaultOnEnvelope() throws Exception {
         initSoapEndpoints(true);
-        
+
         PostMethod post = new PostMethod("http://localhost:8192/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
@@ -210,7 +192,7 @@ public class ConsumerEndpointTest extends TestCase {
 
     public void testHttpSoap12FaultOnEnvelope() throws Exception {
         initSoapEndpoints(true);
-        
+
         PostMethod post = new PostMethod("http://localhost:8192/ep2/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
@@ -235,9 +217,11 @@ public class ConsumerEndpointTest extends TestCase {
 
     public void testHttpSoap11UnkownOp() throws Exception {
         initSoapEndpoints(true);
-        
+
         PostMethod post = new PostMethod("http://localhost:8192/ep1/");
-        post.setRequestEntity(new StringRequestEntity("<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'><s:Body><hello>world</hello></s:Body></s:Envelope>"));
+        post.setRequestEntity(new StringRequestEntity(
+                        "<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>"
+                                        + "<s:Body><hello>world</hello></s:Body>" + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
         System.err.println(res);
@@ -254,49 +238,33 @@ public class ConsumerEndpointTest extends TestCase {
     }
 
     /*
-    public void testHttpSoapAttachments() throws Exception {
-        initSoapEndpoints(true);
-        
-        HttpComponent http = new HttpComponent();
-        HttpEndpoint ep0 = new HttpEndpoint();
-        ep0.setService(new QName("urn:test", "s0"));
-        ep0.setEndpoint("ep0");
-        ep0.setLocationURI("http://localhost:8192/ep1/");
-        ep0.setRoleAsString("provider");
-        ep0.setSoapVersion("1.1");
-        ep0.setSoap(true);
-        http.setEndpoints(new HttpEndpoint[] { ep0 });
-        container.activateComponent(http, "http2");
-        
-        MockServiceComponent echo = new MockServiceComponent();
-        echo.setService(new QName("urn:test", "echo"));
-        echo.setEndpoint("endpoint");
-        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><HelloResponse xmlns='uri:HelloWorld' /></jbi:part></jbi:message>");
-        container.activateComponent(echo, "echo");
-
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-        Destination d = client.createDestination("service:urn:test:s0");
-        InOut me = d.createInOutExchange();
-        me.getInMessage().setContent(new StringSource("<HelloRequest xmlns='uri:HelloWorld'/>"));
-        Map<QName, DocumentFragment> headers = new HashMap<QName, DocumentFragment>();
-        Document doc = DOMUtil.newDocument();
-        DocumentFragment fragment = doc.createDocumentFragment();
-        DomUtil.createElement(fragment, new QName("uri:HelloWorld", "HelloHeader"));
-        headers.put(new QName("uri:HelloWorld", "HelloHeader"), fragment);
-        me.getInMessage().setProperty(org.apache.servicemix.JbiConstants.SOAP_HEADERS, headers);
-        File f = new File(getClass().getResource("servicemix.jpg").getFile());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtil.copyInputStream(new FileInputStream(f), baos);
-        DataSource ds = new ByteArrayDataSource(baos.toByteArray(), "image/jpeg");
-        DataHandler dh = new DataHandler(ds);
-        me.getInMessage().addAttachment("image", dh);
-        client.sendSync(me);
-        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
-        assertNull(me.getFault());
-        assertEquals(1, me.getOutMessage().getAttachmentNames().size());
-        client.done(me);
-    }
-    */
+     * public void testHttpSoapAttachments() throws Exception { initSoapEndpoints(true);
+     * 
+     * HttpComponent http = new HttpComponent(); HttpEndpoint ep0 = new HttpEndpoint(); ep0.setService(new
+     * QName("urn:test", "s0")); ep0.setEndpoint("ep0"); ep0.setLocationURI("http://localhost:8192/ep1/");
+     * ep0.setRoleAsString("provider"); ep0.setSoapVersion("1.1"); ep0.setSoap(true); http.setEndpoints(new
+     * HttpEndpoint[] { ep0 }); container.activateComponent(http, "http2");
+     * 
+     * MockServiceComponent echo = new MockServiceComponent(); echo.setService(new QName("urn:test", "echo"));
+     * echo.setEndpoint("endpoint"); echo.setResponseXml("<jbi:message
+     * xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><HelloResponse xmlns='uri:HelloWorld' />
+     * </jbi:part></jbi:message>");
+     * container.activateComponent(echo, "echo");
+     * 
+     * DefaultServiceMixClient client = new DefaultServiceMixClient(container); Destination d =
+     * client.createDestination("service:urn:test:s0"); InOut me = d.createInOutExchange();
+     * me.getInMessage().setContent(new StringSource("<HelloRequest xmlns='uri:HelloWorld'/>")); Map<QName,
+     * DocumentFragment> headers = new HashMap<QName, DocumentFragment>(); Document doc = DOMUtil.newDocument();
+     * DocumentFragment fragment = doc.createDocumentFragment(); DomUtil.createElement(fragment, new
+     * QName("uri:HelloWorld", "HelloHeader")); headers.put(new QName("uri:HelloWorld", "HelloHeader"), fragment);
+     * me.getInMessage().setProperty(org.apache.servicemix.JbiConstants.SOAP_HEADERS, headers); File f = new
+     * File(getClass().getResource("servicemix.jpg").getFile()); ByteArrayOutputStream baos = new
+     * ByteArrayOutputStream(); FileUtil.copyInputStream(new FileInputStream(f), baos); DataSource ds = new
+     * ByteArrayDataSource(baos.toByteArray(), "image/jpeg"); DataHandler dh = new DataHandler(ds);
+     * me.getInMessage().addAttachment("image", dh); client.sendSync(me); assertEquals(ExchangeStatus.ACTIVE,
+     * me.getStatus()); assertNull(me.getFault()); assertEquals(1, me.getOutMessage().getAttachmentNames().size());
+     * client.done(me); }
+     */
 
     public void testHttpSoap11() throws Exception {
         initSoapEndpoints(true);
@@ -304,11 +272,16 @@ public class ConsumerEndpointTest extends TestCase {
         MockServiceComponent echo = new MockServiceComponent();
         echo.setService(new QName("urn:test", "echo"));
         echo.setEndpoint("endpoint");
-        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><HelloResponse xmlns='uri:HelloWorld' /></jbi:part></jbi:message>");
+        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+                        + "<jbi:part><HelloResponse xmlns='uri:HelloWorld' /></jbi:part>" + "</jbi:message>");
         container.activateComponent(echo, "echo");
 
         PostMethod post = new PostMethod("http://localhost:8192/ep1/");
-        post.setRequestEntity(new StringRequestEntity("<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'><s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header><s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body></s:Envelope>"));
+        post.setRequestEntity(new StringRequestEntity(
+                        "<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>"
+                                        + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
+                                        + "<s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body>"
+                                        + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
         System.err.println(res);
@@ -325,7 +298,8 @@ public class ConsumerEndpointTest extends TestCase {
         initSoapEndpoints(true);
 
         TransformComponentSupport mock = new TransformComponentSupport() {
-            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
+                throws MessagingException {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
@@ -334,16 +308,23 @@ public class ConsumerEndpointTest extends TestCase {
                     throw new MessagingException(e);
                 }
                 assertEquals(JbiConstants.WSDL11_WRAPPER_MESSAGE, DomUtil.getQName(elem));
-                out.setContent(new StringSource("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><HelloResponse xmlns='uri:HelloWorld'>world</HelloResponse></jbi:part></jbi:message> "));
+                out.setContent(
+                         new StringSource("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+                                   + "<jbi:part><HelloResponse xmlns='uri:HelloWorld'>world</HelloResponse></jbi:part>"
+                                   + "</jbi:message> "));
                 return true;
-            }            
+            }
         };
         mock.setService(new QName("urn:test", "echo"));
         mock.setEndpoint("endpoint");
         container.activateComponent(mock, "mock");
 
         PostMethod post = new PostMethod("http://localhost:8192/ep2/");
-        post.setRequestEntity(new StringRequestEntity("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'><s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header><s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body></s:Envelope>"));
+        post.setRequestEntity(
+                        new StringRequestEntity("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'>"
+                                + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
+                                + "<s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body>"
+                                + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
         System.err.println(res);
@@ -360,7 +341,8 @@ public class ConsumerEndpointTest extends TestCase {
         initSoapEndpoints(false);
 
         TransformComponentSupport mock = new TransformComponentSupport() {
-            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
+                throws MessagingException {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
@@ -371,7 +353,7 @@ public class ConsumerEndpointTest extends TestCase {
                 assertEquals(new QName("uri:HelloWorld", "HelloRequest"), DomUtil.getQName(elem));
                 out.setContent(new StringSource("<HelloResponse xmlns='uri:HelloWorld'>world</HelloResponse>"));
                 return true;
-            }            
+            }
         };
         mock.setCopyProperties(false);
         mock.setService(new QName("urn:test", "echo"));
@@ -379,7 +361,11 @@ public class ConsumerEndpointTest extends TestCase {
         container.activateComponent(mock, "mock");
 
         PostMethod post = new PostMethod("http://localhost:8192/ep2/");
-        post.setRequestEntity(new StringRequestEntity("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'><s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header><s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body></s:Envelope>"));
+        post.setRequestEntity(
+                        new StringRequestEntity("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'>"
+                                + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
+                                + "<s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body>"
+                                + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
         System.err.println(res);

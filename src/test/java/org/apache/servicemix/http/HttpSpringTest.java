@@ -41,7 +41,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpSpringTest extends SpringTestSupport {
 
-    private static Log logger =  LogFactory.getLog(HttpSpringTest.class);
+    private static Log logger = LogFactory.getLog(HttpSpringTest.class);
 
     protected void setUp() throws Exception {
         if (logger.isDebugEnabled()) {
@@ -49,7 +49,7 @@ public class HttpSpringTest extends SpringTestSupport {
         }
         super.setUp();
     }
-    
+
     public void test() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -91,9 +91,7 @@ public class HttpSpringTest extends SpringTestSupport {
     public void testMimeWithHttpClient() throws Exception {
         File f = new File(getClass().getResource("servicemix.jpg").getFile());
         PostMethod filePost = new PostMethod("http://localhost:8192/Service/");
-        Part[] parts = { 
-            new StringPart("request", "<dummy/>"),
-            new FilePart(f.getName(), f) };
+        Part[] parts = {new StringPart("request", "<dummy/>"), new FilePart(f.getName(), f)};
         RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         entity.writeRequest(baos);
@@ -108,5 +106,5 @@ public class HttpSpringTest extends SpringTestSupport {
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/http/spring.xml");
     }
-    
+
 }

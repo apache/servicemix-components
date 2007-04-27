@@ -16,12 +16,6 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,14 +28,13 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.apache.servicemix.jbi.util.FileUtil;
 import org.mortbay.thread.BoundedThreadPool;
 
 public class ServerManagerTest extends TestCase {
 
     protected JettyContextManager server;
     protected HttpConfiguration configuration;
-    
+
     protected void setUp() throws Exception {
         System.setProperty("DEBUG", "true");
         System.setProperty("java.protocol.handler.pkgs", "HTTPClient");
@@ -49,22 +42,22 @@ public class ServerManagerTest extends TestCase {
         server = new JettyContextManager();
         server.setConfiguration(configuration);
     }
-    
+
     protected void tearDown() throws Exception {
         server.shutDown();
     }
-    
+
     public void test() throws Exception {
         server.init();
         server.start();
-        
-        // Test first context 
+
+        // Test first context
         checkFail("http://localhost:8192/Service1/echo", null);
         Object ctx1 = server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
         request("http://localhost:8192/Service1/echo", null);
         server.remove(ctx1);
         checkFail("http://localhost:8192/Service1/echo", null);
-        
+
         // Test second context on the same host/port
         checkFail("http://localhost:8192/Service2/echo", null);
         Object ctx2 = server.createContext("http://localhost:8192/Service2", new TestHttpProcessor());
@@ -79,29 +72,29 @@ public class ServerManagerTest extends TestCase {
         server.remove(ctx3);
         checkFail("http://localhost:8193/echo", null);
     }
-    
+
     public void testOverlappingPath() throws Exception {
         server.init();
         server.start();
-        
+
         server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
-        
+
         server.createContext("http://localhost:8192/Service1/test1ex", new TestHttpProcessor());
-        
+
         try {
             server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");
         } catch (Exception e) {
             // ok
         }
-        
+
         try {
             server.createContext("http://localhost:8192/Service1/test1/test", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");
         } catch (Exception e) {
             // ok
         }
-        
+
         try {
             server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");
@@ -109,7 +102,7 @@ public class ServerManagerTest extends TestCase {
             // ok
         }
     }
-    
+
     public void testSetMaxThreads() throws Exception {
         int maxThreads = 512;
         configuration.setJettyThreadPoolSize(maxThreads);
@@ -118,24 +111,20 @@ public class ServerManagerTest extends TestCase {
         int threads = ((BoundedThreadPool) server.getThreadPool()).getMaxThreads();
         assertEquals("The max number of threads is incorrect!", maxThreads, threads);
     }
-    
+
     protected void checkFail(String url, String content) {
         try {
             request(url, content);
             fail("Request should have failed: " + url);
         } catch (Exception e) {
-            //System.out.println(e);
+            // System.out.println(e);
         }
     }
-    
+
     protected String request(String url, String content) throws Exception {
-        if (true) {
-            return requestWithHttpClient(url, content);
-        } else {
-            return requestWithUrlConnection(url, content);
-        }
+        return requestWithHttpClient(url, content);
     }
-    
+
     private String requestWithHttpClient(String url, String content) throws Exception {
         HttpMethod method;
         if (content != null) {
@@ -152,36 +141,19 @@ public class ServerManagerTest extends TestCase {
         }
         return method.getResponseBodyAsString();
     }
-    
-    private String requestWithUrlConnection(String url, String content) throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        try {
-            connection.setDoInput(true);
-            if (content != null) {
-                connection.setDoOutput(true);
-                OutputStream os = connection.getOutputStream();
-                os.write(content.getBytes());
-                os.close();
-            }
-            InputStream is = connection.getInputStream();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            FileUtil.copyInputStream(is, baos);
-            return baos.toString();
-        } finally {
-            connection.disconnect();
-        }
-    }
 
     public static class TestHttpProcessor implements HttpProcessor {
         public SslParameters getSsl() {
             return null;
         }
+
         public String getAuthMethod() {
             return null;
         }
+
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
             System.out.println(request);
         }
-        
+
     }
 }

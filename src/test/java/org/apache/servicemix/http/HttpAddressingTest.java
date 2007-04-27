@@ -27,19 +27,20 @@ import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
+import org.w3c.dom.Node;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.w3c.dom.Node;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpAddressingTest extends SpringTestSupport {
 
-    private static Log logger =  LogFactory.getLog(HttpAddressingTest.class);
+    private static Log logger = LogFactory.getLog(HttpAddressingTest.class);
 
     public void testOk() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -63,7 +64,7 @@ public class HttpAddressingTest extends SpringTestSupport {
             assertNotNull(textValueOfXPath(node, "//*[local-name()='MessageID']"));
         }
     }
-    
+
     public void testOkFromUrl() throws Exception {
         URLConnection connection = new URL("http://localhost:8192/Service/").openConnection();
         connection.setDoOutput(true);
@@ -78,31 +79,24 @@ public class HttpAddressingTest extends SpringTestSupport {
         FileUtil.copyInputStream(is, baos);
         System.err.println(baos.toString());
     }
-    
+
     public void testBad() throws Exception {
         /*
          * Disable this test until http://jira.codehaus.org/browse/JETTY-99 or
-         *   http://issues.apache.org/activemq/browse/SM-541
-         * 
-        // This test is bit weird, because the http consumer is not soap
-        // so it will just forward the HTTP error
-        //
-        // TODO: note that WSA based faults are not created
-        //
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOut me = client.createInOutExchange();
-        me.setService(new QName("http://test", "MyProviderService"));
-        InputStream fis = getClass().getResourceAsStream("bad-addressing-request.xml");
-        me.getInMessage().setContent(new StreamSource(fis));
-        client.sendSync(me);
-        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
-        assertNotNull(me.getFault());
-        logger.info(new SourceTransformer().toString(me.getFault().getContent()));
-        */
+         * http://issues.apache.org/activemq/browse/SM-541
+         *  // This test is bit weird, because the http consumer is not soap 
+         *  // so it will just forward the HTTP error // //
+         * TODO: note that WSA based faults are not created // DefaultServiceMixClient client = new
+         * DefaultServiceMixClient(jbi); InOut me = client.createInOutExchange(); me.setService(new QName("http://test",
+         * "MyProviderService")); InputStream fis = getClass().getResourceAsStream("bad-addressing-request.xml");
+         * me.getInMessage().setContent(new StreamSource(fis)); client.sendSync(me); assertEquals(ExchangeStatus.ACTIVE,
+         * me.getStatus()); assertNotNull(me.getFault()); logger.info(new
+         * SourceTransformer().toString(me.getFault().getContent()));
+         */
     }
-    
+
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/http/addressing.xml");
     }
-    
+
 }

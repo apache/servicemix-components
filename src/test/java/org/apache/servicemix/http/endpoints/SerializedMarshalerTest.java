@@ -24,6 +24,9 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
 import org.apache.servicemix.components.util.TransformComponentSupport;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
@@ -38,8 +41,6 @@ import org.springframework.remoting.support.DefaultRemoteInvocationExecutor;
 import org.springframework.remoting.support.RemoteInvocation;
 import org.springframework.remoting.support.RemoteInvocationResult;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 
 public class SerializedMarshalerTest extends TestCase {
 
@@ -63,26 +64,27 @@ public class SerializedMarshalerTest extends TestCase {
     public void testUsingSpringHttpRemoting() throws Exception {
         final Person person = new PersonImpl("Hunter", "Thompson", 67);
 
-        // Create a consumer endpoint 
+        // Create a consumer endpoint
         HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
         ep.setService(new QName("urn:HttpConsumer", "HttpConsumer"));
         ep.setEndpoint("HttpConsumer");
         ep.setLocationURI("http://localhost:8192/service/");
         ep.setTargetService(new QName("urn:HttpInvoker", "Endpoint"));
 
-        // Configure the SerializedMarshaler and specifiy it on the endpoint 
+        // Configure the SerializedMarshaler and specifiy it on the endpoint
         SerializedMarshaler marshaler = new SerializedMarshaler();
         marshaler.setDefaultMep(MessageExchangeSupport.IN_OUT);
         ep.setMarshaler(marshaler);
 
         // Add the endpoint to the component and activate it
         HttpComponent component = new HttpComponent();
-        component.setEndpoints(new HttpEndpointType[] { ep });
+        component.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(component, "HttpConsumer");
 
         // Dummy up a component as a receiver and route it to urn:HttpInvoker/Endpoint
         TransformComponentSupport rmiComponent = new TransformComponentSupport() {
-            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
+                throws MessagingException {
                 try {
                     // Deserialize rmi invocation
                     XStream xstream = new XStream(new DomDriver());
@@ -90,13 +92,13 @@ public class SerializedMarshalerTest extends TestCase {
                     Object rmi = xstream.fromXML(st.toString(in.getContent()));
 
                     DefaultRemoteInvocationExecutor executor = new DefaultRemoteInvocationExecutor();
-                    Object result = executor.invoke((RemoteInvocation)rmi, person);
+                    Object result = executor.invoke((RemoteInvocation) rmi, person);
 
                     // Convert result to an rmi invocation
                     RemoteInvocationResult rmiResult = new RemoteInvocationResult(result);
                     out.setContent(new StringSource(xstream.toXML(rmiResult)));
                 } catch (Exception e) {
-                    throw new MessagingException (e);
+                    throw new MessagingException(e);
                 }
 
                 return true;
@@ -105,7 +107,7 @@ public class SerializedMarshalerTest extends TestCase {
         ActivationSpec asReceiver = new ActivationSpec("rmiComponent", rmiComponent);
         asReceiver.setService(new QName("urn:HttpInvoker", "Endpoint"));
         container.activateComponent(asReceiver);
-        
+
         // Start the JBI container
         container.start();
 
@@ -116,8 +118,8 @@ public class SerializedMarshalerTest extends TestCase {
         pfb.setHttpInvokerRequestExecutor(new SimpleHttpInvokerRequestExecutor());
         pfb.afterPropertiesSet();
 
-        // Grab the object via the proxy factory bean 
-        Person test = (Person)pfb.getObject();
+        // Grab the object via the proxy factory bean
+        Person test = (Person) pfb.getObject();
 
         // Test getters
         assertEquals("Hunter", test.getGivenName());

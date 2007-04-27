@@ -24,7 +24,7 @@ public class JaasJettyPrincipal implements Principal {
 
     private final String name;
     private Subject subject;
-    
+
     public JaasJettyPrincipal(String name) {
         this.name = name;
     }

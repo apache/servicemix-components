@@ -30,10 +30,11 @@ import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.w3c.dom.Node;
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
@@ -55,19 +56,15 @@ import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
-import org.w3c.dom.Node;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-
-public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
+public class ConsumerProcessor extends AbstractProcessor implements ExchangeProcessor, HttpProcessor {
 
     public static final URI IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/in-only");
     public static final URI IN_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-out");
     public static final URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
     
     private static Log log = LogFactory.getLog(ConsumerProcessor.class);
-    
-    protected HttpEndpoint endpoint;
+
     protected Object httpContext;
     protected ComponentContext context;
     protected DeliveryChannel channel;
@@ -77,11 +74,11 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
     protected int suspentionTime = 60000;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
-        this.endpoint = endpoint;
+        super(endpoint);
         this.soapHelper = new SoapHelper(endpoint);
         this.locks = new ConcurrentHashMap();
         this.exchanges = new ConcurrentHashMap();
-        this.suspentionTime = ((HttpComponent) endpoint.getServiceUnit().getComponent()).getConfiguration().getConsumerProcessorSuspendTime();
+        this.suspentionTime = getConfiguration().getConsumerProcessorSuspendTime();
     }
     
     public SslParameters getSsl() {
@@ -124,33 +121,7 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             log.debug("Receiving HTTP request: " + request);
         }
         if ("GET".equals(request.getMethod())) {
-            String query = request.getQueryString();
-            if (query != null && query.trim().equalsIgnoreCase("wsdl")) {
-                String uri = request.getRequestURI();
-                if (!uri.endsWith("/")) {
-                    uri += "/";
-                }
-                uri += "main.wsdl";
-                response.sendRedirect(uri);
-                return;
-            }
-            String path = request.getPathInfo();
-            if (path.lastIndexOf('/') >= 0) {
-                path = path.substring(path.lastIndexOf('/') + 1);
-            }
-
-            // Set protocol, host, and port in the component
-            HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
-            comp.setProtocol(request.getScheme());
-            comp.setHost(request.getServerName());
-            comp.setPort(request.getServerPort());
-            comp.setPath(request.getContextPath());
-
-            // Reload the wsdl
-            endpoint.reloadWsdl();
-
-            Node node = (Node) endpoint.getWsdls().get(path);
-            generateDocument(response, node);
+            processGetRequest(request, response);
             return;
         }
         if (!"POST".equals(request.getMethod())) {
@@ -165,18 +136,18 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             try {
                 SoapMessage message = soapHelper.getSoapMarshaler().createReader().read(
                                             request.getInputStream(), 
-                                            request.getHeader(Constants.HEADER_CONTENT_TYPE));
-                Context context = soapHelper.createContext(message);
+                                            request.getHeader(HEADER_CONTENT_TYPE));
+                Context ctx = soapHelper.createContext(message);
                 if (request.getUserPrincipal() != null) {
                     if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
                         Subject subject = ((JaasJettyPrincipal) request.getUserPrincipal()).getSubject();
-                        context.getInMessage().setSubject(subject);
+                        ctx.getInMessage().setSubject(subject);
                     } else {
-                        context.getInMessage().addPrincipal(request.getUserPrincipal());
+                        ctx.getInMessage().addPrincipal(request.getUserPrincipal());
                     }
                 }
-                request.setAttribute(Context.class.getName(), context);
-                exchange = soapHelper.onReceive(context);
+                request.setAttribute(Context.class.getName(), ctx);
+                exchange = soapHelper.onReceive(ctx);
                 NormalizedMessage inMessage = exchange.getMessage("in");
                 inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
                 locks.put(exchange.getExchangeId(), cont);
@@ -226,23 +197,9 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             try {
                 if (exchange.getFault() != null) {
-                    SoapFault fault = new SoapFault(
-                                    (QName) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_CODE), 
-                                    (QName) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_SUBCODE), 
-                                    (String) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_REASON), 
-                                    (URI) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_NODE), 
-                                    (URI) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_ROLE), 
-                                    exchange.getFault().getContent());
-                    sendFault(fault, request, response);
+                    processFault(exchange, request, response);
                 } else {
-                    NormalizedMessage outMsg = exchange.getMessage("out");
-                    if (outMsg != null) {
-                        Context context = (Context) request.getAttribute(Context.class.getName());
-                        SoapMessage out = soapHelper.onReply(context, outMsg);
-                        SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
-                        response.setContentType(writer.getContentType());
-                        writer.write(response.getOutputStream());
-                    }
+                    processResponse(exchange, request, response);
                 }
             } finally {
                 exchange.setStatus(ExchangeStatus.DONE);
@@ -253,15 +210,67 @@ public class ConsumerProcessor implements ExchangeProcessor, HttpProcessor {
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
     }
-    
+
+    private void processResponse(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        NormalizedMessage outMsg = exchange.getMessage("out");
+        if (outMsg != null) {
+            Context ctx = (Context) request.getAttribute(Context.class.getName());
+            SoapMessage out = soapHelper.onReply(ctx, outMsg);
+            SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(out);
+            response.setContentType(writer.getContentType());
+            writer.write(response.getOutputStream());
+        }
+    }
+
+    private void processFault(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        SoapFault fault = new SoapFault(
+                        (QName) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_CODE),
+                        (QName) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_SUBCODE),
+                        (String) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_REASON),
+                        (URI) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_NODE),
+                        (URI) exchange.getFault().getProperty(JBIMarshaler.SOAP_FAULT_ROLE),
+                        exchange.getFault().getContent());
+        sendFault(fault, request, response);
+    }
+
+    private void processGetRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String query = request.getQueryString();
+        if (query != null && query.trim().equalsIgnoreCase("wsdl")) {
+            String uri = request.getRequestURI();
+            if (!uri.endsWith("/")) {
+                uri += "/";
+            }
+            uri += "main.wsdl";
+            response.sendRedirect(uri);
+            return;
+        }
+        String path = request.getPathInfo();
+        if (path.lastIndexOf('/') >= 0) {
+            path = path.substring(path.lastIndexOf('/') + 1);
+        }
+
+        // Set protocol, host, and port in the component
+        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+        comp.setProtocol(request.getScheme());
+        comp.setHost(request.getServerName());
+        comp.setPort(request.getServerPort());
+        comp.setPath(request.getContextPath());
+
+        // Reload the wsdl
+        endpoint.reloadWsdl();
+
+        Node node = (Node) endpoint.getWsdls().get(path);
+        generateDocument(response, node);
+    }
+
     protected void sendFault(SoapFault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (SoapFault.SENDER.equals(fault.getCode())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-        Context context = (Context) request.getAttribute(Context.class.getName());
-        SoapMessage soapFault = soapHelper.onFault(context, fault);
+        Context ctx = (Context) request.getAttribute(Context.class.getName());
+        SoapMessage soapFault = soapHelper.onFault(ctx, fault);
         SoapWriter writer = soapHelper.getSoapMarshaler().createWriter(soapFault);
         response.setContentType(writer.getContentType());
         writer.write(response.getOutputStream());

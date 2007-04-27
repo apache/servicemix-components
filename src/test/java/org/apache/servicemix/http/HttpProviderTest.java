@@ -29,6 +29,9 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.http.HttpConnector;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -37,12 +40,10 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.servicemix.JbiConstants;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class HttpProviderTest extends TestCase {
-    private static Log logger =  LogFactory.getLog(HttpProviderTest.class);
+
+    private static Log logger = LogFactory.getLog(HttpProviderTest.class);
 
     protected JBIContainer container;
 
@@ -86,17 +87,14 @@ public class HttpProviderTest extends TestCase {
         URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
-        component.getServiceUnitManager().deploy("provider",
-                path.getAbsolutePath());
+        component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         RobustInOnly in = client.createRobustInOnlyExchange();
-        in.setInterfaceName(new QName("http://http.servicemix.org/Test",
-                "ProviderInterface"));
-        in.getInMessage().setContent(
-                new StreamSource(new ByteArrayInputStream(msg.getBytes())));
+        in.setInterfaceName(new QName("http://http.servicemix.org/Test", "ProviderInterface"));
+        in.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
 
         long t0 = System.currentTimeMillis();
         client.sendSync(in);
@@ -108,24 +106,21 @@ public class HttpProviderTest extends TestCase {
 
         component.getServiceUnitManager().stop("provider");
         component.getServiceUnitManager().shutDown("provider");
-        component.getServiceUnitManager().undeploy("provider",
-                path.getAbsolutePath());
+        component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
 
         return t1 - t0;
     }
 
     /**
-     * The http.wsdl specifies the location URI as localhost:8192.
-     * Set a NormalizedMessage property to override this value.
-     * Therefore don't start the HttpConnector on 8192, rather on
-     * another port to prove this functionality works.
+     * The http.wsdl specifies the location URI as localhost:8192. Set a NormalizedMessage property to override this
+     * value. Therefore don't start the HttpConnector on 8192, rather on another port to prove this functionality works.
+     * 
      * @param msg
      * @param streaming
      * @return
      * @throws Exception
      */
-    protected long testInOnlyOverrideDestination(String msg, boolean streaming)
-            throws Exception {
+    protected long testInOnlyOverrideDestination(String msg, boolean streaming) throws Exception {
         // HTTP Component
         HttpComponent component = new HttpComponent();
         component.getConfiguration().setStreamingEnabled(streaming);
@@ -151,19 +146,15 @@ public class HttpProviderTest extends TestCase {
         URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
-        component.getServiceUnitManager().deploy("provider",
-                path.getAbsolutePath());
+        component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         RobustInOnly in = client.createRobustInOnlyExchange();
-        in.setInterfaceName(new QName("http://http.servicemix.org/Test",
-                "ProviderInterface"));
-        in.getInMessage().setContent(
-                new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-        in.getInMessage().setProperty(JbiConstants.HTTP_DESTINATION_URI,
-                "http://localhost:9192/CheckAvailability");
+        in.setInterfaceName(new QName("http://http.servicemix.org/Test", "ProviderInterface"));
+        in.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
+        in.getInMessage().setProperty(JbiConstants.HTTP_DESTINATION_URI, "http://localhost:9192/CheckAvailability");
 
         long t0 = System.currentTimeMillis();
         client.sendSync(in);
@@ -175,8 +166,7 @@ public class HttpProviderTest extends TestCase {
 
         component.getServiceUnitManager().stop("provider");
         component.getServiceUnitManager().shutDown("provider");
-        component.getServiceUnitManager().undeploy("provider",
-                path.getAbsolutePath());
+        component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
 
         return t1 - t0;
     }
@@ -207,17 +197,14 @@ public class HttpProviderTest extends TestCase {
         URL url = getClass().getClassLoader().getResource("provider/http.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
-        component.getServiceUnitManager().deploy("provider",
-                path.getAbsolutePath());
+        component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inout = client.createInOutExchange();
-        inout.setInterfaceName(new QName("http://http.servicemix.org/Test",
-                "ProviderInterface"));
-        inout.getInMessage().setContent(
-                new StreamSource(new ByteArrayInputStream(msg.getBytes())));
+        inout.setInterfaceName(new QName("http://http.servicemix.org/Test", "ProviderInterface"));
+        inout.getInMessage().setContent(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
 
         long t0 = System.currentTimeMillis();
         client.sendSync(inout);
@@ -228,10 +215,8 @@ public class HttpProviderTest extends TestCase {
         assertNotNull(inout.getOutMessage());
         assertNotNull(inout.getOutMessage().getContent());
         SourceTransformer sourceTransformer = new SourceTransformer();
-        String reply = sourceTransformer.toString(inout.getOutMessage()
-                .getContent());
-        String inputMesage = sourceTransformer.toString(new StreamSource(
-                new ByteArrayInputStream(msg.getBytes())));
+        String reply = sourceTransformer.toString(inout.getOutMessage().getContent());
+        String inputMesage = sourceTransformer.toString(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
         logger.info("Msg Sent [" + inputMesage + "]");
         logger.info("Msg Recieved [" + reply + "]");
 
@@ -240,8 +225,7 @@ public class HttpProviderTest extends TestCase {
 
         component.getServiceUnitManager().stop("provider");
         component.getServiceUnitManager().shutDown("provider");
-        component.getServiceUnitManager().undeploy("provider",
-                path.getAbsolutePath());
+        component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
 
         logger.info("Executed in " + (t1 - t0) + "ms");
 
@@ -253,9 +237,9 @@ public class HttpProviderTest extends TestCase {
     }
 
     /**
-     * JIRA SM-695.
-     * Tests the ability of the ProviderProcessor to override
-     * the locationURI using the property JbiConstants.HTTP_DESTINATION_URI
+     * JIRA SM-695. Tests the ability of the ProviderProcessor to override the locationURI using the property
+     * JbiConstants.HTTP_DESTINATION_URI
+     * 
      * @throws Exception
      */
     public void testInOnlyOverrideDestination() throws Exception {
@@ -275,8 +259,7 @@ public class HttpProviderTest extends TestCase {
         for (int i = 0; i < sizeInKb; i++) {
             sb.append("\t<hello>");
             for (int j = 0; j < 1024 - 15; j++) {
-                sb
-                        .append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
+                sb.append((char) ('A' + (int) (Math.random() * ('Z' - 'A' + 1))));
             }
             sb.append("</hello>\n");
         }
@@ -284,10 +267,9 @@ public class HttpProviderTest extends TestCase {
         String str = sb.toString();
 
         /*
-           * for(int i = 0; i < nbRuns; i++) { System.gc(); long dt =
-           * testInOnly(str, false); System.err.println("No Streaming: " + dt);
-           * tearDown(); setUp(); }
-           */
+         * for(int i = 0; i < nbRuns; i++) { System.gc(); long dt = testInOnly(str, false); System.err.println("No
+         * Streaming: " + dt); tearDown(); setUp(); }
+         */
 
         for (int i = 0; i < nbRuns; i++) {
             System.gc();
@@ -299,7 +281,7 @@ public class HttpProviderTest extends TestCase {
     }
 
     public void testInOutWithBigMessage() throws Exception {
-        int sizeInKb = 640*1024;
+        int sizeInKb = 640 * 1024;
 
         StringBuffer sb = new StringBuffer();
         sb.append("<hello>\n");

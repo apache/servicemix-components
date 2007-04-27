@@ -16,10 +16,27 @@
  */
 package org.apache.servicemix.http.processors;
 
-public interface Constants {
+import org.apache.servicemix.http.HttpComponent;
+import org.apache.servicemix.http.HttpConfiguration;
+import org.apache.servicemix.http.HttpEndpoint;
+
+/**
+ * Abstract base class for provider and consumer processor. 
+ */
+public class AbstractProcessor {
 
     public static final String HEADER_SOAP_ACTION = "SOAPAction";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_CONTENT_LENGTH = "Content-Length";
-    
+
+    protected HttpEndpoint endpoint;
+
+    AbstractProcessor(HttpEndpoint endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    protected HttpConfiguration getConfiguration() {
+        HttpComponent comp = (HttpComponent) endpoint.getServiceUnit().getComponent();
+        return comp.getConfiguration();
+    }
 }

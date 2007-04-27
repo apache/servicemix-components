@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Properties;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
@@ -36,12 +36,12 @@ public class HttpConfiguration implements HttpConfigurationMBean {
 
     public static final String DEFAULT_JETTY_CONNECTOR_CLASS_NAME = SelectChannelConnector.class.getName();
     public static final String MAPPING_DEFAULT = "/jbi";
-    public final static String CONFIG_FILE = "component.properties"; 
+    public static final String CONFIG_FILE = "component.properties"; 
     
     private String rootDir;
     private String componentName = "servicemix-http";
     private Properties properties = new Properties();
-    private boolean streamingEnabled = false;
+    private boolean streamingEnabled;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
     private transient KeystoreManager keystoreManager;
     private transient AuthenticationService authenticationService;
@@ -81,7 +81,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      * If the component is deployed in a web container and uses
      * a servlet instead of starting its own web server.
      */
-    private boolean managed = false;
+    private boolean managed;
     
     /**
      * When managed is true, this is the servlet mapping used
@@ -361,7 +361,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         this.proxyPort = proxyPort;
         save();
     }
-    
+
     public void save() {
         setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);

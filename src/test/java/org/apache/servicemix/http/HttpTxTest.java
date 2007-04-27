@@ -53,7 +53,7 @@ public class HttpTxTest extends TestCase {
         tm = new GeronimoPlatformTransactionManager();
 
         jbi = new JBIContainer();
-        jbi.setFlows(new Flow[] { new SedaFlow(), new JCAFlow() });
+        jbi.setFlows(new Flow[] {new SedaFlow(), new JCAFlow()});
         jbi.setEmbedded(true);
         jbi.setUseMBeanServer(false);
         jbi.setCreateMBeanServer(false);
@@ -94,7 +94,7 @@ public class HttpTxTest extends TestCase {
         ep1.setSoap(true);
         
         HttpComponent http = new HttpComponent();
-        http.setEndpoints(new HttpEndpoint[] { ep0, ep1 });
+        http.setEndpoints(new HttpEndpoint[] {ep0, ep1});
         jbi.activateComponent(http, "http");
 
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -132,7 +132,7 @@ public class HttpTxTest extends TestCase {
         ep1.setSoap(true);
         
         HttpComponent http = new HttpComponent();
-        http.setEndpoints(new HttpEndpoint[] { ep0, ep1 });
+        http.setEndpoints(new HttpEndpoint[] {ep0, ep1});
         jbi.activateComponent(http, "http");
 
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
