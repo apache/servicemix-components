@@ -74,6 +74,7 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
     protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
     private Map methods;
+    private Protocol protocol;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         super(endpoint);
@@ -259,10 +260,14 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         HostConfiguration host;
         URI uri = new URI(locationURI, false);
         if (uri.getScheme().equals("https")) {
-            ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(
-                            endpoint.getSsl(),
-                            endpoint.getKeystoreManager());
-            Protocol protocol = new Protocol("https", sf, 443);
+            synchronized (this) {
+                if (protocol == null) {
+                    ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(
+                                    endpoint.getSsl(),
+                                    endpoint.getKeystoreManager());
+                    protocol = new Protocol("https", sf, 443);
+                }
+            }
             HttpHost httphost = new HttpHost(uri.getHost(), uri.getPort(), protocol);
             host = new HostConfiguration();
             host.setHost(httphost);
