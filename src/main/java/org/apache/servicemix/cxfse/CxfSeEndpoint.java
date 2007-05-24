@@ -17,6 +17,8 @@
 package org.apache.servicemix.cxfse;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -29,6 +31,8 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.WebServiceRef;
 
 import org.apache.cxf.Bus;
+import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.interceptor.InterceptorProvider;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.jaxws.ServiceImpl;
@@ -46,13 +50,18 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  * @author gnodet
  * @org.apache.xbean.XBean element="endpoint"
  */
-public class CxfSeEndpoint extends ProviderEndpoint {
+public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvider {
 
     private static final IdGenerator ID_GENERATOR = new IdGenerator();
     
     private Object pojo;
     private EndpointImpl endpoint;
     private String address;
+    
+    private List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor> out = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor> outFault  = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor> inFault  = new CopyOnWriteArrayList<Interceptor>();
     
     /**
      * @return the pojo
@@ -68,6 +77,38 @@ public class CxfSeEndpoint extends ProviderEndpoint {
         this.pojo = pojo;
     }
 
+    public List<Interceptor> getOutFaultInterceptors() {
+        return outFault;
+    }
+
+    public List<Interceptor> getInFaultInterceptors() {
+        return inFault;
+    }
+
+    public List<Interceptor> getInInterceptors() {
+        return in;
+    }
+
+    public List<Interceptor> getOutInterceptors() {
+        return out;
+    }
+
+    public void setInInterceptors(List<Interceptor> interceptors) {
+        in = interceptors;
+    }
+
+    public void setInFaultInterceptors(List<Interceptor> interceptors) {
+        inFault = interceptors;
+    }
+
+    public void setOutInterceptors(List<Interceptor> interceptors) {
+        out = interceptors;
+    }
+
+    public void setOutFaultInterceptors(List<Interceptor> interceptors) {
+        outFault = interceptors;
+    }
+    
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.Endpoint#validate()
      */
@@ -80,12 +121,16 @@ public class CxfSeEndpoint extends ProviderEndpoint {
         serviceFactory.setPopulateFromClass(true);
         endpoint = new EndpointImpl(getBus(), getPojo(), new JaxWsServerFactoryBean(serviceFactory));
         endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        endpoint.setInInterceptors(getInInterceptors());
+        endpoint.setInFaultInterceptors(getInFaultInterceptors());
+        endpoint.setOutInterceptors(getOutInterceptors());
+        endpoint.setOutFaultInterceptors(getOutFaultInterceptors());
         address = "jbi://" + ID_GENERATOR.generateSanitizedId();
         endpoint.publish(address);
         setService(endpoint.getServer().getEndpoint().getService().getName());
         setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo().getName().getLocalPart());
         try {
-            definition = new ServiceWSDLBuilder(endpoint.getServer().getEndpoint().getService()
+            definition = new ServiceWSDLBuilder(getBus(), endpoint.getServer().getEndpoint().getService()
                         .getServiceInfos().iterator().next()).build();
         } catch (WSDLException e) {
             throw new DeploymentException(e);
