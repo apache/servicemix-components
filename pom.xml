@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
-			<version>2.0-incubator-RC-SNAPSHOT</version>
+			<version>${cxf-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix</groupId>
@@ -85,17 +85,17 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-jbi</artifactId>
-			<version>2.0-incubator-SNAPSHOT</version>
+			<version>${cxf-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-bindings-jbi</artifactId>
-			<version>2.0-incubator-SNAPSHOT</version>
+			<version>${cxf-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-testutils</artifactId>
-			<version>2.0-incubator-SNAPSHOT</version>
+			<version>${cxf-version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
