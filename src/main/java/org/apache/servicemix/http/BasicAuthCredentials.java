@@ -16,10 +16,15 @@
  */
 package org.apache.servicemix.http;
 
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.servicemix.expression.Expression;
 
 /**
  * @author roehl.sioson
@@ -28,8 +33,8 @@ import org.apache.commons.httpclient.auth.AuthScope;
  */
 public class BasicAuthCredentials {
 
-    protected String username;
-    protected String password;
+    protected Expression username;
+    protected Expression password;
 
     public BasicAuthCredentials() {
     }
@@ -37,50 +42,61 @@ public class BasicAuthCredentials {
     /**
      * @return Returns the username.
      */
-    public String getUsername() {
+    public Expression getUsername() {
         return username;
     }
 
     /**
      * @param ssl The username to set.
      */
-    public void setUsername(String username) {
+    public void setUsername(Expression username) {
         this.username = username;
     }
 
     /**
      * @return Returns the password.
      */
-    public String getPassword() {
+    public Expression getPassword() {
         return password;
     }
 
     /**
      * @param ssl The password to set.
      */
-    public void setPassword(String password) {
+    public void setPassword(Expression password) {
         this.password = password;
     }
 
-    /**
+
+	/**
      * Applies this authentication to the given method.
      *
-     * @param method The method to receive authentication headers.
+     * @param client the client on which to set the authentication information
+     * @param exchange the message exchange to be used for evaluating the expression
+     * @param message the normalized message to be used for evaluating the expression
+	 * @throws MessagingException if the correct value for username/password cannot be determined when using an expression
      */
-    public void applyCredentials(HttpClient client) {
+    public void applyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message) throws MessagingException {
         AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
-        Credentials credentials = new UsernamePasswordCredentials(this.username, this.password);
+        Credentials credentials = 
+        	new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
+        									(String) this.password.evaluate(exchange, message));
         client.getState().setCredentials(scope, credentials);
     }
-
+    
     /**
      * Applies this authentication to the given method.
      *
-     * @param method The method to receive authentication headers.
+     * @param client the client on which to set the authentication information
+     * @param exchange the message exchange to be used for evaluating the expression
+     * @param message the normalized message to be used for evaluating the expression
+     * @throws MessagingException if the correct value for user name/password cannot be determined when using an expression
      */
-    public void applyProxyCredentials(HttpClient client) {
+    public void applyProxyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message) throws MessagingException {
         AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
-        Credentials credentials = new UsernamePasswordCredentials(this.username, this.password);
+        Credentials credentials = 
+        	new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
+        									(String) this.password.evaluate(exchange, message));
         client.getState().setProxyCredentials(scope, credentials);
     }
 

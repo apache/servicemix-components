@@ -151,10 +151,10 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
             method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(retries, true));
             // Set authentication
             if (endpoint.getBasicAuthentication() != null) {
-                endpoint.getBasicAuthentication().applyCredentials(getClient());
+                endpoint.getBasicAuthentication().applyCredentials(getClient(), exchange, nm);
             }
             // Execute the HTTP method
-            int response = getClient().executeMethod(getHostConfiguration(locationURI), method);
+            int response = getClient().executeMethod(getHostConfiguration(locationURI, exchange, nm), method);
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (!(exchange instanceof InOnly)) {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
@@ -256,7 +256,7 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         return close;
     }
 
-    private HostConfiguration getHostConfiguration(String locationURI) throws Exception {
+    private HostConfiguration getHostConfiguration(String locationURI, MessageExchange exchange, NormalizedMessage message) throws Exception {
         HostConfiguration host;
         URI uri = new URI(locationURI, false);
         if (uri.getScheme().equals("https")) {
@@ -280,7 +280,7 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
                 host.setProxy(endpoint.getProxy().getProxyHost(), endpoint.getProxy().getProxyPort());
             }
             if (endpoint.getProxy().getProxyCredentials() != null) {
-                endpoint.getProxy().getProxyCredentials().applyProxyCredentials(getClient());
+                endpoint.getProxy().getProxyCredentials().applyProxyCredentials(getClient(), exchange, message);
             }
         } else if ((getConfiguration().getProxyHost() != null) && (getConfiguration().getProxyPort() != 0)) {
             host.setProxy(getConfiguration().getProxyHost(), getConfiguration().getProxyPort());
