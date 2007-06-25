@@ -51,7 +51,7 @@ import org.apache.servicemix.soap.util.DomUtil;
 public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
 
     public JbiOutWsdl1Interceptor() {
-        setPhase(Phase.MARSHAL);
+        super(Phase.MARSHAL);
     }
     
     public void handleMessage(SoapMessage message) {
@@ -89,7 +89,7 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
             List<SoapHeaderInfo> headers = msg.getExtensors(SoapHeaderInfo.class);
             for (SoapHeaderInfo header : headers) {
                 NodeList nl = partsContent.get(header.getPart().getIndex());
-                Element headerElement = message.getHeaders(Element.class);
+                Element headerElement = message.get(Element.class);
                 for (int i = 0; i < nl.getLength(); i++) {
                     headerElement.appendChild(nl.item(i));
                 }

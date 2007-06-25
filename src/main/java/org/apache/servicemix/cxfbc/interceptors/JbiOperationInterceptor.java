@@ -37,8 +37,7 @@ import org.apache.cxf.staxutils.StaxUtils;
 public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
 
     public JbiOperationInterceptor() {
-        super();
-        setPhase(Phase.UNMARSHAL);
+        super(Phase.UNMARSHAL);
         addAfter(URIMappingInterceptor.class.getName());
     }
 

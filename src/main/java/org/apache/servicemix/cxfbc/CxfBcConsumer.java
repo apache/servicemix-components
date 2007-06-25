@@ -175,7 +175,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements CxfBcEndpointType
     protected class JbiInvokerInterceptor extends AbstractPhaseInterceptor<Message> {
 
         public JbiInvokerInterceptor() {
-            setPhase(Phase.INVOKE);
+            super(Phase.INVOKE);
         }
 
         public void handleMessage(final Message message) throws Fault {
@@ -200,7 +200,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements CxfBcEndpointType
     
     protected static class JbiPostInvokerInterceptor extends AbstractPhaseInterceptor<Message> {
         public JbiPostInvokerInterceptor() {
-            setPhase(Phase.POST_INVOKE);
+            super(Phase.POST_INVOKE);
             addBefore(OutgoingChainInterceptor.class.getName());
         }
 

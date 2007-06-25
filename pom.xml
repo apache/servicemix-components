@@ -30,13 +30,18 @@
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-bc</artifactId>
   <packaging>jbi-component</packaging>
-  <name>ServiceMix :: File</name>
-  <description>A File component</description>
+  <name>ServiceMix :: CXF</name>
+  <description>A CXF component</description>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
+      <version>${servicemix-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-services</artifactId>
       <version>${servicemix-version}</version>
     </dependency>
     <dependency>

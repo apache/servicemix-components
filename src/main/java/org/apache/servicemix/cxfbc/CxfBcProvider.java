@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.cxfbc;
 
+import javax.jbi.messaging.MessageExchange;
+
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 
 /**
@@ -25,4 +27,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
  */
 public class CxfBcProvider extends ProviderEndpoint implements CxfBcEndpointType {
 
+    public void processExchange(MessageExchange exchange) {
+        
+    }
 }

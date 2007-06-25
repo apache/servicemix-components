@@ -45,7 +45,7 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
     public static final String OPERATION_MEP = "MEP";
     
     public JbiInInterceptor() {
-        setPhase(Phase.PRE_INVOKE);
+        super(Phase.PRE_INVOKE);
     }
     
     public void handleMessage(Message message) {

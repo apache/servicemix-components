@@ -37,6 +37,7 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
 import org.apache.cxf.endpoint.Endpoint;
+import org.apache.cxf.headers.Header;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
@@ -56,7 +57,7 @@ import org.apache.servicemix.soap.util.DomUtil;
 public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
 
     public JbiInWsdl1Interceptor() {
-        setPhase(Phase.UNMARSHAL);
+        super(Phase.UNMARSHAL);
         addAfter(JbiOperationInterceptor.class.getName());
     }
     
@@ -104,7 +105,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         }
         Element body = getBodyElement(message);
         List<SoapHeaderInfo> headers = wsdlMessage.getExtensors(SoapHeaderInfo.class);
-        Element headerElement = message.getHeaders(Element.class);
+        List<Header> headerElement = message.getHeaders();
         List<Object> parts = new ArrayList<Object>();
         for (MessagePartInfo part : wsdlMessage.getMessageParts()) {
             if ("document".equals(style)) {
@@ -129,10 +130,10 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         if (headers != null) {
             for (SoapHeaderInfo header : headers) {
                 MessagePartInfo part = header.getPart();
-                Element param = findHeader(headerElement, part);
+                Header param = findHeader(headerElement, part);
                 int idx = part.getIndex();
                 QName element = part.getElementQName();
-                Element hdr = getHeaderElement(message, element);
+                Header hdr = getHeaderElement(message, element);
                 if (hdr == null) {
                     throw new Fault(new Exception("Missing required header element: "
                                 + QNameUtil.toString(element)));
@@ -190,7 +191,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         }
     }
     
-    protected Element getHeaderElement(SoapMessage message, QName name) {
+    protected Header getHeaderElement(SoapMessage message, QName name) {
         Exchange exchange = message.getExchange();
         BindingOperationInfo bop = exchange.get(BindingOperationInfo.class);
         if (bop.isUnwrapped()) {
@@ -206,11 +207,11 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         if (headers == null || headers.size() == 0) {
             return null;
         }
-        Element headerElement = message.getHeaders(Element.class);
+        List<Header> headerElement = message.getHeaders();
         for (SoapHeaderInfo header : headers) {
             if (header.getPart().getElementQName().equals(name)) {
                 MessagePartInfo mpi = header.getPart();
-                Element param = findHeader(headerElement, mpi);
+                Header param = findHeader(headerElement, mpi);
                 return param;
             }
         }
@@ -236,18 +237,16 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         }
     }
 
-    private static Element findHeader(Element headerElement, MessagePartInfo mpi) {
-        NodeList nodeList = headerElement.getChildNodes();
-        Element param = null;
-        if (nodeList != null) {
+    private static Header findHeader(List<Header> headerElement, MessagePartInfo mpi) {
+        Header param = null;
+        if (headerElement != null) {
             QName name = mpi.getConcreteName();
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node n = nodeList.item(i);
-                if (n.getNamespaceURI() != null 
-                        && n.getNamespaceURI().equals(name.getNamespaceURI())
-                        && n.getLocalName() != null
-                        && n.getLocalName().equals(name.getLocalPart())) {
-                    param = (Element) n;
+            for (Header header : headerElement) {
+                if (header.getName().getNamespaceURI() != null 
+                        && header.getName().getNamespaceURI().equals(name.getNamespaceURI())
+                        && header.getName().getLocalPart() != null
+                        && header.getName().getLocalPart().equals(name.getLocalPart())) {
+                    param = header;
                 }
             }
         }
