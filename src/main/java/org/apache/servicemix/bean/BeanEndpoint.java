@@ -255,7 +255,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                     }
                 }
             }
-            checkEndOfRequest(req);
+            checkEndOfRequest(req, corId);
             currentRequest.set(null);
         }
     }
@@ -279,7 +279,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             me.set(exchange);
             evaluateCallbacks(req);
         }
-        checkEndOfRequest(req);
+        checkEndOfRequest(req, corId);
         currentRequest.set(null);
     }
     
@@ -390,12 +390,12 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         }
     }
     
-    protected void checkEndOfRequest(Request request) {
+    protected void checkEndOfRequest(Request request, Object corId) {
         if (request.getExchange().getStatus() != ExchangeStatus.ACTIVE) {
             ReflectionUtils.callLifecycleMethod(request.getBean(), PreDestroy.class);
             request.setBean(null);
             request.setExchange(null);
-            requests.remove(request);
+            requests.remove(corId);
         }
     }
 
