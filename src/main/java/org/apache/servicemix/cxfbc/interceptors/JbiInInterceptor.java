@@ -18,6 +18,8 @@ package org.apache.servicemix.cxfbc.interceptors;
 
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
@@ -29,6 +31,8 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.security.auth.Subject;
 import javax.xml.transform.Source;
 
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.headers.Header;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Message;
@@ -36,6 +40,7 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.soap.util.QNameUtil;
 
 /**
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
@@ -129,15 +134,19 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
      * Convert SoapMessage headers to NormalizedMessage headers
      */
     private void toNMSHeaders(NormalizedMessage normalizedMessage, Message soapMessage) {
-        // TODO
-        /*
-        Map<String, Object> headers = new HashMap<String, Object>();
-        for (Map.Entry<QName, DocumentFragment> entry : soapMessage.getSoapHeaders().entrySet()) {
-            headers.put(QNameUtil.toString(entry.getKey()), entry.getValue());
+        SoapMessage message = null;
+        if (!(soapMessage instanceof SoapMessage)) {
+        	return;
+        }  else {
+        	message = (SoapMessage)soapMessage;
         }
-        headers.putAll(soapMessage.getTransportHeaders());
+        Map<String, Object> headers = new HashMap<String, Object>();
+        for (Header header : message.getHeaders()) {
+            headers.put(QNameUtil.toString(header.getName()), header.getObject());
+        }
+        
         normalizedMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, headers);
-        */
+        
     }
 
     /**

@@ -40,6 +40,8 @@ import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.endpoint.ServerImpl;
 import org.apache.cxf.interceptor.Fault;
+import org.apache.cxf.interceptor.LoggingInInterceptor;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.interceptor.OutgoingChainInterceptor;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
@@ -142,6 +144,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements CxfBcEndpointType
             service.getInInterceptors().add(new JbiInvokerInterceptor());
             service.getInInterceptors().add(new JbiPostInvokerInterceptor());
             service.getInInterceptors().add(new OutgoingChainInterceptor());
+            service.getInInterceptors().add(new LoggingInInterceptor());
+            service.getOutInterceptors().add(new LoggingOutInterceptor());
             service.getOutInterceptors().add(new JbiOutWsdl1Interceptor());
             ep = new EndpointImpl(getBus(), service, ei);
             chain = new JbiChainInitiationObserver(ep, getBus());

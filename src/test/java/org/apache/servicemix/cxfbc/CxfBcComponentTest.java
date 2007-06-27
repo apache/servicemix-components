@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
@@ -32,9 +33,19 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.springframework.core.io.ClassPathResource;
 
+import uri.helloworld.HelloHeader;
+import uri.helloworld.HelloPortType;
+import uri.helloworld.HelloRequest;
+import uri.helloworld.HelloResponse;
+import uri.helloworld.HelloService;
+
 
 public class CxfBcComponentTest extends TestCase {
 
+	static final Logger LOG = Logger.getLogger(CxfBcComponentTest.class.getName());
+    private final QName serviceName = new QName(
+                                      "uri:HelloWorld",
+                                                "HelloService");
     private JBIContainer jbi;
 
     protected void setUp() throws Exception {
@@ -78,6 +89,34 @@ public class CxfBcComponentTest extends TestCase {
         Thread.sleep(100);
     }
 
+    public void testEndpointDOCWithExternalConsumer() throws Exception {
+        CxfBcComponent comp = new CxfBcComponent();
+        CxfBcConsumer ep = new CxfBcConsumer();
+        ep.setWsdl(new ClassPathResource("HelloWorld-DOC.wsdl"));
+        ep.setTargetService(new QName("urn:test", "target"));
+        comp.setEndpoints(new CxfBcEndpointType[] { ep });
+        jbi.activateComponent(comp, "servicemix-cxfbc");
+        
+        MockServiceComponent echo = new MockServiceComponent();
+        echo.setService(new QName("urn:test", "target"));
+        echo.setEndpoint("endpoint");
+        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><ns2:HelloResponse xmlns:ns2='uri:HelloWorld'><text>helloffang</text></ns2:HelloResponse></jbi:part></jbi:message>");
+        jbi.activateComponent(echo, "echo");
+
+        URL wsdl = getClass().getResource("/HelloWorld-DOC.wsdl");
+        assertNotNull(wsdl);
+        HelloService helloService = new HelloService(wsdl, serviceName);
+        HelloPortType port = helloService.getHelloPort(); 
+        HelloRequest req = new HelloRequest();
+        req.setText("hello");
+        HelloHeader header = new HelloHeader();
+        header.setId("ffang");
+        HelloResponse rep = port.hello(req, header);
+        Thread.sleep(1000);
+        assertEquals(rep.getText(), "helloffang");
+    }
+
+    
     public void testEndpointRPC() throws Exception {
         CxfBcComponent comp = new CxfBcComponent();
         CxfBcConsumer ep = new CxfBcConsumer();

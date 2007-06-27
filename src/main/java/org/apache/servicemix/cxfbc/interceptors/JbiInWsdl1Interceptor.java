@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.apache.cxf.binding.soap.SoapHeader;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
@@ -152,6 +153,8 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 addPart(root, (Node) part);
             } else if (part instanceof NodeList) {
                 addPart(root, (NodeList) part);
+            } else if (part instanceof SoapHeader) {
+            	addPart(root, (Node)((SoapHeader)part).getObject());
             }
         }
         
