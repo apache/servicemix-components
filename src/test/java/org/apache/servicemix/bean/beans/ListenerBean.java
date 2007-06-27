@@ -19,12 +19,14 @@ package org.apache.servicemix.bean.beans;
 import javax.annotation.Resource;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.MessageExchangeListener;
+import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * A simple POJO which implements the {@link MessageExchangeListener} interface
@@ -44,8 +46,13 @@ public class ListenerBean implements MessageExchangeListener {
     public void onMessageExchange(MessageExchange exchange) throws MessagingException {
         this.lastExchange = exchange;
         LOG.info("Received exchange: " + exchange);
-        exchange.setStatus(ExchangeStatus.DONE);
-        channel.send(exchange);
+        if (exchange instanceof InOnly) {
+            exchange.setStatus(ExchangeStatus.DONE);
+            channel.send(exchange);
+        } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            MessageUtil.transferInToOut(exchange, exchange);
+            channel.send(exchange);
+        }
     }
 
     public MessageExchange getLastExchange() {

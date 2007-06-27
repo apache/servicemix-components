@@ -27,10 +27,10 @@ import javax.jbi.messaging.MessageExchange;
 public class Request {
     private Object bean;
     private MessageExchange exchange;
-    private Set<String> sentExchanges = new HashSet<String>();
+    private Set<String> sentExchanges;
     // Keep track of callbacks already called, so that the same callback
     // can not be called twice
-    private Map<Method, Boolean> callbacks = new HashMap<Method, Boolean>();
+    private Map<Method, Boolean> callbacks;
     
     public Request() {
     }
@@ -69,6 +69,9 @@ public class Request {
      * @param id the id of the exchange sent 
      */
     public void addSentExchange(String id) {
+        if (sentExchanges == null) {
+            sentExchanges = new HashSet<String>();
+        }
         sentExchanges.add(id);
     }
 
@@ -76,6 +79,9 @@ public class Request {
      * @return the callbacks
      */
     public Map<Method, Boolean> getCallbacks() {
+        if (callbacks == null) {
+            callbacks = new HashMap<Method, Boolean>();
+        }
         return callbacks;
     }
 
