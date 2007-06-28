@@ -432,6 +432,7 @@ public class HttpSoapTest extends TestCase {
 
         HttpEndpoint ep3 = createInOnlyEndpoint("ep3");
         ep3.setLocationURI("http://localhost:8193/ep1/");
+        ep3.setRoleAsString("provider");
         ep3.setSoap(true);
 
         HttpComponent http = new HttpComponent();
