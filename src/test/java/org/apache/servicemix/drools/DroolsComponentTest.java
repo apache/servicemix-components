@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.drools;
 
+import java.util.HashMap;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
@@ -170,6 +172,8 @@ public class DroolsComponentTest extends TestCase {
         DroolsEndpoint endpoint = new DroolsEndpoint(drools.getServiceUnit(),
                                                      new QName("drools"), "endpoint");
         endpoint.setRuleBaseResource(new ClassPathResource("fibonacci.drl"));
+        endpoint.setGlobals(new HashMap<String, Object>());
+        endpoint.getGlobals().put("max", 100);
         drools.setEndpoints(new DroolsEndpoint[] {endpoint });
         jbi.activateComponent(drools, "servicemix-drools");
         
@@ -183,6 +187,14 @@ public class DroolsComponentTest extends TestCase {
         Element e = new SourceTransformer().toDOMElement(me.getOutMessage());
         assertEquals("result", e.getLocalName());
         assertEquals("12586269025", e.getTextContent());
+        client.done(me);
+
+        me = client.createInOutExchange();
+        me.setService(new QName("drools"));
+        me.getInMessage().setContent(new StringSource("<fibonacci>150</fibonacci>"));
+        me.getInMessage().setProperty("prop", Boolean.TRUE);
+        client.sendSync(me);
+        assertNotNull(me.getFault());
         client.done(me);
         
         Thread.sleep(50);

@@ -23,6 +23,7 @@ import org.apache.servicemix.drools.fibonacci.Fibonacci;
 import org.apache.servicemix.drools.fibonacci.Request;
 
 global org.apache.servicemix.drools.model.JbiHelper jbi;
+global java.lang.Integer max;
 
 rule Init
 	when
@@ -32,8 +33,13 @@ rule Init
 		String t = $me.getIn().getContent().getTextContent();
 		int v = Integer.parseInt( t );
 		jbi.getLogger().debug("request value: " + v);
-		assert( new Request( v ) );
-		assert( new Fibonacci( v ) );
+		if (v > max.intValue()) {
+			jbi.getLogger().debug("Value too high");
+			jbi.fault( "<error/>" );
+		} else {
+			assert( new Request( v ) );
+			assert( new Fibonacci( v ) );
+		}
 end
 
 rule Answer

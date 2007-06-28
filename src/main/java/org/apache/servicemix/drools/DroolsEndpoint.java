@@ -19,6 +19,7 @@ package org.apache.servicemix.drools;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Map;
 
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
@@ -48,6 +49,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private Resource ruleBaseResource;
     private URL ruleBaseURL;
     private NamespaceContext namespaceContext;
+    private Map<String, Object> globals;
 
     public DroolsEndpoint() {
         super();
@@ -117,6 +119,20 @@ public class DroolsEndpoint extends ProviderEndpoint {
         this.namespaceContext = namespaceContext;
     }
 
+    /**
+     * @return the variables
+     */
+    public Map<String, Object> getGlobals() {
+        return globals;
+    }
+
+    /**
+     * @param variables the variables to set
+     */
+    public void setGlobals(Map<String, Object> variables) {
+        this.globals = variables;
+    }
+
     public void validate() throws DeploymentException {
         super.validate();
         if (ruleBase == null && ruleBaseResource == null && ruleBaseURL == null) {
@@ -172,5 +188,10 @@ public class DroolsEndpoint extends ProviderEndpoint {
 
     protected void populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
         memory.setGlobal("jbi", new JbiHelper(this, exchange, memory));
+        if (globals != null) {
+            for (Map.Entry<String, Object> e : globals.entrySet()) {
+                memory.setGlobal(e.getKey(), e.getValue());
+            }
+        }
     }
 }
