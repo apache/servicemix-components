@@ -65,10 +65,10 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                 throw new IllegalStateException("No destination provided");
             }
         }
-        consumer = session.createConsumer(destination);
-        consumer.setMessageListener(this);
         pendingMessages = new ConcurrentHashMap();
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
+        consumer = session.createConsumer(destination);
+        consumer.setMessageListener(this);
     }
 
     protected void doStop() throws Exception {
