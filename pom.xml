@@ -74,6 +74,7 @@
         <configuration>
           <type>service-engine</type>
           <component>org.apache.servicemix.saxon.SaxonComponent</component>
+          <serviceUnitAnalyzer>org.apache.servicemix.saxon.packaging.SaxonServiceUnitAnalyzer</serviceUnitAnalyzer>
         </configuration>
       </plugin>
       <plugin>
