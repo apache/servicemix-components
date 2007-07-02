@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.jms;
 
+import java.io.ByteArrayOutputStream;
+
+import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -28,12 +31,15 @@ import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
 import org.apache.activemq.xbean.BrokerFactoryBean;
 import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.jms.endpoints.DefaultConsumerMarshaler;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
+import org.apache.servicemix.jms.endpoints.JmsSoapConsumerEndpoint;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.jencks.GeronimoPlatformTransactionManager;
@@ -273,6 +279,38 @@ public class JmsConsumerEndpointTest extends TestCase {
         new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
         
         receiver.getMessageList().assertMessagesReceived(1);
+    }
+
+    public void testSoapConsumerSimple() throws Exception {
+        JmsComponent component = new JmsComponent();
+        JmsSoapConsumerEndpoint endpoint = new JmsSoapConsumerEndpoint();
+        endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
+        endpoint.setEndpoint("HelloPort");
+        endpoint.setTargetService(new QName("mock"));
+        endpoint.setListenerType("simple");
+        endpoint.setConnectionFactory(connectionFactory);
+        endpoint.setDestinationName("destination");
+        endpoint.setReplyDestinationName("reply");
+        endpoint.setWsdl(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC.wsdl"));
+        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        container.activateComponent(component, "servicemix-jms");
+        
+        MockServiceComponent mock = new MockServiceComponent();
+        mock.setService(new QName("mock"));
+        mock.setEndpoint("endpoint");
+        mock.setResponseXml("<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\"><jbi:part>hello</jbi:part></jbi:message>");
+        container.activateComponent(mock, "mock");
+        
+        container.start();
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Input.xml").getInputStream(), baos);
+        new JmsTemplate(connectionFactory).convertAndSend("destination", baos.toString());
+        
+        Message msg = new JmsTemplate(connectionFactory).receive("reply");
+        assertNotNull(msg);
+        //System.err.println(msg);
+        //System.err.println(((TextMessage) msg).getText());
     }
 
 }

@@ -18,7 +18,6 @@ package org.apache.servicemix.jms.endpoints;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -36,6 +35,9 @@ import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsConsumerMarshaler.JmsContext;
+import org.apache.servicemix.store.Store;
+import org.apache.servicemix.store.StoreFactory;
+import org.apache.servicemix.store.memory.MemoryStoreFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.SessionCallback;
 import org.springframework.jms.listener.adapter.ListenerExecutionFailedException;
@@ -52,7 +54,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private boolean pubSubDomain = false;
     private ConnectionFactory connectionFactory;
     private JmsTemplate template;
-    
+
     // Reply properties
     private Boolean useMessageIdInResponse;
     private Destination replyDestination;
@@ -62,8 +64,9 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private int replyPriority = Message.DEFAULT_PRIORITY;
     private long replyTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
     private Map replyProperties;
-    
-    private Map<String, JmsContext> pendingExchanges;
+
+    private StoreFactory storeFactory;
+    private Store store;
     
     public AbstractConsumerEndpoint() {
         super();
@@ -273,6 +276,22 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         this.synchronous = synchronous;
     }
 
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public StoreFactory getStoreFactory() {
+        return storeFactory;
+    }
+
+    public void setStoreFactory(StoreFactory storeFactory) {
+        this.storeFactory = storeFactory;
+    }
+
     public String getLocationURI() {
         // TODO: Need to return a real URI
         return getService() + "#" + getEndpoint();
@@ -283,20 +302,29 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         if (template == null) {
             template = new JmsTemplate(getConnectionFactory());
         }
-        pendingExchanges = new ConcurrentHashMap<String, JmsContext>();
+        if (store == null) {
+            if (storeFactory == null) {
+                storeFactory = new MemoryStoreFactory();
+            }
+            store = storeFactory.open(getService().toString() + getEndpoint());
+        }
     }
 
     public synchronized void stop() throws Exception {
-        pendingExchanges.clear();
-        pendingExchanges = null;
+        if (store != null) {
+            if (storeFactory != null) {
+                storeFactory.close(store);
+            }
+            store = null;
+        }
         super.stop();
     }
-    
+
     public void process(MessageExchange exchange) throws Exception {
-        JmsContext context = pendingExchanges.remove(exchange.getExchangeId());
+        JmsContext context = (JmsContext) store.load(exchange.getExchangeId());
         processExchange(exchange, null, context);
     }
-    
+
     protected void processExchange(final MessageExchange exchange, final Session session, final JmsContext context) throws Exception {
         // Ignore DONE exchanges
         if (exchange.getStatus() == ExchangeStatus.DONE) {
@@ -345,7 +373,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
             throw new IllegalStateException("Unrecognized exchange status");
         }
     }
-    
+
     protected void send(Message msg, Session session, Destination dest) throws JMSException {
         MessageProducer producer = session.createProducer(dest);
         try {
@@ -364,7 +392,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
             JmsUtils.closeMessageProducer(producer);
         }
     }
-    
+
     protected void onMessage(Message jmsMessage, Session session) throws JMSException {
         if (logger.isTraceEnabled()) {
             logger.trace("Received: " + jmsMessage);
@@ -379,7 +407,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                     processExchange(exchange, session, context);
                 }
             } else {
-                pendingExchanges.put(exchange.getExchangeId(), context);
+                store.store(exchange.getExchangeId(), context);
                 send(exchange);
             }
         } catch (JMSException e) {
@@ -388,7 +416,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
             throw (JMSException) new JMSException("Error sending JBI exchange").initCause(e);
         }
     }
-    
+
     protected Destination getReplyDestination(MessageExchange exchange, Object message, Session session, JmsContext context) throws JMSException {
         // If a JMS ReplyTo property is set, use it
         if (context.getMessage().getJMSReplyTo() != null) {

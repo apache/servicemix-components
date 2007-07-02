@@ -17,9 +17,9 @@
 package org.apache.servicemix.jms.endpoints;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.OutputStream;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -28,11 +28,14 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.xml.namespace.QName;
 
 import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.model.Binding;
+import org.apache.servicemix.soap.bindings.soap.SoapFault;
+import org.apache.servicemix.soap.bindings.soap.SoapVersion;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 
 public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
@@ -89,6 +92,7 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
 
     public MessageExchange createExchange(JmsContext context) throws Exception {
         org.apache.servicemix.soap.api.Message msg = binding.createMessage();
+        ((Context) context).msg = msg;
         msg.put(ComponentContext.class, ((Context) context).componentContext);
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) context.getMessage()).getText().getBytes())); 
@@ -99,18 +103,55 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     }
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        org.apache.servicemix.soap.api.Message in = ((Context) context).msg;
+        org.apache.servicemix.soap.api.Message msg = binding.createMessage(in);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        msg.setContent(OutputStream.class, baos);
+        msg.setContent(MessageExchange.class, exchange);
+        msg.setContent(NormalizedMessage.class, outMsg);
+        msg.put(SoapVersion.class, in.get(SoapVersion.class));
+        msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
+        InterceptorChain phase = getChain(Phase.ServerOut);
+        phase.doIntercept(msg);
+        return session.createTextMessage(baos.toString());
     }
     
     public Message createFault(MessageExchange exchange, Fault fault, Session session, JmsContext context) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        org.apache.servicemix.soap.api.Message in = ((Context) context).msg;
+        org.apache.servicemix.soap.api.Message msg = binding.createMessage(in);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        msg.setContent(OutputStream.class, baos);
+        msg.setContent(MessageExchange.class, exchange);
+        msg.setContent(NormalizedMessage.class, fault);
+        msg.put(SoapVersion.class, in.get(SoapVersion.class));
+        msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
+        InterceptorChain phase = getChain(Phase.ServerOutFault);
+        QName code = (QName) fault.getProperty("org.apache.servicemix.soap.fault.code");
+        String reason = (String) fault.getProperty("org.apache.servicemix.soap.fault.reason");
+        SoapFault soapFault = new SoapFault(code, reason, null, null, fault.getContent());
+        msg.setContent(Exception.class, soapFault);
+        phase.doIntercept(msg);
+        return session.createTextMessage(baos.toString());
     }
 
     public Message createError(MessageExchange exchange, Exception error, Session session, JmsContext context) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        org.apache.servicemix.soap.api.Message in = ((Context) context).msg;
+        org.apache.servicemix.soap.api.Message msg = binding.createMessage(in);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        msg.setContent(OutputStream.class, baos);
+        msg.setContent(MessageExchange.class, exchange);
+        msg.put(SoapVersion.class, in.get(SoapVersion.class));
+        msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
+        InterceptorChain phase = getChain(Phase.ServerOutFault);
+        SoapFault soapFault;
+        if (error instanceof SoapFault) {
+            soapFault = (SoapFault) error;
+        } else {
+            soapFault = new SoapFault(error);
+        }
+        msg.setContent(Exception.class, soapFault);
+        phase.doIntercept(msg);
+        return session.createTextMessage(baos.toString());
     }
 
     protected InterceptorChain getChain(Phase phase) {
@@ -126,6 +167,7 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     protected static class Context implements JmsContext {
         Message message;
         ComponentContext componentContext;
+        org.apache.servicemix.soap.api.Message msg;
         Context(Message message, ComponentContext componentContext) {
             this.message = message;
             this.componentContext = componentContext;
