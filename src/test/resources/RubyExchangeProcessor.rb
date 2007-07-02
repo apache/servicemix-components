@@ -24,7 +24,8 @@ include_class 'org.apache.servicemix.jbi.jaxp.StringSource'
 include_class 'org.apache.servicemix.common.ExchangeProcessor'
 include_class 'org.apache.servicemix.script.ScriptExchangeHelper'
 
-class RubyExchangeProcessor < ExchangeProcessor
+class RubyExchangeProcessor
+ include ExchangeProcessor
 
  def setExchangeHelper(exchangeHelper)
   @exchangeHelper = exchangeHelper
