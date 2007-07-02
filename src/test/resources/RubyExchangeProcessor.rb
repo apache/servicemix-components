@@ -17,12 +17,12 @@
 # limitations under the License.
 #
 #
-require 'java'
+include Java
 
-include_class 'javax.jbi.messaging.MessageExchange'
-include_class 'org.apache.servicemix.jbi.jaxp.StringSource'
-include_class 'org.apache.servicemix.common.ExchangeProcessor'
-include_class 'org.apache.servicemix.script.ScriptExchangeHelper'
+import javax.jbi.messaging.MessageExchange
+import org.apache.servicemix.jbi.jaxp.StringSource
+import org.apache.servicemix.common.ExchangeProcessor
+import org.apache.servicemix.script.ScriptExchangeHelper
 
 class RubyExchangeProcessor
  include ExchangeProcessor
@@ -42,7 +42,7 @@ class RubyExchangeProcessor
    print @exchangeHelper
    print "\n"
    out = exchange.createMessage()
-   out.setContent(StringSource.new("<world>hello</world>"))
+   out.content = StringSource.new("<world>hello</world>")
    exchange.setMessage(out, "out")
    @exchangeHelper.sendExchange(exchange)
  end
