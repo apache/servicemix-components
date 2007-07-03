@@ -16,53 +16,11 @@
  */
 package org.apache.servicemix.jms;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
-import org.apache.activemq.xbean.BrokerFactoryBean;
-import org.apache.servicemix.jbi.container.JBIContainer;
-import org.springframework.core.io.ClassPathResource;
 
-import junit.framework.TestCase;
-
-public class JmsStandardTest extends TestCase {
-
-    protected JBIContainer container;
-    protected BrokerService broker;
-    protected ActiveMQConnectionFactory connectionFactory;
-    
-    protected void setUp() throws Exception {
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
-        System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
-
-      
-        BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
-        bfb.afterPropertiesSet();
-        broker = bfb.getBroker();
-        broker.start();
-        
-        container = new JBIContainer();
-        container.setUseMBeanServer(true);
-        container.setCreateMBeanServer(true);
-        container.setMonitorInstallationDirectory(false);
-        container.setNamingContext(new InitialContext());
-        container.init();
-        
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
-    }
-    
-    protected void tearDown() throws Exception {
-        if (container != null) {
-            container.shutDown();
-        }
-        if (broker != null) {
-            broker.stop();
-        }
-    }
+public class JmsStandardTest extends AbstractJmsTestCase {
 
     public void test() throws Exception {
         JmsComponent jms = new JmsComponent();
@@ -77,6 +35,5 @@ public class JmsStandardTest extends TestCase {
         ep.setEndpoint("endpoint");
         jms.setEndpoints(new JmsEndpoint[] { ep });
         container.activateComponent(jms, "jms");
-        container.start();
     }
 }

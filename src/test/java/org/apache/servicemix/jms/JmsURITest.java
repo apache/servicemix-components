@@ -24,52 +24,20 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
-import junit.framework.TestCase;
-
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.xbean.BrokerFactoryBean;
 import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.springframework.core.io.ClassPathResource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
-public class JmsURITest extends TestCase {
+public class JmsURITest extends AbstractJmsTestCase {
 
-    protected JBIContainer container;
-    protected BrokerService broker;
-    protected ActiveMQConnectionFactory connectionFactory;
-
-    protected void setUp() throws Exception {
-        BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
-        bfb.afterPropertiesSet();
-        broker = bfb.getBroker();
-        broker.start();
-
-        container = new JBIContainer();
-        container.setUseMBeanServer(true);
-        container.setCreateMBeanServer(true);
-        container.setMonitorInstallationDirectory(false);
-        container.init();
-        container.start();
-
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
-    }
-
-    protected void tearDown() throws Exception {
-        if (container != null) {
-            container.shutDown();
-        }
-        if (broker != null) {
-            broker.stop();
-        }
-    }
+    private static Log logger =  LogFactory.getLog(JmsURITest.class);
 
     public void testResolveEndpoint() throws Exception {
         JmsComponent jms = new JmsComponent();
@@ -104,7 +72,7 @@ public class JmsURITest extends TestCase {
         Element elem = new SourceTransformer().toDOMElement(msg);
         assertEquals("http://www.w3.org/2003/05/soap-envelope", elem.getNamespaceURI());
         assertEquals("env:Envelope", elem.getNodeName());
-        System.out.println(new SourceTransformer().contentToString(msg));
+        logger.info(new SourceTransformer().contentToString(msg));
 
         // Wait for DONE status
         Thread.sleep(50);

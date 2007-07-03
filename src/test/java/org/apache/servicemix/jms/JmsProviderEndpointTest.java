@@ -19,64 +19,13 @@ package org.apache.servicemix.jms;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jms.Message;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
-import org.apache.activemq.xbean.BrokerFactoryBean;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
-import org.jencks.GeronimoPlatformTransactionManager;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jms.core.JmsTemplate;
 
-import junit.framework.TestCase;
+public class JmsProviderEndpointTest extends AbstractJmsTestCase {
 
-public class JmsProviderEndpointTest extends TestCase {
-
-    protected JBIContainer container;
-    protected BrokerService broker;
-    protected ActiveMQConnectionFactory connectionFactory;
-    private JmsTemplate jmsTemplate;
-    private ServiceMixClient client;
-
-    protected void setUp() throws Exception {
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
-        System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
-
-        BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
-        bfb.afterPropertiesSet();
-        broker = bfb.getBroker();
-        broker.start();
-
-        container = new JBIContainer();
-        container.setUseMBeanServer(true);
-        container.setCreateMBeanServer(true);
-        container.setMonitorInstallationDirectory(false);
-        container.setNamingContext(new InitialContext());
-        container.setTransactionManager(new GeronimoPlatformTransactionManager());
-        container.init();
-        
-        client = new DefaultServiceMixClient(container);
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
-        jmsTemplate = new JmsTemplate(connectionFactory);
-    }
-
-    protected void tearDown() throws Exception {
-        if (container != null) {
-            container.shutDown();
-        }
-        if (broker != null) {
-            broker.stop();
-        }
-    }
-    
     public void testSendSimple() throws Exception {
         JmsComponent component = new JmsComponent();
         JmsProviderEndpoint endpoint = new JmsProviderEndpoint();
@@ -86,8 +35,6 @@ public class JmsProviderEndpointTest extends TestCase {
         endpoint.setDestinationName("destination");
         component.setEndpoints(new JmsProviderEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
-        
-        container.start();
         
         InOnly me = client.createInOnlyExchange();
         me.getInMessage().setContent(new StringSource("<hello>world</hello>"));

@@ -146,7 +146,7 @@
       <version>${spring-version}</version>
       <scope>provided</scope>
     </dependency>
-</dependencies>
+  </dependencies>
 
   <build>
     <plugins>
@@ -186,6 +186,19 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <useFile>true</useFile>
+          <forkMode>once</forkMode>
+          <childDelegation>false</childDelegation>
+          <workingDirectory>${basedir}</workingDirectory>
+          <systemProperties>
+            <property>
+              <name>log4j.configuration</name>
+              <value>log4j-tests.properties</value>
+            </property>
+          </systemProperties>
+          <includes>
+            <include>**/*Test.*</include>
+          </includes>
           <excludes>
             <exclude>**/JmsSpringJcaTest.*</exclude>
           </excludes>

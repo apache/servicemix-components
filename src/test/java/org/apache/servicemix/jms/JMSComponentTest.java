@@ -23,65 +23,28 @@ import java.net.URL;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+import javax.jms.Message;
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-import junit.framework.TestCase;
-
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
-import org.apache.activemq.pool.PooledConnectionFactory;
-import org.apache.activemq.xbean.BrokerFactoryBean;
-import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.jms.JmsReceiverComponent;
 import org.apache.servicemix.components.jms.JmsServiceComponent;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jms.core.JmsTemplate;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.jms.core.MessageCreator;
 
-public class JMSComponentTest extends TestCase {
+public class JMSComponentTest extends AbstractJmsTestCase {
 
-    protected JBIContainer container;
-    protected BrokerService broker;
-    protected ActiveMQConnectionFactory connectionFactory;
-    
-    protected void setUp() throws Exception {
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
-        System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
-
-      
-        BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
-        bfb.afterPropertiesSet();
-        broker = bfb.getBroker();
-        broker.start();
-        
-        container = new JBIContainer();
-        container.setUseMBeanServer(true);
-        container.setCreateMBeanServer(true);
-        container.setMonitorInstallationDirectory(false);
-        container.setNamingContext(new InitialContext());
-        container.init();
-        
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
-    }
-    
-    protected void tearDown() throws Exception {
-        if (container != null) {
-            container.shutDown();
-        }
-        if (broker != null) {
-            broker.stop();
-        }
-    }
+    private static Log logger =  LogFactory.getLog(JMSComponentTest.class);
     
     public void testProviderInOnly() throws Exception {
         // JMS Component
@@ -90,9 +53,8 @@ public class JMSComponentTest extends TestCase {
         
         // Add a jms receiver
         JmsReceiverComponent jmsReceiver = new JmsReceiverComponent();
-        JmsTemplate template = new JmsTemplate(connectionFactory);
-        template.setDefaultDestinationName("queue/A");
-        jmsReceiver.setTemplate(template);
+        jmsTemplate.setDefaultDestinationName("queue/A");
+        jmsReceiver.setTemplate(jmsTemplate);
         jmsReceiver.afterPropertiesSet();
         ActivationSpec asJmsReceiver = new ActivationSpec("jmsReceiver", jmsReceiver);
         asJmsReceiver.setDestinationService(new QName("test", "receiver"));
@@ -103,10 +65,7 @@ public class JMSComponentTest extends TestCase {
         ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
         asReceiver.setService(new QName("test", "receiver"));
         container.activateComponent(asReceiver);
-        
-        // Start container
-        container.start();
-        
+
         // Deploy SU
         URL url = getClass().getClassLoader().getResource("provider/jms.wsdl");
         File path = new File(new URI(url.toString()));
@@ -115,7 +74,6 @@ public class JMSComponentTest extends TestCase {
         component.getServiceUnitManager().start("provider");
         
         // Call it
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOnly in = client.createInOnlyExchange();
         in.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
         in.getInMessage().setContent(new StringSource("<hello>world</hello>"));
@@ -132,9 +90,8 @@ public class JMSComponentTest extends TestCase {
         
         // Add a jms receiver
         JmsServiceComponent jmsReceiver = new JmsServiceComponent();
-        JmsTemplate template = new JmsTemplate(new PooledConnectionFactory(connectionFactory));
-        template.setDefaultDestinationName("queue/A");
-        jmsReceiver.setTemplate(template);
+        jmsTemplate.setDefaultDestinationName("queue/A");
+        jmsReceiver.setTemplate(jmsTemplate);
         jmsReceiver.afterPropertiesSet();
         ActivationSpec asJmsReceiver = new ActivationSpec("jmsReceiver", jmsReceiver);
         asJmsReceiver.setDestinationService(new QName("test", "receiver"));
@@ -145,10 +102,7 @@ public class JMSComponentTest extends TestCase {
         ActivationSpec asEcho = new ActivationSpec("receiver", echo);
         asEcho.setService(new QName("test", "receiver"));
         container.activateComponent(asEcho);
-        
-        // Start container
-        container.start();
-        
+
         // Deploy SU
         URL url = getClass().getClassLoader().getResource("provider/jms.wsdl");
         File path = new File(new URI(url.toString()));
@@ -157,7 +111,6 @@ public class JMSComponentTest extends TestCase {
         component.getServiceUnitManager().start("provider");
         
         // Call it
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inout = client.createInOutExchange();
         inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
         inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
@@ -167,41 +120,44 @@ public class JMSComponentTest extends TestCase {
         assertNotNull(out);
         Source src = out.getContent();
         assertNotNull(src);
-        System.err.println(new SourceTransformer().toString(src));
+        logger.info(new SourceTransformer().toString(src));
     }
     
-    /*
-     * This test is not finished.
-     * But the feature is actually in the testProviderConsumerInOut test
-     * 
     public void testConsumerInOut() throws Exception {
         // JMS Component
         JmsComponent component = new JmsComponent();
         container.activateComponent(component, "JMSComponent");
+
+        // Add an echo component
+        EchoComponent echo = new EchoComponent();
+        ActivationSpec asEcho = new ActivationSpec("receiver", echo);
+        asEcho.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        container.activateComponent(asEcho);
         
-        // Start container
-        container.start();
-        
-        // Deploy SU
+        // Deploy Consumer SU
         URL url = getClass().getClassLoader().getResource("consumer/jms.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
         
-        // Call it
-        JmsTemplate template = new JmsTemplate(new PooledConnectionFactory(connectionFactory));
-        template.setDefaultDestinationName("queue/A");
-        template.afterPropertiesSet();
-        template.send(new MessageCreator() {
+        // Send test message
+        jmsTemplate.setDefaultDestinationName("queue/A");
+        jmsTemplate.afterPropertiesSet();
+        jmsTemplate.send(new MessageCreator() {
             public Message createMessage(Session session) throws JMSException {
-                return session.createTextMessage("<hello>world</hello>");
+                Message m = session.createTextMessage("<hello>world</hello>");
+                m.setJMSReplyTo(session.createQueue("queue/B"));
+                return m;
             }
         });
 
-        System.err.println("Sent");
+        // Receive echo message
+        TextMessage reply = (TextMessage)jmsTemplate.receive("queue/B");
+        assertNotNull(reply);
+        logger.info(reply.getText());
     }
-    */
+
     
     public void testProviderConsumerInOut() throws Exception {
         // JMS Component
@@ -213,10 +169,7 @@ public class JMSComponentTest extends TestCase {
         ActivationSpec asEcho = new ActivationSpec("receiver", echo);
         asEcho.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
         container.activateComponent(asEcho);
-        
-        // Start container
-        container.start();
-        
+                
         // Deploy Provider SU
         {
             URL url = getClass().getClassLoader().getResource("provider/jms.wsdl");
@@ -236,7 +189,6 @@ public class JMSComponentTest extends TestCase {
         }
         
         // Call it
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inout = client.createInOutExchange();
         inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
         inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
@@ -246,8 +198,7 @@ public class JMSComponentTest extends TestCase {
         assertNotNull(out);
         Source src = out.getContent();
         assertNotNull(src);
-        System.err.println(new SourceTransformer().toString(src));
-        
+        logger.info(new SourceTransformer().toString(src));
     }
     
 }

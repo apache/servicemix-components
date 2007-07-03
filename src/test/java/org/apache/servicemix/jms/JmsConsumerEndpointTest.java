@@ -20,19 +20,11 @@ import java.io.ByteArrayOutputStream;
 
 import javax.jms.Message;
 import javax.jms.TextMessage;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import junit.framework.TestCase;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
-import org.apache.activemq.xbean.BrokerFactoryBean;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
@@ -42,36 +34,20 @@ import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsSoapConsumerEndpoint;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.jencks.GeronimoPlatformTransactionManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jms.core.JmsTemplate;
 import org.w3c.dom.Element;
 
-public class JmsConsumerEndpointTest extends TestCase {
+public class JmsConsumerEndpointTest extends AbstractJmsTestCase {
 
-    protected JBIContainer container;
-    protected BrokerService broker;
-    protected ActiveMQConnectionFactory connectionFactory;
-    private Receiver receiver;
-    private JmsTemplate jmsTemplate;
-    private SourceTransformer sourceTransformer = new SourceTransformer();
-    
+    private static Log logger =  LogFactory.getLog(JmsConsumerEndpointTest.class);
+
+    protected Receiver receiver;
+    protected SourceTransformer sourceTransformer = new SourceTransformer();
+
     protected void setUp() throws Exception {
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
-        System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
-
-        BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
-        bfb.afterPropertiesSet();
-        broker = bfb.getBroker();
-        broker.start();
-
-        container = new JBIContainer();
-        container.setUseMBeanServer(true);
-        container.setCreateMBeanServer(true);
-        container.setMonitorInstallationDirectory(false);
-        container.setNamingContext(new InitialContext());
-        container.setTransactionManager(new GeronimoPlatformTransactionManager());
-        container.init();
+        super.setUp();
         
         ReceiverComponent rec = new ReceiverComponent();
         rec.setService(new QName("receiver"));
@@ -83,18 +59,6 @@ public class JmsConsumerEndpointTest extends TestCase {
         echo.setService(new QName("echo"));
         echo.setEndpoint("endpoint");
         container.activateComponent(echo, "echo");
-
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
-        jmsTemplate = new JmsTemplate(connectionFactory);
-    }
-    
-    protected void tearDown() throws Exception {
-        if (container != null) {
-            container.shutDown();
-        }
-        if (broker != null) {
-            broker.stop();
-        }
     }
     
     public void testConsumerSimple() throws Exception {
@@ -108,11 +72,8 @@ public class JmsConsumerEndpointTest extends TestCase {
         endpoint.setDestinationName("destination");
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
-        
-        container.start();
-        
-        new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
-        
+
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -131,8 +92,7 @@ public class JmsConsumerEndpointTest extends TestCase {
         
         container.start();
         
-        new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
-        
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -151,7 +111,6 @@ public class JmsConsumerEndpointTest extends TestCase {
         container.start();
         
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
-        
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -168,9 +127,7 @@ public class JmsConsumerEndpointTest extends TestCase {
         endpoint.setMarshaler(new DefaultConsumerMarshaler(MessageExchangeSupport.IN_OUT));
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
-        
-        container.start();
-        
+
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         TextMessage msg = (TextMessage) jmsTemplate.receive("replyDestination");
         Element e = sourceTransformer.toDOMElement(new StringSource(msg.getText()));
@@ -190,11 +147,8 @@ public class JmsConsumerEndpointTest extends TestCase {
         endpoint.setTransacted("jms");
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
-        
-        container.start();
-        
-        new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
-        
+
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -212,9 +166,7 @@ public class JmsConsumerEndpointTest extends TestCase {
         endpoint.setMarshaler(new DefaultConsumerMarshaler(MessageExchangeSupport.IN_OUT));
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
-        
-        container.start();
-        
+
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         TextMessage msg = (TextMessage) jmsTemplate.receive("replyDestination");
         Element e = sourceTransformer.toDOMElement(new StringSource(msg.getText()));
@@ -234,11 +186,8 @@ public class JmsConsumerEndpointTest extends TestCase {
         endpoint.setTransacted("xa");
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
-        
-        container.start();
-        
-        new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
-        
+
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -254,10 +203,7 @@ public class JmsConsumerEndpointTest extends TestCase {
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
         
-        container.start();
-        
-        new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
-        
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -274,10 +220,7 @@ public class JmsConsumerEndpointTest extends TestCase {
         component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
         container.activateComponent(component, "servicemix-jms");
         
-        container.start();
-        
-        new JmsTemplate(connectionFactory).convertAndSend("destination", "<hello>world</hello>");
-        
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
@@ -300,17 +243,14 @@ public class JmsConsumerEndpointTest extends TestCase {
         mock.setEndpoint("endpoint");
         mock.setResponseXml("<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\"><jbi:part>hello</jbi:part></jbi:message>");
         container.activateComponent(mock, "mock");
-        
-        container.start();
-        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Input.xml").getInputStream(), baos);
-        new JmsTemplate(connectionFactory).convertAndSend("destination", baos.toString());
+        jmsTemplate.convertAndSend("destination", baos.toString());
         
-        Message msg = new JmsTemplate(connectionFactory).receive("reply");
+        Message msg = jmsTemplate.receive("reply");
         assertNotNull(msg);
-        //System.err.println(msg);
-        //System.err.println(((TextMessage) msg).getText());
+        logger.info(((TextMessage) msg).getText());
     }
 
 }

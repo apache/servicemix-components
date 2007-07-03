@@ -23,7 +23,6 @@ import java.net.URL;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.naming.Context;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
@@ -32,57 +31,17 @@ import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
-import junit.framework.TestCase;
-
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
-import org.apache.activemq.xbean.BrokerFactoryBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.springframework.core.io.ClassPathResource;
 import org.w3c.dom.Document;
 
-public class JmsXBeanDeployerTest extends TestCase {
+public class JmsXBeanDeployerTest extends AbstractJmsTestCase {
 
     private static Log logger =  LogFactory.getLog(JmsXBeanDeployerTest.class);
-
-    protected JBIContainer container;
-    protected BrokerService broker;
-    protected ActiveMQConnectionFactory connectionFactory;
-    
-    protected void setUp() throws Exception {
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
-        System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
-      
-        BrokerFactoryBean bfb = new BrokerFactoryBean(new ClassPathResource("org/apache/servicemix/jms/activemq.xml"));
-        bfb.afterPropertiesSet();
-        broker = bfb.getBroker();
-        broker.start();
-        
-        container = new JBIContainer();
-        //container.setUseMBeanServer(false);
-        //container.setCreateMBeanServer(false);
-        container.setEmbedded(true);
-        container.init();
-        
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
-    }
-    
-    protected void tearDown() throws Exception {
-        if (container != null) {
-            container.shutDown();
-        }
-        if (broker != null) {
-            broker.stop();
-        }
-    }
 
     public void test() throws Exception {
         // JMS Component
@@ -112,8 +71,7 @@ public class JmsXBeanDeployerTest extends TestCase {
                     def.addPortType(type);
                     def.addBinding(binding);
                     def.addService(svc);
-                    Document doc = WSDLFactory.newInstance().newWSDLWriter().getDocument(def);
-                    return doc;
+                    return WSDLFactory.newInstance().newWSDLWriter().getDocument(def);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -123,9 +81,6 @@ public class JmsXBeanDeployerTest extends TestCase {
         asEcho.setService(new QName("http://test", "MyConsumerService"));
         container.activateComponent(asEcho);
         
-        // Start container
-        container.start();
-
         // Deploy SU
         URL url = getClass().getClassLoader().getResource("xbean/xbean.xml");
         File path = new File(new URI(url.toString()));
@@ -142,7 +97,6 @@ public class JmsXBeanDeployerTest extends TestCase {
                         new QName("http://test", "MyConsumerService"))[0]));
         
         // Test
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setService(new QName("http://test", "MyProviderService"));
         me.getInMessage().setContent(new StringSource("<echo xmlns='http://test'><echoin0>world</echoin0></echo>"));
@@ -187,8 +141,7 @@ public class JmsXBeanDeployerTest extends TestCase {
                     def.addPortType(type);
                     def.addBinding(binding);
                     def.addService(svc);
-                    Document doc = WSDLFactory.newInstance().newWSDLWriter().getDocument(def);
-                    return doc;
+                    return WSDLFactory.newInstance().newWSDLWriter().getDocument(def);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -197,9 +150,6 @@ public class JmsXBeanDeployerTest extends TestCase {
         asEcho.setEndpoint("myConsumer");
         asEcho.setService(new QName("http://test", "MyConsumerService"));
         container.activateComponent(asEcho);
-        
-        // Start container
-        container.start();
 
         // Deploy SU
         URL url = getClass().getClassLoader().getResource("xbean/xbean.xml");
@@ -214,7 +164,6 @@ public class JmsXBeanDeployerTest extends TestCase {
                         new QName("http://test", "MyConsumerService"))[0]));
         
         // Test
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut me = client.createInOutExchange();
         me.setService(new QName("http://test", "MyProviderService"));
         me.getInMessage().setContent(new StringSource("<echo xmlns='http://test'><echoin0>world</echoin0></echo>"));
