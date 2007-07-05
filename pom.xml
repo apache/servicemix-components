@@ -61,20 +61,17 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <useFile>true</useFile>
-          <forkMode>once</forkMode>
-          <childDelegation>false</childDelegation>
-          <workingDir>${basedir}</workingDir>
-          <systemProperties>
-            <property>
-              <name>log4j.configuration</name>
-              <value>${basedir}/target/test-classes/log4j-tests.properties</value>
-            </property>
-          </systemProperties>
-		  <excludes>
-           <exclude>**/HttpAddressingTest.*</exclude>
-		   <exclude>**/HttpTxTest.*</exclude>
-		   <exclude>**/HttpSecurityTest.*</exclude>
+          <workingDirectory>${basedir}</workingDirectory>
+          <includes>
+            <include>**/*Test.*</include>
+          </includes>
+          <excludes>
+            <!-- exclude abstract test cases -->
+            <exclude>**/Abstract*.*</exclude>
+
+            <exclude>**/HttpAddressingTest.*</exclude>
+            <exclude>**/HttpTxTest.*</exclude>
+            <exclude>**/HttpSecurityTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>
