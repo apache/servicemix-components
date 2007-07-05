@@ -86,23 +86,26 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <includes>
-            <include>**/*Test*</include>
-          </includes>
-          <excludes>
-            <exclude>**/PollDirectoryTest*</exclude>
-          </excludes>
+          <source>1.5</source>
+          <target>1.5</target>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <!-- best lock down version of the plugin too -->
+        <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-        <source>1.5</source>
-          <target>1.5</target>
+          <workingDirectory>${basedir}</workingDirectory>
+          <includes>
+            <include>**/*Test.*</include>
+          </includes>
+          <excludes>
+            <!-- exclude abstract test cases -->
+            <exclude>**/Abstract*.*</exclude>
+            
+            <exclude>**/PollDirectoryTest*</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
