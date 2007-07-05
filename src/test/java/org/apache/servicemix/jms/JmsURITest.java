@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
-public class JmsURITest extends AbstractJmsTestCase {
+public class JmsURITest extends AbstractJmsTestSupport {
 
     private static Log logger =  LogFactory.getLog(JmsURITest.class);
 

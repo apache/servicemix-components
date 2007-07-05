@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.w3c.dom.Element;
 
-public class JmsConsumerEndpointTest extends AbstractJmsTestCase {
+public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
     private static Log logger =  LogFactory.getLog(JmsConsumerEndpointTest.class);
 

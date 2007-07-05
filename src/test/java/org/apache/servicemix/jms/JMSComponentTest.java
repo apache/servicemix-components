@@ -42,7 +42,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.core.MessageCreator;
 
-public class JMSComponentTest extends AbstractJmsTestCase {
+public class JMSComponentTest extends AbstractJmsTestSupport {
 
     private static Log logger =  LogFactory.getLog(JMSComponentTest.class);
     

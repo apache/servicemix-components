@@ -24,7 +24,7 @@ import javax.xml.namespace.QName;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
 
-public class JmsProviderEndpointTest extends AbstractJmsTestCase {
+public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
 
     public void testSendSimple() throws Exception {
         JmsComponent component = new JmsComponent();

@@ -20,7 +20,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
 
-public class JmsStandardTest extends AbstractJmsTestCase {
+public class JmsStandardTest extends AbstractJmsTestSupport {
 
     public void test() throws Exception {
         JmsComponent jms = new JmsComponent();

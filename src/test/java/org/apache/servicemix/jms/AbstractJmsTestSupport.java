@@ -33,7 +33,8 @@ import org.jencks.GeronimoPlatformTransactionManager;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-public abstract class AbstractJmsTestCase extends TestCase {
+public abstract class AbstractJmsTestSupport extends TestCase {
+    
     protected JBIContainer container;
     protected BrokerService broker;
     protected ActiveMQConnectionFactory connectionFactory;

@@ -39,7 +39,7 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.w3c.dom.Document;
 
-public class JmsXBeanDeployerTest extends AbstractJmsTestCase {
+public class JmsXBeanDeployerTest extends AbstractJmsTestSupport {
 
     private static Log logger =  LogFactory.getLog(JmsXBeanDeployerTest.class);
 
