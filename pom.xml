@@ -84,11 +84,12 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <workingDirectory>${basedir}</workingDirectory>
           <includes>
-            <include>**/*Test*</include>
+            <include>**/*Test.*</include>
           </includes>
           <excludes>
-            <exclude>**/PollDirectoryTest*</exclude>
+            <exclude>**/PollDirectoryTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>
