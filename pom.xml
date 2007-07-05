@@ -170,6 +170,7 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.5</source>
@@ -180,7 +181,14 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <workingDirectory>${basedir}</workingDirectory>
+          <includes>
+            <include>**/*Test.*</include>
+          </includes>
           <excludes>
+            <!-- exclude abstract test cases -->
+            <exclude>**/Abstract*.*</exclude>
+            
             <exclude>**/Jsr181SpringTest.*</exclude>
             <exclude>**/Jsr181SpringProxyTest.*</exclude>
             <exclude>**/Jsr181ProxySUTest.*</exclude>
