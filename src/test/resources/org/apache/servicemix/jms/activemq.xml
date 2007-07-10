@@ -23,10 +23,11 @@
 
   <broker persistent="false" useJmx="false" xmlns="http://activemq.org/config/1.0">
 
+    <!--
     <transportConnectors>
       <transportConnector uri="tcp://localhost:61216" />
     </transportConnectors>
-
+    -->
   </broker>
 
 </beans>

@@ -26,7 +26,7 @@ public class JmsStandardTest extends AbstractJmsTestSupport {
         JmsComponent jms = new JmsComponent();
         JmsEndpoint ep = new JmsEndpoint();
         ep.setInitialContextFactory(ActiveMQInitialContextFactory.class.getName());
-        ep.setJndiProviderURL("tcp://localhost:61216");
+        ep.setJndiProviderURL("vm://localhost");
         ep.setJndiConnectionFactoryName("ConnectionFactory");
         ep.setJndiDestinationName("MyQueue");
         ep.setProcessorName("standard");
