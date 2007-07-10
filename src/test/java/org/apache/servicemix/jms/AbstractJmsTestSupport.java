@@ -61,7 +61,7 @@ public abstract class AbstractJmsTestSupport extends TestCase {
 
     protected void createInitContext() throws Exception {
         System.setProperty(Context.INITIAL_CONTEXT_FACTORY, ActiveMQInitialContextFactory.class.getName());
-        System.setProperty(Context.PROVIDER_URL, "tcp://localhost:61216");
+        System.setProperty(Context.PROVIDER_URL, "vm://localhost");
     }
 
     protected void createJbiContainer() throws Exception {
@@ -84,7 +84,7 @@ public abstract class AbstractJmsTestSupport extends TestCase {
     }
 
     protected void createJmsConnectionFactory() throws Exception {
-        connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61216");
+        connectionFactory = new ActiveMQConnectionFactory("vm://localhost");
     }
 
     protected void createJmsTemplate() throws Exception {
