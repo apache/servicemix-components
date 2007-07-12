@@ -117,19 +117,6 @@
           <excludes>
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
-            
-            <exclude>**/StaticRoutingSlipTxTest.*</exclude>
-            <exclude>**/WireTapJmsFlowTest.*</exclude>
-            <exclude>**/PipelineTxTest.*</exclude>
-            <exclude>**/SplitAggregatorTxTest.*</exclude>
-            <exclude>**/StaticRecipientListTxTest.*</exclude>
-            <exclude>**/MessageFilterTxTest.*</exclude>
-            <exclude>**/WireTapTxTest.*</exclude>
-            <exclude>**/XPathSplitterTxTest.*</exclude>
-            <exclude>**/DeploymentTest.*</exclude>
-            <exclude>**/NamespaceContextImplTest.*</exclude>
-            <exclude>**/SpringConfigurationTest.*</exclude>
-            <exclude>**/ContentBasedRouterTxTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>
