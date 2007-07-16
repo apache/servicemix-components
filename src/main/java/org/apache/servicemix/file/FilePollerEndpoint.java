@@ -23,7 +23,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -200,11 +202,14 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                 String uri = file.toURI().relativize(aFile.toURI()).toString();
                 Lock lock = lockManager.getLock(uri);
                 if (lock.tryLock()) {
+                    boolean unlock = true;
                     try {
-                        processFileAndDelete(aFile);
+                        unlock = processFileAndDelete(aFile);
                     }
                     finally {
-                        lock.unlock();
+                        if (unlock) {
+                            lock.unlock();
+                        }
                     }
                 } else {
                     if (logger.isDebugEnabled()) {
@@ -215,23 +220,27 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         });
     }
 
-    protected void processFileAndDelete(File aFile) {
+    protected boolean processFileAndDelete(File aFile) {
+        boolean unlock = true;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing file " + aFile);
             }
             if (aFile.exists()) {
                 processFile(aFile);
+                unlock = false;
                 if (isDeleteFile()) {
                     if (!aFile.delete()) {
                         throw new IOException("Could not delete file " + aFile);
                     }
+                    unlock = true;
                 }
             }
         }
         catch (Exception e) {
             logger.error("Failed to process file: " + aFile + ". Reason: " + e, e);
         }
+        return unlock;
     }
 
     protected void processFile(File aFile) throws Exception {
@@ -244,6 +253,13 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         marshaler.readMessage(exchange, message, in, name);
         sendSync(exchange);
         in.close();
+        if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            Exception e = exchange.getError();
+            if (e == null) {
+                e = new JBIException("Unkown error");
+            }
+            throw e;
+        }
     }
 
     public String getLocationURI() {
