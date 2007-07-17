@@ -199,7 +199,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         FTPClient ftp = borrowClient();
         try {
             logger.debug("Polling directory " + fileOrDirectory);
-            pollFileOrDirectory(ftp, fileOrDirectory, true);
+            pollFileOrDirectory(ftp, fileOrDirectory, isRecursive());
         }
         finally {
             returnClient(ftp);
