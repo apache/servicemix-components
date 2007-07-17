@@ -16,21 +16,24 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.filter.PacketFilter;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.RosterPacket;
-import org.jivesoftware.smack.packet.Message;
+import java.net.URI;
+import java.util.Iterator;
 
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import java.net.URI;
-import java.util.Iterator;
+
+import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.RosterPacket;
 
 /**
  * Represents a base XMPP endpoint
@@ -113,24 +116,31 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
 
     public void processPacket(Packet packet) {
         try {
-            System.out.println("Received packet: " + packet);
-            Iterator iter = packet.getPropertyNames();
-            while (iter.hasNext()) {
-                String property = (String) iter.next();
-                System.out.println("Packet header: " + property + " value: " + packet.getProperty(property));
+            logger.debug("Received packet: " + packet);
+
+            if (logger.isDebugEnabled()) {
+                Iterator iter = packet.getPropertyNames();
+                while (iter.hasNext()) {
+                    String property = (String) iter.next();
+                    logger.debug("Packet header: " + property + " value: " + packet.getProperty(property));
+                }
             }
+            
             if (packet instanceof Message) {
                 Message message = (Message) packet;
-                System.out.println("Received message: " + message + " with " + message.getBody());
+                logger.debug("Received message: " + message + " with " + message.getBody());
 
             }
             else if (packet instanceof RosterPacket) {
                 RosterPacket rosterPacket = (RosterPacket) packet;
-                System.out.println("Roster packet with : " + rosterPacket.getRosterItemCount());
-                Iterator rosterItems = rosterPacket.getRosterItems();
-                while (rosterItems.hasNext()) {
-                    Object item = rosterItems.next();
-                    System.out.println("Roster item: " + item);
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Roster packet with : " + rosterPacket.getRosterItemCount());
+                    Iterator rosterItems = rosterPacket.getRosterItems();
+                    while (rosterItems.hasNext()) {
+                        Object item = rosterItems.next();
+                        logger.debug("Roster item: " + item);
+                    }
                 }
 
             }
@@ -138,7 +148,7 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
             NormalizedMessage in = exchange.createMessage();
             exchange.setInMessage(in);
             marshaler.toNMS(in, packet);
-            System.out.println("Exchange: " + exchange);
+            logger.debug("Exchange: " + exchange);
             //send(exchange);
         }
         catch (MessagingException e) {

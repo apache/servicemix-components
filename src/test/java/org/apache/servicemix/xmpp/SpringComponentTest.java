@@ -16,6 +16,14 @@
  */
 package org.apache.servicemix.xmpp;
 
+import java.net.InetAddress;
+
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
+
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -23,13 +31,6 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.namespace.QName;
-import java.net.InetAddress;
 
 public class SpringComponentTest extends SpringTestSupport {
 
@@ -52,8 +53,8 @@ public class SpringComponentTest extends SpringTestSupport {
             System.err.println("Caught: " + e);
             e.printStackTrace();
         }
-
     }
+
     public void testSendingToStaticEndpoint() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOnly me = client.createInOnlyExchange();
