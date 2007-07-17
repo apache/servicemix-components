@@ -26,11 +26,14 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.mortbay.thread.BoundedThreadPool;
 
 public class ServerManagerTest extends TestCase {
+    private static transient Log log = LogFactory.getLog(ServerManagerTest.class);
 
     protected JettyContextManager server;
     protected HttpConfiguration configuration;
@@ -152,7 +155,7 @@ public class ServerManagerTest extends TestCase {
         }
 
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-            System.out.println(request);
+            log.info(request);
         }
 
     }

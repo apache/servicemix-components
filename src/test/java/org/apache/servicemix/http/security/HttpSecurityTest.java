@@ -39,7 +39,7 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpSecurityTest extends SpringTestSupport {
-    private static final Log LOGGER =  LogFactory.getLog(HttpSecurityTest.class);
+    private static transient Log log =  LogFactory.getLog(HttpSecurityTest.class);
 
     static {
         String path = System.getProperty("java.security.auth.login.config");
@@ -50,7 +50,7 @@ public class HttpSecurityTest extends SpringTestSupport {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
-        LOGGER.info("Path to login config: " + path);
+        log.info("Path to login config: " + path);
     }
     
     protected void setUp() throws Exception {
@@ -68,7 +68,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             testAuthenticate("user2", "user2");
             fail("User2 is not authorized");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info(e.getMessage(), e);
             // ok
         }
     }
@@ -78,7 +78,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             testAuthenticate("user2", "userx");
             fail("User2 has bad credentials");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info(e.getMessage(), e);
             // ok
         }
     }
@@ -113,7 +113,9 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
-            FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.err);
+
+            String str = method.getResponseBodyAsString();
+            log.info(str);
             if (state != HttpServletResponse.SC_OK && state != HttpServletResponse.SC_ACCEPTED) {
                 throw new IllegalStateException("Http status: " + state);
             }
@@ -133,7 +135,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             String str = method.getResponseBodyAsString();
-            LOGGER.info(str);
+            log.info(str);
             assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
             Element e = new SourceTransformer().toDOMElement(new StringSource(str));
             assertEquals("Envelope", e.getLocalName());
@@ -157,7 +159,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             method.setRequestEntity(new StringRequestEntity(request));
             int state = client.executeMethod(method);
             String str = method.getResponseBodyAsString();
-            LOGGER.info(str);
+            log.info(str);
             assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, state);
             Element e = new SourceTransformer().toDOMElement(new StringSource(str));
             assertEquals("Envelope", e.getLocalName());

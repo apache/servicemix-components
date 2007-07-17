@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.http;
 
+import java.io.ByteArrayOutputStream;
+
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Definition;
@@ -36,6 +38,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
@@ -45,7 +49,7 @@ import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.springframework.core.io.UrlResource;
 
 public class HttpWsdlTest extends TestCase {
-
+    private static transient Log log = LogFactory.getLog(HttpWsdlTest.class);
     protected JBIContainer container;
 
     protected void setUp() throws Exception {
@@ -106,7 +110,10 @@ public class HttpWsdlTest extends TestCase {
         assertNotNull(definition);
         assertNotNull(definition.getImports());
         assertEquals(1, definition.getImports().size());
-        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, System.err);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
+        log.info(baos.toString());
     }
 
     protected Definition createDefinition(boolean rpc) throws WSDLException {
@@ -153,7 +160,10 @@ public class HttpWsdlTest extends TestCase {
         op.setOutput(out);
         type.addOperation(op);
         def.addPortType(type);
-        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, System.err);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, baos);
+        log.info(baos.toString());
         return def;
     }
 

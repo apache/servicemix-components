@@ -41,7 +41,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpSpringTest extends SpringTestSupport {
 
-    private static Log logger = LogFactory.getLog(HttpSpringTest.class);
+    private static transient Log logger = LogFactory.getLog(HttpSpringTest.class);
 
     protected void setUp() throws Exception {
         if (logger.isDebugEnabled()) {
@@ -95,7 +95,7 @@ public class HttpSpringTest extends SpringTestSupport {
         RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         entity.writeRequest(baos);
-        System.err.println(baos);
+        logger.info(baos);
         filePost.setRequestEntity(entity);
         HttpClient client = new HttpClient();
         int status = client.executeMethod(filePost);

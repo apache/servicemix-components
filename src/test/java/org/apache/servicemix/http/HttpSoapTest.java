@@ -42,7 +42,6 @@ import org.w3c.dom.Node;
 import junit.framework.TestCase;
 
 import com.ibm.wsdl.util.xml.DOMUtils;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
@@ -70,7 +69,7 @@ import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class HttpSoapTest extends TestCase {
-    private static Log logger = LogFactory.getLog(HttpSoapTest.class);
+    private static transient Log logger = LogFactory.getLog(HttpSoapTest.class);
 
     protected JBIContainer container;
 
@@ -105,7 +104,10 @@ public class HttpSoapTest extends TestCase {
         method.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         int state = new HttpClient().executeMethod(method);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, state);
-        FileUtil.copyInputStream(method.getResponseBodyAsStream(), System.out);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(method.getResponseBodyAsStream(), baos);
+        logger.info(baos.toString());
     }
 
     public void testSoap() throws Exception {

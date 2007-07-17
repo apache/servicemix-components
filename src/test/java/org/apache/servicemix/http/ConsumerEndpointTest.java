@@ -31,6 +31,8 @@ import junit.framework.TestCase;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
@@ -52,6 +54,7 @@ import org.apache.xpath.CachedXPathAPI;
 import org.springframework.core.io.ClassPathResource;
 
 public class ConsumerEndpointTest extends TestCase {
+    private static transient Log log = LogFactory.getLog(ConsumerEndpointTest.class);
 
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
@@ -108,7 +111,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         assertEquals("", res);
         if (post.getStatusCode() != 202) {
             throw new InvalidStatusResponseException(post.getStatusCode());
@@ -138,9 +141,9 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Node node = transformer.toDOMNode(new StringSource(res));
-        System.err.println(transformer.toString(node));
+        log.info(transformer.toString(node));
         assertEquals("world", textValueOfXPath(node, "/hello/text()"));
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
@@ -177,7 +180,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap11.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -197,7 +200,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -224,7 +227,7 @@ public class ConsumerEndpointTest extends TestCase {
                                         + "<s:Body><hello>world</hello></s:Body>" + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap11.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -284,7 +287,7 @@ public class ConsumerEndpointTest extends TestCase {
                                         + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap11.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -303,7 +306,7 @@ public class ConsumerEndpointTest extends TestCase {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
-                    System.err.println(transformer.toString(elem));
+                    log.info(transformer.toString(elem));
                 } catch (Exception e) {
                     throw new MessagingException(e);
                 }
@@ -327,7 +330,7 @@ public class ConsumerEndpointTest extends TestCase {
                                 + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -346,7 +349,7 @@ public class ConsumerEndpointTest extends TestCase {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
-                    System.err.println(transformer.toString(elem));
+                    log.info(transformer.toString(elem));
                 } catch (Exception e) {
                     throw new MessagingException(e);
                 }
@@ -368,7 +371,7 @@ public class ConsumerEndpointTest extends TestCase {
                                 + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        System.err.println(res);
+        log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);

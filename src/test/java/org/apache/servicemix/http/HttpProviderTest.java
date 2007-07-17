@@ -43,7 +43,7 @@ import org.apache.servicemix.tck.ReceiverComponent;
 
 public class HttpProviderTest extends TestCase {
 
-    private static Log logger = LogFactory.getLog(HttpProviderTest.class);
+    private static transient Log log = LogFactory.getLog(HttpProviderTest.class);
 
     protected JBIContainer container;
 
@@ -217,8 +217,8 @@ public class HttpProviderTest extends TestCase {
         SourceTransformer sourceTransformer = new SourceTransformer();
         String reply = sourceTransformer.toString(inout.getOutMessage().getContent());
         String inputMesage = sourceTransformer.toString(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-        logger.info("Msg Sent [" + inputMesage + "]");
-        logger.info("Msg Recieved [" + reply + "]");
+        log.info("Msg Sent [" + inputMesage + "]");
+        log.info("Msg Recieved [" + reply + "]");
 
         assertEquals(inputMesage.length(), reply.length());
         assertEquals(inputMesage, reply);
@@ -227,7 +227,7 @@ public class HttpProviderTest extends TestCase {
         component.getServiceUnitManager().shutDown("provider");
         component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
 
-        logger.info("Executed in " + (t1 - t0) + "ms");
+        log.info("Executed in " + (t1 - t0) + "ms");
 
         return reply;
     }
@@ -274,7 +274,7 @@ public class HttpProviderTest extends TestCase {
         for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, true);
-            logger.info("Streaming: " + dt);
+            log.info("Streaming: " + dt);
             tearDown();
             setUp();
         }

@@ -31,6 +31,8 @@ import org.w3c.dom.Document;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -38,6 +40,7 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class WsdlRoundtripTest extends SpringTestSupport {
+    private static transient Log log = LogFactory.getLog(WsdlRoundtripTest.class);
 
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/http/wsdlroundtrip.xml");
@@ -57,7 +60,7 @@ public class WsdlRoundtripTest extends SpringTestSupport {
 
         StringWriter writer = new StringWriter();
         factory.newWSDLWriter().writeWSDL(def, writer);
-        System.err.println(writer.toString());
+        log.info(writer.toString());
         Binding b = (Binding) def.getBindings().values().iterator().next();
         BindingOperation bop = (BindingOperation) b.getBindingOperations().iterator().next();
         assertEquals(1, bop.getExtensibilityElements().size());

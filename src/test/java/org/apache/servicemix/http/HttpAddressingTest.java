@@ -40,7 +40,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpAddressingTest extends SpringTestSupport {
 
-    private static Log logger = LogFactory.getLog(HttpAddressingTest.class);
+    private static transient Log log = LogFactory.getLog(HttpAddressingTest.class);
 
     public void testOk() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -59,7 +59,7 @@ public class HttpAddressingTest extends SpringTestSupport {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         } else {
             Node node = new SourceTransformer().toDOMNode(me.getOutMessage());
-            logger.info(new SourceTransformer().toString(node));
+            log.info(new SourceTransformer().toString(node));
             assertEquals("myid", textValueOfXPath(node, "//*[local-name()='RelatesTo']"));
             assertNotNull(textValueOfXPath(node, "//*[local-name()='MessageID']"));
         }
@@ -77,7 +77,7 @@ public class HttpAddressingTest extends SpringTestSupport {
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(is, baos);
-        System.err.println(baos.toString());
+        log.info(baos.toString());
     }
 
     public void testBad() throws Exception {
