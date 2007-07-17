@@ -20,6 +20,8 @@ import javax.jbi.messaging.NormalizedMessage;
 
 import org.w3c.dom.Element;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -27,6 +29,7 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class QuartzSpringTest extends SpringTestSupport {
+    private static transient Log log = LogFactory.getLog(QuartzSpringTest.class);
 
     public void test() throws Exception {
         Receiver r1 = (Receiver) getBean("receiver1");
@@ -37,7 +40,7 @@ public class QuartzSpringTest extends SpringTestSupport {
         r3.getMessageList().assertMessagesReceived(1);
         NormalizedMessage nm = (NormalizedMessage) r3.getMessageList().flushMessages().get(0);
         Element e = new SourceTransformer().toDOMElement(nm);
-        System.err.println(new SourceTransformer().contentToString(nm));
+        log.info(new SourceTransformer().contentToString(nm));
         assertEquals("hello", e.getNodeName());
     }
     
