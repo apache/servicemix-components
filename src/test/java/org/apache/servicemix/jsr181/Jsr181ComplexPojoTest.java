@@ -39,7 +39,8 @@ import org.w3c.dom.traversal.NodeIterator;
 import junit.framework.TestCase;
 
 import com.sun.org.apache.xpath.internal.CachedXPathAPI;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -52,7 +53,7 @@ import org.apache.servicemix.tck.ReceiverComponent;
 
 public class Jsr181ComplexPojoTest extends TestCase {
 
-    //private static Log logger =  LogFactory.getLog(Jsr181ComponentTest.class);
+    private static transient Log log = LogFactory.getLog(Jsr181ComplexPojoTest.class);
     
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
@@ -147,7 +148,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         me.getInMessage().setContent(new StringSource(
                 "<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world ã</in0></twoWay>"));
         client.sendSync(me);
-        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        log.info(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
         
         // Wait all acks being processed
@@ -179,7 +180,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
         assertNotNull(me.getFault());
         Node n = transformer.toDOMNode(me.getFault());
-        System.err.println(transformer.toString(n));
+        log.info(transformer.toString(n));
         assertNotNull(textValueOfXPath(n, "/stack"));
         client.done(me);
         

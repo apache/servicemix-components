@@ -33,7 +33,8 @@ import org.w3c.dom.Document;
 import junit.framework.TestCase;
 
 import com.ibm.wsdl.Constants;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -43,7 +44,6 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.view.DotViewEndpointListener;
 import org.apache.servicemix.jbi.view.DotViewFlowListener;
 import org.apache.servicemix.jsr181.xfire.JbiProxyFactoryBean;
-
 import test.complex.OrderService;
 import test.complex.OrderServiceImpl;
 import test.complex.model.Cart;
@@ -64,9 +64,11 @@ import test.complex.model.OrderItem;
  * 
  */
 public class Jsr181ComplexTypeTest extends TestCase {
-    static final String BROKER_SERVER = "wschris";
 
+    static final String BROKER_SERVER = "wschris";
     static final int BROKER_PORT = 61216;
+
+    private static transient Log log = LogFactory.getLog(Jsr181ComplexTypeTest.class);
 
     protected JBIContainer container;
 
@@ -103,9 +105,9 @@ public class Jsr181ComplexTypeTest extends TestCase {
         component.setEndpoints(new Jsr181Endpoint[] {orderEndpoint });
         container.activateComponent(component, "JSR181Component");
 
-        System.out.println(orderEndpoint.getServiceInterface());
-        System.out.println(orderEndpoint.getInterfaceName());
-        System.out.println(orderEndpoint.getEndpoint());
+        log.info(orderEndpoint.getServiceInterface());
+        log.info(orderEndpoint.getInterfaceName());
+        log.info(orderEndpoint.getEndpoint());
 
         // Create interface based proxy
         JbiProxyFactoryBean pf = new JbiProxyFactoryBean();
@@ -139,7 +141,7 @@ public class Jsr181ComplexTypeTest extends TestCase {
         // Analyse the WSDL that is generated from the pojo service
         Document description = orderEndpoint.getDescription();
         SourceTransformer transformer = new SourceTransformer();
-        System.out.println(transformer.toString(description));
+        log.info(transformer.toString(description));
         WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
         reader.setFeature(Constants.FEATURE_VERBOSE, false);
         Definition definition = reader.readWSDL(null, description);
