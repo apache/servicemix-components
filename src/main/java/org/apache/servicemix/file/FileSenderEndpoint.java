@@ -64,9 +64,10 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
 
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
         OutputStream out = null;
+        File newFile = null;
+        boolean success = false;
         try {
             String name = marshaler.getOutputName(exchange, in);
-            File newFile = null;
             if (name == null) {
                 newFile = File.createTempFile(tempFilePrefix, tempFileSuffix, directory);
             }
@@ -81,14 +82,20 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             }
             out = new BufferedOutputStream(new FileOutputStream(newFile));
             marshaler.writeMessage(exchange, in, out, name);
-        }
-        finally {
+            success = true;
+        } finally {
             if (out != null) {
                 try {
                     out.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     logger.error("Caught exception while closing stream on error: " + e, e);
+                }
+            }
+            //cleaning up incomplete files after things went wrong
+            if (!success) {
+                logger.debug("An error occurred while writing file " + newFile.getCanonicalPath() + ", deleting the invalid file");
+                if (!newFile.delete()) {
+                    logger.warn("Unable to delete the file " + newFile.getCanonicalPath() + " after an error had occurred");
                 }
             }
         }
