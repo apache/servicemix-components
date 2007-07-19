@@ -52,7 +52,7 @@ public class FileComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[]{ FilePollerEndpoint.class, FileSenderEndpoint.class };
+        return new Class[] {FilePollerEndpoint.class, FileSenderEndpoint.class};
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
@@ -72,16 +72,13 @@ public class FileComponent extends DefaultComponent {
             if (path != null) {
                 // lets assume host really is a relative directory
                 file = host + File.separator + path;
-            }
-            else {
+            } else {
                 file = host;
             }
-        }
-        else {
+        } else {
             if (path != null) {
                 file = path;
-            }
-            else {
+            } else {
                 // must be an absolute URI
                 file = uri.getSchemeSpecificPart();
             }
@@ -92,8 +89,7 @@ public class FileComponent extends DefaultComponent {
 
         if (file != null) {
             fileEp.setDirectory(new File(file));
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("No file defined for URL: " + uri);
         }
         fileEp.activate();

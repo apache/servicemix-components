@@ -88,9 +88,6 @@
           <includes>
             <include>**/*Test.*</include>
           </includes>
-          <excludes>
-            <exclude>**/PollDirectoryTest.*</exclude>
-          </excludes>
         </configuration>
       </plugin>
     </plugins>

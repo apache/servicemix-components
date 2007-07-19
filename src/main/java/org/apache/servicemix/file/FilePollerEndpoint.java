@@ -23,6 +23,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.concurrent.locks.Lock;
+
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -39,8 +41,6 @@ import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
-
-import java.util.concurrent.locks.Lock;
 
 /**
  * A polling endpoint which looks for a file or files in a directory
@@ -180,15 +180,13 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     protected void pollFileOrDirectory(File fileOrDirectory, boolean processDir) {
         if (!fileOrDirectory.isDirectory()) {
             pollFile(fileOrDirectory); // process the file
-        }
-        else if (processDir) {
+        } else if (processDir) {
             logger.debug("Polling directory " + fileOrDirectory);
             File[] files = fileOrDirectory.listFiles(getFilter());
             for (int i = 0; i < files.length; i++) {
                 pollFileOrDirectory(files[i], isRecursive()); // self-recursion
             }
-        }
-        else {
+        } else {
             logger.debug("Skipping directory " + fileOrDirectory);
         }
     }
@@ -205,8 +203,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                     boolean unlock = true;
                     try {
                         unlock = processFileAndDelete(aFile);
-                    }
-                    finally {
+                    } finally {
                         if (unlock) {
                             lock.unlock();
                         }
@@ -236,8 +233,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                     unlock = true;
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to process file: " + aFile + ". Reason: " + e, e);
         }
         return unlock;
