@@ -68,8 +68,6 @@
           <excludes>
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
-
-            <exclude>**/HttpAddressingTest.*</exclude>
             <exclude>**/HttpTxTest.*</exclude>
             <exclude>**/HttpSecurityTest.*</exclude>
           </excludes>

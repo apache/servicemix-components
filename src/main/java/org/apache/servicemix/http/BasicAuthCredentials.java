@@ -68,22 +68,22 @@ public class BasicAuthCredentials {
     }
 
 
-	/**
+    /**
      * Applies this authentication to the given method.
      *
      * @param client the client on which to set the authentication information
      * @param exchange the message exchange to be used for evaluating the expression
      * @param message the normalized message to be used for evaluating the expression
-	 * @throws MessagingException if the correct value for username/password cannot be determined when using an expression
+     * @throws MessagingException if the correct value for username/password cannot be determined when using an expression
      */
     public void applyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message) throws MessagingException {
         AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
         Credentials credentials = 
-        	new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
-        									(String) this.password.evaluate(exchange, message));
+            new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
+                    (String) this.password.evaluate(exchange, message));
         client.getState().setCredentials(scope, credentials);
     }
-    
+
     /**
      * Applies this authentication to the given method.
      *
@@ -95,8 +95,8 @@ public class BasicAuthCredentials {
     public void applyProxyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message) throws MessagingException {
         AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
         Credentials credentials = 
-        	new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
-        									(String) this.password.evaluate(exchange, message));
+            new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
+                    (String) this.password.evaluate(exchange, message));
         client.getState().setProxyCredentials(scope, credentials);
     }
 

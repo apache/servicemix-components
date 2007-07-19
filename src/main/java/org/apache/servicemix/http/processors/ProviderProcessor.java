@@ -256,7 +256,8 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         return close;
     }
 
-    private HostConfiguration getHostConfiguration(String locationURI, MessageExchange exchange, NormalizedMessage message) throws Exception {
+    private HostConfiguration getHostConfiguration(String locationURI, MessageExchange exchange, NormalizedMessage message) 
+        throws Exception {
         HostConfiguration host;
         URI uri = new URI(locationURI, false);
         if (uri.getScheme().equals("https")) {
