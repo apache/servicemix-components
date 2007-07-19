@@ -30,12 +30,12 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implements MessageListener {
 

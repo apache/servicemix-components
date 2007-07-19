@@ -26,7 +26,7 @@ import javax.jms.Session;
 public interface JmsConsumerMarshaler {
 
     public interface JmsContext {
-        public Message getMessage();
+        Message getMessage();
     }
     
     JmsContext createContext(Message message, ComponentContext context) throws Exception;

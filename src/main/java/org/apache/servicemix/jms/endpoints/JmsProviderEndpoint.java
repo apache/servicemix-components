@@ -44,17 +44,17 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private DestinationChooser destinationChooser = new SimpleDestinationChooser();
     private JmsTemplate template;
 
-    private boolean jms102 = false;
+    private boolean jms102;
     private ConnectionFactory connectionFactory;
-    private boolean pubSubDomain = false;
+    private boolean pubSubDomain;
     private DestinationResolver destinationResolver;
     private Destination destination;
     private String destinationName;
     private boolean messageIdEnabled = true;
     private boolean messageTimestampEnabled = true;
-    private boolean pubSubNoLocal = false;
+    private boolean pubSubNoLocal;
     private long receiveTimeout = JmsTemplate.DEFAULT_RECEIVE_TIMEOUT;
-    private boolean explicitQosEnabled = false;
+    private boolean explicitQosEnabled;
     private int deliveryMode = Message.DEFAULT_DELIVERY_MODE;
     private int priority = Message.DEFAULT_PRIORITY;
     private long timeToLive = Message.DEFAULT_TIME_TO_LIVE;
@@ -298,8 +298,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                         logger.trace("Sending message to: " + template.getDefaultDestinationName() + " message: " + message);
                     }
                     return message;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     JMSException jmsEx =  new JMSException("Failed to create JMS Message: " + e);
                     jmsEx.setLinkedException(e);
                     jmsEx.initCause(e);
@@ -345,30 +344,30 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     protected JmsTemplate createTemplate() {
-        JmsTemplate template;
+        JmsTemplate tplt;
         if (isJms102()) {
-            template = new JmsTemplate102();
+            tplt = new JmsTemplate102();
         } else {
-            template = new JmsTemplate();
+            tplt = new JmsTemplate();
         }
-        template.setConnectionFactory(getConnectionFactory());
+        tplt.setConnectionFactory(getConnectionFactory());
         if (getDestination() != null) {
-            template.setDefaultDestination(getDestination());
+            tplt.setDefaultDestination(getDestination());
         } else if (getDestinationName() != null) {
-            template.setDefaultDestinationName(getDestinationName());
+            tplt.setDefaultDestinationName(getDestinationName());
         }
-        template.setDeliveryMode(getDeliveryMode());
+        tplt.setDeliveryMode(getDeliveryMode());
         if (getDestinationResolver() != null) {
-            template.setDestinationResolver(getDestinationResolver());
+            tplt.setDestinationResolver(getDestinationResolver());
         }
-        template.setExplicitQosEnabled(isExplicitQosEnabled());
-        template.setMessageIdEnabled(isMessageIdEnabled());
-        template.setMessageTimestampEnabled(isMessageTimestampEnabled());
-        template.setPriority(getPriority());
-        template.setPubSubDomain(isPubSubDomain());
-        template.setPubSubNoLocal(isPubSubNoLocal());
-        template.setTimeToLive(getTimeToLive());
-        template.setReceiveTimeout(getReceiveTimeout());
-        return template;
+        tplt.setExplicitQosEnabled(isExplicitQosEnabled());
+        tplt.setMessageIdEnabled(isMessageIdEnabled());
+        tplt.setMessageTimestampEnabled(isMessageTimestampEnabled());
+        tplt.setPriority(getPriority());
+        tplt.setPubSubDomain(isPubSubDomain());
+        tplt.setPubSubNoLocal(isPubSubNoLocal());
+        tplt.setTimeToLive(getTimeToLive());
+        tplt.setReceiveTimeout(getReceiveTimeout());
+        return tplt;
     }
 }

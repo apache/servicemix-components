@@ -32,7 +32,7 @@ public class JmsSoapProviderEndpoint extends JmsProviderEndpoint {
         return (JmsSoapProviderMarshaler) getMarshaler();
     }
     
-    public void setMarshaler(JmsProviderMarshaler marshaler) {
+    public final void setMarshaler(JmsProviderMarshaler marshaler) {
         if (marshaler instanceof JmsSoapProviderMarshaler) {
             super.setMarshaler(marshaler);
         } else {

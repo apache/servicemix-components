@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.jms;
+package org.apache.servicemix.jms;  
 
 import java.io.ByteArrayOutputStream;
 
@@ -22,7 +22,10 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Element;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -34,10 +37,7 @@ import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsSoapConsumerEndpoint;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.w3c.dom.Element;
 
 public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
@@ -70,7 +70,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setListenerType("simple");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -87,7 +87,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
         endpoint.setTransacted("jms");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
         container.start();
@@ -105,7 +105,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setListenerType("default");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
         container.start();
@@ -125,7 +125,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setDestinationName("destination");
         endpoint.setReplyDestinationName("replyDestination");
         endpoint.setMarshaler(new DefaultConsumerMarshaler(MessageExchangeSupport.IN_OUT));
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -145,7 +145,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
         endpoint.setTransacted("jms");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -164,7 +164,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setReplyDestinationName("replyDestination");
         endpoint.setTransacted("jms");
         endpoint.setMarshaler(new DefaultConsumerMarshaler(MessageExchangeSupport.IN_OUT));
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -184,7 +184,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
         endpoint.setTransacted("xa");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -200,7 +200,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setListenerType("server");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -217,7 +217,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
         endpoint.setTransacted("jms");
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
@@ -235,13 +235,14 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setDestinationName("destination");
         endpoint.setReplyDestinationName("reply");
         endpoint.setWsdl(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC.wsdl"));
-        component.setEndpoints(new JmsConsumerEndpoint[] { endpoint });
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
         MockServiceComponent mock = new MockServiceComponent();
         mock.setService(new QName("mock"));
         mock.setEndpoint("endpoint");
-        mock.setResponseXml("<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\"><jbi:part>hello</jbi:part></jbi:message>");
+        mock.setResponseXml(
+                "<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\"><jbi:part>hello</jbi:part></jbi:message>");
         container.activateComponent(mock, "mock");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

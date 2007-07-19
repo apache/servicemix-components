@@ -31,8 +31,8 @@ import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.soap.api.InterceptorChain;
-import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
+import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.api.model.Binding;
 import org.apache.servicemix.soap.bindings.soap.SoapFault;
 import org.apache.servicemix.soap.bindings.soap.SoapVersion;
@@ -98,8 +98,7 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
         msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) context.getMessage()).getText().getBytes())); 
         InterceptorChain phase = getChain(Phase.ServerIn);
         phase.doIntercept(msg);
-        MessageExchange me = msg.getContent(MessageExchange.class);
-        return me;
+        return msg.getContent(MessageExchange.class);
     }
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {

@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -7,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,21 +16,22 @@
  */
 package org.apache.servicemix.jms;
 
-import junit.framework.TestCase;
-import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.pool.PooledConnectionFactory;
-import org.apache.activemq.xbean.BrokerFactoryBean;
-import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.core.io.ClassPathResource;
-import org.jencks.GeronimoPlatformTransactionManager;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import junit.framework.TestCase;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
+import org.apache.activemq.pool.PooledConnectionFactory;
+import org.apache.activemq.xbean.BrokerFactoryBean;
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.jbi.container.JBIContainer;
+import org.jencks.GeronimoPlatformTransactionManager;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jms.core.JmsTemplate;
 
 public abstract class AbstractJmsTestSupport extends TestCase {
     

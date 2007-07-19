@@ -52,9 +52,9 @@ public class JmsComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { JmsEndpoint.class, 
-                             JmsConsumerEndpoint.class, 
-                             JmsProviderEndpoint.class };
+        return new Class[] {JmsEndpoint.class, 
+                            JmsConsumerEndpoint.class, 
+                            JmsProviderEndpoint.class};
     }
     
     /**
@@ -116,8 +116,8 @@ public class JmsComponent extends DefaultComponent {
      * @see org.apache.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] { new BaseXBeanDeployer(this, getEndpointClasses()), 
-                                                new JmsWsdl1Deployer(this) };
+        Deployer[] deployers = new Deployer[] {new BaseXBeanDeployer(this, getEndpointClasses()), 
+                                               new JmsWsdl1Deployer(this)};
         return new BaseServiceUnitManager(this, deployers);
     }
 
@@ -160,7 +160,7 @@ public class JmsComponent extends DefaultComponent {
         jmsEp.setRole(MessageExchange.Role.PROVIDER);
         URI uri = new URI(ep.getEndpointName());
         Map map = URISupport.parseQuery(uri.getQuery());
-        if( IntrospectionSupport.setProperties(jmsEp, map, "jms.") ) {
+        if (IntrospectionSupport.setProperties(jmsEp, map, "jms.")) {
             uri = URISupport.createRemainingURI(uri, map);
         }
         if (uri.getPath() != null) {

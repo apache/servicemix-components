@@ -31,13 +31,14 @@ import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.w3c.dom.Document;
 
 public class JmsXBeanDeployerTest extends AbstractJmsTestSupport {
 

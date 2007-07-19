@@ -34,7 +34,7 @@ import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
  */
 public class JmsConfiguration implements JmsConfigurationMBean {
 
-    public final static String CONFIG_FILE = "component.properties"; 
+    public static final String CONFIG_FILE = "component.properties"; 
     
     private String rootDir;
     private String componentName = "servicemix-jms";

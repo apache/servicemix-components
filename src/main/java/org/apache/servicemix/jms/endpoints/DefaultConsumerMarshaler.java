@@ -72,14 +72,12 @@ public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {
         String text = new SourceTransformer().contentToString(outMsg);
-        TextMessage msg = session.createTextMessage(text);
-        return msg;
+        return session.createTextMessage(text);
     }
 
     public Message createFault(MessageExchange exchange, Fault fault, Session session, JmsContext context) throws Exception {
         String text = new SourceTransformer().contentToString(fault);
-        TextMessage msg = session.createTextMessage(text);
-        return msg;
+        return session.createTextMessage(text);
     }
 
     public Message createError(MessageExchange exchange, Exception error, Session session, JmsContext context) throws Exception {

@@ -30,12 +30,9 @@ import com.ibm.wsdl.util.xml.DOMUtils;
 public class JmsAddressDeserializer implements ExtensionDeserializer {
 
     public ExtensibilityElement unmarshall(
-            Class parentType,
-            QName elementType,
-            Element el,
-            Definition def,
-            ExtensionRegistry extReg)
-            throws WSDLException {
+            Class parentType, QName elementType, Element el,
+            Definition def, ExtensionRegistry extReg)
+        throws WSDLException {
         
         JmsAddress jmsAddress = (JmsAddress) extReg.createExtension(parentType, elementType);
 

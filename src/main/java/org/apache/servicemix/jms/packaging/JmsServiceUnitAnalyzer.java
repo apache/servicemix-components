@@ -28,35 +28,35 @@ import org.apache.servicemix.jms.JmsEndpoint;
 
 public class JmsServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
 
-	protected List getConsumes(Endpoint endpoint) {
-		List consumesList = new ArrayList();
-		Consumes consumes;
-		if (endpoint.getRole().equals(MessageExchange.Role.CONSUMER)) {
-			consumes = new Consumes();
-			JmsEndpoint httpEndpoint = (JmsEndpoint) endpoint;
-			consumes.setEndpointName(httpEndpoint.getTargetEndpoint());
-			consumes.setInterfaceName(httpEndpoint.getTargetInterfaceName());
-			consumes.setServiceName(httpEndpoint.getTargetService());
-			if (consumes.isValid())
-				consumesList.add(consumes);
-			else {
-				consumes = new Consumes();
-				consumes.setEndpointName(endpoint.getEndpoint());
-				consumes.setInterfaceName(endpoint.getInterfaceName());
-				consumes.setServiceName(endpoint.getService());
-				consumesList.add(consumes);
-			}
-		}		
+    protected List getConsumes(Endpoint endpoint) {
+        List consumesList = new ArrayList();
+        Consumes consumes;
+        if (endpoint.getRole().equals(MessageExchange.Role.CONSUMER)) {
+            consumes = new Consumes();
+            JmsEndpoint httpEndpoint = (JmsEndpoint) endpoint;
+            consumes.setEndpointName(httpEndpoint.getTargetEndpoint());
+            consumes.setInterfaceName(httpEndpoint.getTargetInterfaceName());
+            consumes.setServiceName(httpEndpoint.getTargetService());
+            if (consumes.isValid()) {
+                consumesList.add(consumes);
+            } else {
+                consumes = new Consumes();
+                consumes.setEndpointName(endpoint.getEndpoint());
+                consumes.setInterfaceName(endpoint.getInterfaceName());
+                consumes.setServiceName(endpoint.getService());
+                consumesList.add(consumes);
+            }
+        }
 
-		return consumesList;
-	}
+        return consumesList;
+    }
 
-	protected String getXBeanFile() {
-		return "xbean.xml";
-	}
+    protected String getXBeanFile() {
+        return "xbean.xml";
+    }
 
-	protected boolean isValidEndpoint(Object bean) {
-		return (bean instanceof JmsEndpoint);
-	}
+    protected boolean isValidEndpoint(Object bean) {
+        return bean instanceof JmsEndpoint;
+    }
 
 }

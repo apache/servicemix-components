@@ -34,6 +34,8 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.AsyncBaseLifeCycle;
@@ -43,15 +45,13 @@ import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
 import org.jencks.SingletonEndpointFactory;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-
 /**
  * 
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
  */
 public class JcaConsumerProcessor extends AbstractJmsProcessor implements MessageListener {
 
-    private static final Log log = LogFactory.getLog(JcaConsumerProcessor.class);
+    private static final Log LOG = LogFactory.getLog(JcaConsumerProcessor.class);
 
     protected Map pendingMessages = new ConcurrentHashMap();
     protected DeliveryChannel channel;
@@ -103,12 +103,12 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
 
     public void onMessage(final Message message) {
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Received jms message " + message);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Received jms message " + message);
             }
             Context context = createContext();
             MessageExchange exchange = toNMS(message, context);
-            if (exchange instanceof InOnly == false) {
+            if (!(exchange instanceof InOnly)) {
                 throw new UnsupportedOperationException("JCA consumer endpoints can only use InOnly MEP");
             }
             exchange.setProperty(MessageExchange.JTA_TRANSACTION_PROPERTY_NAME, transactionManager.getTransaction());
@@ -121,7 +121,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                 lf.sendConsumerExchange(exchange, JcaConsumerProcessor.this.endpoint);
             }
         } catch (Throwable e) {
-            log.error("Error while handling jms message", e);
+            LOG.error("Error while handling jms message", e);
         }
     }
 
@@ -135,11 +135,12 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                 return;
             } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 if (endpoint.isRollbackOnError()) {
-                    TransactionManager tm = (TransactionManager) endpoint.getServiceUnit().getComponent().getComponentContext().getTransactionManager();
+                    TransactionManager tm = 
+                        (TransactionManager) endpoint.getServiceUnit().getComponent().getComponentContext().getTransactionManager();
                     tm.setRollbackOnly();
                     return;
                 } else if (exchange instanceof InOnly) {
-                    log.info("Exchange in error: " + exchange, exchange.getError());
+                    LOG.info("Exchange in error: " + exchange, exchange.getError());
                     return;
                 } else {
                     connection = connectionFactory.createConnection();

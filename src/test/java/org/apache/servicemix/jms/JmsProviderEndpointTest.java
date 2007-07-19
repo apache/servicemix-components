@@ -33,7 +33,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         endpoint.setEndpoint("endpoint");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
-        component.setEndpoints(new JmsProviderEndpoint[] { endpoint });
+        component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
         InOnly me = client.createInOnlyExchange();

@@ -39,11 +39,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class MultiplexingProviderProcessor extends AbstractJmsProcessor implements MessageListener {
 
@@ -127,8 +127,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                         } else {
                             throw new IllegalArgumentException("JMS message should be a text or bytes message");
                         }
-                        String contentType = message.getStringProperty(CONTENT_TYPE);
-                        SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
+                        SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, message.getStringProperty(CONTENT_TYPE));
                         NormalizedMessage out = exchange.createMessage();
                         soapHelper.getJBIMarshaler().toNMS(out, soap);
                         ((InOut) exchange).setOutMessage(out);

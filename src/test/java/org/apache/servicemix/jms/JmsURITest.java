@@ -24,16 +24,17 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 
 public class JmsURITest extends AbstractJmsTestSupport {
 
@@ -49,7 +50,7 @@ public class JmsURITest extends AbstractJmsTestSupport {
         ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
         ep.setJmsProviderDestinationName("foo.bar.myqueue");
         ep.setDestinationStyle(AbstractJmsProcessor.STYLE_QUEUE);
-        jms.setEndpoints(new JmsEndpoint[] { ep });
+        jms.setEndpoints(new JmsEndpoint[] {ep});
         container.activateComponent(jms, "servicemix-jms");
 
         ReceiverComponent receiver = new ReceiverComponent();

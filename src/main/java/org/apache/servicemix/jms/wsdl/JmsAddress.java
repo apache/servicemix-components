@@ -143,15 +143,15 @@ public class JmsAddress implements ExtensibilityElement, Serializable {
     }
     
     public String toString() {
-        return "JmsAddress[" + 
-                    "required=" + required + ", " +
-                    "elementType=" + elementType + ", " +
-                    "initialContextFactory=" + initialContextFactory + ", " +
-                    "jndiProviderURL=" + jndiProviderURL + ", " +
-                    "destinationStyle=" + destinationStyle + ", " +
-                    "jndiConnectionFactoryName=" + jndiConnectionFactoryName + ", " +
-                    "jndiDestinationName=" + jndiDestinationName + ", " +
-                    "jmsProviderDestinationName=" + jmsProviderDestinationName + "]";
+        return "JmsAddress["
+                    + "required=" + required + ", "
+                    + "elementType=" + elementType + ", "
+                    + "initialContextFactory=" + initialContextFactory + ", "
+                    + "jndiProviderURL=" + jndiProviderURL + ", "
+                    + "destinationStyle=" + destinationStyle + ", "
+                    + "jndiConnectionFactoryName=" + jndiConnectionFactoryName + ", "
+                    + "jndiDestinationName=" + jndiDestinationName + ", "
+                    + "jmsProviderDestinationName=" + jmsProviderDestinationName + "]";
     }
     
     

@@ -23,13 +23,15 @@ import java.net.URL;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.namespace.QName;
-import javax.xml.transform.Source;
-import javax.jms.Message;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.jms.JmsReceiverComponent;
 import org.apache.servicemix.components.jms.JmsServiceComponent;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -38,19 +40,17 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.core.MessageCreator;
 
 public class JMSComponentTest extends AbstractJmsTestSupport {
 
-    private static Log logger =  LogFactory.getLog(JMSComponentTest.class);
-    
+    private static Log logger = LogFactory.getLog(JMSComponentTest.class);
+
     public void testProviderInOnly() throws Exception {
         // JMS Component
         JmsComponent component = new JmsComponent();
         container.activateComponent(component, "JMSComponent");
-        
+
         // Add a jms receiver
         JmsReceiverComponent jmsReceiver = new JmsReceiverComponent();
         jmsTemplate.setDefaultDestinationName("queue/A");
@@ -59,7 +59,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         ActivationSpec asJmsReceiver = new ActivationSpec("jmsReceiver", jmsReceiver);
         asJmsReceiver.setDestinationService(new QName("test", "receiver"));
         container.activateComponent(asJmsReceiver);
-        
+
         // Add a receiver component
         Receiver receiver = new ReceiverComponent();
         ActivationSpec asReceiver = new ActivationSpec("receiver", receiver);
@@ -72,22 +72,22 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
-        
+
         // Call it
         InOnly in = client.createInOnlyExchange();
         in.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
         in.getInMessage().setContent(new StringSource("<hello>world</hello>"));
         client.send(in);
-        
+
         // Check we received the message
         receiver.getMessageList().assertMessagesReceived(1);
     }
-    
+
     public void testProviderInOut() throws Exception {
-       // JMS Component
+        // JMS Component
         JmsComponent component = new JmsComponent();
         container.activateComponent(component, "JMSComponent");
-        
+
         // Add a jms receiver
         JmsServiceComponent jmsReceiver = new JmsServiceComponent();
         jmsTemplate.setDefaultDestinationName("queue/A");
@@ -96,7 +96,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         ActivationSpec asJmsReceiver = new ActivationSpec("jmsReceiver", jmsReceiver);
         asJmsReceiver.setDestinationService(new QName("test", "receiver"));
         container.activateComponent(asJmsReceiver);
-        
+
         // Add an echo component
         EchoComponent echo = new EchoComponent();
         ActivationSpec asEcho = new ActivationSpec("receiver", echo);
@@ -109,7 +109,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
-        
+
         // Call it
         InOut inout = client.createInOutExchange();
         inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
@@ -122,7 +122,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         assertNotNull(src);
         logger.info(new SourceTransformer().toString(src));
     }
-    
+
     public void testConsumerInOut() throws Exception {
         // JMS Component
         JmsComponent component = new JmsComponent();
@@ -133,14 +133,14 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         ActivationSpec asEcho = new ActivationSpec("receiver", echo);
         asEcho.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
         container.activateComponent(asEcho);
-        
+
         // Deploy Consumer SU
         URL url = getClass().getClassLoader().getResource("consumer/jms.wsdl");
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
-        
+
         // Send test message
         jmsTemplate.setDefaultDestinationName("queue/A");
         jmsTemplate.afterPropertiesSet();
@@ -153,41 +153,38 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         });
 
         // Receive echo message
-        TextMessage reply = (TextMessage)jmsTemplate.receive("queue/B");
+        TextMessage reply = (TextMessage) jmsTemplate.receive("queue/B");
         assertNotNull(reply);
         logger.info(reply.getText());
     }
 
-    
     public void testProviderConsumerInOut() throws Exception {
         // JMS Component
         JmsComponent component = new JmsComponent();
         container.activateComponent(component, "JMSComponent");
-        
+
         // Add an echo component
         EchoComponent echo = new EchoComponent();
         ActivationSpec asEcho = new ActivationSpec("receiver", echo);
         asEcho.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
         container.activateComponent(asEcho);
-                
+
         // Deploy Provider SU
-        {
-            URL url = getClass().getClassLoader().getResource("provider/jms.wsdl");
-            File path = new File(new URI(url.toString()));
-            path = path.getParentFile();
-            component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
-            component.getServiceUnitManager().start("provider");
-        }
-        
+
+        URL url = getClass().getClassLoader().getResource("provider/jms.wsdl");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().start("provider");
+
         // Deploy Consumer SU
-        {
-            URL url = getClass().getClassLoader().getResource("consumer/jms.wsdl");
-            File path = new File(new URI(url.toString()));
-            path = path.getParentFile();
-            component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
-            component.getServiceUnitManager().start("consumer");
-        }
-        
+
+        url = getClass().getClassLoader().getResource("consumer/jms.wsdl");
+        path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
+        component.getServiceUnitManager().start("consumer");
+
         // Call it
         InOut inout = client.createInOutExchange();
         inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
@@ -200,5 +197,5 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         assertNotNull(src);
         logger.info(new SourceTransformer().toString(src));
     }
-    
+
 }

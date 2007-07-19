@@ -33,7 +33,7 @@ public class JmsStandardTest extends AbstractJmsTestSupport {
         ep.setRoleAsString("provider");
         ep.setService(new QName("service"));
         ep.setEndpoint("endpoint");
-        jms.setEndpoints(new JmsEndpoint[] { ep });
+        jms.setEndpoints(new JmsEndpoint[] {ep});
         container.activateComponent(jms, "jms");
     }
 }

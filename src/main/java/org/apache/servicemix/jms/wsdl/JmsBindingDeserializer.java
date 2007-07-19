@@ -28,12 +28,9 @@ import org.w3c.dom.Element;
 public class JmsBindingDeserializer implements ExtensionDeserializer {
 
     public ExtensibilityElement unmarshall(
-            Class parentType,
-            QName elementType,
-            Element el,
-            Definition def,
-            ExtensionRegistry extReg)
-            throws WSDLException {
+            Class parentType, QName elementType, Element el,
+            Definition def, ExtensionRegistry extReg)
+        throws WSDLException {
         
         JmsBinding jmsBinding = (JmsBinding) extReg.createExtension(parentType, elementType);
 

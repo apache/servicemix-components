@@ -21,7 +21,7 @@ import javax.xml.namespace.QName;
 
 import com.ibm.wsdl.Constants;
 
-public class JmsExtension {
+public final class JmsExtension {
 
     public static final String NS_URI_JMS = "http://servicemix.org/wsdl/jms/";
 
@@ -38,9 +38,12 @@ public class JmsExtension {
     public static final String JMS_PROVIDER_DESTINATION_NAME = "jmsProviderDestinationName";
     
     public static final String WSDL2_NS = "http://www.w3.org/2004/08/wsdl/";
+    
+    private JmsExtension() {
+    }
 
     public static void register(ExtensionRegistry registry) {
-        registry.registerDeserializer(            
+        registry.registerDeserializer(
                 javax.wsdl.Port.class,
                 Q_ELEM_JMS_ADDRESS,
                 new JmsAddressDeserializer());
@@ -48,7 +51,7 @@ public class JmsExtension {
                 javax.wsdl.Port.class,
                 Q_ELEM_JMS_ADDRESS,
                 JmsAddress.class);
-        registry.registerDeserializer(            
+        registry.registerDeserializer(
                 javax.wsdl.Binding.class,
                 Q_ELEM_JMS_BINDING,
                 new JmsBindingDeserializer());

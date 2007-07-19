@@ -51,7 +51,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private boolean synchronous = true;
     private DestinationChooser destinationChooser;
     private DestinationResolver destinationResolver = new DynamicDestinationResolver();
-    private boolean pubSubDomain = false;
+    private boolean pubSubDomain;
     private ConnectionFactory connectionFactory;
     private JmsTemplate template;
 
@@ -59,7 +59,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private Boolean useMessageIdInResponse;
     private Destination replyDestination;
     private String replyDestinationName;
-    private boolean replyExplicitQosEnabled = false;
+    private boolean replyExplicitQosEnabled;
     private int replyDeliveryMode = Message.DEFAULT_DELIVERY_MODE;
     private int replyPriority = Message.DEFAULT_PRIORITY;
     private long replyTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
@@ -417,7 +417,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         }
     }
 
-    protected Destination getReplyDestination(MessageExchange exchange, Object message, Session session, JmsContext context) throws JMSException {
+    protected Destination getReplyDestination(
+            MessageExchange exchange, Object message, Session session, JmsContext context) throws JMSException {
         // If a JMS ReplyTo property is set, use it
         if (context.getMessage().getJMSReplyTo() != null) {
             return context.getMessage().getJMSReplyTo();

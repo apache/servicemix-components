@@ -21,58 +21,69 @@ public interface JmsConfigurationMBean {
     /**
      * @return Returns the password.
      */
-    public String getPassword();
+    String getPassword();
+    
     /**
      * @param password The password to set.
      */
-    public void setPassword(String password);
+    void setPassword(String password);
+    
     /**
      * @return Returns the userName.
      */
-    public String getUserName();
+    String getUserName();
+    
     /**
      * @param userName The userName to set.
      */
-    public void setUserName(String userName);
+    void setUserName(String userName);
+    
     /**
      * @return Returns the jndiConnectionFactoryName.
      */
-    public String getJndiConnectionFactoryName();
+    String getJndiConnectionFactoryName();
+    
     /**
      * @param jndiConnectionFactoryName The jndiName to set.
      */
-    public void setJndiConnectionFactoryName(String jndiConnectionFactoryName);
+    void setJndiConnectionFactoryName(String jndiConnectionFactoryName);
+    
     /**
      * @return Returns the jndiInitialContextFactory.
      */
-    public String getJndiInitialContextFactory();
+    String getJndiInitialContextFactory();
+    
     /**
      * @param jndiInitialContextFactory The jndiInitialContextFactory to set.
      */
-    public void setJndiInitialContextFactory(String jndiInitialContextFactory);
+    void setJndiInitialContextFactory(String jndiInitialContextFactory);
+    
     /**
      * @return Returns the jndiProviderUrl.
      */
-    public String getJndiProviderUrl();
+    String getJndiProviderUrl();
+    
     /**
      * @param jndiProviderUrl The jndiProviderUrl to set.
      */
-    public void setJndiProviderUrl(String jndiProviderUrl);
+    void setJndiProviderUrl(String jndiProviderUrl);
+    
     /**
      * @return Returns the processName.
      */
-    public String getProcessorName();
+    String getProcessorName();
+    
     /**
      * @param processorName The processorName to set.
      */
-    public void setProcessorName(String processorName);
+    void setProcessorName(String processorName);
 
-    public String getKeystoreManagerName();
+    String getKeystoreManagerName();
     
-    public void setKeystoreManagerName(String name);
+    void setKeystoreManagerName(String name);
     
-    public String getAuthenticationServiceName();
+    String getAuthenticationServiceName();
     
-    public void setAuthenticationServiceName(String name);
+    void setAuthenticationServiceName(String name);
     
 }

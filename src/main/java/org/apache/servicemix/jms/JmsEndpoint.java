@@ -336,8 +336,8 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
             props.load(in);
             String className = props.getProperty(type);
             Class cl = loadClass(className);
-            Constructor cns = cl.getConstructor(new Class[] { getClass() });
-            return (ExchangeProcessor) cns.newInstance(new Object[] { this });
+            Constructor cns = cl.getConstructor(new Class[] {getClass()});
+            return (ExchangeProcessor) cns.newInstance(new Object[] {this});
         } catch (Exception e) {
             throw new RuntimeException("Could not create processor of type " + type + " and name " + processorName, e);
         }
@@ -352,8 +352,8 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
         if (contextClassLoader != null) {
             try {
                 return contextClassLoader.loadClass(name);
-            }
-            catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
+                //thread context class loader didn't work out
             }
         }
         return getClass().getClassLoader().loadClass(name);
@@ -433,10 +433,10 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     public String toString() {
-        return "JMSEndpoint[service: " + service + ", " + 
-                "endpoint: " + endpoint + ", " + 
-                "address: " + jndiDestinationName + "(" + destinationStyle + "), " + 
-                "soap: " + soap + "]";
+        return "JMSEndpoint[service: " + service + ", " 
+                + "endpoint: " + endpoint + ", " 
+                + "address: " + jndiDestinationName + "(" + destinationStyle + "), " 
+                + "soap: " + soap + "]";
     }
 
     /**

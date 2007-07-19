@@ -74,8 +74,8 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
-        if (exchange instanceof InOnly == false && 
-            exchange instanceof RobustInOnly == false) {
+        if (!(exchange instanceof InOnly 
+            || exchange instanceof RobustInOnly)) {
             exchange.setError(new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             channel.send(exchange);
             return;

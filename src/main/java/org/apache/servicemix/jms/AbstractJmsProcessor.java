@@ -20,9 +20,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -103,13 +103,13 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     }
 
     protected InitialContext getInitialContext() throws NamingException {
-        Hashtable props = new Hashtable();
+        Properties props = new Properties();
         if (endpoint.getInitialContextFactory() != null && endpoint.getJndiProviderURL() != null) {
             props.put(InitialContext.INITIAL_CONTEXT_FACTORY, endpoint.getInitialContextFactory());
             props.put(InitialContext.PROVIDER_URL, endpoint.getJndiProviderURL());
             return new InitialContext(props);
-        } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null && 
-                   endpoint.getConfiguration().getJndiProviderUrl() != null) {
+        } else if (endpoint.getConfiguration().getJndiInitialContextFactory() != null 
+                   && endpoint.getConfiguration().getJndiProviderUrl() != null) {
             props.put(InitialContext.INITIAL_CONTEXT_FACTORY, endpoint.getConfiguration().getJndiInitialContextFactory());
             props.put(InitialContext.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
             return new InitialContext(props);
@@ -224,13 +224,17 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
 
     private static boolean isJavaIdentifier(String s) {
         int n = s.length();
-        if (n == 0)
+        if (n == 0) {
             return false;
-        if (!Character.isJavaIdentifierStart(s.charAt(0)))
+        }
+        if (!Character.isJavaIdentifierStart(s.charAt(0))) {
             return false;
-        for (int i = 1; i < n; i++)
-            if (!Character.isJavaIdentifierPart(s.charAt(i)))
+        }
+        for (int i = 1; i < n; i++) {
+            if (!Character.isJavaIdentifierPart(s.charAt(i))) {
                 return false;
+            }
+        }
         return true;
     }
     

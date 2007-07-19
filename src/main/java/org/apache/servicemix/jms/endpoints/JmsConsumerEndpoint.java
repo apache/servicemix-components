@@ -61,7 +61,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     
     // type of listener
     private String listenerType = LISTENER_TYPE_DEFAULT;
-    private boolean jms102 = false;
+    private boolean jms102;
     private String transacted = TRANSACTED_NONE;
     
     // Standard jms properties
@@ -75,7 +75,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     private boolean subscriptionDurable;
     
     // simple and default listener properties
-    private boolean pubSubNoLocal = false;
+    private boolean pubSubNoLocal;
     private int concurrentConsumers = 1;
     
     // default listener properties
@@ -339,7 +339,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
 
     /**
      * @param serverSessionFactory the serverSessionFactory to set
-     * @see org.springframework.jms.listener.serversession.ServerSessionMessageListenerContainer#setServerSessionFactory(ServerSessionFactory)
+     * @see ServerSessionMessageListenerContainer#setServerSessionFactory(ServerSessionFactory)
      */
     public void setServerSessionFactory(ServerSessionFactory serverSessionFactory) {
         this.serverSessionFactory = serverSessionFactory;
@@ -409,18 +409,18 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
         if (destination == null && destinationName == null) {
             throw new DeploymentException("destination or destinationName is required");
         }
-        if (!LISTENER_TYPE_DEFAULT.equals(listenerType) &&
-            !LISTENER_TYPE_SIMPLE.equals(listenerType) &&
-            !LISTENER_TYPE_SERVER.equals(listenerType)) {
+        if (!LISTENER_TYPE_DEFAULT.equals(listenerType)
+            && !LISTENER_TYPE_SIMPLE.equals(listenerType)
+            && !LISTENER_TYPE_SERVER.equals(listenerType)) {
             throw new DeploymentException("listenerType must be default, simple or server");
         }
-        if (TRANSACTED_XA.equals(transacted) &&
-            !LISTENER_TYPE_DEFAULT.equals(listenerType)) {
+        if (TRANSACTED_XA.equals(transacted)
+            && !LISTENER_TYPE_DEFAULT.equals(listenerType)) {
             throw new DeploymentException("XA transactions are only supported on default listener");
         }
-        if (!TRANSACTED_NONE.equals(transacted) &&
-            !TRANSACTED_JMS.equals(transacted) &&
-            !TRANSACTED_XA.equals(transacted)) {
+        if (!TRANSACTED_NONE.equals(transacted)
+            && !TRANSACTED_JMS.equals(transacted)
+            && !TRANSACTED_XA.equals(transacted)) {
             throw new DeploymentException("transacted must be none, jms or xa");
         }
     }
@@ -428,62 +428,11 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     protected AbstractMessageListenerContainer createListenerContainer() {
         final AbstractMessageListenerContainer container;
         if (LISTENER_TYPE_DEFAULT.equals(listenerType)) {
-            final DefaultMessageListenerContainer cont;
-            if (jms102) {
-                cont = new DefaultMessageListenerContainer102();
-            } else {
-                cont = new DefaultMessageListenerContainer();
-            }
-            cont.setCacheLevel(cacheLevel);
-            cont.setConcurrentConsumers(concurrentConsumers);
-            cont.setMaxMessagesPerTask(maxMessagesPerTask);
-            cont.setPubSubNoLocal(pubSubNoLocal);
-            cont.setReceiveTimeout(receiveTimeout);
-            cont.setRecoveryInterval(recoveryInterval);
-            if (TRANSACTED_XA.equals(transacted)) {
-                TransactionManager tm = (TransactionManager) getContext().getTransactionManager();
-                if (tm == null) {
-                    throw new IllegalStateException("No TransactionManager available");
-                } else if (tm instanceof PlatformTransactionManager) {
-                    cont.setTransactionManager((PlatformTransactionManager) tm);
-                } else {
-                    cont.setTransactionManager(new JtaTransactionManager(tm));
-                }
-            } else if (TRANSACTED_JMS.equals(transacted)) {
-                if (jms102) {
-                    cont.setTransactionManager(new JmsTransactionManager102(getConnectionFactory(), isPubSubDomain()));
-                } else {
-                    cont.setTransactionManager(new JmsTransactionManager(getConnectionFactory()));
-                }
-            }
-            container = cont;
+            container = createDefaultMessageListenerContainer();
         } else if (LISTENER_TYPE_SIMPLE.equals(listenerType)) {
-            final SimpleMessageListenerContainer cont;
-            if (jms102) {
-                cont = new SimpleMessageListenerContainer102();
-            } else {
-                cont = new SimpleMessageListenerContainer();
-            }
-            cont.setConcurrentConsumers(concurrentConsumers);
-            cont.setPubSubNoLocal(pubSubNoLocal);
-            cont.setTaskExecutor(null); // TODO: value ?
-            if (TRANSACTED_JMS.equals(transacted)) {
-                cont.setSessionTransacted(true);
-            }
-            container = cont;
+            container = createSimpleMessageListenerContainer();
         } else if (LISTENER_TYPE_SERVER.equals(listenerType)) {
-            final ServerSessionMessageListenerContainer cont;
-            if (jms102) {
-                cont = new ServerSessionMessageListenerContainer102();
-            } else {
-                cont = new ServerSessionMessageListenerContainer();
-            }
-            cont.setMaxMessagesPerTask(maxMessagesPerTask > 0 ? maxMessagesPerTask : 1);
-            cont.setServerSessionFactory(serverSessionFactory);
-            if (TRANSACTED_JMS.equals(transacted)) {
-                cont.setSessionTransacted(true);
-            }
-            container = cont;
+            container = createServerSessionMessageListenerContainer();
         } else {
             throw new IllegalStateException();
         }
@@ -511,6 +460,69 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
         container.setSessionAcknowledgeMode(sessionAcknowledgeMode);
         container.setSubscriptionDurable(subscriptionDurable);
         return container;
+    }
+
+    private AbstractMessageListenerContainer createServerSessionMessageListenerContainer() {
+        final ServerSessionMessageListenerContainer cont;
+        if (jms102) {
+            cont = new ServerSessionMessageListenerContainer102();
+        } else {
+            cont = new ServerSessionMessageListenerContainer();
+        }
+        cont.setMaxMessagesPerTask(maxMessagesPerTask > 0 ? maxMessagesPerTask : 1);
+        cont.setServerSessionFactory(serverSessionFactory);
+        if (TRANSACTED_JMS.equals(transacted)) {
+            cont.setSessionTransacted(true);
+        }
+        return cont;
+    }
+
+    private AbstractMessageListenerContainer createSimpleMessageListenerContainer() {
+        final SimpleMessageListenerContainer cont;
+        if (jms102) {
+            cont = new SimpleMessageListenerContainer102();
+        } else {
+            cont = new SimpleMessageListenerContainer();
+        }
+        cont.setConcurrentConsumers(concurrentConsumers);
+        cont.setPubSubNoLocal(pubSubNoLocal);
+        cont.setTaskExecutor(null); // TODO: value ?
+        if (TRANSACTED_JMS.equals(transacted)) {
+            cont.setSessionTransacted(true);
+        }
+        return cont;
+    }
+
+    private AbstractMessageListenerContainer createDefaultMessageListenerContainer() {
+        final DefaultMessageListenerContainer cont;
+        if (jms102) {
+            cont = new DefaultMessageListenerContainer102();
+        } else {
+            cont = new DefaultMessageListenerContainer();
+        }
+        cont.setCacheLevel(cacheLevel);
+        cont.setConcurrentConsumers(concurrentConsumers);
+        cont.setMaxMessagesPerTask(maxMessagesPerTask);
+        cont.setPubSubNoLocal(pubSubNoLocal);
+        cont.setReceiveTimeout(receiveTimeout);
+        cont.setRecoveryInterval(recoveryInterval);
+        if (TRANSACTED_XA.equals(transacted)) {
+            TransactionManager tm = (TransactionManager) getContext().getTransactionManager();
+            if (tm == null) {
+                throw new IllegalStateException("No TransactionManager available");
+            } else if (tm instanceof PlatformTransactionManager) {
+                cont.setTransactionManager((PlatformTransactionManager) tm);
+            } else {
+                cont.setTransactionManager(new JtaTransactionManager(tm));
+            }
+        } else if (TRANSACTED_JMS.equals(transacted)) {
+            if (jms102) {
+                cont.setTransactionManager(new JmsTransactionManager102(getConnectionFactory(), isPubSubDomain()));
+            } else {
+                cont.setTransactionManager(new JmsTransactionManager(getConnectionFactory()));
+            }
+        }
+        return cont;
     }
 
 }
