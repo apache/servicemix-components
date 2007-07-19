@@ -24,7 +24,8 @@ import javax.jbi.messaging.MessagingException;
  * @version $Revision: 426415 $
  */
 public class ConnectionRefusedException extends MessagingException {
-    private int code;
+    
+    private final int code;
 
     public ConnectionRefusedException(int code) {
         super("Connection refused with return code: " + code);

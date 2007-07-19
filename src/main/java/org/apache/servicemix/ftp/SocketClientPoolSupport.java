@@ -16,16 +16,16 @@
  */
 package org.apache.servicemix.ftp;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.DisposableBean;
-import org.apache.commons.pool.PoolableObjectFactory;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.commons.net.SocketClient;
-
-import javax.jbi.JBIException;
-import java.net.InetAddress;
 import java.io.IOException;
+import java.net.InetAddress;
+import javax.jbi.JBIException;
+
+import org.apache.commons.net.SocketClient;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * A pool of {@link org.apache.commons.net.SocketClient} instances from the
@@ -148,26 +148,20 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         if (host != null) {
             if (localAddress != null) {
                 client.connect(host, port, localAddress, localPort);
-            }
-            else if (port >= 0) {
+            } else if (port >= 0) {
                 client.connect(host, port);
-            }
-            else {
+            } else {
                 client.connect(host);
             }
-        }
-        else if (address != null) {
+        } else if (address != null) {
             if (localAddress != null) {
                 client.connect(address, port, localAddress, localPort);
-            }
-            else if (port >= 0) {
+            } else if (port >= 0) {
                 client.connect(address, port);
-            }
-            else {
+            } else {
                 client.connect(address);
             }
-        }
-        else {
+        } else {
             throw new JBIException("You must configure the address or host property");
         }
     }

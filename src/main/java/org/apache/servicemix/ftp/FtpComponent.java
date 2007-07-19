@@ -50,7 +50,7 @@ public class FtpComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { FtpPollerEndpoint.class, FtpSenderEndpoint.class };
+        return new Class[] {FtpPollerEndpoint.class, FtpSenderEndpoint.class};
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {

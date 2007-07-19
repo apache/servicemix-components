@@ -42,7 +42,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     private FTPClientPool clientPool;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private String uniqueFileName = "ServiceMix";
-    private boolean overwrite = false;
+    private boolean overwrite;
     private URI uri;
     private String uploadSuffix;
 
@@ -161,12 +161,10 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
             if (name == null) {
                 if (uniqueFileName != null) {
                     out = client.storeUniqueFileStream(uniqueFileName);
-                }
-                else {
+                } else {
                     out = client.storeUniqueFileStream();
                 }
-            }
-            else {
+            } else {
                 if (client.listFiles(name).length > 0) {
                     if (overwrite) {
                         client.deleteFile(name);
@@ -182,19 +180,15 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                 throw new IOException("No output stream available for output name: " + uploadName + ". Maybe the file already exists?");
             }
             marshaler.writeMessage(exchange, message, out, uploadName);
-        }
-        finally {
+        } finally {
             if (out != null) {
                 try {
                     out.close();
                     client.completePendingCommand();
-                    if (name != null && !name.equals(uploadName)) {
-                        if (!client.rename(uploadName, name)) {
-                            throw new IOException("File " + uploadName + " could not be renamed to " + name);
-                        }
+                    if (name != null && !name.equals(uploadName) && !client.rename(uploadName, name)) {
+                        throw new IOException("File " + uploadName + " could not be renamed to " + name);
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     logger.error("Caught exception while closing stream on error: " + e, e);
                 }
             }
@@ -211,8 +205,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     protected FTPClient borrowClient() throws JBIException {
         try {
             return (FTPClient) getClientPool().borrowClient();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new JBIException(e);
         }
     }
@@ -221,8 +214,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         if (client != null) {
             try {
                 getClientPool().returnClient(client);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 logger.error("Failed to return client to pool: " + e, e);
             }
         }

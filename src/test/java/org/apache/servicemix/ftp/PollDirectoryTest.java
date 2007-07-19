@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -7,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,11 +32,11 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class PollDirectoryTest extends SpringTestSupport {
+    private static final int NUMBER = 100;
+    private static final int SIZE = 100;
+
     protected String directoryName = "target/pollDirectory";
     protected String dynamicURI = "file:" + directoryName;
-
-    private int NUMBER = 100;
-    private int SIZE = 100;
 
     public void testSendToWriterSoItCanBePolled() throws Exception {
         // now lets make a request on this endpoint
@@ -68,12 +67,10 @@ public class PollDirectoryTest extends SpringTestSupport {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            }
-            else {
+            } else {
                 fail("Received ERROR status");
             }
-        }
-        else if (me.getFault() != null) {
+        } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }

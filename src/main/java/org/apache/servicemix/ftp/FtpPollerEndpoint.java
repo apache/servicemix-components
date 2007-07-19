@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -7,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,7 +54,7 @@ import org.apache.servicemix.locks.impl.SimpleLockManager;
 public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointType {
 
     private FTPClientPool clientPool;
-    private FileFilter filter;
+    private FileFilter filter;  
     private boolean deleteFile = true;
     private boolean recursive = true;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
@@ -200,8 +199,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         try {
             logger.debug("Polling directory " + fileOrDirectory);
             pollFileOrDirectory(ftp, fileOrDirectory, isRecursive());
-        }
-        finally {
+        } finally {
             returnClient(ftp);
         }
     }
@@ -210,7 +208,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         FTPFile[] files = ftp.listFiles(fileOrDirectory);
         for (int i = 0; i < files.length; i++) {
             String name = files[i].getName();
-            if (name.equals(".") || name.equals("..")) {
+            if (".".equals(name) || "..".equals(name)) {
                 continue; // ignore "." and ".."
             }
             String file = fileOrDirectory + "/" + name;
@@ -244,8 +242,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                     boolean unlock = true;
                     try {
                         unlock = processFileAndDelete(file);
-                    }
-                    finally {
+                    } finally {
                         if (unlock) {
                             lock.unlock();
                         }
@@ -274,8 +271,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                 }
                 unlock = true;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to process file: " + file + ". Reason: " + e, e);
         } finally {
             returnClient(ftp);
@@ -320,8 +316,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     protected FTPClient borrowClient() throws JBIException {
         try {
             return (FTPClient) getClientPool().borrowClient();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new JBIException(e);
         }
     }
@@ -330,8 +325,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         if (client != null) {
             try {
                 getClientPool().returnClient(client);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 logger.error("Failed to return client to pool: " + e, e);
             }
         }

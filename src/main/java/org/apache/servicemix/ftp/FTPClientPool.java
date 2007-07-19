@@ -16,13 +16,13 @@
  */
 package org.apache.servicemix.ftp;
 
-import org.apache.commons.net.ftp.FTPClientConfig;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.SocketClient;
-
 import java.io.IOException;
+
+import org.apache.commons.net.SocketClient;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPReply;
 
 /**
  * A pool of FTP clients for
@@ -39,7 +39,7 @@ public class FTPClientPool extends SocketClientPoolSupport {
     private String username;
     private String password;
     private boolean binaryMode = true;
-    private boolean passiveMode = false;
+    private boolean passiveMode;
     private FTPClientConfig config;
     private String controlEncoding = DEFAULT_CONTROL_ENCODING;
     private int dataTimeout = DEFAULT_DATA_TIMEOUT;
@@ -48,8 +48,7 @@ public class FTPClientPool extends SocketClientPoolSupport {
         FTPClient client = (FTPClient) object;
         try {
             return client.sendNoOp();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Failed to validate client: " + e, e);
         }
     }

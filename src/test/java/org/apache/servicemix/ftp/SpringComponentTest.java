@@ -16,23 +16,23 @@
  */
 package org.apache.servicemix.ftp;
 
-import org.apache.servicemix.tck.SpringTestSupport;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
+
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
-import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.xml.namespace.QName;
-
 public class SpringComponentTest extends SpringTestSupport {
 
-    private int NUMBER = 10;
+    private static final int NUMBER = 10;
 
     public void testSendingToStaticEndpoint() throws Exception {
         for (int i = 0; i < NUMBER; i++) {
