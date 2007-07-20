@@ -24,7 +24,7 @@ import org.jivesoftware.smack.packet.Packet;
  * @version $Revision: 426415 $
  */
 public class XMPPListenerException extends RuntimeException {
-    private Packet packet;
+    private final Packet packet;
 
     public XMPPListenerException(Exception cause, Packet packet) {
         super(cause.getMessage() + ". Was processing packet: " + packet, cause);

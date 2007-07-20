@@ -73,8 +73,7 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
         if (connection == null) {
             if (port > 0) {
                 connection = new XMPPConnection(host, port);
-            }
-            else {
+            } else {
                 connection = new XMPPConnection(host);
             }
         }
@@ -92,12 +91,10 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
                 }
                 if (resource != null) {
                     connection.login(user, password, resource);
-                }
-                else {
+                } else {
                     connection.login(user, password);
                 }
-            }
-            else {
+            } else {
                 logger.info("Logging in anonymously to Jabber on connection: " + connection);
                 connection.loginAnonymously();
             }
@@ -130,8 +127,7 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
                 Message message = (Message) packet;
                 logger.debug("Received message: " + message + " with " + message.getBody());
 
-            }
-            else if (packet instanceof RosterPacket) {
+            } else if (packet instanceof RosterPacket) {
                 RosterPacket rosterPacket = (RosterPacket) packet;
 
                 if (logger.isDebugEnabled()) {
@@ -150,8 +146,7 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
             marshaler.toNMS(in, packet);
             logger.debug("Exchange: " + exchange);
             //send(exchange);
-        }
-        catch (MessagingException e) {
+        } catch (MessagingException e) {
             throw new XMPPListenerException(e, packet);
         }
     }
@@ -251,7 +246,7 @@ public abstract class XMPPEndpoint extends ProviderEndpoint implements PacketLis
     }
 
 
-    protected void init(XMPPComponent component) {
+    protected final void init(XMPPComponent component) {
         if (user == null) {
             user = component.getUser();
         }

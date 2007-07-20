@@ -110,8 +110,7 @@ public class XMPPComponent extends DefaultComponent implements BeanFactoryAware 
         String room = (String) map.get("room");
         if (room != null) {
             endpoint = new GroupChatEndpoint(this, ep, room);
-        }
-        else {
+        } else {
             endpoint = new PrivateChatEndpoint(this, ep);
         }
 

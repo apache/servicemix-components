@@ -16,12 +16,12 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.jivesoftware.smack.GroupChat;
-import org.jivesoftware.smack.packet.Message;
-
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+
+import org.jivesoftware.smack.GroupChat;
+import org.jivesoftware.smack.packet.Message;
 
 /**
  * Represents a group chat endpoint

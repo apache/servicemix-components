@@ -48,8 +48,7 @@ public class SpringComponentTest extends SpringTestSupport {
             System.in.read();
 
             test.tearDown();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Caught: " + e);
             e.printStackTrace();
         }
@@ -79,12 +78,10 @@ public class SpringComponentTest extends SpringTestSupport {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
-            }
-            else {
+            } else {
                 fail("Received ERROR status");
             }
-        }
-        else if (me.getFault() != null) {
+        } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
     }

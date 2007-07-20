@@ -16,19 +16,20 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.apache.servicemix.jbi.jaxp.SourceMarshaler;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
+import java.util.Date;
+import java.util.Iterator;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.namespace.QName;
-import java.util.Date;
-import java.util.Iterator;
+
+import org.apache.servicemix.jbi.jaxp.SourceMarshaler;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 
 /**
  * Marshals Jabber messages into and out of NMS messages

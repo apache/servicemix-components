@@ -16,13 +16,14 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.packet.Message;
+import java.net.URI;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import java.net.URI;
+
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.packet.Message;
 
 /**
  * Represents an endpoint for chatting to a single individual
@@ -45,11 +46,10 @@ public class PrivateChatEndpoint extends XMPPEndpoint {
     public void start() throws Exception {
         super.start();
         if (chat == null) {
-            String participant = getParticipant();
-            if (participant == null) {
+            if (getParticipant() == null) {
                 throw new IllegalArgumentException("No participant property specified");
             }
-            chat = getConnection().createChat(participant);
+            chat = getConnection().createChat(getParticipant());
         }
     }
 

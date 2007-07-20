@@ -16,11 +16,12 @@
  */
 package org.apache.servicemix.xmpp;
 
-import junit.framework.TestCase;
-import org.apache.servicemix.common.ResolvedEndpoint;
-
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
+
+import junit.framework.TestCase;
+
+import org.apache.servicemix.common.ResolvedEndpoint;
 
 /**
  * @version $Revision: $
