@@ -23,12 +23,13 @@ import java.util.Map;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import de.schlichtherle.io.File;
+
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.jbi.util.IntrospectionSupport;
 import org.apache.servicemix.jbi.util.URISupport;
 
-import de.schlichtherle.io.File;
 
 /**
  * A file based component
@@ -53,7 +54,7 @@ public class TrueZipComponent extends DefaultComponent {
     }
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { TrueZipPollerEndpoint.class, TrueZipSenderEndpoint.class };
+        return new Class[] {TrueZipPollerEndpoint.class, TrueZipSenderEndpoint.class};
     }
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {

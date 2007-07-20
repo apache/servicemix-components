@@ -25,13 +25,13 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import de.schlichtherle.io.File;
+import de.schlichtherle.io.FileOutputStream;
+
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 import org.apache.servicemix.id.IdGenerator;
-
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileOutputStream;
 
 /**
  * An endpoint which receives a message and writes the content to a file.

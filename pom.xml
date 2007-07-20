@@ -103,8 +103,6 @@
           <excludes>
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
-            
-            <exclude>**/PollDirectoryTest*</exclude>
           </excludes>
         </configuration>
       </plugin>
