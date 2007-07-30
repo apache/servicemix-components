@@ -240,21 +240,27 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     }
 
     protected void processFile(File aFile) throws Exception {
-        String name = aFile.getCanonicalPath();
-        InputStream in = new BufferedInputStream(new FileInputStream(aFile));
-        InOnly exchange = getExchangeFactory().createInOnlyExchange();
-        configureExchangeTarget(exchange);
-        NormalizedMessage message = exchange.createMessage();
-        exchange.setInMessage(message);
-        marshaler.readMessage(exchange, message, in, name);
-        sendSync(exchange);
-        in.close();
-        if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            Exception e = exchange.getError();
-            if (e == null) {
-                e = new JBIException("Unkown error");
+        InputStream in = null;
+        try {
+            String name = aFile.getCanonicalPath();
+            in = new BufferedInputStream(new FileInputStream(aFile));
+            InOnly exchange = getExchangeFactory().createInOnlyExchange();
+            configureExchangeTarget(exchange);
+            NormalizedMessage message = exchange.createMessage();
+            exchange.setInMessage(message);
+            marshaler.readMessage(exchange, message, in, name);
+            sendSync(exchange);
+            if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                Exception e = exchange.getError();
+                if (e == null) {
+                    e = new JBIException("Unkown error");
+                }
+                throw e;
             }
-            throw e;
+        } finally {
+            if (in != null) {
+                in.close();
+            }
         }
     }
 
