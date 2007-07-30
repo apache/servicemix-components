@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.cxfbc.interceptors;
 
-
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,11 +47,11 @@ import org.apache.servicemix.soap.util.QNameUtil;
 public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
 
     public static final String OPERATION_MEP = "MEP";
-    
+
     public JbiInInterceptor() {
         super(Phase.PRE_INVOKE);
     }
-    
+
     public void handleMessage(Message message) {
         try {
             MessageExchange exchange;
@@ -66,7 +65,8 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
             } else {
                 exchange = message.getContent(MessageExchange.class);
                 if (exchange == null) {
-                    throw new IllegalStateException("Content of type " + MessageExchange.class + " not found on message");
+                    throw new IllegalStateException("Content of type "
+                            + MessageExchange.class + " not found on message");
                 }
                 if (message.getContent(Exception.class) == null) {
                     nm = exchange.createMessage();
@@ -96,7 +96,8 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
      */
     private MessageExchange createExchange(Message message) throws JBIException {
         URI mep;
-        BindingOperationInfo operation = message.getExchange().get(BindingOperationInfo.class);
+        BindingOperationInfo operation = message.getExchange().get(
+                BindingOperationInfo.class);
         if (operation != null) {
             if (operation.getOutput() == null) {
                 if (operation.getFaults().size() == 0) {
@@ -113,13 +114,17 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
         if (mep == null) {
             throw new NullPointerException("MEP not found");
         }
-        MessageExchangeFactory mef = message.getExchange().get(MessageExchangeFactory.class);
+        MessageExchangeFactory mef = message.getExchange().get(
+                MessageExchangeFactory.class);
         if (mef == null) {
-            DeliveryChannel dv = message.getExchange().get(DeliveryChannel.class);
+            DeliveryChannel dv = message.getExchange().get(
+                    DeliveryChannel.class);
             if (dv == null) {
-                ComponentContext cc = message.getExchange().get(ComponentContext.class);
+                ComponentContext cc = message.getExchange().get(
+                        ComponentContext.class);
                 if (cc == null) {
-                    throw new NullPointerException("MessageExchangeFactory or DeliveryChannel or ComponentContext not found");
+                    throw new NullPointerException(
+                            "MessageExchangeFactory or DeliveryChannel or ComponentContext not found");
                 }
                 dv = cc.getDeliveryChannel();
             }
@@ -133,29 +138,33 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
     /**
      * Convert SoapMessage headers to NormalizedMessage headers
      */
-    private void toNMSHeaders(NormalizedMessage normalizedMessage, Message soapMessage) {
+    private void toNMSHeaders(NormalizedMessage normalizedMessage,
+            Message soapMessage) {
         SoapMessage message = null;
         if (!(soapMessage instanceof SoapMessage)) {
-        	return;
-        }  else {
-        	message = (SoapMessage)soapMessage;
+            return;
+        } else {
+            message = (SoapMessage) soapMessage;
         }
         Map<String, Object> headers = new HashMap<String, Object>();
         for (Header header : message.getHeaders()) {
-            headers.put(QNameUtil.toString(header.getName()), header.getObject());
+            headers.put(QNameUtil.toString(header.getName()), header
+                    .getObject());
         }
-        
+
         normalizedMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, headers);
-        
+
     }
 
     /**
      * Convert SoapMessage attachments to NormalizedMessage attachments
      */
-    private void toNMSAttachments(NormalizedMessage normalizedMessage, Message soapMessage) throws MessagingException {
+    private void toNMSAttachments(NormalizedMessage normalizedMessage,
+            Message soapMessage) throws MessagingException {
         if (soapMessage.getAttachments() != null) {
             for (Attachment att : soapMessage.getAttachments()) {
-                normalizedMessage.addAttachment(att.getId(), att.getDataHandler());
+                normalizedMessage.addAttachment(att.getId(), att
+                        .getDataHandler());
             }
         }
     }
@@ -163,20 +172,21 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
     /**
      * Extract the content as a jaxp Source
      */
-    private void getContent(NormalizedMessage nm, Message message) throws MessagingException {
+    private void getContent(NormalizedMessage nm, Message message)
+        throws MessagingException {
         Exception e = message.getContent(Exception.class);
         if (e == null) {
             nm.setContent(message.getContent(Source.class));
-        /*
-        } else if (e instanceof SoapFault) {
-            SoapFault fault = (SoapFault) e;
-            nm.setContent(fault.getDetails());
-            nm.setProperty(JbiConstants.SOAP_FAULT_CODE, fault.getCode());
-            nm.setProperty(JbiConstants.SOAP_FAULT_NODE, fault.getNode());
-            nm.setProperty(JbiConstants.SOAP_FAULT_REASON, fault.getReason());
-            nm.setProperty(JbiConstants.SOAP_FAULT_ROLE, fault.getRole());
-            nm.setProperty(JbiConstants.SOAP_FAULT_SUBCODE, fault.getSubcode());
-        */
+            /*
+             * } else if (e instanceof SoapFault) { SoapFault fault =
+             * (SoapFault) e; nm.setContent(fault.getDetails());
+             * nm.setProperty(JbiConstants.SOAP_FAULT_CODE, fault.getCode());
+             * nm.setProperty(JbiConstants.SOAP_FAULT_NODE, fault.getNode());
+             * nm.setProperty(JbiConstants.SOAP_FAULT_REASON,
+             * fault.getReason()); nm.setProperty(JbiConstants.SOAP_FAULT_ROLE,
+             * fault.getRole()); nm.setProperty(JbiConstants.SOAP_FAULT_SUBCODE,
+             * fault.getSubcode());
+             */
         }
     }
 

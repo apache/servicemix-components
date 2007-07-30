@@ -51,22 +51,26 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
         DepthXMLStreamReader xmlReader = getXMLStreamReader(message);
         BindingOperationInfo operation = null;
         if (!StaxUtils.toNextElement(xmlReader)) {
-            message.setContent(Exception.class, new RuntimeException("There must be a method name element."));
+            message.setContent(Exception.class, new RuntimeException(
+                    "There must be a method name element."));
         }
         String opName = xmlReader.getLocalName();
         if (isRequestor(message) && opName.endsWith("Response")) {
             opName = opName.substring(0, opName.length() - 8);
         }
         QName opQName = new QName(xmlReader.getNamespaceURI(), opName);
-        SoapBindingInfo binding = (SoapBindingInfo) message.getExchange().get(Endpoint.class).getEndpointInfo().getBinding();
+        SoapBindingInfo binding = (SoapBindingInfo) message.getExchange().get(
+                Endpoint.class).getEndpointInfo().getBinding();
         for (BindingOperationInfo op : binding.getOperations()) {
             String style = binding.getStyle(op.getOperationInfo());
             if (style == null) {
                 style = binding.getStyle();
             }
             if ("document".equals(style)) {
-                BindingMessageInfo msg = !isRequestor(message) ? op.getInput() : op.getOutput();
-                if (opQName.equals(msg.getExtensor(SoapBodyInfo.class).getParts().get(0).getElementQName())) {
+                BindingMessageInfo msg = !isRequestor(message) ? op.getInput()
+                        : op.getOutput();
+                if (msg.getExtensor(SoapBodyInfo.class)
+                            .getParts().get(0).getElementQName().equals(opQName)) {
                     operation = op;
                     break;
                 }
@@ -79,7 +83,8 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
         }
         if (operation != null) {
             message.getExchange().put(BindingOperationInfo.class, operation);
-            message.getExchange().put(OperationInfo.class, operation.getOperationInfo());
+            message.getExchange().put(OperationInfo.class,
+                    operation.getOperationInfo());
         }
     }
 
@@ -93,9 +98,9 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
         return dr;
     }
 
-
     protected BindingOperationInfo getOperation(Message message, QName opName) {
-        BindingOperationInfo op = ServiceModelUtil.getOperation(message.getExchange(), opName);
+        BindingOperationInfo op = ServiceModelUtil.getOperation(message
+                .getExchange(), opName);
         if (op == null) {
             throw new Fault(new Exception("Unrecognized operation"));
         }

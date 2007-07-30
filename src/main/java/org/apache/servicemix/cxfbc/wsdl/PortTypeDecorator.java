@@ -56,15 +56,17 @@ import com.ibm.wsdl.extensions.soap12.SOAP12BodyImpl;
 import com.ibm.wsdl.extensions.soap12.SOAP12FaultImpl;
 import com.ibm.wsdl.extensions.soap12.SOAP12OperationImpl;
 
-public class PortTypeDecorator {
+public final class PortTypeDecorator {
 
+    private PortTypeDecorator() {
+        
+    }
     public static Definition createImportDef(Definition definition,
-                                             String targetNamespace,
-                                             String importUri) throws Exception {
+            String targetNamespace, String importUri) throws Exception {
         // Create definition
         Definition def = WSDLFactory.newInstance().newDefinition();
         def.setTargetNamespace(targetNamespace);
-        
+
         // Add namespaces
         Map namespaces = definition.getNamespaces();
         for (Iterator iter = namespaces.keySet().iterator(); iter.hasNext();) {
@@ -74,60 +76,68 @@ public class PortTypeDecorator {
         }
         def.addNamespace("tns", targetNamespace);
         def.addNamespace("tnspt", definition.getTargetNamespace());
-        
+
         // Create import
         Import imp = def.createImport();
         imp.setNamespaceURI(definition.getTargetNamespace());
         imp.setLocationURI(importUri);
         imp.setDefinition(definition);
         def.addImport(imp);
-        
+
         return def;
     }
-    
-    public static void decorate(Definition def,
-                                PortType portType,
-                                String locationUri) throws Exception {
-        decorate(def,
-                 portType,
-                 locationUri,
-                 portType.getQName().getLocalPart() + "Binding",
-                 portType.getQName().getLocalPart() + "Service",
-                 "JBI",
-                 "1.1");
+
+    public static void decorate(Definition def, PortType portType,
+            String locationUri) throws Exception {
+        decorate(def, portType, locationUri, portType.getQName().getLocalPart()
+                + "Binding", portType.getQName().getLocalPart() + "Service",
+                "JBI", "1.1");
     }
-    
-    public static void decorate(Definition def,
-                                PortType portType,
-                                String locationUri,
-                                String bindingName,
-                                String serviceName,
-                                String portName,
-                                String soapVersion) throws Exception {
+
+    public static void decorate(Definition def, PortType portType,
+            String locationUri, String bindingName, String serviceName,
+            String portName, String soapVersion) throws Exception {
         boolean soap11 = "1.1".equals(soapVersion);
         if (soap11) {
-            def.addNamespace("wsdlsoap", "http://schemas.xmlsoap.org/wsdl/soap/");
+            def.addNamespace("wsdlsoap",
+                    "http://schemas.xmlsoap.org/wsdl/soap/");
         } else {
-            def.addNamespace("wsdlsoap", "http://schemas.xmlsoap.org/wsdl/soap12/");
+            def.addNamespace("wsdlsoap",
+                    "http://schemas.xmlsoap.org/wsdl/soap12/");
         }
         // Create binding
-        Binding binding = def.createBinding();
-        binding.setQName(new QName(def.getTargetNamespace(), bindingName));
-        binding.setPortType(portType);
-        binding.setUndefined(false);
+        Binding binding = createBinding(def, portType, bindingName);
         // Create soap extension
-        if (soap11) {
-            SOAPBinding soap = new SOAPBindingImpl();
-            soap.setTransportURI("http://schemas.xmlsoap.org/soap/http");
-            soap.setStyle("document");
-            binding.addExtensibilityElement(soap);
-        } else {
-            SOAP12Binding soap = new SOAP12BindingImpl();
-            soap.setTransportURI("http://schemas.xmlsoap.org/soap/http");
-            soap.setStyle("document");
-            binding.addExtensibilityElement(soap);
-        }
+        createSoapExtension(soap11, binding);
         // Create operations
+        createOperation(def, portType, soap11, binding);
+        // Create service
+        createService(def, locationUri, serviceName, portName, soap11, binding);
+    }
+    private static void createService(Definition def, 
+                                      String locationUri, 
+                                      String serviceName, 
+                                      String portName, 
+                                      boolean soap11, 
+                                      Binding binding) {
+        Service service = def.createService();
+        service.setQName(new QName(def.getTargetNamespace(), serviceName));
+        Port port = def.createPort();
+        port.setName(portName);
+        port.setBinding(binding);
+        if (soap11) {
+            SOAPAddress address = new SOAPAddressImpl();
+            address.setLocationURI(locationUri);
+            port.addExtensibilityElement(address);
+        } else {
+            SOAP12Address address = new SOAP12AddressImpl();
+            address.setLocationURI(locationUri);
+            port.addExtensibilityElement(address);
+        }
+        service.addPort(port);
+        def.addService(service);
+    }
+    private static void createOperation(Definition def, PortType portType, boolean soap11, Binding binding) {
         List operations = portType.getOperations();
         for (Iterator iter = operations.iterator(); iter.hasNext();) {
             Operation operation = (Operation) iter.next();
@@ -170,7 +180,8 @@ public class PortTypeDecorator {
                 }
                 bindingOp.setBindingOutput(out);
             }
-            for (Iterator itf = operation.getFaults().values().iterator(); itf.hasNext();) {
+            for (Iterator itf = operation.getFaults().values().iterator(); itf
+                    .hasNext();) {
                 Fault fault = (Fault) itf.next();
                 BindingFault bindingFault = def.createBindingFault();
                 bindingFault.setName(fault.getName());
@@ -190,38 +201,40 @@ public class PortTypeDecorator {
             binding.addBindingOperation(bindingOp);
         }
         def.addBinding(binding);
-        // Create service
-        Service service = def.createService();
-        service.setQName(new QName(def.getTargetNamespace(), serviceName));
-        Port port = def.createPort();
-        port.setName(portName);
-        port.setBinding(binding);
-        if (soap11) {
-            SOAPAddress address = new SOAPAddressImpl();
-            address.setLocationURI(locationUri);
-            port.addExtensibilityElement(address);
-        } else {
-            SOAP12Address address = new SOAP12AddressImpl();
-            address.setLocationURI(locationUri);
-            port.addExtensibilityElement(address);
-        }
-        service.addPort(port);
-        def.addService(service);
     }
-    
-    public static Definition decorate(Definition definition,
-                                      String importUri,
-                                      String targetNamespace,
-                                      String locationUri) throws Exception {
+    private static void createSoapExtension(boolean soap11, Binding binding) {
+        if (soap11) {
+            SOAPBinding soap = new SOAPBindingImpl();
+            soap.setTransportURI("http://schemas.xmlsoap.org/soap/http");
+            soap.setStyle("document");
+            binding.addExtensibilityElement(soap);
+        } else {
+            SOAP12Binding soap = new SOAP12BindingImpl();
+            soap.setTransportURI("http://schemas.xmlsoap.org/soap/http");
+            soap.setStyle("document");
+            binding.addExtensibilityElement(soap);
+        }
+    }
+    private static Binding createBinding(Definition def, PortType portType, String bindingName) {
+        Binding binding = def.createBinding();
+        binding.setQName(new QName(def.getTargetNamespace(), bindingName));
+        binding.setPortType(portType);
+        binding.setUndefined(false);
+        return binding;
+    }
+
+    public static Definition decorate(Definition definition, String importUri,
+            String targetNamespace, String locationUri) throws Exception {
         // Create definition
         Definition def = createImportDef(definition, targetNamespace, importUri);
-        
+
         // Iterator through port types
-        for (Iterator it = definition.getPortTypes().values().iterator(); it.hasNext();) {
+        for (Iterator it = definition.getPortTypes().values().iterator(); it
+                .hasNext();) {
             PortType portType = (PortType) it.next();
             decorate(def, portType, locationUri);
         }
         return def;
     }
-    
+
 }

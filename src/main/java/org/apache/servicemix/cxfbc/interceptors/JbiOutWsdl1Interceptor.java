@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.cxfbc.interceptors;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,40 +52,57 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
     public JbiOutWsdl1Interceptor() {
         super(Phase.MARSHAL);
     }
-    
+
     public void handleMessage(SoapMessage message) {
         try {
             Source source = message.getContent(Source.class);
+            if (source == null) {
+                return;
+            }
             Element element = new SourceTransformer().toDOMElement(source);
-            if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element.getNamespaceURI()) ||
-                !JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME.equals(element.getLocalName())) {
-                throw new Fault(new Exception("Message wrapper element is '" + QNameUtil.toString(element)
-                        + "' but expected '{" + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}message'"));
+            if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
+                    .getNamespaceURI())
+                    || !JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME
+                            .equals(element.getLocalName())) {
+                throw new Fault(new Exception("Message wrapper element is '"
+                        + QNameUtil.toString(element) + "' but expected '{"
+                        + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}message'"));
             }
             List<NodeList> partsContent = new ArrayList<NodeList>();
             Element partWrapper = DomUtil.getFirstChildElement(element);
             while (partWrapper != null) {
-                if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element.getNamespaceURI()) ||
-                    !JbiConstants.WSDL11_WRAPPER_PART_LOCALNAME.equals(partWrapper.getLocalName())) {
-                    throw new Fault(new Exception("Unexpected part wrapper element '" + QNameUtil.toString(element)
-                            + "' expected '{" + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}part'"));
+                if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
+                        .getNamespaceURI())
+                        || !JbiConstants.WSDL11_WRAPPER_PART_LOCALNAME
+                                .equals(partWrapper.getLocalName())) {
+                    throw new Fault(new Exception(
+                            "Unexpected part wrapper element '"
+                                    + QNameUtil.toString(element)
+                                    + "' expected '{"
+                                    + JbiConstants.WSDL11_WRAPPER_NAMESPACE
+                                    + "}part'"));
                 }
                 NodeList nodes = partWrapper.getChildNodes();
                 partsContent.add(nodes);
                 partWrapper = DomUtil.getNextSiblingElement(partWrapper);
             }
-            
-            BindingOperationInfo bop = message.getExchange().get(BindingOperationInfo.class);
-            BindingMessageInfo msg = isRequestor(message) ? bop.getInput() : bop.getOutput();
-            
-            XMLStreamWriter xmlWriter = message.getContent(XMLStreamWriter.class);
-    
-            SoapBindingInfo binding = (SoapBindingInfo) message.getExchange().get(Endpoint.class).getEndpointInfo().getBinding();
+
+            BindingOperationInfo bop = message.getExchange().get(
+                    BindingOperationInfo.class);
+            BindingMessageInfo msg = isRequestor(message) ? bop.getInput()
+                    : bop.getOutput();
+
+            XMLStreamWriter xmlWriter = message
+                    .getContent(XMLStreamWriter.class);
+
+            SoapBindingInfo binding = (SoapBindingInfo) message.getExchange()
+                    .get(Endpoint.class).getEndpointInfo().getBinding();
             String style = binding.getStyle(bop.getOperationInfo());
             if (style == null) {
                 style = binding.getStyle();
             }
-            List<SoapHeaderInfo> headers = msg.getExtensors(SoapHeaderInfo.class);
+            List<SoapHeaderInfo> headers = msg
+                    .getExtensors(SoapHeaderInfo.class);
             for (SoapHeaderInfo header : headers) {
                 NodeList nl = partsContent.get(header.getPart().getIndex());
                 Element headerElement = message.get(Element.class);
@@ -94,7 +110,7 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
                     headerElement.appendChild(nl.item(i));
                 }
             }
-    
+
             if ("rpc".equals(style)) {
                 addOperationNode(message, xmlWriter);
             }
@@ -114,16 +130,19 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
         }
     }
 
-    protected String addOperationNode(Message message, 
-                                      XMLStreamWriter xmlWriter) throws XMLStreamException {
+    protected String addOperationNode(Message message, XMLStreamWriter xmlWriter)
+        throws XMLStreamException {
         String responseSuffix = !isRequestor(message) ? "Response" : "";
-        BindingOperationInfo boi = message.getExchange().get(BindingOperationInfo.class);
+        BindingOperationInfo boi = message.getExchange().get(
+                BindingOperationInfo.class);
         String ns = boi.getName().getNamespaceURI();
         NSStack nsStack = new NSStack();
         nsStack.push();
         nsStack.add(ns);
         String prefix = nsStack.getPrefix(ns);
-        StaxUtils.writeStartElement(xmlWriter, prefix, boi.getName().getLocalPart() + responseSuffix, ns);
+        StaxUtils.writeStartElement(xmlWriter, prefix, boi.getName()
+                .getLocalPart()
+                + responseSuffix, ns);
         return ns;
     }
 

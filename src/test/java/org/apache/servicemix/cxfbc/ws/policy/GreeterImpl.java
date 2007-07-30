@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.cxfbc;
+package org.apache.servicemix.cxfbc.ws.policy;
 
-import uri.helloworld.HelloFault_Exception;
-import uri.helloworld.HelloHeader;
-import uri.helloworld.HelloPortType;
-import uri.helloworld.HelloRequest;
-import uri.helloworld.HelloResponse;
+import javax.jws.WebService;
 
-public class HelloPortTypeImpl implements HelloPortType {
+import org.apache.cxf.greeter_control.AbstractGreeterImpl;
 
-    public HelloResponse hello(HelloRequest body, HelloHeader header1)
-        throws HelloFault_Exception {
-        HelloResponse rep = new HelloResponse();
-        rep.setText(body.getText() + header1.getId());
-        return rep;
-    }
+/**
+ * 
+ */
 
+@WebService(serviceName = "BasicGreeterService", 
+            portName = "GreeterPort", 
+            endpointInterface = "org.apache.cxf.greeter_control.Greeter", 
+            targetNamespace = "http://cxf.apache.org/greeter_control")
+public class GreeterImpl extends AbstractGreeterImpl {
 }

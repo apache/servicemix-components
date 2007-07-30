@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.cxfbc;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +27,12 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.servicemix.components.util.MockServiceComponent;
+import org.apache.servicemix.cxfse.CxfSeComponent;
+import org.apache.servicemix.cxfse.CxfSeEndpoint;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.springframework.core.io.ClassPathResource;
@@ -39,13 +43,14 @@ import uri.helloworld.HelloRequest;
 import uri.helloworld.HelloResponse;
 import uri.helloworld.HelloService;
 
-
 public class CxfBcComponentTest extends TestCase {
 
-	static final Logger LOG = Logger.getLogger(CxfBcComponentTest.class.getName());
-    private final QName serviceName = new QName(
-                                      "uri:HelloWorld",
-                                                "HelloService");
+    static final Logger LOG = Logger.getLogger(CxfBcComponentTest.class
+            .getName());
+
+    private final QName serviceName = new QName("uri:HelloWorld",
+            "HelloService");
+
     private JBIContainer jbi;
 
     protected void setUp() throws Exception {
@@ -53,32 +58,38 @@ public class CxfBcComponentTest extends TestCase {
         jbi.setEmbedded(true);
         jbi.init();
         jbi.start();
+
     }
-    
+
     protected void tearDown() throws Exception {
         jbi.shutDown();
     }
-    
+
     public void testEndpointDOC() throws Exception {
         CxfBcComponent comp = new CxfBcComponent();
         CxfBcConsumer ep = new CxfBcConsumer();
         ep.setWsdl(new ClassPathResource("HelloWorld-DOC.wsdl"));
         ep.setTargetService(new QName("urn:test", "target"));
-        comp.setEndpoints(new CxfBcEndpointType[] { ep });
+        comp.setEndpoints(new CxfBcEndpointType[] {ep});
         jbi.activateComponent(comp, "servicemix-cxfbc");
-        
+
         MockServiceComponent echo = new MockServiceComponent();
         echo.setService(new QName("urn:test", "target"));
         echo.setEndpoint("endpoint");
-        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><HelloResponse xmlns='uri:HelloWorld'><text>hello</text></HelloResponse></jbi:part></jbi:message>");
+        echo.setResponseXml(
+                "<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>" 
+                + "<jbi:part><HelloResponse xmlns='uri:HelloWorld'><text>hello</text></HelloResponse></jbi:part></jbi:message>"
+        );
         jbi.activateComponent(echo, "echo");
 
-        URLConnection connection = new URL("http://localhost:8080/hello").openConnection();
+        URLConnection connection = new URL("http://localhost:8080/hello")
+                .openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
         OutputStream os = connection.getOutputStream();
         // Post the request file.
-        InputStream fis = new ClassPathResource("HelloWorld-DOC-Input.xml").getInputStream();
+        InputStream fis = new ClassPathResource("HelloWorld-DOC-Input.xml")
+                .getInputStream();
         FileUtil.copyInputStream(fis, os);
         // Read the response.
         InputStream is = connection.getInputStream();
@@ -94,19 +105,22 @@ public class CxfBcComponentTest extends TestCase {
         CxfBcConsumer ep = new CxfBcConsumer();
         ep.setWsdl(new ClassPathResource("HelloWorld-DOC.wsdl"));
         ep.setTargetService(new QName("urn:test", "target"));
-        comp.setEndpoints(new CxfBcEndpointType[] { ep });
+        comp.setEndpoints(new CxfBcEndpointType[] {ep});
         jbi.activateComponent(comp, "servicemix-cxfbc");
-        
+
         MockServiceComponent echo = new MockServiceComponent();
         echo.setService(new QName("urn:test", "target"));
         echo.setEndpoint("endpoint");
-        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><ns2:HelloResponse xmlns:ns2='uri:HelloWorld'><text>helloffang</text></ns2:HelloResponse></jbi:part></jbi:message>");
+        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part>" 
+                + "<ns2:HelloResponse xmlns:ns2='uri:HelloWorld'><text>helloffang</text></ns2:HelloResponse></jbi:part></jbi:message>");
         jbi.activateComponent(echo, "echo");
 
         URL wsdl = getClass().getResource("/HelloWorld-DOC.wsdl");
         assertNotNull(wsdl);
         HelloService helloService = new HelloService(wsdl, serviceName);
-        HelloPortType port = helloService.getHelloPort(); 
+        HelloPortType port = helloService.getHelloPort();
+        Client client = ClientProxy.getClient(port);
+        client.getInInterceptors().add(new LoggingInInterceptor());
         HelloRequest req = new HelloRequest();
         req.setText("hello");
         HelloHeader header = new HelloHeader();
@@ -116,34 +130,67 @@ public class CxfBcComponentTest extends TestCase {
         assertEquals(rep.getText(), "helloffang");
     }
 
-    
+    public void testEndpointDOCWithExternalConsumerAndCxfSe() throws Exception {
+        CxfBcComponent comp = new CxfBcComponent();
+        CxfBcConsumer ep = new CxfBcConsumer();
+        ep.setWsdl(new ClassPathResource("HelloWorld-DOC.wsdl"));
+        ep.setTargetService(new QName("http://cxfbc.servicemix.apache.org/",
+                "HelloPortTypeImplService"));
+        ep.setTargetInterface(new QName("uri:HelloWorld", "HelloPortType",
+                "HelloPortType"));
+        ep.setEndpoint("HelloPortTypeImplPort");
+        comp.setEndpoints(new CxfBcEndpointType[] {ep});
+        jbi.activateComponent(comp, "servicemix-cxfbc");
+
+        CxfSeComponent seComp = new CxfSeComponent();
+        CxfSeEndpoint endpoint = new CxfSeEndpoint();
+        endpoint.setPojo(new HelloPortTypeImpl());
+
+        seComp.setEndpoints(new CxfSeEndpoint[] {endpoint});
+        jbi.activateComponent(seComp, "servicemix-cxfse");
+        URL wsdl = getClass().getResource("/HelloWorld-DOC.wsdl");
+        assertNotNull(wsdl);
+        HelloService helloService = new HelloService(wsdl, serviceName);
+        HelloPortType port = helloService.getHelloPort();
+        HelloRequest req = new HelloRequest();
+        req.setText("hello");
+        HelloHeader header = new HelloHeader();
+        header.setId("ffang");
+        HelloResponse rep = port.hello(req, header);
+        Thread.sleep(1000);
+        assertEquals(rep.getText(), "helloffang");
+    }
+
     public void testEndpointRPC() throws Exception {
         CxfBcComponent comp = new CxfBcComponent();
         CxfBcConsumer ep = new CxfBcConsumer();
         ep.setWsdl(new ClassPathResource("HelloWorld-RPC.wsdl"));
         ep.setTargetService(new QName("urn:test", "target"));
-        comp.setEndpoints(new CxfBcEndpointType[] { ep });
+        comp.setEndpoints(new CxfBcEndpointType[] {ep});
         jbi.activateComponent(comp, "servicemix-cxfbc");
-        
+
         MockServiceComponent echo = new MockServiceComponent();
         echo.setService(new QName("urn:test", "target"));
         echo.setEndpoint("endpoint");
-        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part><text>hello</text></jbi:part></jbi:message>");
+        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>" 
+                + "<jbi:part><text>hello</text></jbi:part></jbi:message>");
         jbi.activateComponent(echo, "echo");
 
-        URLConnection connection = new URL("http://localhost:8080/hello").openConnection();
+        URLConnection connection = new URL("http://localhost:8080/hello")
+                .openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
         OutputStream os = connection.getOutputStream();
         // Post the request file.
-        InputStream fis = new ClassPathResource("HelloWorld-RPC-Input.xml").getInputStream();
+        InputStream fis = new ClassPathResource("HelloWorld-RPC-Input.xml")
+                .getInputStream();
         FileUtil.copyInputStream(fis, os);
         // Read the response.
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(is, baos);
         System.err.println(baos.toString());
-        
+
         Thread.sleep(100);
     }
 

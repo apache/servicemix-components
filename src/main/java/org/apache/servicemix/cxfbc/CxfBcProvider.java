@@ -16,8 +16,12 @@
  */
 package org.apache.servicemix.cxfbc;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import javax.jbi.messaging.MessageExchange;
 
+import org.apache.cxf.interceptor.Interceptor;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 
 /**
@@ -25,9 +29,51 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
  * @author gnodet
  * @org.apache.xbean.XBean element="provider"
  */
-public class CxfBcProvider extends ProviderEndpoint implements CxfBcEndpointType {
+public class CxfBcProvider extends ProviderEndpoint implements
+        CxfBcEndpointWithInterceptor {
+
+    List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
+
+    List<Interceptor> out = new CopyOnWriteArrayList<Interceptor>();
+
+    List<Interceptor> outFault = new CopyOnWriteArrayList<Interceptor>();
+
+    List<Interceptor> inFault = new CopyOnWriteArrayList<Interceptor>();
 
     public void processExchange(MessageExchange exchange) {
-        
+
     }
+
+    public List<Interceptor> getOutFaultInterceptors() {
+        return outFault;
+    }
+
+    public List<Interceptor> getInFaultInterceptors() {
+        return inFault;
+    }
+
+    public List<Interceptor> getInInterceptors() {
+        return in;
+    }
+
+    public List<Interceptor> getOutInterceptors() {
+        return out;
+    }
+
+    public void setInInterceptors(List<Interceptor> interceptors) {
+        in = interceptors;
+    }
+
+    public void setInFaultInterceptors(List<Interceptor> interceptors) {
+        inFault = interceptors;
+    }
+
+    public void setOutInterceptors(List<Interceptor> interceptors) {
+        out = interceptors;
+    }
+
+    public void setOutFaultInterceptors(List<Interceptor> interceptors) {
+        outFault = interceptors;
+    }
+
 }

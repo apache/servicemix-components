@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.servicemix.common.DefaultComponent;
 
 /**
@@ -30,8 +31,11 @@ import org.apache.servicemix.common.DefaultComponent;
 public class CxfBcComponent extends DefaultComponent {
 
     private CxfBcEndpointType[] endpoints;
+
     private Bus bus;
-    
+
+    private String busCfg;
+
     /**
      * @return the endpoints
      */
@@ -40,7 +44,8 @@ public class CxfBcComponent extends DefaultComponent {
     }
 
     /**
-     * @param endpoints the endpoints to set
+     * @param endpoints
+     *            the endpoints to set
      */
     public void setEndpoints(CxfBcEndpointType[] endpoints) {
         this.endpoints = endpoints;
@@ -53,16 +58,29 @@ public class CxfBcComponent extends DefaultComponent {
 
     @Override
     protected Class[] getEndpointClasses() {
-        return new Class[] { CxfBcProvider.class, CxfBcConsumer.class };
+        return new Class[] {CxfBcProvider.class, CxfBcConsumer.class};
     }
 
     @Override
     protected void doInit() throws Exception {
-        bus = BusFactory.newInstance().createBus();
+        if (getBusConfig() != null) {
+            SpringBusFactory bf = new SpringBusFactory();
+            bus = bf.createBus(getBusConfig());
+        } else {
+            bus = BusFactory.newInstance().createBus();
+        }
         super.doInit();
     }
 
     public Bus getBus() {
         return bus;
+    }
+
+    public void setBusConfig(String busConfig) {
+        this.busCfg = busConfig;
+    }
+
+    public String getBusConfig() {
+        return busCfg;
     }
 }

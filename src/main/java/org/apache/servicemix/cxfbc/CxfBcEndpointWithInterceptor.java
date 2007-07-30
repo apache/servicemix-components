@@ -16,19 +16,26 @@
  */
 package org.apache.servicemix.cxfbc;
 
-import uri.helloworld.HelloFault_Exception;
-import uri.helloworld.HelloHeader;
-import uri.helloworld.HelloPortType;
-import uri.helloworld.HelloRequest;
-import uri.helloworld.HelloResponse;
+import java.util.List;
 
-public class HelloPortTypeImpl implements HelloPortType {
+import org.apache.cxf.interceptor.Interceptor;
 
-    public HelloResponse hello(HelloRequest body, HelloHeader header1)
-        throws HelloFault_Exception {
-        HelloResponse rep = new HelloResponse();
-        rep.setText(body.getText() + header1.getId());
-        return rep;
-    }
+public interface CxfBcEndpointWithInterceptor extends CxfBcEndpointType {
+
+    List<Interceptor> getOutFaultInterceptors();
+
+    List<Interceptor> getInFaultInterceptors();
+
+    List<Interceptor> getInInterceptors();
+
+    List<Interceptor> getOutInterceptors();
+
+    void setInInterceptors(List<Interceptor> interceptors);
+
+    void setInFaultInterceptors(List<Interceptor> interceptors);
+
+    void setOutInterceptors(List<Interceptor> interceptors);
+
+    void setOutFaultInterceptors(List<Interceptor> interceptors);
 
 }

@@ -68,7 +68,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             return;
         }
         // Check if we should not use the JBI wrapper
-        if (message.get(JbiConstants.USE_JBI_WRAPPER) instanceof Boolean && ((Boolean) message.get(JbiConstants.USE_JBI_WRAPPER)) == false) {
+        if (message.get(JbiConstants.USE_JBI_WRAPPER) instanceof Boolean && !((Boolean) message.get(JbiConstants.USE_JBI_WRAPPER))) {
             XMLStreamReader xmlReader = message.getContent(XMLStreamReader.class);
             if (xmlReader != null) {
                 message.setContent(Source.class, new StaxSource(xmlReader));
@@ -77,9 +77,9 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         }
         
         BindingOperationInfo wsdlOperation = getOperation(message);
-        if (wsdlOperation.getUnwrappedOperation() != null) {
+        /*if (wsdlOperation.getUnwrappedOperation() != null) {
             wsdlOperation = wsdlOperation.getUnwrappedOperation();
-        }
+        }*/
         BindingMessageInfo wsdlMessage = !isRequestor(message) ? wsdlOperation.getInput() : wsdlOperation.getOutput();
 
         Document document = DomUtil.createDocument();
@@ -154,7 +154,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             } else if (part instanceof NodeList) {
                 addPart(root, (NodeList) part);
             } else if (part instanceof SoapHeader) {
-            	addPart(root, (Node)((SoapHeader)part).getObject());
+                addPart(root, (Node)((SoapHeader)part).getObject());
             }
         }
         
@@ -214,8 +214,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         for (SoapHeaderInfo header : headers) {
             if (header.getPart().getElementQName().equals(name)) {
                 MessagePartInfo mpi = header.getPart();
-                Header param = findHeader(headerElement, mpi);
-                return param;
+                return findHeader(headerElement, mpi);
             }
         }
         return null;

@@ -23,32 +23,56 @@ import javax.xml.namespace.QName;
 /**
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
  */
-public interface JbiConstants {
+public final class JbiConstants {
 
     public static final String SOAP_FAULT_CODE = "org.apache.servicemix.soap.fault.code";
+
     public static final String SOAP_FAULT_SUBCODE = "org.apache.servicemix.soap.fault.subcode";
+
     public static final String SOAP_FAULT_REASON = "org.apache.servicemix.soap.fault.reason";
+
     public static final String SOAP_FAULT_NODE = "org.apache.servicemix.soap.fault.node";
+
     public static final String SOAP_FAULT_ROLE = "org.apache.servicemix.soap.fault.role";
-    
-    public static final URI IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/in-only");
-    public static final URI IN_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-out");
-    public static final URI IN_OPTIONAL_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-opt-out");
-    public static final URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
-    
+
+    public static final URI IN_ONLY = URI
+            .create("http://www.w3.org/2004/08/wsdl/in-only");
+
+    public static final URI IN_OUT = URI
+            .create("http://www.w3.org/2004/08/wsdl/in-out");
+
+    public static final URI IN_OPTIONAL_OUT = URI
+            .create("http://www.w3.org/2004/08/wsdl/in-opt-out");
+
+    public static final URI ROBUST_IN_ONLY = URI
+            .create("http://www.w3.org/2004/08/wsdl/robust-in-only");
+
     public static final String PROTOCOL_HEADERS = "javax.jbi.messaging.protocol.headers";
 
     public static final String USE_JBI_WRAPPER = "useJbiWrapper";
-    
+
     public static final String WSDL11_WRAPPER_NAMESPACE = "http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper";
+
     public static final String WSDL11_WRAPPER_PREFIX = "jbi";
+
     public static final String WSDL11_WRAPPER_MESSAGE_LOCALNAME = "message";
-    public static final QName WSDL11_WRAPPER_MESSAGE = new QName(WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_MESSAGE_LOCALNAME, WSDL11_WRAPPER_PREFIX);
+
+    public static final QName WSDL11_WRAPPER_MESSAGE = new QName(
+            WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_MESSAGE_LOCALNAME,
+            WSDL11_WRAPPER_PREFIX);
+
     public static final String WSDL11_WRAPPER_MESSAGE_PREFIX = "msg";
+
     public static final String WSDL11_WRAPPER_TYPE = "type";
+
     public static final String WSDL11_WRAPPER_NAME = "name";
+
     public static final String WSDL11_WRAPPER_VERSION = "version";
+
     public static final String WSDL11_WRAPPER_PART_LOCALNAME = "part";
-    public static final QName WSDL11_WRAPPER_PART = new QName(WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_PART_LOCALNAME, WSDL11_WRAPPER_PREFIX);
+
+    public static final QName WSDL11_WRAPPER_PART = new QName(
+            WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_PART_LOCALNAME,
+            WSDL11_WRAPPER_PREFIX);
 
 }
