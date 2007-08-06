@@ -36,7 +36,9 @@ import org.apache.cxf.interceptor.InterceptorProvider;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.jaxws.ServiceImpl;
+import org.apache.cxf.jaxws.support.JaxWsImplementorInfo;
 import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
+import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIDestination;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
@@ -50,19 +52,26 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
  * @author gnodet
  * @org.apache.xbean.XBean element="endpoint"
  */
-public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvider {
+public class CxfSeEndpoint extends ProviderEndpoint implements
+        InterceptorProvider {
 
     private static final IdGenerator ID_GENERATOR = new IdGenerator();
-    
+
     private Object pojo;
+
     private EndpointImpl endpoint;
+
     private String address;
-    
+
+
     private List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
+
     private List<Interceptor> out = new CopyOnWriteArrayList<Interceptor>();
-    private List<Interceptor> outFault  = new CopyOnWriteArrayList<Interceptor>();
-    private List<Interceptor> inFault  = new CopyOnWriteArrayList<Interceptor>();
-    
+
+    private List<Interceptor> outFault = new CopyOnWriteArrayList<Interceptor>();
+
+    private List<Interceptor> inFault = new CopyOnWriteArrayList<Interceptor>();
+
     /**
      * @return the pojo
      */
@@ -71,7 +80,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     }
 
     /**
-     * @param pojo the pojo to set
+     * @param pojo
+     *            the pojo to set
      */
     public void setPojo(Object pojo) {
         this.pojo = pojo;
@@ -108,8 +118,10 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     public void setOutFaultInterceptors(List<Interceptor> interceptors) {
         outFault = interceptors;
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.servicemix.common.Endpoint#validate()
      */
     @Override
@@ -119,53 +131,77 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
         }
         JaxWsServiceFactoryBean serviceFactory = new JaxWsServiceFactoryBean();
         serviceFactory.setPopulateFromClass(true);
-        endpoint = new EndpointImpl(getBus(), getPojo(), new JaxWsServerFactoryBean(serviceFactory));
-        endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        endpoint = new EndpointImpl(getBus(), getPojo(),
+                new JaxWsServerFactoryBean(serviceFactory));
+        endpoint
+                .setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
         endpoint.setInInterceptors(getInInterceptors());
         endpoint.setInFaultInterceptors(getInFaultInterceptors());
         endpoint.setOutInterceptors(getOutInterceptors());
         endpoint.setOutFaultInterceptors(getOutFaultInterceptors());
-        address = "jbi://" + ID_GENERATOR.generateSanitizedId();
-        endpoint.publish(address);
-        setService(endpoint.getServer().getEndpoint().getService().getName());
-        setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo().getName().getLocalPart());
-        try {
-            definition = new ServiceWSDLBuilder(getBus(), endpoint.getServer().getEndpoint().getService()
-                        .getServiceInfos().iterator().next()).build();
-        } catch (WSDLException e) {
-            throw new DeploymentException(e);
-        }
+        JaxWsImplementorInfo implInfo = new JaxWsImplementorInfo(getPojo()
+                .getClass());
+        setService(implInfo.getServiceName());
+        setInterfaceName(implInfo.getInterfaceName());
+        setEndpoint(implInfo.getEndpointName().getLocalPart());
         super.validate();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax.jbi.messaging.MessageExchange)
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
-        DeliveryChannel oldDc = JBITransportFactory.getDeliveryChannel();
+        JBITransportFactory jbiTransportFactory =
+            (JBITransportFactory)getBus().getExtension(ConduitInitiatorManager.class).
+                    getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+        JBIDestination jbiDestination = jbiTransportFactory.getDestination(exchange.getService().toString()
+                           + exchange.getInterfaceName().toString());
+        DeliveryChannel oldDc = jbiDestination.getDeliveryChannel();
         try {
-            JBITransportFactory.setDeliveryChannel(getContext().getDeliveryChannel());
+            jbiDestination.setDeliveryChannel(getContext()
+                    .getDeliveryChannel());
+         
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                ((JBIDestination) endpoint.getServer().getDestination()).dispatch(exchange);
+                jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
             }
         } finally {
-            JBITransportFactory.setDeliveryChannel(oldDc);
+            jbiDestination.setDeliveryChannel(oldDc);
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#start()
      */
     @Override
     public void start() throws Exception {
         super.start();
+        address = "jbi://" + ID_GENERATOR.generateSanitizedId();
+        endpoint.publish(address);
+        setService(endpoint.getServer().getEndpoint().getService()
+                .getName());
+        setEndpoint(endpoint.getServer().getEndpoint()
+                .getEndpointInfo().getName().getLocalPart());
+        try {
+            definition = new ServiceWSDLBuilder(getBus(), endpoint
+                    .getServer().getEndpoint().getService()
+                    .getServiceInfos().iterator().next()).build();
+        } catch (WSDLException e) {
+            throw new DeploymentException(e);
+        }
         ReflectionUtils.doWithFields(getPojo().getClass(), new FieldCallback() {
-            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+            public void doWith(Field field) throws IllegalArgumentException,
+                    IllegalAccessException {
                 if (field.getAnnotation(WebServiceRef.class) != null) {
-                    ServiceImpl s = new ServiceImpl(getBus(), null, null, field.getType());
-                    s.addPort(new QName("port"), JBITransportFactory.TRANSPORT_ID, 
-                              "jbi://" + ID_GENERATOR.generateSanitizedId());
+                    ServiceImpl s = new ServiceImpl(getBus(), null, null, field
+                            .getType());
+                    s.addPort(new QName("port"),
+                            JBITransportFactory.TRANSPORT_ID, "jbi://"
+                                    + ID_GENERATOR.generateSanitizedId());
                     Object o = s.getPort(new QName("port"), field.getType());
                     field.setAccessible(true);
                     field.set(getPojo(), o);
@@ -175,7 +211,9 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
         ReflectionUtils.callLifecycleMethod(getPojo(), PostConstruct.class);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#stop()
      */
     @Override
@@ -185,7 +223,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     }
 
     protected Bus getBus() {
-        return ((CxfSeComponent) getServiceUnit().getComponent()).getBus(); 
+        return ((CxfSeComponent) getServiceUnit().getComponent()).getBus();
     }
-    
+
 }

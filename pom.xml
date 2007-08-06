@@ -30,8 +30,12 @@
 	<groupId>org.apache.servicemix</groupId>
 	<artifactId>servicemix-cxf-se</artifactId>
 	<packaging>jbi-component</packaging>
-
-	<name>ServiceMix :: CXF Service Engine</name>
+  	<name>ServiceMix :: CXF Service Engine</name>
+    <description>A CXF Service Engine</description>     
+ 
+    <properties>
+	    <cxf-version>2.1-incubator-SNAPSHOT</cxf-version>
+    </properties>
 
 	<dependencies>
 
@@ -64,6 +68,11 @@
 			<artifactId>spring-aop</artifactId>
 			<version>${spring-version}</version>
 		</dependency>
+                <dependency>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-jmx</artifactId>
+                        <version>${spring-version}</version>
+                </dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -96,7 +105,6 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-testutils</artifactId>
 			<version>${cxf-version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>

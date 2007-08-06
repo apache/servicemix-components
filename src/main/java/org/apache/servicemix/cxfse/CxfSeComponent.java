@@ -29,6 +29,8 @@ import org.apache.servicemix.common.DefaultComponent;
  */
 public class CxfSeComponent extends DefaultComponent {
 
+    public static final String JBI_TRANSPORT_ID = "http://cxf.apache.org/transports/jbi";
+    
     private CxfSeEndpoint[] endpoints;
     private Bus bus;
     

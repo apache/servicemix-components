@@ -28,11 +28,23 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfSeSpringTest extends SpringTestSupport {
 
-    public void testCalculator() throws Exception {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOut io = client.createInOutExchange();
+    private DefaultServiceMixClient client;
+    private InOut io;
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
         io.setService(new QName("http://apache.org/cxf/calculator", "CalculatorService"));
+        io.setInterfaceName(new QName("http://apache.org/cxf/calculator", "CalculatorPortType"));
         io.setOperation(new QName("http://apache.org/cxf/calculator", "add"));
+    }
+    
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    public void testCalculator() throws Exception {
         io.getInMessage().setContent(new StringSource(
                   "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
                 + "  <part>"
@@ -46,23 +58,7 @@ public class CxfSeSpringTest extends SpringTestSupport {
         System.err.println(new SourceTransformer().contentToString(io.getOutMessage()));
     }
     
-    public void testCalculatorWithFault() throws Exception {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOut io = client.createInOutExchange();
-        io.setService(new QName("http://apache.org/cxf/calculator", "CalculatorService"));
-        io.setOperation(new QName("http://apache.org/cxf/calculator", "add"));
-        io.getInMessage().setContent(new StringSource(
-                  "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
-                + "  <part>"
-                + "    <add xmlns='http://apache.org/cxf/calculator/types'>"
-                + "      <arg0>-1</arg0>"
-                + "      <arg1>2</arg1>"
-                + "    </add>"
-                + "  </part>"
-                + "</message>"));
-        client.sendSync(io);
-        System.err.println(new SourceTransformer().contentToString(io.getFault()));
-    }
+    
     
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
