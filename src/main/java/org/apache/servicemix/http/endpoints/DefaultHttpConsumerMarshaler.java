@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.http.endpoints;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
@@ -62,10 +64,11 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
     }
 
     public MessageExchange createExchange(HttpServletRequest request, ComponentContext context) throws Exception {
-        MessageExchange me;
-        me = context.getDeliveryChannel().createExchangeFactory().createExchange(getDefaultMep());
+        MessageExchange me = context.getDeliveryChannel().createExchangeFactory().createExchange(getDefaultMep());
         NormalizedMessage in = me.createMessage();
-        in.setContent(new StreamSource(request.getInputStream()));
+        InputStream is = request.getInputStream();
+        is = new BufferedInputStream(is);
+        in.setContent(new StreamSource(is));
         me.setMessage(in, "in");
         return me;
     }

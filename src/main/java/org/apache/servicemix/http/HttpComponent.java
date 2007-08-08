@@ -58,6 +58,7 @@ public class HttpComponent extends DefaultComponent {
     protected ContextManager server;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
+    protected org.mortbay.jetty.client.HttpClient connectionPool;
     protected HttpConfiguration configuration = new HttpConfiguration();
     protected HttpEndpointType[] endpoints;
 
@@ -157,6 +158,14 @@ public class HttpComponent extends DefaultComponent {
         this.client = client;
     }
 
+    public org.mortbay.jetty.client.HttpClient getConnectionPool() {
+        return connectionPool;
+    }
+    
+    public void setConnectionPool(org.mortbay.jetty.client.HttpClient connectionPool) {
+        this.connectionPool = connectionPool;
+    }
+
     /**
      * @return Returns the configuration.
      * @org.apache.xbean.Flat
@@ -212,6 +221,11 @@ public class HttpComponent extends DefaultComponent {
             connectionManager.setParams(params);
             client = new HttpClient(connectionManager);
         }
+        // Create connectionPool
+        if (connectionPool == null) {
+            connectionPool = new org.mortbay.jetty.client.HttpClient();
+            connectionPool.start();
+        }
         // Create serverManager
         if (configuration.isManaged()) {
             server = new ManagedContextManager();
@@ -230,6 +244,10 @@ public class HttpComponent extends DefaultComponent {
             ContextManager s = server;
             server = null;
             s.shutDown();
+        }
+        if (connectionPool != null) {
+            connectionPool.stop();
+            connectionPool = null;
         }
         if (connectionManager != null) {
             connectionManager.shutdown();

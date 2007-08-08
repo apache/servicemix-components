@@ -216,7 +216,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             if (handleStaticResource(request, response)) {
                 return;
             }
-            // Not giving a specific mutex will synchronize on the contination itself
+            // Not giving a specific mutex will synchronize on the continuation itself
             Continuation cont = ContinuationSupport.getContinuation(request, null);
             // If the continuation is not a retry
             if (!cont.isPending()) {

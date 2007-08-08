@@ -23,6 +23,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -30,6 +31,7 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.util.EncodingUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -44,6 +46,9 @@ public class HttpSpringTest extends SpringTestSupport {
     private static transient Log logger = LogFactory.getLog(HttpSpringTest.class);
 
     protected void setUp() throws Exception {
+        String str = "Basic " + EncodingUtil.getAsciiString(
+                Base64.encodeBase64(EncodingUtil.getBytes("smx:smx", "UTF-8")));
+        System.err.println(str);
         if (logger.isDebugEnabled()) {
             System.setProperty("javax.net.debug", "all");
         }

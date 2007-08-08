@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
@@ -34,7 +34,6 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
@@ -73,13 +72,13 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
 
     protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
-    private Map methods;
+    private Map<String, PostMethod> methods;
     private Protocol protocol;
     
     public ProviderProcessor(HttpEndpoint endpoint) {
         super(endpoint);
         this.soapHelper = new SoapHelper(endpoint);
-        this.methods = new ConcurrentHashMap();
+        this.methods = new ConcurrentHashMap<String, PostMethod>();
     }
 
     private String getRelUri(String locationUri) {
@@ -99,13 +98,14 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
 
     public void process(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.DONE || exchange.getStatus() == ExchangeStatus.ERROR) {
-            PostMethod method = (PostMethod) methods.remove(exchange.getExchangeId());
+            PostMethod method = methods.remove(exchange.getExchangeId());
             if (method != null) {
                 method.releaseConnection();
             }
             return;
         }
         boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+        txSync |= endpoint.isSynchronous();
         NormalizedMessage nm = exchange.getMessage("in");
         if (nm == null) {
             throw new IllegalStateException("Exchange has no input message");
@@ -194,12 +194,12 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void copyHeaderInformation(NormalizedMessage nm, PostMethod method) {
-        Map headers = (Map) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
+        Map<String, String> headers = (Map<String, String>) nm.getProperty(JbiConstants.PROTOCOL_HEADERS);
         if (headers != null) {
-            for (Iterator it = headers.keySet().iterator(); it.hasNext();) {
-                String name = (String) it.next();
-                String value = (String) headers.get(name);
+            for (String name : headers.keySet()) {
+                String value = headers.get(name);
                 method.addRequestHeader(name, value);
             }
         }
@@ -296,9 +296,9 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
     public void stop() throws Exception {
     }
 
-    protected Map getHeaders(HttpServletRequest request) {
-        Map headers = new HashMap();
-        Enumeration enumeration = request.getHeaderNames();
+    protected Map<String, String> getHeaders(HttpServletRequest request) {
+        Map<String, String> headers = new HashMap<String, String>();
+        Enumeration<?> enumeration = request.getHeaderNames();
         while (enumeration.hasMoreElements()) {
             String name = (String) enumeration.nextElement();
             String value = request.getHeader(name);
@@ -307,8 +307,8 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         return headers;
     }
 
-    protected Map getHeaders(HttpMethod method) {
-        Map headers = new HashMap();
+    protected Map<String, String> getHeaders(HttpMethod method) {
+        Map<String, String> headers = new HashMap<String, String>();
         Header[] h = method.getResponseHeaders();
         for (int i = 0; i < h.length; i++) {
             headers.put(h[i].getName(), h[i].getValue());

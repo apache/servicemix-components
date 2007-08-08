@@ -72,7 +72,7 @@ public class JettyContextManager implements ContextManager {
     private Map<String, Server> servers;
     private HttpConfiguration configuration;
     private BoundedThreadPool threadPool;
-    private Map sslParams;
+    private Map<String, SslParameters> sslParams;
     private MBeanServer mBeanServer;
     private MBeanContainer mbeanContainer;
 
@@ -99,7 +99,7 @@ public class JettyContextManager implements ContextManager {
             mbeanContainer = new MBeanContainer(mBeanServer);
         }
         servers = new HashMap<String, Server>();
-        sslParams = new HashMap();
+        sslParams = new HashMap<String, SslParameters>();
         BoundedThreadPool btp = new BoundedThreadPool();
         btp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
         threadPool = btp;
@@ -111,19 +111,19 @@ public class JettyContextManager implements ContextManager {
 
     public void start() throws Exception {
         threadPool.start();
-        for (Iterator it = servers.values().iterator(); it.hasNext();) {
-            Server server = (Server) it.next();
+        for (Iterator<Server> it = servers.values().iterator(); it.hasNext();) {
+            Server server = it.next();
             server.start();
         }
     }
 
     public void stop() throws Exception {
-        for (Iterator it = servers.values().iterator(); it.hasNext();) {
-            Server server = (Server) it.next();
+        for (Iterator<Server> it = servers.values().iterator(); it.hasNext();) {
+            Server server = it.next();
             server.stop();
         }
-        for (Iterator it = servers.values().iterator(); it.hasNext();) {
-            Server server = (Server) it.next();
+        for (Iterator<Server> it = servers.values().iterator(); it.hasNext();) {
+            Server server = it.next();
             server.join();
             Connector[] connectors = server.getConnectors();
             for (int i = 0; i < connectors.length; i++) {
@@ -142,7 +142,7 @@ public class JettyContextManager implements ContextManager {
             server = createServer(url, processor.getSsl());
         } else {
             // Check ssl params
-            SslParameters ssl = (SslParameters) sslParams.get(getKey(url));
+            SslParameters ssl = sslParams.get(getKey(url));
             if (ssl != null && !ssl.equals(processor.getSsl())) {
                 throw new Exception("An https server is already created on port " + url.getPort()
                                 + " but SSL parameters do not match");
@@ -214,8 +214,8 @@ public class JettyContextManager implements ContextManager {
 
     public synchronized void remove(Object context) throws Exception {
         ((ContextHandler) context).stop();
-        for (Iterator it = servers.values().iterator(); it.hasNext();) {
-            Server server = (Server) it.next();
+        for (Iterator<Server> it = servers.values().iterator(); it.hasNext();) {
+            Server server = it.next();
             HandlerCollection handlerCollection = (HandlerCollection) server.getHandler();
             ContextHandlerCollection contexts = (ContextHandlerCollection) handlerCollection.getHandlers()[0];
             Handler[] handlers = contexts.getHandlers();
@@ -226,7 +226,7 @@ public class JettyContextManager implements ContextManager {
     }
 
     protected Server getServer(URL url) {
-        return (Server) servers.get(getKey(url));
+        return servers.get(getKey(url));
     }
 
     protected String getKey(URL url) {
@@ -414,7 +414,7 @@ public class JettyContextManager implements ContextManager {
             writer.write("Known services are: <ul>");
 
             for (String serverUri : servers.keySet()) {
-                Server server = (Server) JettyContextManager.this.servers.get(serverUri);
+                Server server = JettyContextManager.this.servers.get(serverUri);
                 Handler[] handlers = server.getChildHandlersByClass(ContextHandler.class);
                 for (int i = 0; handlers != null && i < handlers.length; i++) {
                     if (!(handlers[i] instanceof ContextHandler)) {

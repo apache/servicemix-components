@@ -48,8 +48,8 @@ public class JCLLogger implements Logger {
         try {
             System.setProperty("org.mortbay.log.class", JCLLogger.class.getName());
             // For the class to be loaded by invoking a public static method
-            Class cl = Thread.currentThread().getContextClassLoader().loadClass("org.mortbay.log.Log");
-            cl.getMethod("isDebugEnabled", new Class[0]).invoke(null, null);
+            Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass("org.mortbay.log.Log");
+            cl.getMethod("isDebugEnabled", new Class[0]).invoke(null);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

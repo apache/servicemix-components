@@ -81,7 +81,7 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         msg.put(Message.CONTENT_TYPE, request.getContentType());
         Map<String, String> headers = msg.getTransportHeaders();
-        for (Enumeration e = request.getHeaderNames(); e.hasMoreElements();) {
+        for (Enumeration<?> e = request.getHeaderNames(); e.hasMoreElements();) {
             String name = (String) e.nextElement();
             String value = request.getHeader(name);
             headers.put(name, value);

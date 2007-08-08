@@ -19,10 +19,9 @@ package org.apache.servicemix.http.jetty;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.Subject;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +42,7 @@ public class JaasUserRealm implements UserRealm {
     private String name = getClass().getName();
     private String domain = "servicemix-domain";
     private AuthenticationService authenticationService = new JAASAuthenticationService();
-    private final Map userMap = new ConcurrentHashMap();
+    private final Map<String, JaasJettyPrincipal> userMap = new ConcurrentHashMap<String, JaasJettyPrincipal>();
 
     /**
      * @return the authenticationService
@@ -94,7 +93,7 @@ public class JaasUserRealm implements UserRealm {
         try {
             if ((username != null) && (!username.equals(""))) {
 
-                JaasJettyPrincipal userPrincipal = (JaasJettyPrincipal) userMap.get(username);
+                JaasJettyPrincipal userPrincipal = userMap.get(username);
 
                 // user has been previously authenticated, but
                 // re-authentication has been requested, so remove them
@@ -127,7 +126,7 @@ public class JaasUserRealm implements UserRealm {
     }
 
     public Principal getPrincipal(String username) {
-        return (Principal) userMap.get(username);
+        return userMap.get(username);
     }
 
     public boolean isUserInRole(Principal user, String role) {

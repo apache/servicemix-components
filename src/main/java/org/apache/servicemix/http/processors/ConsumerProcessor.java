@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
@@ -34,7 +35,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Node;
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
@@ -69,15 +70,15 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
     protected ComponentContext context;
     protected DeliveryChannel channel;
     protected SoapHelper soapHelper;
-    protected Map locks;
-    protected Map exchanges;
+    protected Map<String, Continuation> locks;
+    protected Map<String, MessageExchange> exchanges;
     protected int suspentionTime = 60000;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
         super(endpoint);
         this.soapHelper = new SoapHelper(endpoint);
-        this.locks = new ConcurrentHashMap();
-        this.exchanges = new ConcurrentHashMap();
+        this.locks = new ConcurrentHashMap<String, Continuation>();
+        this.exchanges = new ConcurrentHashMap<String, MessageExchange>();
         this.suspentionTime = getConfiguration().getConsumerProcessorSuspendTime();
     }
     
@@ -90,7 +91,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
     }
     
     public void process(MessageExchange exchange) throws Exception {
-        Continuation cont = (Continuation) locks.remove(exchange.getExchangeId());
+        Continuation cont = locks.remove(exchange.getExchangeId());
         if (cont != null) {
             synchronized (cont) {
                 if (log.isDebugEnabled()) {
@@ -179,7 +180,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
             }
         } else {
             String id = (String) request.getAttribute(MessageExchange.class.getName());
-            exchange = (MessageExchange) exchanges.remove(id);
+            exchange = exchanges.remove(id);
             request.removeAttribute(MessageExchange.class.getName());
             boolean result = cont.suspend(0); 
             // Check if this is a timeout
@@ -278,9 +279,9 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
         writer.write(response.getOutputStream());
     }
     
-    protected Map getHeaders(HttpServletRequest request) {
-        Map headers = new HashMap();
-        Enumeration enumeration = request.getHeaderNames();
+    protected Map<String, String> getHeaders(HttpServletRequest request) {
+        Map<String, String> headers = new HashMap<String, String>();
+        Enumeration<?> enumeration = request.getHeaderNames();
         while (enumeration.hasMoreElements()) {
             String name = (String) enumeration.nextElement();
             String value = request.getHeader(name);

@@ -19,12 +19,19 @@ package org.apache.servicemix.http.endpoints;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.servicemix.http.jetty.SmxHttpExchange;
 
+/**
+ * 
+ * @author gnodet
+ * @since 3.2
+ */
 public interface HttpProviderMarshaler {
 
-    String getDestinationUri(MessageExchange exchange, NormalizedMessage inMsg) throws Exception;
+    void createRequest(MessageExchange exchange,
+                       NormalizedMessage inMsg,
+                       SmxHttpExchange httpExchange) throws Exception;
 
-    HttpMethod createMethod(MessageExchange exchange, NormalizedMessage inMsg) throws Exception;
-
+    void handleResponse(MessageExchange exchange,
+                        SmxHttpExchange httpExchange) throws Exception;
 }

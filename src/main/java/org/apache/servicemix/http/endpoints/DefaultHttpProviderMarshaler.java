@@ -16,72 +16,196 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.Reader;
+import java.util.Map;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOptionalOut;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodRetryHandler;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.servicemix.expression.Expression;
+import org.apache.servicemix.http.jetty.SmxHttpExchange;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.mortbay.io.ByteArrayBuffer;
+import org.mortbay.jetty.HttpHeaders;
+import org.mortbay.jetty.HttpMethods;
 
+/**
+ * Default marshaler used for non-soap provider endpoints.
+ * 
+ * @author gnodet
+ * @since 3.2
+ */
 public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
 
-    private String locationUri;
-    private Expression locationUriExpression;
-    private int retryCount;
+    private SourceTransformer transformer = new StAXSourceTransformer();
+    private String locationURI;
+    private Expression locationURIExpression;
+    private String method;
+    private Expression methodExpression;
+    private String contentType = "text/xml";
+    private Expression contentTypeExpression;
+    private Map<String, String> headers;
 
-    public int getRetryCount() {
-        return retryCount;
+    public String getLocationURI() {
+        return locationURI;
     }
 
-    public void setRetryCount(int retryCount) {
-        this.retryCount = retryCount;
+    public void setLocationURI(String locationUri) {
+        this.locationURI = locationUri;
     }
 
-    public String getLocationUri() {
-        return locationUri;
+    public Expression getLocationURIExpression() {
+        return locationURIExpression;
     }
 
-    public void setLocationUri(String locationUri) {
-        this.locationUri = locationUri;
+    public void setLocationURIExpression(Expression locationUriExpression) {
+        this.locationURIExpression = locationUriExpression;
     }
 
-    public Expression getLocationUriExpression() {
-        return locationUriExpression;
+    public String getMethod() {
+        return method;
     }
 
-    public void setLocationUriExpression(Expression locationUriExpression) {
-        this.locationUriExpression = locationUriExpression;
+    public void setMethod(String method) {
+        this.method = method;
     }
 
-    public String getDestinationUri(MessageExchange exchange, NormalizedMessage inMsg) throws Exception {
+    public Expression getMethodExpression() {
+        return methodExpression;
+    }
+
+    public void setMethodExpression(Expression methodExpression) {
+        this.methodExpression = methodExpression;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public Expression getContentTypeExpression() {
+        return contentTypeExpression;
+    }
+
+    public void setContentTypeExpression(Expression contentTypeExpression) {
+        this.contentTypeExpression = contentTypeExpression;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+    protected String getLocationUri(MessageExchange exchange, NormalizedMessage inMsg) throws Exception {
         String uri = null;
-        if (locationUriExpression != null) {
-            Object o = locationUriExpression.evaluate(exchange, inMsg);
+        if (locationURIExpression != null) {
+            Object o = locationURIExpression.evaluate(exchange, inMsg);
             uri = (o != null) ? o.toString() : null;
         }
         if (uri == null) {
-            uri = locationUri;
+            uri = locationURI;
+        }
+        if (uri == null) {
+            throw new IllegalStateException("Unable to find URI for exchange");
         }
         return uri;
     }
 
-    public HttpMethod createMethod(MessageExchange exchange, NormalizedMessage inMsg) throws Exception {
-        PostMethod method = new PostMethod();
-        setRetryHandler(method);
-        return method;
-    }
-
-    protected void setRetryHandler(HttpMethod method) {
-        HttpMethodRetryHandler retryHandler = new HttpMethodRetryHandler() {
-            public boolean retryMethod(HttpMethod method, IOException exception, int executionCount) {
-                return executionCount < retryCount;
+    protected String getMethod(MessageExchange exchange, NormalizedMessage inMsg) throws Exception {
+        String mth = null;
+        if (methodExpression != null) {
+            Object o = methodExpression.evaluate(exchange, inMsg);
+            mth = (o != null) ? o.toString() : null;
+        }
+        if (mth == null) {
+            mth = method;
+        }
+        if (mth == null) {
+            if (inMsg.getContent() == null) {
+                mth = HttpMethods.GET;
+            } else {
+                mth = HttpMethods.POST;
             }
-        };
-        method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, retryHandler);
+        }
+        return mth;
     }
 
+    protected String getContentType(MessageExchange exchange, NormalizedMessage inMsg) throws Exception {
+        String content = null;
+        if (contentTypeExpression != null) {
+            Object o = contentTypeExpression.evaluate(exchange, inMsg);
+            content = (o != null) ? o.toString() : null;
+        }
+        if (content == null) {
+            content = contentType;
+        }
+        if (content == null) {
+            throw new IllegalStateException("ContentType must not be null");
+        }
+        return content;
+    }
+    
+    public void createRequest(final MessageExchange exchange, 
+                              final NormalizedMessage inMsg, 
+                              final SmxHttpExchange httpExchange) throws Exception {
+        httpExchange.setURL(getLocationUri(exchange, inMsg));
+        httpExchange.setMethod(getMethod(exchange, inMsg));
+        httpExchange.setRequestHeader(HttpHeaders.CONTENT_TYPE, getContentType(exchange, inMsg));
+        if (getHeaders() != null) {
+            for (Map.Entry<String, String> e : getHeaders().entrySet()) {
+                httpExchange.setRequestHeader(e.getKey(), e.getValue());
+            }
+        }
+        if (inMsg.getContent() != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            transformer.toResult(inMsg.getContent(), new StreamResult(baos));
+            httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));
+        }
+    }
+
+    public void handleResponse(MessageExchange exchange, SmxHttpExchange httpExchange) throws Exception {
+        int response = httpExchange.getResponseStatus();
+        if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
+            if (!(exchange instanceof InOnly)) {
+                Fault fault = exchange.createFault();
+                fault.setContent(new StreamSource(httpExchange.getResponseReader()));
+                exchange.setFault(fault);
+            } else {
+                throw new Exception("Invalid status response: " + response);
+            }
+        } else if (exchange instanceof InOut) {
+            NormalizedMessage msg = exchange.createMessage();
+            msg.setContent(new StreamSource(httpExchange.getResponseReader()));
+            exchange.setMessage(msg, "out");
+        } else if (exchange instanceof InOptionalOut) {
+            Reader r = httpExchange.getResponseReader();
+            if (r != null) {
+                NormalizedMessage msg = exchange.createMessage();
+                msg.setContent(new StreamSource(r));
+                exchange.setMessage(msg, "out");
+            } else {
+                exchange.setStatus(ExchangeStatus.DONE);
+            }
+        } else {
+            exchange.setStatus(ExchangeStatus.DONE);
+
+        }
+    }
+    
 }

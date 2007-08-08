@@ -58,6 +58,21 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected String soapAction;
     protected BasicAuthCredentials basicAuthentication;
     protected ProxyParameters proxy;
+    protected boolean synchronous;
+
+    /**
+     * @return the synchronous
+     */
+    public boolean isSynchronous() {
+        return synchronous;
+    }
+
+    /**
+     * @param synchronous the synchronous to set
+     */
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
+    }
 
     /**
      * @return the soapAction
@@ -255,8 +270,14 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
             }
             if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
                 if (isSoap()) {
-                    PortTypeDecorator.decorate(def, portType, location, endpoint + "Binding", service.getLocalPart(),
-                                    endpoint);
+                    PortTypeDecorator.decorate(
+                            def, 
+                            portType, 
+                            location, 
+                            endpoint + "Binding",
+                            service.getLocalPart(),
+                            endpoint,
+                            soapVersion);       
                     definition = def;
                 } else {
                     Binding bnd = def.createBinding();
@@ -279,8 +300,14 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
                 }
             } else {
                 definition = PortTypeDecorator.createImportDef(def, service.getNamespaceURI(), "porttypedef.wsdl");
-                PortTypeDecorator.decorate(definition, portType, location, endpoint + "Binding",
-                                service.getLocalPart(), endpoint);
+                PortTypeDecorator.decorate(
+                        definition, 
+                        portType, 
+                        location, 
+                        endpoint + "Binding",
+                        service.getLocalPart(),
+                        endpoint,
+                        soapVersion);       
             }
         }
     }
