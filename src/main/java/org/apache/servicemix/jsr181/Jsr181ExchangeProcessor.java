@@ -105,6 +105,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
             }
             msg.setAttachments(attachments);
         }
+        EndpointDeliveryChannel.setEndpoint(endpoint);
         JBIContext.setMessageExchange(exchange);
         if (isInAndOut(exchange)) {
             // TODO ?
@@ -113,6 +114,7 @@ public class Jsr181ExchangeProcessor implements ExchangeProcessor {
             c.receive(ctx, msg);
         } finally {
             JBIContext.setMessageExchange(null);
+            EndpointDeliveryChannel.setEndpoint(null);
         }
         c.close();
         

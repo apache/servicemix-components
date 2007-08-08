@@ -19,10 +19,14 @@ package org.apache.servicemix.jsr181;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
+
+import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.ServiceMixComponent;
 
 /**
  * This class is a wrapper around an existing DeliveryChannel
@@ -34,6 +38,7 @@ import javax.xml.namespace.QName;
  */
 public class EndpointDeliveryChannel implements DeliveryChannel {
 
+    private static ThreadLocal<Endpoint> endpoint = new ThreadLocal<Endpoint>();
     private final DeliveryChannel channel;
     
     public EndpointDeliveryChannel(DeliveryChannel channel) {
@@ -60,8 +65,8 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
         return channel.createExchangeFactory(interfaceName);
     }
 
-    public MessageExchangeFactory createExchangeFactory(ServiceEndpoint endpoint) {
-        return channel.createExchangeFactory(endpoint);
+    public MessageExchangeFactory createExchangeFactory(ServiceEndpoint ep) {
+        return channel.createExchangeFactory(ep);
     }
 
     public MessageExchangeFactory createExchangeFactoryForService(QName serviceName) {
@@ -72,14 +77,30 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             throw new UnsupportedOperationException("Asynchronous send of active exchanges are not supported");
         }
+        prepare(exchange);
         channel.send(exchange);
     }
 
     public boolean sendSync(MessageExchange exchange, long timeout) throws MessagingException {
+        prepare(exchange);
         return channel.sendSync(exchange, timeout);
     }
 
     public boolean sendSync(MessageExchange exchange) throws MessagingException {
+        prepare(exchange);
         return channel.sendSync(exchange);
     }
+    
+    protected void prepare(MessageExchange exchange) throws MessagingException {
+        Endpoint ep = this.endpoint.get();
+        if (ep != null && exchange.getStatus() == ExchangeStatus.ACTIVE && exchange.getRole() == Role.CONSUMER) {
+            ServiceMixComponent comp = ep.getServiceUnit().getComponent();
+            comp.prepareConsumerExchange(exchange, ep);
+        }
+    }
+    
+    public static void setEndpoint(Endpoint ep) {
+        endpoint.set(ep);
+    }
+    
 }
