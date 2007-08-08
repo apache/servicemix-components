@@ -18,7 +18,6 @@ package org.apache.servicemix.jms.jca;
 
 import java.util.Map;
 
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -38,7 +37,6 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.common.AsyncBaseLifeCycle;
 import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
@@ -54,7 +52,6 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
     private static final Log LOG = LogFactory.getLog(JcaConsumerProcessor.class);
 
     protected Map pendingMessages = new ConcurrentHashMap();
-    protected DeliveryChannel channel;
     protected ResourceAdapter resourceAdapter;
     protected MessageEndpointFactory endpointFactory;
     protected ActivationSpec activationSpec;
@@ -67,9 +64,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
     }
 
     public void start() throws Exception {
-        AsyncBaseLifeCycle lf = (AsyncBaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-        channel = lf.getContext().getDeliveryChannel();
-        transactionManager = (TransactionManager) lf.getContext().getTransactionManager();
+        transactionManager = (TransactionManager) context.getTransactionManager();
         endpointFactory = new SingletonEndpointFactory(this, transactionManager);
         bootstrapContext = endpoint.getBootstrapContext();
         if (bootstrapContext == null) {

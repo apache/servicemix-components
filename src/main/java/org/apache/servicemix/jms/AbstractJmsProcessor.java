@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.jbi.component.ComponentContext;
+import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
@@ -41,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
@@ -60,10 +63,14 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     protected JmsEndpoint endpoint;
     protected Connection connection;
     protected SoapHelper soapHelper;
+    protected ComponentContext context;
+    protected DeliveryChannel channel;
 
     public AbstractJmsProcessor(JmsEndpoint endpoint) throws Exception {
         this.endpoint = endpoint;
         this.soapHelper = new SoapHelper(endpoint);
+        this.context = new EndpointComponentContext(endpoint);
+        this.channel = context.getDeliveryChannel();
     }
 
     public void start() throws Exception {
@@ -166,7 +173,7 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         return soapHelper.createContext();
     }
     
-    protected MessageExchange toNMS(Message message, Context context) throws Exception {
+    protected MessageExchange toNMS(Message message, Context ctx) throws Exception {
         InputStream is = null;
         if (message instanceof TextMessage) {
             is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
@@ -180,15 +187,15 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         }
         String contentType = message.getStringProperty(CONTENT_TYPE);
         SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
-        context.setInMessage(soap);
-        context.setProperty(Message.class.getName(), message);
-        MessageExchange exchange = soapHelper.onReceive(context);
+        ctx.setInMessage(soap);
+        ctx.setProperty(Message.class.getName(), message);
+        MessageExchange exchange = soapHelper.onReceive(ctx);
         // TODO: copy protocol messages
         //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
         return exchange;
     }
     
-    protected Message fromNMSResponse(MessageExchange exchange, Context context, Session session) throws Exception {
+    protected Message fromNMSResponse(MessageExchange exchange, Context ctx, Session session) throws Exception {
         Message response = null;
         if (exchange.getStatus() == ExchangeStatus.ERROR) {
             Exception e = exchange.getError();
@@ -200,14 +207,14 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             Fault jbiFault = exchange.getFault(); 
             if (jbiFault != null) {
                 SoapFault fault = new SoapFault(SoapFault.RECEIVER, null, null, null, jbiFault.getContent());
-                SoapMessage soapFault = soapHelper.onFault(context, fault);
+                SoapMessage soapFault = soapHelper.onFault(ctx, fault);
                 TextMessage txt = session.createTextMessage();
                 fromNMS(soapFault, txt, (Map) jbiFault.getProperty(JbiConstants.PROTOCOL_HEADERS));
                 response = txt;
             } else {
                 NormalizedMessage outMsg = exchange.getMessage("out");
                 if (outMsg != null) {
-                    SoapMessage out = soapHelper.onReply(context, outMsg);
+                    SoapMessage out = soapHelper.onReply(ctx, outMsg);
                     TextMessage txt = session.createTextMessage();
                     fromNMS(out, txt, (Map) outMsg.getProperty(JbiConstants.PROTOCOL_HEADERS));
                     response = txt;

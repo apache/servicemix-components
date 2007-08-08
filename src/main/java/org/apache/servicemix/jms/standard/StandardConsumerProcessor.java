@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.jms.standard;
 
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jms.Destination;
@@ -36,7 +35,6 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
 
     protected Session session;
     protected Destination destination;
-    protected DeliveryChannel channel;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
     public StandardConsumerProcessor(JmsEndpoint endpoint) throws Exception {
@@ -52,7 +50,6 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
                 throw new IllegalStateException("No destination provided");
             }
         }
-        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         synchronized (running) {
             endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
                 public void run() {

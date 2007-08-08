@@ -18,7 +18,6 @@ package org.apache.servicemix.jms.multiplexing;
 
 import java.util.Map;
 
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -32,7 +31,6 @@ import javax.naming.InitialContext;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
@@ -43,7 +41,6 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     protected Destination destination;
     protected MessageConsumer consumer;
     protected Map pendingMessages;
-    protected DeliveryChannel channel;
 
     public MultiplexingConsumerProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
@@ -66,7 +63,6 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
             }
         }
         pendingMessages = new ConcurrentHashMap();
-        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         consumer = session.createConsumer(destination);
         consumer.setMessageListener(this);
     }
@@ -94,8 +90,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                     // TODO: copy protocol messages
                     //inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(message));
                     pendingMessages.put(exchange.getExchangeId(), context);
-                    BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-                    lf.sendConsumerExchange(exchange, MultiplexingConsumerProcessor.this.endpoint);
+                    channel.send(exchange);
                 } catch (Throwable e) {
                     log.error("Error while handling jms message", e);
                 }
