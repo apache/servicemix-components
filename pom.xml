@@ -23,46 +23,40 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.apache.camel</groupId>
-    <artifactId>camel-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>serviceengines</artifactId>
+    <version>3.2-incubating-SNAPSHOT</version>
   </parent>
 
-  <artifactId>camel-jbi</artifactId>
+  <artifactId>servicemix-camel</artifactId>
   <packaging>jbi-component</packaging>
-  <name>Camel :: JBI</name>
-  <description>Camel JBI support</description>
-
-  <properties>
-    <servicemix-version>3.2-incubating-SNAPSHOT</servicemix-version>
-  </properties>
+  <name>ServiceMix :: Camel</name>
+  <description>Camel Service Engine</description>
+  
   <dependencies>
 
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-spring</artifactId>
+      <version>${camel-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-jbi</artifactId>
-      <version>${servicemix-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
-      <version>${servicemix-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-common</artifactId>
-      <version>${servicemix-version}</version>
     </dependency>
 
     <!-- lets upgrade the versions -->
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-server</artifactId>
-      <version>3.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -73,6 +67,7 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-core</artifactId>
+      <version>${camel-version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -88,7 +83,6 @@
       <plugin>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>jbi-maven-plugin</artifactId>
-        <version>${servicemix-version}</version>
         <extensions>true</extensions>
         <configuration>
           <type>service-engine</type>
