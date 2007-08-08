@@ -36,7 +36,8 @@
                 <file:poller service="test:poller"
                              endpoint="poller"
                              targetService="test:receiver"
-                             file="file:target/pollerFiles" />
+                             file="file:target/pollerFiles"
+                             period="500" />
             	</file:endpoints>
             </file:component>
         </sm:component>

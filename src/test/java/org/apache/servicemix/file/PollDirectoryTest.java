@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.file;
 
+import java.io.File;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -26,6 +28,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
@@ -35,10 +38,9 @@ public class PollDirectoryTest extends SpringTestSupport {
 
     private static final int NUMBER = 10;
     
-    protected String directoryName = "target/pollDirectory";
-    protected String dynamicURI = "file:" + directoryName;
-    
     public void testSendToWriterSoItCanBePolled() throws Exception {
+        FileUtil.deleteFile(new File("target/pollerFiles"));
+        
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
