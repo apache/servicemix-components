@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,21 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
+package org.apache.servicemix.camel;
+
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
 import org.apache.servicemix.MessageExchangeListener;
 
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-
 /**
- * @version $Revision$
+ * @version $Revision: 563665 $
  */
 public class FromJbiProcessor implements MessageExchangeListener {
     private CamelContext context;
+
     private JbiBinding binding;
+
     private Processor processor;
 
     public FromJbiProcessor(CamelContext context, JbiBinding binding, Processor processor) {
@@ -39,10 +41,10 @@ public class FromJbiProcessor implements MessageExchangeListener {
 
     public void onMessageExchange(MessageExchange messageExchange) throws MessagingException {
         try {
-			JbiExchange exchange = new JbiExchange(context, binding, messageExchange);
-			processor.process(exchange);
-		} catch (Exception e) {
-			throw new MessagingException(e);
-		}
+            JbiExchange exchange = new JbiExchange(context, binding, messageExchange);
+            processor.process(exchange);
+        } catch (Exception e) {
+            throw new MessagingException(e);
+        }
     }
 }

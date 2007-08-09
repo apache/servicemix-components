@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
+package org.apache.servicemix.camel;
 
-import org.apache.camel.Exchange;
+import java.io.StringReader;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
@@ -24,14 +26,13 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import java.io.StringReader;
-import java.util.Map;
-import java.util.Set;
+
+import org.apache.camel.Exchange;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
- *
- * @version $Revision$
+ * 
+ * @version $Revision: 563665 $
  */
 public class JbiBinding {
     /**
@@ -42,7 +43,9 @@ public class JbiBinding {
         return normalizedMessage.getContent();
     }
 
-    public MessageExchange makeJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory) throws MessagingException {
+    public MessageExchange makeJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory) 
+        throws MessagingException {
+        
         MessageExchange jbiExchange = createJbiMessageExchange(camelExchange, exchangeFactory);
         NormalizedMessage normalizedMessage = jbiExchange.getMessage("in");
         if (normalizedMessage == null) {
@@ -54,7 +57,9 @@ public class JbiBinding {
         return jbiExchange;
     }
 
-    protected MessageExchange createJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory) throws MessagingException {
+    protected MessageExchange createJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory)
+        throws MessagingException {
+        
         // TODO we should deal with other forms of MEP
         return exchangeFactory.createInOnlyExchange();
     }
@@ -75,4 +80,3 @@ public class JbiBinding {
         }
     }
 }
-

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,19 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
+package org.apache.servicemix.camel;
 
-import org.apache.camel.Message;
-import org.apache.camel.impl.DefaultMessage;
-
-import javax.jbi.messaging.NormalizedMessage;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jbi.messaging.NormalizedMessage;
+
+import org.apache.camel.impl.DefaultMessage;
+
 /**
- * A JBI {@link Message} which provides access to the underlying JBI features such as {@link #getNormalizedMessage()}
- *
- * @version $Revision$
+ * A JBI {@link org.apache.camel.Message} which provides access to the underlying JBI features
+ * such as {@link #getNormalizedMessage()}
+ * 
+ * @version $Revision: 563665 $
  */
 public class JbiMessage extends DefaultMessage {
     private NormalizedMessage normalizedMessage;
@@ -42,8 +43,7 @@ public class JbiMessage extends DefaultMessage {
     public String toString() {
         if (normalizedMessage != null) {
             return "JbiMessage: " + normalizedMessage;
-        }
-        else {
+        } else {
             return "JbiMessage: " + getBody();
         }
     }
@@ -55,7 +55,7 @@ public class JbiMessage extends DefaultMessage {
 
     /**
      * Returns the underlying JBI message
-     *
+     * 
      * @return the underlying JBI message
      */
     public NormalizedMessage getNormalizedMessage() {
@@ -66,6 +66,7 @@ public class JbiMessage extends DefaultMessage {
         this.normalizedMessage = normalizedMessage;
     }
 
+    @Override
     public Object getHeader(String name) {
         Object answer = null;
         if (normalizedMessage != null) {

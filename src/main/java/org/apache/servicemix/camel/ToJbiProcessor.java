@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.servicemix.jbi.resolver.URIResolver;
+package org.apache.servicemix.camel;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
@@ -26,14 +22,22 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.servicemix.jbi.resolver.URIResolver;
+
 /**
- * A @{link Processor} which takes a Camel {@link Exchange} and invokes it into JBI using the straight JBI API
- *
- * @version $Revision$
+ * A
+ * 
+ * @{link Processor} which takes a Camel {@link Exchange} and invokes it into
+ *        JBI using the straight JBI API
+ * @version $Revision: 563665 $
  */
 public class ToJbiProcessor implements Processor {
     private JbiBinding binding;
+
     private ComponentContext componentContext;
+
     private String destinationUri;
 
     public ToJbiProcessor(JbiBinding binding, ComponentContext componentContext, String destinationUri) {
@@ -50,8 +54,7 @@ public class ToJbiProcessor implements Processor {
 
             URIResolver.configureExchange(messageExchange, componentContext, destinationUri);
             deliveryChannel.sendSync(messageExchange);
-        }
-        catch (MessagingException e) {
+        } catch (MessagingException e) {
             throw new JbiException(e);
         }
     }

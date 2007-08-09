@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
+package org.apache.servicemix.camel;
 
 import org.apache.camel.Consumer;
-import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -26,12 +25,13 @@ import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.DefaultProducer;
 
 /**
- * Represents an {@link Endpoint} for interacting with JBI
- *
- * @version $Revision$
+ * Represents an {@link org.apache.camel.Endpoint} for interacting with JBI
+ * 
+ * @version $Revision: 563665 $
  */
 public class JbiEndpoint extends DefaultEndpoint<Exchange> {
     private Processor toJbiProcessor;
+
     private final CamelJbiComponent jbiComponent;
 
     public JbiEndpoint(CamelJbiComponent jbiComponent, String uri) {
@@ -67,7 +67,6 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
             }
         };
     }
-
 
     public JbiExchange createExchange() {
         return new JbiExchange(getContext(), getBinding());

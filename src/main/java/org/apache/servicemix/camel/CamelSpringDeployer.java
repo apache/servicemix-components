@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,12 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
+package org.apache.servicemix.camel;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.jbi.management.DeploymentException;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.spring.SpringCamelContext;
-import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.server.spring.loader.PureSpringLoader;
 import org.apache.xbean.server.spring.loader.SpringLoader;
@@ -28,24 +34,21 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
-import javax.jbi.management.DeploymentException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * A deployer of the spring XML file
- *
+ * 
  * @version $Revision: 1.1 $
  */
 public class CamelSpringDeployer extends AbstractXBeanDeployer {
     private final CamelJbiComponent component;
+
     private PureSpringLoader springLoader = new PureSpringLoader() {
         @Override
         protected AbstractXmlApplicationContext createXmlApplicationContext(String configLocation) {
-            return new FileSystemXmlApplicationContext(new String[]{configLocation}, false, createParentApplicationContext());
+            return new FileSystemXmlApplicationContext(new String[] {configLocation}, false, createParentApplicationContext());
         }
     };
+
     private List<CamelJbiEndpoint> activatedEndpoints = new ArrayList<CamelJbiEndpoint>();
 
     public CamelSpringDeployer(CamelJbiComponent component) {
@@ -53,30 +56,35 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
         this.component = component;
     }
 
+    @Override
     protected String getXBeanFile() {
         return "camel-context";
     }
 
-    /* (non-Javadoc)
-    * @see org.apache.servicemix.common.Deployer#deploy(java.lang.String, java.lang.String)
-    */
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.common.Deployer#deploy(java.lang.String,
+     *      java.lang.String)
+     */
     @Override
     public ServiceUnit deploy(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
-        // lets register the deployer so that any endpoints activated are added to this SU 
+        // lets register the deployer so that any endpoints activated are added
+        // to this SU
         component.deployer = this;
-        ServiceUnit serviceUnit = super.deploy(serviceUnitName, serviceUnitRootPath);
-        return serviceUnit;
+        return super.deploy(serviceUnitName, serviceUnitRootPath);
     }
 
     public void addService(CamelJbiEndpoint endpoint) {
         activatedEndpoints.add(endpoint);
     }
 
+    @Override
     protected List getServices(Kernel kernel) {
         try {
             List<CamelJbiEndpoint> services = new ArrayList<CamelJbiEndpoint>(activatedEndpoints);
             activatedEndpoints.clear();
-                  
+
             ApplicationContext applicationContext = springLoader.getApplicationContext();
             SpringCamelContext camelContext = SpringCamelContext.springCamelContext(applicationContext);
 
@@ -88,8 +96,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
                 }
             }
             return services;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -100,8 +107,8 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
     }
 
     /**
-     * Returns the parent application context which can be used to auto-wire any JBI based components
-     * using the jbi prefix
+     * Returns the parent application context which can be used to auto-wire any
+     * JBI based components using the jbi prefix
      */
     protected ApplicationContext createParentApplicationContext() {
         GenericApplicationContext answer = new GenericApplicationContext();
@@ -110,6 +117,5 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
         answer.refresh();
         return answer;
     }
-
 
 }

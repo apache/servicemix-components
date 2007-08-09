@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
+package org.apache.servicemix.camel;
 
-import org.apache.servicemix.client.ServiceMixClient;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.xml.namespace.QName;
+import org.apache.camel.RuntimeCamelException;
 
 /**
- * @version $Revision: 1.1 $
+ * @version $Revision: 563665 $
  */
-public class JbiEndpointUsingEndpointUriIntegrationTest extends NonJbiCamelEndpointsIntegrationTest {
-    /*
-    * @see TestCase#setUp()
-    */
-    @Override
-    protected void setUp() throws Exception {
-        suName = "su2";
-        super.setUp();
+public class JbiException extends RuntimeCamelException {
+    public JbiException(Throwable cause) {
+        super(cause);
     }
 
-    protected void configureExchange(ServiceMixClient client, MessageExchange exchange) {
-        QName serviceQName = new QName("http://foo.bar.org", "myService");
-        exchange.setService(serviceQName);
+    public JbiException(String message) {
+        super(message);
+    }
+
+    public JbiException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

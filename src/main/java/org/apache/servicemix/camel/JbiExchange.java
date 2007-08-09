@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.jbi;
-
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.impl.DefaultExchange;
+package org.apache.servicemix.camel;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.impl.DefaultExchange;
+
 /**
- * An {@link Exchange} working with JBI which exposes the underlying JBI features such as the
- * JBI {@link #getMessageExchange()}, {@link #getInMessage()} and {@link #getOutMessage()} 
- *
- * @version $Revision$
+ * An {@link org.apache.camel.Exchange} working with JBI which exposes the underlying JBI
+ * features such as the JBI {@link #getMessageExchange()},
+ * {@link #getInMessage()} and {@link #getOutMessage()}
+ * 
+ * @version $Revision: 563665 $
  */
 public class JbiExchange extends DefaultExchange {
     private final JbiBinding binding;
+
     private MessageExchange messageExchange;
 
     public JbiExchange(CamelContext context, JbiBinding binding) {
@@ -43,7 +44,8 @@ public class JbiExchange extends DefaultExchange {
         this.binding = binding;
         this.messageExchange = messageExchange;
 
-        // TODO we could maybe use the typesafe APIs of different derived APIs from JBI 
+        // TODO we could maybe use the typesafe APIs of different derived APIs
+        // from JBI
         setIn(new JbiMessage(messageExchange.getMessage("in")));
         setOut(new JbiMessage(messageExchange.getMessage("out")));
         setFault(new JbiMessage(messageExchange.getMessage("fault")));
@@ -77,12 +79,12 @@ public class JbiExchange extends DefaultExchange {
     }
 
     // Expose JBI features
-    //-------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
-     * Returns the underlying JBI message exchange for an inbound exchange
-     * or null for outbound messages
-     *
+     * Returns the underlying JBI message exchange for an inbound exchange or
+     * null for outbound messages
+     * 
      * @return the inbound message exchange
      */
     public MessageExchange getMessageExchange() {
@@ -91,7 +93,7 @@ public class JbiExchange extends DefaultExchange {
 
     /**
      * Returns the underlying In {@link NormalizedMessage}
-     *
+     * 
      * @return the In message
      */
     public NormalizedMessage getInMessage() {
@@ -100,7 +102,7 @@ public class JbiExchange extends DefaultExchange {
 
     /**
      * Returns the underlying Out {@link NormalizedMessage}
-     *
+     * 
      * @return the Out message
      */
     public NormalizedMessage getOutMessage() {
@@ -109,7 +111,7 @@ public class JbiExchange extends DefaultExchange {
 
     /**
      * Returns the underlying Fault {@link NormalizedMessage}
-     *
+     * 
      * @return the Fault message
      */
     public NormalizedMessage getFaultMessage() {
@@ -117,7 +119,7 @@ public class JbiExchange extends DefaultExchange {
     }
 
     // Implementation methods
-    //-------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     @Override
     protected JbiMessage createInMessage() {

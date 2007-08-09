@@ -86,7 +86,7 @@
         <extensions>true</extensions>
         <configuration>
           <type>service-engine</type>
-          <component>org.apache.camel.component.jbi.CamelJbiComponent</component>
+          <component>org.apache.servicemix.camel.CamelJbiComponent</component>
         </configuration>
       </plugin>
 
@@ -99,8 +99,6 @@
             <include>**/*Test.*</include>
           </includes>
           <excludes>
-            <!-- TODO FIXME! -->
-            <exclude>**/JbiTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>
