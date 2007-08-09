@@ -39,6 +39,7 @@ import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
+import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
 
@@ -58,6 +59,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     private boolean deleteFile = true;
     private boolean recursive = true;
     private boolean autoCreateDirectory = true;
+    private File archive;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
 
@@ -83,6 +85,17 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         }
         if (isAutoCreateDirectory() && !file.exists()) {
             file.mkdirs();
+        }
+        if (archive != null) {
+            if (!deleteFile) {
+                throw new DeploymentException("Archive shouldn't be specified unless deleteFile='true'");
+            }
+            if (isAutoCreateDirectory() && !archive.exists()) {
+                archive.mkdirs();
+            }
+            if (!archive.isDirectory()) {
+                throw new DeploymentException("Archive should refer to a directory");
+            }
         }
         if (lockManager == null) {
             lockManager = createLockManager();
@@ -168,6 +181,19 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     public void setMarshaler(FileMarshaler marshaler) {
         this.marshaler = marshaler;
     }
+    
+    public File getArchive() {
+        return archive;
+    }
+    
+    /**
+     * Configure a directory to archive files before deleting them.
+     * 
+     * @param archive the archive directory
+     */
+    public void setArchive(File archive) {
+        this.archive = archive;
+    }
 
     // Implementation methods
     //-------------------------------------------------------------------------
@@ -227,8 +253,12 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                 processFile(aFile);
                 unlock = false;
                 if (isDeleteFile()) {
-                    if (!aFile.delete()) {
-                        throw new IOException("Could not delete file " + aFile);
+                    if (archive != null) {
+                        FileUtil.moveFile(aFile, archive);
+                    } else {
+                        if (!aFile.delete()) {
+                            throw new IOException("Could not delete file " + aFile);
+                        }
                     }
                     unlock = true;
                 }
