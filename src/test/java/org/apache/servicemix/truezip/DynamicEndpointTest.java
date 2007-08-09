@@ -21,12 +21,11 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
-import de.schlichtherle.io.File;
-
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -36,7 +35,7 @@ public class DynamicEndpointTest extends SpringTestSupport {
 
     protected void setUp() throws Exception {
         super.setUp();
-        new File("target/dynamicEndpoint.zip").mkdirs();
+        FileUtil.deleteFile(new java.io.File("target/dynamicEndpoint.zip"));
     }
 
     public void testSendingToDynamicEndpoint() throws Exception {

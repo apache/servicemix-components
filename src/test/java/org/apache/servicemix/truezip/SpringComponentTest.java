@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.truezip;
 
+import java.io.File;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -25,12 +27,18 @@ import javax.xml.namespace.QName;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class SpringComponentTest extends SpringTestSupport {
 
+    protected void setUp() throws Exception {
+        FileUtil.deleteFile(new File("target/componentOutput.zip"));
+        super.setUp();
+    }
+    
     public void testSendingToStaticEndpoint() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOnly me = client.createInOnlyExchange();
