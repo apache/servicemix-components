@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -86,16 +87,16 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
         this.useJbiWrapper = useJbiWrapper;
     }
 
-    public JmsContext createContext(Message message, ComponentContext context) throws Exception {
-        return new Context(message, context);
+    public JmsContext createContext(Message message) throws Exception {
+        return new Context(message);
     }
 
-    public MessageExchange createExchange(JmsContext context) throws Exception {
+    public MessageExchange createExchange(JmsContext jmsContext, ComponentContext jbiContext) throws Exception {
         org.apache.servicemix.soap.api.Message msg = binding.createMessage();
-        ((Context) context).msg = msg;
-        msg.put(ComponentContext.class, ((Context) context).componentContext);
+        ((Context) jmsContext).msg = msg;
+        msg.put(ComponentContext.class, jbiContext);
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
-        msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) context.getMessage()).getText().getBytes())); 
+        msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) jmsContext.getMessage()).getText().getBytes())); 
         InterceptorChain phase = getChain(Phase.ServerIn);
         phase.doIntercept(msg);
         return msg.getContent(MessageExchange.class);
@@ -163,13 +164,11 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
         return chain;
     }
 
-    protected static class Context implements JmsContext {
+    protected static class Context implements JmsContext, Serializable {
         Message message;
-        ComponentContext componentContext;
         org.apache.servicemix.soap.api.Message msg;
-        Context(Message message, ComponentContext componentContext) {
+        Context(Message message) {
             this.message = message;
-            this.componentContext = componentContext;
         }
         public Message getMessage() {
             return this.message;

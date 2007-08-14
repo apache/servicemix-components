@@ -29,9 +29,9 @@ public interface JmsConsumerMarshaler {
         Message getMessage();
     }
     
-    JmsContext createContext(Message message, ComponentContext context) throws Exception;
+    JmsContext createContext(Message message) throws Exception;
     
-    MessageExchange createExchange(JmsContext context) throws Exception;
+    MessageExchange createExchange(JmsContext jmsContext, ComponentContext jbiContext) throws Exception;
     
     Message createOut(MessageExchange exchange, 
                       NormalizedMessage outMsg,

@@ -46,6 +46,8 @@ import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
 
 public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
+    
+    protected static final String PROP_JMS_CONTEXT = JmsContext.class.getName();
 
     private JmsConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
     private boolean synchronous = true;
@@ -65,6 +67,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private long replyTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
     private Map replyProperties;
 
+    private boolean stateless;
     private StoreFactory storeFactory;
     private Store store;
     
@@ -276,6 +279,14 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         this.synchronous = synchronous;
     }
 
+    public boolean isStateless() {
+        return stateless;
+    }
+
+    public void setStateless(boolean stateless) {
+        this.stateless = stateless;
+    }
+
     public Store getStore() {
         return store;
     }
@@ -302,7 +313,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         if (template == null) {
             template = new JmsTemplate(getConnectionFactory());
         }
-        if (store == null) {
+        if (store == null && !stateless) {
             if (storeFactory == null) {
                 storeFactory = new MemoryStoreFactory();
             }
@@ -321,7 +332,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        JmsContext context = (JmsContext) store.load(exchange.getExchangeId());
+        JmsContext context;
+        if (stateless) {
+            context = (JmsContext) exchange.getProperty(PROP_JMS_CONTEXT);
+        } else {
+            context = (JmsContext) store.load(exchange.getExchangeId());
+        }
         processExchange(exchange, null, context);
     }
 
@@ -398,8 +414,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
             logger.trace("Received: " + jmsMessage);
         }
         try {
-            JmsContext context = marshaler.createContext(jmsMessage, getContext());
-            MessageExchange exchange = marshaler.createExchange(context);
+            JmsContext context = marshaler.createContext(jmsMessage);
+            MessageExchange exchange = marshaler.createExchange(context, getContext());
             configureExchangeTarget(exchange);
             if (synchronous) {
                 sendSync(exchange);
@@ -407,7 +423,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                     processExchange(exchange, session, context);
                 }
             } else {
-                store.store(exchange.getExchangeId(), context);
+                if (stateless) {
+                    exchange.setProperty(PROP_JMS_CONTEXT, context);
+                } else {
+                    store.store(exchange.getExchangeId(), context);
+                }
                 send(exchange);
             }
         } catch (JMSException e) {

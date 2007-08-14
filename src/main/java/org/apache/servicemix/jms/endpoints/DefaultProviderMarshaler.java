@@ -23,8 +23,10 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.xml.transform.Source;
 
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public class DefaultProviderMarshaler implements JmsProviderMarshaler {
 
@@ -56,9 +58,14 @@ public class DefaultProviderMarshaler implements JmsProviderMarshaler {
         return text;
     }
 
-    public Object getDestination(MessageExchange exchange) {
-        // TODO Auto-generated method stub
-        return null;
+    public void populateMessage(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) throws Exception {
+        if (message instanceof TextMessage) {
+            TextMessage textMessage = (TextMessage) message;
+            Source source = new StringSource(textMessage.getText());
+            normalizedMessage.setContent(source);
+        } else {
+            throw new UnsupportedOperationException("JMS message is not a TextMessage");
+        }
     }
-
+    
 }

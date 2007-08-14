@@ -23,7 +23,8 @@ import javax.jms.Session;
 
 public interface JmsProviderMarshaler {
 
-    Object getDestination(MessageExchange exchange);
-
     Message createMessage(MessageExchange exchange, NormalizedMessage in, Session session) throws Exception;
+
+    void populateMessage(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) throws Exception;
+    
 }

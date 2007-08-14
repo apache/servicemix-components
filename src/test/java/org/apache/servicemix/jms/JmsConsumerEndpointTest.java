@@ -77,6 +77,23 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
+    public void testConsumerStateless() throws Exception {
+        JmsComponent component = new JmsComponent();
+        JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
+        endpoint.setService(new QName("jms"));
+        endpoint.setEndpoint("endpoint");
+        endpoint.setTargetService(new QName("receiver"));
+        endpoint.setListenerType("simple");
+        endpoint.setConnectionFactory(connectionFactory);
+        endpoint.setDestinationName("destination");
+        endpoint.setStateless(true);
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
+        container.activateComponent(component, "servicemix-jms");
+
+        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
+        receiver.getMessageList().assertMessagesReceived(1);
+    }
+
     public void testConsumerSimpleJmsTx() throws Exception {
         JmsComponent component = new JmsComponent();
         JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();

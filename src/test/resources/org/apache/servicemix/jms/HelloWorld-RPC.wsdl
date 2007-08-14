@@ -44,6 +44,10 @@
         </schema>
     </types>
 
+    <message name="OneWayRequest">
+        <part name="param1" type="xsd:string"/>
+    </message>
+
     <message name="HelloRequest">
         <part name="header1" element="tns:HelloHeader1"/>
         <part name="header2" element="tns:HelloHeader2"/>
@@ -56,6 +60,9 @@
     </message>
 
     <portType name="HelloPortType">
+    	<operation name="OneWay">
+            <input message="tns:OneWayRequest"/>
+    	</operation>
         <operation name="Hello">
             <input message="tns:HelloRequest"/>
             <output message="tns:HelloResponse"/>
@@ -64,6 +71,12 @@
 
     <binding name="HelloSoapBinding" type="tns:HelloPortType">
         <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="OneWay">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal" parts="param1" namespace="uri:HelloWorld"/>
+            </input>
+        </operation>
         <operation name="Hello">
             <soap:operation soapAction=""/>
             <input>

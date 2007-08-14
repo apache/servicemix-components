@@ -16,6 +16,10 @@
  */
 package org.apache.servicemix.jms.endpoints;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.URI;
 
 import javax.jbi.component.ComponentContext;
@@ -57,13 +61,13 @@ public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
         this.mep = mep;
     }
 
-    public JmsContext createContext(Message message, ComponentContext context) throws Exception {
-        return new Context(message, context);
+    public JmsContext createContext(Message message) throws Exception {
+        return new Context(message);
     }
 
-    public MessageExchange createExchange(JmsContext context) throws Exception {
-        Context ctx = (Context) context;
-        MessageExchange exchange = ctx.componentContext.getDeliveryChannel().createExchangeFactory().createExchange(mep);
+    public MessageExchange createExchange(JmsContext jmsContext, ComponentContext jbiContext) throws Exception {
+        Context ctx = (Context) jmsContext;
+        MessageExchange exchange = jbiContext.getDeliveryChannel().createExchangeFactory().createExchange(mep);
         NormalizedMessage inMessage = exchange.createMessage();
         populateMessage(ctx.message, inMessage);
         exchange.setMessage(inMessage, "in");
@@ -94,15 +98,19 @@ public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
         }
     }
 
-    protected static class Context implements JmsContext {
+    protected static class Context implements JmsContext, Serializable {
         Message message;
-        ComponentContext componentContext;
-        Context(Message message, ComponentContext componentContext) {
+        Context(Message message) {
             this.message = message;
-            this.componentContext = componentContext;
         }
         public Message getMessage() {
             return this.message;
+        }
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            out.writeObject(message);
+        }
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            message = (Message) in.readObject();
         }
     }
 

@@ -27,10 +27,16 @@ import javax.jms.Session;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jms.JmsEndpointType;
+import org.apache.servicemix.store.Store;
+import org.apache.servicemix.store.StoreFactory;
+import org.apache.servicemix.store.memory.MemoryStoreFactory;
+import org.springframework.jms.UncategorizedJmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.JmsTemplate102;
 import org.springframework.jms.core.MessageCreator;
+import org.springframework.jms.core.SessionCallback;
 import org.springframework.jms.support.destination.DestinationResolver;
+import org.springframework.jms.support.destination.DynamicDestinationResolver;
 
 /**
  * 
@@ -40,6 +46,9 @@ import org.springframework.jms.support.destination.DestinationResolver;
  */
 public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpointType {
 
+    private static final String MSG_SELECTOR_START = "JMSCorrelationID='";    
+    private static final String MSG_SELECTOR_END = "'";
+
     private JmsProviderMarshaler marshaler = new DefaultProviderMarshaler();
     private DestinationChooser destinationChooser = new SimpleDestinationChooser();
     private JmsTemplate template;
@@ -47,7 +56,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private boolean jms102;
     private ConnectionFactory connectionFactory;
     private boolean pubSubDomain;
-    private DestinationResolver destinationResolver;
+    private DestinationResolver destinationResolver = new DynamicDestinationResolver();
     private Destination destination;
     private String destinationName;
     private boolean messageIdEnabled = true;
@@ -59,6 +68,13 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private int priority = Message.DEFAULT_PRIORITY;
     private long timeToLive = Message.DEFAULT_TIME_TO_LIVE;
 
+    private Destination replyDestination;
+    private String replyDestinationName;
+    
+    private boolean stateless;
+    private StoreFactory storeFactory;
+    private Store store;
+    
     /**
      * @return the destination
      */
@@ -289,6 +305,46 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         this.timeToLive = timeToLive;
     }
 
+    public boolean isStateless() {
+        return stateless;
+    }
+
+    public void setStateless(boolean stateless) {
+        this.stateless = stateless;
+    }
+
+    public StoreFactory getStoreFactory() {
+        return storeFactory;
+    }
+
+    public void setStoreFactory(StoreFactory storeFactory) {
+        this.storeFactory = storeFactory;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public Destination getReplyDestination() {
+        return replyDestination;
+    }
+
+    public void setReplyDestination(Destination replyDestination) {
+        this.replyDestination = replyDestination;
+    }
+
+    public String getReplyDestinationName() {
+        return replyDestinationName;
+    }
+
+    public void setReplyDestinationName(String replyDestinationName) {
+        this.replyDestinationName = replyDestinationName;
+    }
+
     protected void processInOnly(final MessageExchange exchange, final NormalizedMessage in) throws Exception {
         MessageCreator creator = new MessageCreator() {
             public Message createMessage(Session session) throws JMSException {
@@ -316,16 +372,114 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         }
     }
 
-    protected void processInOut(MessageExchange exchange, NormalizedMessage in) throws Exception {
-        
+    protected void processInOut(final MessageExchange exchange, final NormalizedMessage in, final NormalizedMessage out) throws Exception {
+        SessionCallback callback = new SessionCallback() {
+            public Object doInJms(Session session) throws JMSException {
+                try {
+                    processInOutInSession(exchange, in, out, session);
+                    return null;
+                } catch (JMSException e) {
+                    throw e;
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new UncategorizedJmsException(e);
+                }
+            }
+        };
+        template.execute(callback, true);
+    }
+    
+    protected void processInOutInSession(final MessageExchange exchange, 
+                                         final NormalizedMessage in, 
+                                         final NormalizedMessage out, 
+                                         final Session session) throws Exception {
+        // Create destinations
+        final Destination dest = getDestination(exchange, in, session);
+        final Destination replyDest = getReplyDestination(exchange, out, session);
+        // Create message and send it
+        final Message sendJmsMsg = marshaler.createMessage(exchange, in, session);
+        //setCorrelationID(sendJmsMsg, exchange);
+        sendJmsMsg.setJMSReplyTo(replyDest);
+        template.send(dest, new MessageCreator() {
+            public Message createMessage(Session session) throws JMSException {
+                return sendJmsMsg;
+            }
+        });
+        // Create selector
+        String jmsId = sendJmsMsg.getJMSMessageID();
+        String selector = MSG_SELECTOR_START + jmsId + MSG_SELECTOR_END;
+        //Receiving JMS Message, Creating and Returning NormalizedMessage out
+        Message receiveJmsMsg = template.receiveSelected(replyDest, selector);
+        if (receiveJmsMsg == null) {
+            throw new IllegalStateException("Unable to receive response");
+        }
+        marshaler.populateMessage(receiveJmsMsg, exchange, out);
+    }
+
+    protected Destination getDestination(MessageExchange exchange, Object message, Session session) throws JMSException {
+        Object dest = null;
+        // Let the destinationChooser a chance to choose the destination 
+        if (destinationChooser != null) {
+            dest = destinationChooser.chooseDestination(exchange, message);
+        }
+        // Default to destinationName properties
+        if (dest == null) {
+            dest = destinationName;
+        }
+        // Resolve destination if needed
+        if (dest instanceof Destination) {
+            return (Destination) dest;
+        } else if (dest instanceof String) {
+            return destinationResolver.resolveDestinationName(session, 
+                                                              (String) dest, 
+                                                              isPubSubDomain());
+        }
+        throw new IllegalStateException("Unable to choose destination for exchange " + exchange);
+    }
+
+    protected Destination getReplyDestination(MessageExchange exchange, Object message, Session session) throws JMSException {
+        Object dest = null;
+        // Let the destinationChooser a chance to choose the destination 
+        if (destinationChooser != null) {
+            dest = destinationChooser.chooseDestination(exchange, message);
+        }
+        // Default to replyDestination / replyDestinationName properties
+        if (dest == null) {
+            dest = replyDestination;
+        }
+        if (dest == null) {
+            dest = replyDestinationName;
+        }
+        // Resolve destination if needed
+        if (dest instanceof Destination) {
+            return (Destination) dest;
+        } else if (dest instanceof String) {
+            return destinationResolver.resolveDestinationName(session, 
+                                                              (String) dest, 
+                                                              isPubSubDomain());
+        }
+        throw new IllegalStateException("Unable to choose replyDestination for exchange " + exchange);
     }
     
     public synchronized void start() throws Exception {
         template = createTemplate();
+        if (store == null && !stateless) {
+            if (storeFactory == null) {
+                storeFactory = new MemoryStoreFactory();
+            }
+            store = storeFactory.open(getService().toString() + getEndpoint());
+        }
         super.start();
     }
     
     public synchronized void stop() throws Exception {
+        if (store != null) {
+            if (storeFactory != null) {
+                storeFactory.close(store);
+            }
+            store = null;
+        }
         super.stop();
     }
     
