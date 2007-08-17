@@ -29,8 +29,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.camel.Message;
 import static org.apache.servicemix.camel.CamelConstants.MessageExchangePattern.*;
 
 /**
@@ -39,8 +38,7 @@ import static org.apache.servicemix.camel.CamelConstants.MessageExchangePattern.
  * @version $Revision: 563665 $
  */
 public class JbiBinding {
-    private static final transient Log LOG = LogFactory.getLog(JbiBinding.class);
-    private String messageExchangePattern = IN_ONLY;
+    private String messageExchangePattern;
 
     /**
      * Extracts the body from the given normalized message
@@ -87,21 +85,30 @@ public class JbiBinding {
         if (mep == null) {
             mep = getMessageExchangePattern();
         }
+        MessageExchange answer = null;
         if (mep != null) {
             if (IN_ONLY.equals(mep)) {
-                return exchangeFactory.createInOnlyExchange();
+                answer = exchangeFactory.createInOnlyExchange();
             } else if (IN_OPTIONAL_OUT.equals(mep)) {
-                return exchangeFactory.createInOptionalOutExchange();
+                answer = exchangeFactory.createInOptionalOutExchange();
             } else if (IN_OUT.equals(mep)) {
-                return exchangeFactory.createInOutExchange();
+                answer = exchangeFactory.createInOutExchange();
             } else if (ROBUST_IN_ONLY.equals(mep)) {
-                return exchangeFactory.createRobustInOnlyExchange();
+                answer = exchangeFactory.createRobustInOnlyExchange();
             } else {
-                return exchangeFactory.createExchange(new URI(mep));
+                answer = exchangeFactory.createExchange(new URI(mep));
             }
         }
-        LOG.warn("No MessageExchangePattern specified so using InOnly");
-        return exchangeFactory.createInOnlyExchange();
+        if (answer == null) {
+            // lets try choose the best MEP based on the camel message
+            Message out = camelExchange.getOut(false);
+            if (out == null || out.getBody() == null) {
+                answer = exchangeFactory.createInOnlyExchange();
+            } else {
+                answer = exchangeFactory.createInOutExchange();
+            }
+        }
+        return answer;
     }
 
     protected Source getJbiInContent(Exchange camelExchange) {
