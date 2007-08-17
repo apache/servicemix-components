@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.jms.endpoints;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jms.ConnectionFactory;
@@ -65,7 +65,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private int replyDeliveryMode = Message.DEFAULT_DELIVERY_MODE;
     private int replyPriority = Message.DEFAULT_PRIORITY;
     private long replyTimeToLive = Message.DEFAULT_TIME_TO_LIVE;
-    private Map replyProperties;
+    private Map<String, Object> replyProperties;
 
     private boolean stateless;
     private StoreFactory storeFactory;
@@ -170,14 +170,14 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     /**
      * @return the replyProperties
      */
-    public Map getReplyProperties() {
+    public Map<String, Object> getReplyProperties() {
         return replyProperties;
     }
 
     /**
      * @param replyProperties the replyProperties to set
      */
-    public void setReplyProperties(Map replyProperties) {
+    public void setReplyProperties(Map<String, Object> replyProperties) {
         this.replyProperties = replyProperties;
     }
 
@@ -358,6 +358,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                     return null;
                 }
             });
+            return;
         }
         // Handle exchanges
         Message msg = null;
@@ -394,9 +395,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         MessageProducer producer = session.createProducer(dest);
         try {
             if (replyProperties != null) {
-                for (Iterator it = replyProperties.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry e = (Map.Entry) it.next();
-                    msg.setObjectProperty(e.getKey().toString(), e.getValue());
+                for (Map.Entry<String, Object> e : replyProperties.entrySet()) {
+                    msg.setObjectProperty(e.getKey(), e.getValue());
                 }
             }
             if (replyExplicitQosEnabled) {
@@ -418,7 +418,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
             MessageExchange exchange = marshaler.createExchange(context, getContext());
             configureExchangeTarget(exchange);
             if (synchronous) {
-                sendSync(exchange);
+                try {
+                    sendSync(exchange);
+                } catch (Exception e) {
+                    handleException(exchange, e, session, context);
+                }
                 if (exchange.getStatus() != ExchangeStatus.DONE) {
                     processExchange(exchange, session, context);
                 }
@@ -428,7 +432,17 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                 } else {
                     store.store(exchange.getExchangeId(), context);
                 }
-                send(exchange);
+                boolean success = false;
+                try {
+                    send(exchange);
+                    success = true;
+                } catch (Exception e) {
+                    handleException(exchange, e, session, context);
+                } finally {
+                    if (!success && !stateless) {
+                        store.load(exchange.getExchangeId());
+                    }
+                }
             }
         } catch (JMSException e) {
             throw e;
@@ -490,4 +504,49 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         }
     }
     
+    protected void handleException(MessageExchange exchange, 
+                                 Exception error, 
+                                 Session session, 
+                                 JmsContext context) throws Exception {
+        // For InOnly, the consumer does not expect any response back, so
+        // just rethrow it and let the fault behavior
+        if (exchange instanceof InOnly) {
+            throw error;
+        }
+        // Check if the exception should lead to an error back
+        if (treatExceptionAsFault(error)) {
+            sendError(exchange, error, session, context);
+        } else {
+            throw error;
+        }
+    }
+    
+    protected boolean treatExceptionAsFault(Exception error) {
+        return error instanceof SecurityException;
+    }
+
+    protected void sendError(final MessageExchange exchange, 
+                             final Exception error, 
+                             Session session, 
+                             final JmsContext context) throws Exception {
+        // Create session if needed
+        if (session == null) {
+            template.execute(new SessionCallback() {
+                public Object doInJms(Session session) throws JMSException {
+                    try {
+                        sendError(exchange, error, session, context);
+                    } catch (Exception e) {
+                        throw new ListenerExecutionFailedException("Exchange processing failed", e);
+                    }
+                    return null;
+                }
+            });
+            return;
+        }
+        Message msg = marshaler.createError(exchange, error, session, context);
+        Destination dest = getReplyDestination(exchange, error, session, context);
+        setCorrelationId(context.getMessage(), msg);
+        send(msg, session, dest);
+    }
+     
 }
