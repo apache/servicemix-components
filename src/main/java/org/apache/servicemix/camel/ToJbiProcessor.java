@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.camel;
 
+import java.net.URISyntaxException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.MessageExchange;
@@ -55,6 +56,8 @@ public class ToJbiProcessor implements Processor {
             URIResolver.configureExchange(messageExchange, componentContext, destinationUri);
             deliveryChannel.sendSync(messageExchange);
         } catch (MessagingException e) {
+            throw new JbiException(e);
+        } catch (URISyntaxException e) {
             throw new JbiException(e);
         }
     }

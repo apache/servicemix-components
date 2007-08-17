@@ -17,9 +17,10 @@
 package org.apache.servicemix.camel;
 
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
-
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
@@ -28,6 +29,9 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import static org.apache.servicemix.camel.CamelConstants.MessageExchangePattern.*;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -35,6 +39,9 @@ import org.apache.camel.Exchange;
  * @version $Revision: 563665 $
  */
 public class JbiBinding {
+    private static final transient Log LOG = LogFactory.getLog(JbiBinding.class);
+    private String messageExchangePattern = IN_ONLY;
+
     /**
      * Extracts the body from the given normalized message
      */
@@ -43,8 +50,8 @@ public class JbiBinding {
         return normalizedMessage.getContent();
     }
 
-    public MessageExchange makeJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory) 
-        throws MessagingException {
+    public MessageExchange makeJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory)
+        throws MessagingException, URISyntaxException {
         
         MessageExchange jbiExchange = createJbiMessageExchange(camelExchange, exchangeFactory);
         NormalizedMessage normalizedMessage = jbiExchange.getMessage("in");
@@ -57,10 +64,43 @@ public class JbiBinding {
         return jbiExchange;
     }
 
+    // Properties
+    //-------------------------------------------------------------------------
+
+    public String getMessageExchangePattern() {
+        return messageExchangePattern;
+    }
+
+    /**
+     * Sets the message exchange pattern to use for communicating with JBI
+     *
+     * @param messageExchangePattern
+     */
+    public void setMessageExchangePattern(String messageExchangePattern) {
+        this.messageExchangePattern = messageExchangePattern;
+    }
+
     protected MessageExchange createJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory)
-        throws MessagingException {
-        
-        // TODO we should deal with other forms of MEP
+        throws MessagingException, URISyntaxException {
+
+        String mep = camelExchange.getProperty(CamelConstants.Property.MESSAGE_EXCHANGE_PATTERN, String.class);
+        if (mep == null) {
+            mep = getMessageExchangePattern();
+        }
+        if (mep != null) {
+            if (IN_ONLY.equals(mep)) {
+                return exchangeFactory.createInOnlyExchange();
+            } else if (IN_OPTIONAL_OUT.equals(mep)) {
+                return exchangeFactory.createInOptionalOutExchange();
+            } else if (IN_OUT.equals(mep)) {
+                return exchangeFactory.createInOutExchange();
+            } else if (ROBUST_IN_ONLY.equals(mep)) {
+                return exchangeFactory.createRobustInOnlyExchange();
+            } else {
+                return exchangeFactory.createExchange(new URI(mep));
+            }
+        }
+        LOG.warn("No MessageExchangePattern specified so using InOnly");
         return exchangeFactory.createInOnlyExchange();
     }
 
