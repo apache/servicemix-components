@@ -24,7 +24,7 @@
   xmlns:npex="http://www.producer.org">
   <wsnt:ConsumerReference>
     <wsa:Address>
-      http://www.consumer.org/service/endpoint
+      endpoint:http://www.consumer.org/service/endpoint
     </wsa:Address>
   </wsnt:ConsumerReference>
   <wsnt:Filter>

@@ -16,9 +16,12 @@
  */
 package org.apache.servicemix.wsn;
 
+import javax.jws.WebService;
+
 import org.apache.servicemix.wsn.jaxws.NotificationConsumer;
 import org.apache.servicemix.wsn.jaxws.PullPoint;
 
+@WebService(name = "PullPoint", targetNamespace = "http://docs.oasis-open.org/wsn/bw-2")
 public interface PullPointConsumer extends PullPoint, NotificationConsumer {
 
 }
