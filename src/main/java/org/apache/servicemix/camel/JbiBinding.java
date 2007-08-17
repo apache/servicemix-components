@@ -30,7 +30,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import static org.apache.servicemix.camel.CamelConstants.MessageExchangePattern.*;
+import static org.apache.servicemix.camel.MEPConstants.*;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -81,7 +81,7 @@ public class JbiBinding {
     protected MessageExchange createJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory)
         throws MessagingException, URISyntaxException {
 
-        String mep = camelExchange.getProperty(CamelConstants.Property.MESSAGE_EXCHANGE_PATTERN, String.class);
+        String mep = camelExchange.getProperty(PROPERTY, String.class);
         if (mep == null) {
             mep = getMessageExchangePattern();
         }
