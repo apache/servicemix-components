@@ -40,6 +40,7 @@ import org.apache.cxf.jaxws.support.JaxWsImplementorInfo;
 import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIDestination;
+import org.apache.cxf.transport.jbi.JBIDispatcherUtil;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
@@ -219,6 +220,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     @Override
     public void stop() throws Exception {
         ReflectionUtils.callLifecycleMethod(getPojo(), PreDestroy.class);
+        JBIDispatcherUtil.clean();
         super.stop();
     }
 
