@@ -35,9 +35,9 @@
 
   <properties>
       <jetty-version>6.1.3</jetty-version>  
-      <cxf-version>2.1-incubator-SNAPSHOT</cxf-version>
+      <cxf-version>2.0.1-incubator</cxf-version>
       <surefire.fork.mode>pertest</surefire.fork.mode>
-      
+      <derby-version>10.2.2.0</derby-version>
   </properties>
 
   <dependencies>
@@ -45,6 +45,7 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
       <version>${servicemix-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
@@ -56,46 +57,60 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-services</artifactId>
       <version>${servicemix-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxws</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-ws-policy</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-ws-addr</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-ws-rm</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-ws-security</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-bindings-soap</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-http-jetty</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-jms</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
@@ -107,27 +122,32 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-jbi</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-bindings-jbi</artifactId>
       <version>${cxf-version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
       <version>${jetty-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty-sslengine</artifactId>
       <version>${jetty-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty-util</artifactId>
       <version>${jetty-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -145,16 +165,19 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-support</artifactId>
       <version>${spring-version}</version>
-      </dependency>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-aop</artifactId>
       <version>${spring-version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jmx</artifactId>
       <version>${spring-version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -174,6 +197,12 @@
       <artifactId>spring-core</artifactId>
       <version>${spring-version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>${derby-version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -212,9 +241,17 @@
             <include>**/*Test*</include>
           </includes>
           <excludes>
-            <exclude>**/PollDirectoryTest*</exclude>
+            <exclude>**/*$*</exclude>
           </excludes>
           <forkMode>${surefire.fork.mode}</forkMode>
+          <systemProperties>
+            <property>
+              <name>derby.system.home</name>
+              <value>${basedir}/target/derby</value>
+            </property>
+                                                                                                                 222,39        22%
+          </systemProperties>
+
         </configuration>
       </plugin>
       <plugin>

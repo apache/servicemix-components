@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.cxfbc;
 
-
-
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -57,14 +55,17 @@ import org.apache.cxf.interceptor.StaxInInterceptor;
 import org.apache.cxf.interceptor.StaxOutInterceptor;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.message.MessageContentsList;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.service.Service;
+import org.apache.cxf.service.invoker.Invoker;
 import org.apache.cxf.service.model.BindingFaultInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.transport.ChainInitiationObserver;
+import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.cxfbc.interceptors.JbiInInterceptor;
@@ -74,9 +75,6 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
-
-
-
 
 /**
  * 
@@ -112,7 +110,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     private BindingFaultInfo faultWanted;
 
-    
+    private Bus bus;
+
     /**
      * @return the wsdl
      */
@@ -162,7 +161,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     @Override
     public String getLocationURI() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -203,8 +201,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         description);
             }
             if (service == null) {
-                service = (QName) definition.getServices().keySet().iterator()
-                        .next();
+                // looking for the servicename according to targetServiceName
+                // first
+                if (definition.getServices().containsKey(getTargetService())) {
+                    service = getTargetService();
+                } else {
+                    service = (QName) definition.getServices().keySet()
+                            .iterator().next();
+                }
             }
             WSDLServiceFactory factory = new WSDLServiceFactory(getBus(),
                     definition, service);
@@ -212,6 +216,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
             EndpointInfo ei = cxfService.getServiceInfos().iterator().next()
                     .getEndpoints().iterator().next();
+
             if (endpoint == null) {
                 endpoint = ei.getName().getLocalPart();
             }
@@ -241,12 +246,38 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getOutFaultInterceptors().add(
                     new SoapOutInterceptor(getBus()));
             ep = new EndpointImpl(getBus(), cxfService, ei);
+            getInInterceptors().addAll(getBus().getInInterceptors());
+            getInFaultInterceptors().addAll(getBus().getInFaultInterceptors());
+            getOutInterceptors().addAll(getBus().getOutInterceptors());
+            getOutFaultInterceptors()
+                    .addAll(getBus().getOutFaultInterceptors());
+
             cxfService.getInInterceptors().addAll(getInInterceptors());
             cxfService.getInFaultInterceptors()
                     .addAll(getInFaultInterceptors());
             cxfService.getOutInterceptors().addAll(getOutInterceptors());
             cxfService.getOutFaultInterceptors().addAll(
                     getOutFaultInterceptors());
+
+            ep.getInInterceptors().addAll(getInInterceptors());
+            ep.getInFaultInterceptors().addAll(getInFaultInterceptors());
+            ep.getOutInterceptors().addAll(getOutInterceptors());
+            ep.getOutFaultInterceptors().addAll(getOutFaultInterceptors());
+
+            ep.getOutInterceptors().add(new SoapActionOutInterceptor());
+            ep.getOutInterceptors().add(new AttachmentOutInterceptor());
+            ep.getOutInterceptors().add(new StaxOutInterceptor());
+            ep.getOutInterceptors().add(new SoapOutInterceptor(getBus()));
+
+            cxfService.getInInterceptors().addAll(getBus().getInInterceptors());
+            cxfService.getInFaultInterceptors().addAll(
+                    getBus().getInFaultInterceptors());
+            cxfService.getOutInterceptors().addAll(
+                    getBus().getOutInterceptors());
+            cxfService.getOutFaultInterceptors().addAll(
+                    getBus().getOutFaultInterceptors());
+
+            
             chain = new JbiChainInitiationObserver(ep, getBus());
             server = new ServerImpl(getBus(), ep, null, chain);
 
@@ -260,8 +291,11 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     protected Bus getBus() {
         if (getBusCfg() != null) {
-            SpringBusFactory bf = new SpringBusFactory();
-            return bf.createBus(getBusCfg());
+            if (bus == null) {
+                SpringBusFactory bf = new SpringBusFactory();
+                bus = bf.createBus(getBusCfg());
+            }
+            return bus;
         } else {
             return ((CxfBcComponent) getServiceUnit().getComponent()).getBus();
         }
@@ -289,7 +323,66 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             super(Phase.INVOKE);
         }
 
+        private Object getInvokee(Message message) {
+            Object invokee = message.getContent(List.class);
+            if (invokee == null) {
+                invokee = message.getContent(Object.class);
+            }
+            return invokee;
+        }
+
+        private void copyJaxwsProperties(Message inMsg, Message outMsg) {
+            outMsg.put(Message.WSDL_OPERATION, inMsg
+                    .get(Message.WSDL_OPERATION));
+            outMsg.put(Message.WSDL_SERVICE, inMsg.get(Message.WSDL_SERVICE));
+            outMsg.put(Message.WSDL_INTERFACE, inMsg
+                    .get(Message.WSDL_INTERFACE));
+            outMsg.put(Message.WSDL_PORT, inMsg.get(Message.WSDL_PORT));
+            outMsg.put(Message.WSDL_DESCRIPTION, inMsg
+                    .get(Message.WSDL_DESCRIPTION));
+        }
+
         public void handleMessage(final Message message) throws Fault {
+            final Exchange cxfExchange = message.getExchange();
+            final Endpoint endpoint = cxfExchange.get(Endpoint.class);
+            final Service service = endpoint.getService();
+            final Invoker invoker = service.getInvoker();
+
+            if (invoker instanceof Servant) {
+                // it's rm request, run the invocation directly in bc, not send
+                // to se.
+                Exchange runableEx = message.getExchange();
+                Object result = invoker.invoke(runableEx, getInvokee(message));
+                if (!cxfExchange.isOneWay()) {
+                    Endpoint end = cxfExchange.get(Endpoint.class);
+
+                    Message outMessage = runableEx.getOutMessage();
+                    if (outMessage == null) {
+                        outMessage = end.getBinding().createMessage();
+                        cxfExchange.setOutMessage(outMessage);
+                    }
+                    copyJaxwsProperties(message, outMessage);
+                    if (result != null) {
+                        MessageContentsList resList = null;
+                        if (result instanceof MessageContentsList) {
+                            resList = (MessageContentsList) result;
+                        } else if (result instanceof List) {
+                            resList = new MessageContentsList((List) result);
+                        } else if (result.getClass().isArray()) {
+                            resList = new MessageContentsList((Object[]) result);
+                        } else {
+                            outMessage.setContent(Object.class, result);
+                        }
+                        if (resList != null) {
+                            outMessage.setContent(List.class, resList);
+                        }
+                    }
+                    message.getExchange().setOutMessage(outMessage);
+                }
+
+                return;
+            }
+
             MessageExchange exchange = message
                     .getContent(MessageExchange.class);
             ComponentContext context = message.getExchange().get(
@@ -353,6 +446,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                             "out").getContent());
                 }
             }
+
         }
 
         // this method is used for ws-policy to set BindingFaultInfo
@@ -400,4 +494,5 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     public String getBusCfg() {
         return busCfg;
     }
+
 }

@@ -58,7 +58,8 @@ import org.apache.servicemix.soap.util.DomUtil;
 public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
 
     public JbiInWsdl1Interceptor() {
-        super(Phase.UNMARSHAL);
+        //super(Phase.UNMARSHAL);
+        super(Phase.PRE_INVOKE);
         addAfter(JbiOperationInterceptor.class.getName());
     }
     
@@ -77,9 +78,6 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         }
         
         BindingOperationInfo wsdlOperation = getOperation(message);
-        /*if (wsdlOperation.getUnwrappedOperation() != null) {
-            wsdlOperation = wsdlOperation.getUnwrappedOperation();
-        }*/
         BindingMessageInfo wsdlMessage = !isRequestor(message) ? wsdlOperation.getInput() : wsdlOperation.getOutput();
 
         Document document = DomUtil.createDocument();
@@ -105,6 +103,10 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             style = binding.getStyle();
         }
         Element body = getBodyElement(message);
+        if (body == null) {
+            //SOAP:Body is empty
+            return;
+        }
         List<SoapHeaderInfo> headers = wsdlMessage.getExtensors(SoapHeaderInfo.class);
         List<Header> headerElement = message.getHeaders();
         List<Object> parts = new ArrayList<Object>();
@@ -113,6 +115,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 parts.add(body);
             } else /* rpc-style */ {
                 // SOAP:Body element is the operation name, children are operation parameters
+                
                 Element param = DomUtil.getFirstChildElement(body);
                 boolean found = false;
                 while (param != null) {

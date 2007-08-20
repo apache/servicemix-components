@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.cxfbc.ws.policy;
+package org.apache.servicemix.cxfbc.ws.rm;
 
 import java.net.URL;
 import java.util.logging.Logger;
@@ -24,24 +24,23 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
-import org.apache.cxf.greeter_control.BasicGreeterService;
 import org.apache.cxf.greeter_control.Greeter;
-import org.apache.cxf.greeter_control.PingMeFault;
+import org.apache.cxf.greeter_control.GreeterService;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.servicemix.cxfbc.ws.policy.ConnectionHelper;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
-public class CxfBCPolicyTest extends SpringTestSupport {
-
-    private static final Logger LOG = Logger.getLogger(CxfBCPolicyTest.class
-            .getName());
-
-    public void testUsingAddressing() throws Exception {
+public class CxfBCRMTest extends SpringTestSupport {
+    private static final Logger LOG = Logger.getLogger(CxfBCRMTest.class.getName());
+    private Bus bus;
+    
+    public void testDecoupled() throws Exception {
         SpringBusFactory bf = new SpringBusFactory();
-        Bus bus = bf
-                .createBus("/org/apache/servicemix/cxfbc/ws/policy/addr.xml");
+        bus = bf.createBus("/org/apache/servicemix/cxfbc/ws/rm/decoupled.xml");
         BusFactory.setDefaultBus(bus);
         LoggingInInterceptor in = new LoggingInInterceptor();
         bus.getInInterceptors().add(in);
@@ -49,47 +48,44 @@ public class CxfBCPolicyTest extends SpringTestSupport {
         LoggingOutInterceptor out = new LoggingOutInterceptor();
         bus.getOutInterceptors().add(out);
         bus.getOutFaultInterceptors().add(out);
-        URL wsdl = getClass().getResource("/wsdl/greeter_control.wsdl");
-        QName serviceName = new QName("http://cxf.apache.org/greeter_control",
-                                      "BasicGreeterService");
-        BasicGreeterService gs = new BasicGreeterService(wsdl, serviceName);
+        QName serviceName = new QName("http://cxf.apache.org/greeter_control", "GreeterService");
+        URL wsdl = new ClassPathResource("/wsdl/greeter_control.wsdl").getURL();
+        GreeterService gs = new GreeterService(wsdl, serviceName);
         final Greeter greeter = gs.getGreeterPort();
-        LOG.info("Created greeter client.");
-        if ("HP-UX".equals(System.getProperty("os.name"))) {
-            ConnectionHelper.setKeepAliveConnection(greeter, true);
+        LOG.fine("Created greeter client.");
+       
+        ConnectionHelper.setKeepAliveConnection(greeter, true);
+
+                
+        TwowayThread t = new TwowayThread(greeter);    
+        t.start();
+        
+        // allow for partial response to twoway request to arrive
+        
+        long wait = 3000;
+        while (wait > 0) {
+            long start = System.currentTimeMillis();
+            try {
+                Thread.sleep(wait);
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+            wait -= System.currentTimeMillis() - start;
         }
 
-        // oneway
-
-        greeter.greetMeOneWay("CXF");
-
-        // two-way
-
-        assertEquals("CXF", greeter.greetMe("cxf"));
-
-        // exception
-
-        try {
-            greeter.pingMe();
-        } catch (PingMeFault ex) {
-            fail("First invocation should have succeeded.");
-        }
-
-        try {
-            greeter.pingMe();
-            fail("Expected PingMeFault not thrown.");
-        } catch (PingMeFault ex) {
-            assertEquals(2, (int) ex.getFaultInfo().getMajor());
-            assertEquals(1, (int) ex.getFaultInfo().getMinor());
-        }
+        greeter.greetMeOneWay("oneway");
+        t.join();
+        assertEquals("Unexpected response to twoway request", "oneway", t.getResponse());
     }
-
+    
+    
+    
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
-        // load cxf se and bc from spring config file
+        System.setProperty("derby.system.home", "/");
+        //load cxf se and bc from spring config file
         return new ClassPathXmlApplicationContext(
-                "org/apache/servicemix/cxfbc/ws/policy/xbean.xml");
-
+            "org/apache/servicemix/cxfbc/ws/rm/xbean.xml");    
     }
 
 }

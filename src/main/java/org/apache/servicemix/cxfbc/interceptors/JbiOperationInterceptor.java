@@ -85,6 +85,7 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
             message.getExchange().put(BindingOperationInfo.class, operation);
             message.getExchange().put(OperationInfo.class,
                     operation.getOperationInfo());
+            message.getExchange().setOneWay(operation.getOperationInfo().isOneWay());
         }
     }
 
