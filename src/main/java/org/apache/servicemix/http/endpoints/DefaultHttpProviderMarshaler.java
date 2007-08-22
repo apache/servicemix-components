@@ -18,6 +18,7 @@ package org.apache.servicemix.http.endpoints;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Reader;
+import java.net.URI;
 import java.util.Map;
 
 import javax.jbi.messaging.ExchangeStatus;
@@ -41,7 +42,7 @@ import org.mortbay.jetty.HttpMethods;
 
 /**
  * Default marshaler used for non-soap provider endpoints.
- * 
+ *
  * @author gnodet
  * @since 3.2
  */
@@ -160,11 +161,16 @@ public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
         }
         return content;
     }
-    
-    public void createRequest(final MessageExchange exchange, 
-                              final NormalizedMessage inMsg, 
+
+    public void createRequest(final MessageExchange exchange,
+                              final NormalizedMessage inMsg,
                               final SmxHttpExchange httpExchange) throws Exception {
         httpExchange.setURL(getLocationUri(exchange, inMsg));
+
+        // Temporary fix for bug in jetty-client 6.1.5
+        // http://fisheye.codehaus.org/browse/jetty-contrib/jetty/trunk/contrib/client/src/main/java/org/mortbay/jetty/client/HttpConnection.java?r1=374&r2=378
+        httpExchange.addRequestHeader(HttpHeaders.HOST_BUFFER, new ByteArrayBuffer(new URI(getLocationUri(exchange, inMsg)).getHost()));
+
         httpExchange.setMethod(getMethod(exchange, inMsg));
         httpExchange.setRequestHeader(HttpHeaders.CONTENT_TYPE, getContentType(exchange, inMsg));
         if (getHeaders() != null) {
@@ -207,5 +213,5 @@ public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
 
         }
     }
-    
+
 }
