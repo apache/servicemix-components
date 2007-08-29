@@ -316,7 +316,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     }
 
-    protected class JbiInvokerInterceptor extends
+    public class JbiInvokerInterceptor extends
             AbstractPhaseInterceptor<Message> {
 
         public JbiInvokerInterceptor() {
@@ -401,7 +401,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     process(exchange);
                 } else {
                     context.getDeliveryChannel().send(exchange);
-
+                    
                 }
             } catch (Exception e) {
                 throw new Fault(e);

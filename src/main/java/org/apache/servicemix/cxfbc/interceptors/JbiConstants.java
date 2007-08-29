@@ -56,6 +56,8 @@ public final class JbiConstants {
     public static final String WSDL11_WRAPPER_PREFIX = "jbi";
 
     public static final String WSDL11_WRAPPER_MESSAGE_LOCALNAME = "message";
+    
+    public static final String JBI_SUFFIX = "JBIADDRESS";
 
     public static final QName WSDL11_WRAPPER_MESSAGE = new QName(
             WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_MESSAGE_LOCALNAME,

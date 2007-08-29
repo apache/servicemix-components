@@ -24,6 +24,8 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.endpoint.ClientImpl;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.greeter_control.BasicGreeterService;
 import org.apache.cxf.greeter_control.Greeter;
 import org.apache.cxf.greeter_control.PingMeFault;
@@ -59,8 +61,10 @@ public class CxfBCPolicyTest extends SpringTestSupport {
             ConnectionHelper.setKeepAliveConnection(greeter, true);
         }
 
+        //set timeout to 30 secs to avoid intermitly failed
+        ((ClientImpl)ClientProxy.getClient(greeter)).setSynchronousTimeout(30000);
+        
         // oneway
-
         greeter.greetMeOneWay("CXF");
 
         // two-way

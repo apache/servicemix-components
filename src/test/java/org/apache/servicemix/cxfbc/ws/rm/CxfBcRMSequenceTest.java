@@ -35,6 +35,7 @@ import org.apache.cxf.binding.soap.Soap11;
 import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.greeter_control.Control;
 import org.apache.cxf.greeter_control.ControlService;
@@ -1347,6 +1348,10 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
 
         greeter = gs.getGreeterPort();
+        
+        //      set timeout to 30 secs to avoid intermitly failed
+        ((ClientImpl)ClientProxy.getClient(greeter)).setSynchronousTimeout(30000);
+        
         LOG.fine("Created greeter client.");
 
         ConnectionHelper.setKeepAliveConnection(greeter, true);
