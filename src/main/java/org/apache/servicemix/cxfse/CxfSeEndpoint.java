@@ -221,6 +221,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     public void stop() throws Exception {
         ReflectionUtils.callLifecycleMethod(getPojo(), PreDestroy.class);
         JBIDispatcherUtil.clean();
+        getBus().shutdown(true);
         super.stop();
     }
 
