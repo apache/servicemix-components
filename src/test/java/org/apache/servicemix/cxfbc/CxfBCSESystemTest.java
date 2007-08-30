@@ -46,6 +46,43 @@ public class CxfBCSESystemTest extends SpringTestSupport {
                     "Negative number cant be added!");
         }
     }
+    
+    public void testMultiClient() throws Exception {
+        URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
+        assertNotNull(wsdl);
+        CalculatorService service = new CalculatorService(wsdl, new QName(
+                "http://apache.org/cxf/calculator", "CalculatorService"));
+        CalculatorPortType port = service.getCalculatorPort();
+        MultiClientThread[] clients = new MultiClientThread[10];
+        for (int i = 0; i < clients.length; i++) {
+            clients[i] = new MultiClientThread(port);
+        }
+        
+        for (int i = 0; i < clients.length; i++) {
+            clients[i].start();
+        }
+        
+        for (int i = 0; i < clients.length; i++) {
+            clients[i].join();
+        }
+    }
+    
+    class MultiClientThread extends Thread {
+        private CalculatorPortType port;
+        
+        public MultiClientThread(CalculatorPortType port) {
+            this.port = port;
+        }
+        
+        public void run() {
+            try {
+                assertEquals(port.add(1, 2), 3);
+            } catch (AddNumbersFault e) {
+                // TODO Auto-generated catch block
+                fail();
+            }
+        }
+    }
 
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
