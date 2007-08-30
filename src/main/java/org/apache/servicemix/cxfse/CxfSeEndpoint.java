@@ -64,7 +64,6 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
 
     private String address;
 
-
     private List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
 
     private List<Interceptor> out = new CopyOnWriteArrayList<Interceptor>();
@@ -155,21 +154,17 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
-        JBITransportFactory jbiTransportFactory =
-            (JBITransportFactory)getBus().getExtension(ConduitInitiatorManager.class).
-                    getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
-        JBIDestination jbiDestination = jbiTransportFactory.getDestination(exchange.getService().toString()
-                           + exchange.getInterfaceName().toString());
-        DeliveryChannel oldDc = jbiDestination.getDeliveryChannel();
-        try {
-            jbiDestination.setDeliveryChannel(getContext()
-                    .getDeliveryChannel());
-         
-            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
-            }
-        } finally {
-            jbiDestination.setDeliveryChannel(oldDc);
+        JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
+                .getExtension(ConduitInitiatorManager.class)
+                .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+        JBIDestination jbiDestination = jbiTransportFactory
+                .getDestination(exchange.getService().toString()
+                        + exchange.getInterfaceName().toString());
+        DeliveryChannel dc = getContext().getDeliveryChannel();
+        
+        jbiDestination.setDeliveryChannel(dc);
+        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
         }
     }
 
@@ -183,14 +178,13 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         super.start();
         address = "jbi://" + ID_GENERATOR.generateSanitizedId();
         endpoint.publish(address);
-        setService(endpoint.getServer().getEndpoint().getService()
-                .getName());
-        setEndpoint(endpoint.getServer().getEndpoint()
-                .getEndpointInfo().getName().getLocalPart());
+        setService(endpoint.getServer().getEndpoint().getService().getName());
+        setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo()
+                .getName().getLocalPart());
         try {
-            definition = new ServiceWSDLBuilder(getBus(), endpoint
-                    .getServer().getEndpoint().getService()
-                    .getServiceInfos().iterator().next()).build();
+            definition = new ServiceWSDLBuilder(getBus(), endpoint.getServer()
+                    .getEndpoint().getService().getServiceInfos().iterator()
+                    .next()).build();
         } catch (WSDLException e) {
             throw new DeploymentException(e);
         }
