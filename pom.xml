@@ -41,13 +41,7 @@
 		<dependency>
 		    <groupId>org.apache.servicemix</groupId>
 		    <artifactId>servicemix-shared</artifactId>
-            	    <scope>provided</scope>
 		</dependency>
-                <dependency>
-                    <groupId>org.apache.servicemix</groupId>
-                    <artifactId>servicemix-common</artifactId>
-                    <version>${servicemix-version}</version>
-                </dependency>
                 <dependency>
                     <groupId>org.apache.servicemix</groupId>
                     <artifactId>servicemix-jbi</artifactId>
