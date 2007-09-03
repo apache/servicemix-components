@@ -39,80 +39,105 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>org.apache.servicemix</groupId>
-			<artifactId>servicemix-shared</artifactId>
-            <scope>provided</scope>
+		    <groupId>org.apache.servicemix</groupId>
+		    <artifactId>servicemix-shared</artifactId>
+            	    <scope>provided</scope>
+		</dependency>
+                <dependency>
+                    <groupId>org.apache.servicemix</groupId>
+                    <artifactId>servicemix-common</artifactId>
+                    <version>${servicemix-version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.servicemix</groupId>
+                    <artifactId>servicemix-jbi</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>wsdl4j</groupId>
+                    <artifactId>wsdl4j</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-activation_1.1_spec</artifactId>
+                    <version>1.0-M1</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>stax</groupId>
+                    <artifactId>stax-api</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+
+		<dependency>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-frontend-jaxws</artifactId>
+		    <version>${cxf-version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
-			<version>${cxf-version}</version>
-            <scope>provided</scope>
+		    <groupId>org.apache.servicemix</groupId>
+		    <artifactId>servicemix-core</artifactId>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.servicemix</groupId>
-			<artifactId>servicemix-core</artifactId>
-			<scope>provided</scope>
+		    <groupId>commons-logging</groupId>
+		    <artifactId>commons-logging</artifactId>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<scope>provided</scope>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-support</artifactId>
+		    <version>${spring-version}</version>
+ 	            <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-support</artifactId>
-			<version>${spring-version}</version>
-            <scope>provided</scope>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-aop</artifactId>
+		    <version>${spring-version}</version>
+		    <scope>provided</scope>
+		</dependency>
+	        <dependency>
+        	    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jmx</artifactId>
+                    <version>${spring-version}</version>
+                    <scope>provided</scope>
+                </dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-context</artifactId>
+		    <version>${spring-version}</version>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-aop</artifactId>
-			<version>${spring-version}</version>
-            <scope>provided</scope>
-		</dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jmx</artifactId>
-            <version>${spring-version}</version>
-            <scope>provided</scope>
-        </dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${spring-version}</version>
-			<scope>provided</scope>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-beans</artifactId>
+		    <version>${spring-version}</version>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-			<version>${spring-version}</version>
-			<scope>provided</scope>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-core</artifactId>
+		    <version>${spring-version}</version>
+		    <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${spring-version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-jbi</artifactId>
-			<version>${cxf-version}</version>
-            <scope>provided</scope>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-transports-jbi</artifactId>
+		    <version>${cxf-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-bindings-jbi</artifactId>
 			<version>${cxf-version}</version>
-            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-testutils</artifactId>
 			<version>${cxf-version}</version>
-            <scope>provided</scope>
+                        <scope>provided</scope>
 		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>
