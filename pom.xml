@@ -42,7 +42,6 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
       <version>${servicemix-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
@@ -55,16 +54,6 @@
       <artifactId>servicemix-services</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-common</artifactId>
-      <version>${servicemix-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-soap2</artifactId>
-      <version>${servicemix-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
