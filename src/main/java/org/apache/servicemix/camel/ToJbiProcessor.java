@@ -17,14 +17,18 @@
 package org.apache.servicemix.camel;
 
 import java.net.URISyntaxException;
+import java.util.Map;
+
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.util.URISupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 
 /**
@@ -41,20 +45,48 @@ public class ToJbiProcessor implements Processor {
 
     private String destinationUri;
 
+    private String mep;
+
     public ToJbiProcessor(JbiBinding binding, ComponentContext componentContext, String destinationUri) {
         this.binding = binding;
         this.componentContext = componentContext;
         this.destinationUri = destinationUri;
+        try {
+            int idx = destinationUri.indexOf('?');
+            if (idx > 0) {
+                Map params = URISupport.parseQuery(destinationUri.substring(idx + 1));
+                mep = (String) params.get("mep");
+                if (mep != null && !mep.startsWith("http://www.w3.org/ns/wsdl/")) {
+                    mep = "http://www.w3.org/ns/wsdl/" + mep;
+                }
+                this.destinationUri = destinationUri.substring(0, idx);
+            }
+        } catch (URISyntaxException e) {
+            throw new JbiException(e);
+        }
     }
 
     public void process(Exchange exchange) {
         try {
             DeliveryChannel deliveryChannel = componentContext.getDeliveryChannel();
             MessageExchangeFactory exchangeFactory = deliveryChannel.createExchangeFactory();
-            MessageExchange messageExchange = binding.makeJbiMessageExchange(exchange, exchangeFactory);
+            MessageExchange messageExchange = binding.makeJbiMessageExchange(exchange, exchangeFactory, mep);
 
             URIResolver.configureExchange(messageExchange, componentContext, destinationUri);
             deliveryChannel.sendSync(messageExchange);
+
+            if (messageExchange.getStatus() == ExchangeStatus.ERROR) {
+                exchange.setException(messageExchange.getError());
+            } else if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
+                if (messageExchange.getFault() != null) {
+                    exchange.getFault().setBody(messageExchange.getFault().getContent());
+                } else {
+                    exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
+                }
+                messageExchange.setStatus(ExchangeStatus.DONE);
+                deliveryChannel.send(messageExchange);
+            }
+
         } catch (MessagingException e) {
             throw new JbiException(e);
         } catch (URISyntaxException e) {

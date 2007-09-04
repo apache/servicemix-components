@@ -51,8 +51,8 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
         this.binding = binding;
     }
 
-    public CamelJbiEndpoint(ServiceUnit serviceUnit, Endpoint camelEndpoint, JbiBinding binding, Processor camelProcesso) {
-        this(serviceUnit, SERVICE_NAME, camelEndpoint.getEndpointUri(), camelEndpoint, binding, camelProcesso);
+    public CamelJbiEndpoint(ServiceUnit serviceUnit, Endpoint camelEndpoint, JbiBinding binding, Processor camelProcessor) {
+        this(serviceUnit, SERVICE_NAME, camelEndpoint.getEndpointUri(), camelEndpoint, binding, camelProcessor);
     }
 
     @Override
@@ -69,8 +69,7 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Received exchange: " + exchange);
         }
-        /*
-         * ToDo
-         */
+        JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
+        camelProcessor.process(camelExchange);
     }
 }

@@ -19,7 +19,9 @@ package org.apache.servicemix.camel;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.transform.Source;
 
 import org.apache.camel.impl.DefaultMessage;
 
@@ -99,6 +101,20 @@ public class JbiMessage extends DefaultMessage {
                 String name = iter.next().toString();
                 Object value = normalizedMessage.getProperty(name);
                 map.put(name, value);
+            }
+        }
+    }
+
+    @Override
+    public void setBody(Object body) {
+        if (normalizedMessage != null) {
+            if (!(body instanceof Source)) {
+                body = getExchange().getBinding().convertBodyToJbi(body);
+            }
+            try {
+                normalizedMessage.setContent((Source) body);
+            } catch (MessagingException e) {
+                throw new JbiException(e);
             }
         }
     }

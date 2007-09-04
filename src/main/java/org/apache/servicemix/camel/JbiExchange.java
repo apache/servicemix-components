@@ -20,6 +20,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.impl.DefaultExchange;
 
 /**
@@ -37,18 +38,23 @@ public class JbiExchange extends DefaultExchange {
     public JbiExchange(CamelContext context, JbiBinding binding) {
         super(context);
         this.binding = binding;
+        populateProperties();
     }
+
+
 
     public JbiExchange(CamelContext context, JbiBinding binding, MessageExchange messageExchange) {
         super(context);
         this.binding = binding;
         this.messageExchange = messageExchange;
 
+        setPattern(ExchangePattern.fromWsdlUri(messageExchange.getPattern().toString()));
         // TODO we could maybe use the typesafe APIs of different derived APIs
         // from JBI
         setIn(new JbiMessage(messageExchange.getMessage("in")));
         setOut(new JbiMessage(messageExchange.getMessage("out")));
         setFault(new JbiMessage(messageExchange.getMessage("fault")));
+        populateProperties();
     }
 
     @Override
@@ -69,6 +75,11 @@ public class JbiExchange extends DefaultExchange {
     @Override
     public JbiMessage getFault() {
         return (JbiMessage) super.getFault();
+    }
+
+    @Override
+    public JbiMessage getFault(boolean lazyCreate) {
+        return (JbiMessage) super.getFault(lazyCreate);
     }
 
     /**
@@ -130,4 +141,16 @@ public class JbiExchange extends DefaultExchange {
     protected JbiMessage createOutMessage() {
         return new JbiMessage();
     }
+
+    @Override
+    protected JbiMessage createFaultMessage() {
+        return new JbiMessage();
+    }
+
+    private void populateProperties() {
+        if (messageExchange != null && messageExchange.getOperation() != null) {
+            setProperty("jbi.operation", messageExchange.getOperation().toString());
+        }
+    }
+
 }

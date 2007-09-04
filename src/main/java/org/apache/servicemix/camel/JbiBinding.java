@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
+
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
@@ -29,8 +30,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
-import static org.apache.servicemix.camel.MEPConstants.*;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -48,10 +49,17 @@ public class JbiBinding {
         return normalizedMessage.getContent();
     }
 
-    public MessageExchange makeJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory)
+    public Source convertBodyToJbi(Object body) {
+        // TODO: conversion strategy?
+        return null;
+    }
+
+    public MessageExchange makeJbiMessageExchange(Exchange camelExchange,
+                                                  MessageExchangeFactory exchangeFactory,
+                                                  String defaultMep)
         throws MessagingException, URISyntaxException {
         
-        MessageExchange jbiExchange = createJbiMessageExchange(camelExchange, exchangeFactory);
+        MessageExchange jbiExchange = createJbiMessageExchange(camelExchange, exchangeFactory, defaultMep);
         NormalizedMessage normalizedMessage = jbiExchange.getMessage("in");
         if (normalizedMessage == null) {
             normalizedMessage = jbiExchange.createMessage();
@@ -78,27 +86,34 @@ public class JbiBinding {
         this.messageExchangePattern = messageExchangePattern;
     }
 
-    protected MessageExchange createJbiMessageExchange(Exchange camelExchange, MessageExchangeFactory exchangeFactory)
+    protected MessageExchange createJbiMessageExchange(Exchange camelExchange,
+                                                       MessageExchangeFactory exchangeFactory,
+                                                       String defaultMep)
         throws MessagingException, URISyntaxException {
 
-        String mep = camelExchange.getProperty(PROPERTY, String.class);
+        ExchangePattern mep = camelExchange.getPattern();
         if (mep == null) {
-            mep = getMessageExchangePattern();
+            mep = ExchangePattern.fromWsdlUri(defaultMep);
+        }
+        if (mep == null) {
+            mep = ExchangePattern.fromWsdlUri(getMessageExchangePattern());
         }
         MessageExchange answer = null;
         if (mep != null) {
-            if (IN_ONLY.equals(mep)) {
+            if (mep == ExchangePattern.InOnly) {
                 answer = exchangeFactory.createInOnlyExchange();
-            } else if (IN_OPTIONAL_OUT.equals(mep)) {
+            } else if (mep == ExchangePattern.InOptionalOut) {
                 answer = exchangeFactory.createInOptionalOutExchange();
-            } else if (IN_OUT.equals(mep)) {
+            } else if (mep == ExchangePattern.InOut) {
                 answer = exchangeFactory.createInOutExchange();
-            } else if (ROBUST_IN_ONLY.equals(mep)) {
+            } else if (mep == ExchangePattern.RobustInOnly) {
                 answer = exchangeFactory.createRobustInOnlyExchange();
             } else {
-                answer = exchangeFactory.createExchange(new URI(mep));
+                answer = exchangeFactory.createExchange(new URI(mep.toString()));
             }
         }
+        // TODO: this is not really usefull as the out will not be
+        // TODO: populated at that time
         if (answer == null) {
             // lets try choose the best MEP based on the camel message
             Message out = camelExchange.getOut(false);
@@ -126,4 +141,5 @@ public class JbiBinding {
             normalizedMessage.setProperty(entry.getKey(), entry.getValue());
         }
     }
+
 }

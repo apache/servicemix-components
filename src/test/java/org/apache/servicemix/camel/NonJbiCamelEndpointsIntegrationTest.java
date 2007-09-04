@@ -23,6 +23,7 @@ import java.net.URL;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
 import junit.framework.TestCase;
@@ -32,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 
 /**
  * @version $Revision: 1.1 $
@@ -70,7 +72,12 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                 // Send message
                 MessageExchange exchange = createExchange(client);
                 configureExchange(client, exchange);
-                client.send(exchange);
+                populateExchange(exchange);
+                client.sendSync(exchange);
+                assertNotNull(exchange.getMessage("out"));
+                //assertNotNull(exchange.getMessage("out").getContent());
+                // TODO: check out
+                client.done(exchange);
 
                 // Stop and undeploy
                 component.getServiceUnitManager().stop(suName);
@@ -114,10 +121,8 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
         LOG.info("Using temporary root directory ["
                 + tempRootDir.getAbsolutePath() + "]");
 
-        container.setRootDir(tempRootDir.getAbsolutePath());
-        container.setMonitorInstallationDirectory(false);
-        container.setUseMBeanServer(false);
-        container.setCreateMBeanServer(false);
+        container.setEmbedded(true);
+        container.setCreateJmxConnector(false);
         container.setFlowName("st");
         container.init();
         container.start();
@@ -146,6 +151,15 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                 CamelJbiEndpoint.SERVICE_NAME, "seda:a");
         assertNotNull("Should have a Camel endpoint exposed in JBI!", endpoint);
         exchange.setEndpoint(endpoint);
+    }
+
+    protected void populateExchange(MessageExchange exchange) throws Exception {
+        NormalizedMessage msg = exchange.getMessage("in");
+        if (msg == null) {
+            msg = exchange.createMessage();
+            exchange.setMessage(msg, "in");
+        }
+        msg.setContent(new StringSource("<hello>world</hello>"));
     }
 
     public static boolean deleteDir(File dir) {
