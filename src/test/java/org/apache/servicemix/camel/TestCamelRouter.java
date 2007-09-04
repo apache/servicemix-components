@@ -32,33 +32,33 @@ public class TestCamelRouter extends ContextTestSupport {
 
     public void testWithOut() throws Exception {
         a.whenExchangeReceived(1, new Processor() {
-			public void process(Exchange exchange) throws Exception {
-				exchange.getOut().setBody("out");
-			}
+            public void process(Exchange exchange) throws Exception {
+                exchange.getOut().setBody("out");
+            }
         });
         a.expectedMessageCount(1);
         b.expectedMessageCount(1);
         b.expectedBodiesReceived("out");
         c.expectedMessageCount(0);
-        
+
         template.sendBody("direct:start", "in");
-     
+
         MockEndpoint.assertIsSatisfied(a, b, c);
     }
 
     public void testWithFault() throws Exception {
         a.whenExchangeReceived(1, new Processor() {
-			public void process(Exchange exchange) throws Exception {
-				exchange.getFault().setBody("fault");
-			}
+            public void process(Exchange exchange) throws Exception {
+                exchange.getFault().setBody("fault");
+            }
         });
         a.expectedMessageCount(1);
         b.expectedMessageCount(0);
         c.expectedMessageCount(1);
         c.expectedBodiesReceived("fault");
-        
+
         template.sendBody("direct:start", "in");
-     
+
         //MockEndpoint.assertIsSatisfied(a, b, c);
     }
 
@@ -76,12 +76,12 @@ public class TestCamelRouter extends ContextTestSupport {
             @Override
             public void configure() {
                 from("direct:start")
-                        .to("mock:a")
-                        .choice()
-                            .when(faultBody().isNull())
-                                .to("mock:b")
-                            .otherwise()
-                                .to("mock:c");
+                    .to("mock:a")
+                    .choice()
+                    .when(faultBody().isNull())
+                    .to("mock:b")
+                    .otherwise()
+                    .to("mock:c");
             }
         };
     }
