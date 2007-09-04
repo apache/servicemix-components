@@ -260,16 +260,21 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing file " + file);
             }
-            // Process the file. If processing fails, an exception should be thrown.
-            processFile(ftp, file);
-            // Processing is succesfull
-            // We should not unlock until the file has been deleted
-            unlock = false;
-            if (isDeleteFile()) {
-                if (!ftp.deleteFile(file)) {
-                    throw new IOException("Could not delete file " + file);
+            if (ftp.listFiles(file).length > 0) {
+                // Process the file. If processing fails, an exception should be thrown.
+                processFile(ftp, file);
+                // Processing is successful
+                // We should not unlock until the file has been deleted
+                unlock = false;
+                if (isDeleteFile()) {
+                    if (!ftp.deleteFile(file)) {
+                        throw new IOException("Could not delete file " + file);
+                    }
+                    unlock = true;
                 }
-                unlock = true;
+            } else {
+                //avoid processing files that have been deleted on the server
+                logger.debug("Skipping " + file + ": the file no longer exists on the server");
             }
         } catch (Exception e) {
             logger.error("Failed to process file: " + file + ". Reason: " + e, e);
