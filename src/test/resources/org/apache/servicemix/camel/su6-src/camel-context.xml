@@ -26,10 +26,7 @@
     ">
 
   <camelContext xmlns="http://activemq.apache.org/camel/schema/spring">
-    <route>
-      <from uri="jbi:name:cheese"/>
-      <to uri="seda:b"/>
-    </route>
+    <package>org.apache.servicemix.camel.su6</package>
   </camelContext>
 
 </beans>
