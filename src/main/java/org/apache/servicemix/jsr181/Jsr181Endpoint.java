@@ -55,6 +55,7 @@ import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.annotations.AnnotationServiceFactory;
+import org.codehaus.xfire.jaxb2.JaxbType;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.service.invoker.BeanInvoker;
@@ -84,6 +85,11 @@ public class Jsr181Endpoint extends Endpoint {
     protected Resource wsdlResource;
     protected boolean mtomEnabled;
     protected Map properties;
+
+    /* should the payload be automaticaly validated by the ws engine
+     * if not set then it is up to the engine to decide
+     */
+    private Boolean validationEnabled;
     
     public Jsr181Endpoint() {
         processor = new Jsr181ExchangeProcessor(this);
@@ -146,6 +152,20 @@ public class Jsr181Endpoint extends Endpoint {
      */
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
+    }
+
+    /**
+     * @return the validationEnabled
+     */
+    public Boolean isValidationEnabled() {
+        return validationEnabled;
+    }
+
+    /**
+     * @param validationEnabled the validationEnabled to set
+     */
+    public void setValidationEnabled(Boolean validationEnabled) {
+        this.validationEnabled = validationEnabled;
     }
 
     /**
@@ -292,64 +312,77 @@ public class Jsr181Endpoint extends Endpoint {
         xfireService.setInvoker(new BeanInvoker(getPojo()));
         xfireService.setFaultSerializer(new JbiFaultSerializer());
         xfireService.setProperty(SoapConstants.MTOM_ENABLED, Boolean.toString(mtomEnabled));
+        if (validationEnabled != null) {
+            if ("jaxb2".equals(typeMapping)) {
+                xfireService.setProperty(JaxbType.ENABLE_VALIDATION, validationEnabled.toString());
+            } else {
+                throw new IllegalArgumentException("Currently you can controll validation only for jaxb2 mapping. "
+                                                   + typeMapping + " is not supported.");
+            }
+        }
         xfire.getServiceRegistry().register(xfireService);
         
         // If the wsdl has not been provided,
         // generate one
         if (this.description == null) {
-            this.description = generateWsdl();
+            createDescription();
+        }
+    }
 
-            // Check service name and endpoint name
-            QName serviceName = xfireService.getName();
-            QName interfName = xfireService.getServiceInfo().getPortType();
-            String endpointName = null;
-            if (service == null) {
-                service = serviceName;
-            } else if (!service.equals(serviceName)) {
-                logger.warn("The service name defined in the wsdl (" + serviceName
-                            + ") does not match the service name defined in the endpoint spec (" + service 
-                            + "). WSDL description may be unusable.");
-            }
-            if (interfaceName == null) {
-                interfaceName = interfName;
-            } else if (!interfaceName.equals(interfName)) {
-                logger.warn("The interface name defined in the wsdl (" + interfName 
-                        + ") does not match the service name defined in the endpoint spec (" + interfaceName 
+    protected void createDescription() throws SAXException, IOException,
+            ParserConfigurationException, WSDLException, Exception {
+        this.description = generateWsdl();
+
+        // Check service name and endpoint name
+        QName serviceName = xfireService.getName();
+        QName interfName = xfireService.getServiceInfo().getPortType();
+        String endpointName = null;
+        if (service == null) {
+            service = serviceName;
+        } else if (!service.equals(serviceName)) {
+            logger.warn("The service name defined in the wsdl (" + serviceName
+                        + ") does not match the service name defined in the endpoint spec (" + service 
                         + "). WSDL description may be unusable.");
-            }
+        }
+        if (interfaceName == null) {
+            interfaceName = interfName;
+        } else if (!interfaceName.equals(interfName)) {
+            logger.warn("The interface name defined in the wsdl (" + interfName 
+                    + ") does not match the service name defined in the endpoint spec (" + interfaceName 
+                    + "). WSDL description may be unusable.");
+        }
 
-            // Parse the WSDL
-            WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
-            reader.setFeature(Constants.FEATURE_VERBOSE, false);
-            definition = reader.readWSDL(null, description);
+        // Parse the WSDL
+        WSDLReader reader = WSDLFactory.newInstance().newWSDLReader(); 
+        reader.setFeature(Constants.FEATURE_VERBOSE, false);
+        definition = reader.readWSDL(null, description);
 
-            javax.wsdl.Service svc = definition.getService(serviceName);
-            if (svc != null && svc.getPorts().values().size() == 1) {
-                Port port = (Port) svc.getPorts().values().iterator().next();
-                // Check if this is the same as defined in endpoint spec
-                endpointName = port.getName();
-                if (endpoint == null) {
-                    endpoint = endpointName;
-                } else if (!endpoint.equals(endpointName)) {
-                    // Override generated WSDL
-                    port.setName(endpoint);
-                    description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
-                }
-            }
+        javax.wsdl.Service svc = definition.getService(serviceName);
+        if (svc != null && svc.getPorts().values().size() == 1) {
+            Port port = (Port) svc.getPorts().values().iterator().next();
+            // Check if this is the same as defined in endpoint spec
+            endpointName = port.getName();
             if (endpoint == null) {
-                throw new IllegalArgumentException("endpoint name should be provided");
+                endpoint = endpointName;
+            } else if (!endpoint.equals(endpointName)) {
+                // Override generated WSDL
+                port.setName(endpoint);
+                description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
             }
+        }
+        if (endpoint == null) {
+            throw new IllegalArgumentException("endpoint name should be provided");
+        }
 
-            // Flatten it
-            definition = new WSDLFlattener(definition).getDefinition(interfaceName);
-            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+        // Flatten it
+        definition = new WSDLFlattener(definition).getDefinition(interfaceName);
+        description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
 
-            // Write WSDL
-            if (logger.isDebugEnabled()) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
-                logger.debug(baos.toString());
-            }
+        // Write WSDL
+        if (logger.isDebugEnabled()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
+            logger.debug(baos.toString());
         }
     }
 
