@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
-
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
@@ -32,6 +31,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
+import org.apache.camel.util.ExchangeHelper;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -49,9 +49,8 @@ public class JbiBinding {
         return normalizedMessage.getContent();
     }
 
-    public Source convertBodyToJbi(Object body) {
-        // TODO: conversion strategy?
-        return null;
+    public Source convertBodyToJbi(Exchange exchange, Object body) {
+        return ExchangeHelper.convertToType(exchange, Source.class, body);
     }
 
     public MessageExchange makeJbiMessageExchange(Exchange camelExchange,

@@ -267,6 +267,7 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
      */
     public boolean isEndpointExposedOnNmr(Endpoint endpoint) {
         // TODO we should only expose consuming endpoints
-        return !(endpoint instanceof JbiEndpoint);
+        return false;
+        //return !(endpoint instanceof JbiEndpoint);
     }
 }

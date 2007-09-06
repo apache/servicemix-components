@@ -109,7 +109,7 @@ public class JbiMessage extends DefaultMessage {
     public void setBody(Object body) {
         if (normalizedMessage != null) {
             if (!(body instanceof Source)) {
-                body = getExchange().getBinding().convertBodyToJbi(body);
+                body = getExchange().getBinding().convertBodyToJbi(getExchange(), body);
             }
             try {
                 normalizedMessage.setContent((Source) body);

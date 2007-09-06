@@ -23,15 +23,16 @@ import java.util.List;
 import javax.jbi.management.DeploymentException;
 
 import org.apache.camel.Endpoint;
+import org.apache.camel.component.bean.BeanComponent;
 import org.apache.camel.spring.SpringCamelContext;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
 import org.apache.xbean.kernel.Kernel;
 import org.apache.xbean.server.spring.loader.PureSpringLoader;
 import org.apache.xbean.server.spring.loader.SpringLoader;
+import org.apache.xbean.spring.context.FileSystemXmlApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
@@ -45,7 +46,8 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
     private PureSpringLoader springLoader = new PureSpringLoader() {
         @Override
         protected AbstractXmlApplicationContext createXmlApplicationContext(String configLocation) {
-            return new FileSystemXmlApplicationContext(new String[] {configLocation}, false, createParentApplicationContext());
+            ApplicationContext parentAppContext = createParentApplicationContext(getXmlPreprocessors());
+            return new FileSystemXmlApplicationContext(new String[]{configLocation}, false, parentAppContext, getXmlPreprocessors());
         }
     };
 
@@ -72,7 +74,11 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
         // lets register the deployer so that any endpoints activated are added
         // to this SU
         component.deployer = this;
-        return super.deploy(serviceUnitName, serviceUnitRootPath);
+
+        // lets install the context class loader
+        ServiceUnit serviceUnit = super.deploy(serviceUnitName, serviceUnitRootPath);
+        Thread.currentThread().setContextClassLoader(serviceUnit.getConfigurationClassLoader());
+        return serviceUnit;
     }
 
     public void addService(CamelJbiEndpoint endpoint) {
@@ -90,11 +96,18 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
 
             // now lets iterate through all the endpoints
             Collection<Endpoint> endpoints = camelContext.getSingletonEndpoints();
+
             for (Endpoint endpoint : endpoints) {
                 if (component.isEndpointExposedOnNmr(endpoint)) {
                     services.add(component.createJbiEndpointFromCamel(endpoint));
                 }
             }
+
+            // lets add a control bus endpoint to ensure we have at least one endpoint to deploy
+            BeanComponent beanComponent = camelContext.getComponent("bean", BeanComponent.class);
+            Endpoint endpoint = beanComponent.createEndpoint(new CamelControlBus(camelContext), "camel:controlBus");
+            services.add(component.createJbiEndpointFromCamel(endpoint));
+            
             return services;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -110,9 +123,10 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
      * Returns the parent application context which can be used to auto-wire any
      * JBI based components using the jbi prefix
      */
-    protected ApplicationContext createParentApplicationContext() {
+    protected ApplicationContext createParentApplicationContext(List xmlProcessors) {
         GenericApplicationContext answer = new GenericApplicationContext();
         answer.getBeanFactory().registerSingleton("jbi", component);
+        answer.setClassLoader(Thread.currentThread().getContextClassLoader());
         answer.start();
         answer.refresh();
         return answer;
