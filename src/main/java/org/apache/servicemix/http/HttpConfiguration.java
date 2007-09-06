@@ -65,12 +65,12 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     /**
      * Maximum number of concurrent requests to the same host.
      */
-    private int maxConnectionsPerHost = 32;
+    private int maxConnectionsPerHost = 65536;
     
     /**
      * Maximum number of concurrent requests.
      */
-    private int maxTotalConnections = 256;
+    private int maxTotalConnections = 65536;
     
     /**
      * If true, use register jetty mbeans
