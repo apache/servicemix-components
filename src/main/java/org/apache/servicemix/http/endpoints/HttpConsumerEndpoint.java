@@ -219,26 +219,25 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             // Not giving a specific mutex will synchronize on the continuation itself
             Continuation cont = ContinuationSupport.getContinuation(request, null);
             // If the continuation is not a retry
-            if (!cont.isPending()) {
+            if (!cont.isPending() && cont.isNew()) {
                 exchange = createExchange(request);
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 synchronized (cont) {
                     send(exchange);
-                    if (exchanges.remove(exchange.getExchangeId()) == null) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
-                        }
-                        long to = this.timeout;
-                        if (to == 0) {
-                            to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration()
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
+                    }
+                    long to = this.timeout;
+                    if (to == 0) {
+                        to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration()
                                             .getConsumerProcessorSuspendTime();
-                        }
-                        boolean result = cont.suspend(to);
-                        if (!result) {
-                            locks.remove(exchange.getExchangeId());
-                            throw new Exception("Exchange timed out");
-                        }
+                    }
+                    boolean result = cont.suspend(to);
+                    exchanges.remove(exchange.getExchangeId();
+                    if (!result) {
+                        locks.remove(exchange.getExchangeId());
+                        throw new Exception("Exchange timed out");
                     }
                     request.removeAttribute(MessageExchange.class.getName());
                 }
