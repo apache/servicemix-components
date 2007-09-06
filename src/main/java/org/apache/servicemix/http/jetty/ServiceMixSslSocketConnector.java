@@ -23,8 +23,6 @@ import org.mortbay.jetty.security.SslSocketConnector;
 
 public class ServiceMixSslSocketConnector extends SslSocketConnector {
 
-    private String trustStore;
-
     private String keyAlias;
 
     private KeystoreManager keystoreManager;
@@ -59,23 +57,8 @@ public class ServiceMixSslSocketConnector extends SslSocketConnector {
         this.keyAlias = keyAlias;
     }
 
-    /**
-     * @return the trustStore
-     */
-    public String getTrustStore() {
-        return trustStore;
-    }
-
-    /**
-     * @param trustStore
-     *            the trustStore to set
-     */
-    public void setTrustStore(String trustStore) {
-        this.trustStore = trustStore;
-    }
-
     protected SSLServerSocketFactory createFactory() throws Exception {
         return keystoreManager.createSSLServerFactory(getProvider(), getProtocol(), getSslKeyManagerFactoryAlgorithm(),
-                        getKeystore(), getKeyAlias(), getTrustStore());
+                        getKeystore(), getKeyAlias(), getTruststore());
     }
 }

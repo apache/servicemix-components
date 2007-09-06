@@ -219,7 +219,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             // Not giving a specific mutex will synchronize on the continuation itself
             Continuation cont = ContinuationSupport.getContinuation(request, null);
             // If the continuation is not a retry
-            if (!cont.isPending() && cont.isNew()) {
+            if (!cont.isPending()) {
                 exchange = createExchange(request);
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
@@ -234,7 +234,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                                             .getConsumerProcessorSuspendTime();
                     }
                     boolean result = cont.suspend(to);
-                    exchanges.remove(exchange.getExchangeId();
+                    exchanges.remove(exchange.getExchangeId());
                     if (!result) {
                         locks.remove(exchange.getExchangeId());
                         throw new Exception("Exchange timed out");
