@@ -39,7 +39,7 @@ import org.w3c.dom.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.common.BaseLifeCycle;
+import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.ContextManager;
 import org.apache.servicemix.http.HttpComponent;
@@ -108,7 +108,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
     public void start() throws Exception {
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         String url = endpoint.getLocationURI();
-        context = endpoint.getServiceUnit().getComponent().getComponentContext();
+        context = new EndpointComponentContext(endpoint);
         channel = context.getDeliveryChannel();
         httpContext = getServerManager().createContext(url, this);
     }
@@ -133,7 +133,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
         Continuation cont = ContinuationSupport.getContinuation(request, null);
         MessageExchange exchange;
         // If the continuation is not a retry
-        if (!cont.isPending()) {
+        if (!cont.isPending() && cont.isNew()) {
             try {
                 SoapMessage message = soapHelper.getSoapMarshaler().createReader().read(
                                             request.getInputStream(), 
@@ -156,15 +156,14 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                 locks.put(exchange.getExchangeId(), cont);
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 synchronized (cont) {
-                    ((BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle()).sendConsumerExchange(exchange, endpoint);
-                    if (exchanges.remove(exchange.getExchangeId()) == null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
-                        }
-                        boolean result = cont.suspend(suspentionTime);
-                        if (!result) {
-                            throw new Exception("Error sending exchange: aborted");
-                        }
+                    channel.send(exchange);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
+                    }
+                    boolean result = cont.suspend(suspentionTime);
+                    exchanges.remove(exchange.getExchangeId());
+                    if (!result) {
+                        throw new Exception("Error sending exchange: aborted");
                     }
                     request.removeAttribute(MessageExchange.class.getName());
                 }
