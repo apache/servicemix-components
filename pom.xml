@@ -32,6 +32,10 @@
   <name>ServiceMix :: JMS</name>
   <description>JMS Binding Component</description>
 
+  <properties>
+      <surefire.fork.mode>pertest</surefire.fork.mode>
+  </properties>
+
   <dependencies>
 
     <dependency>
@@ -196,6 +200,7 @@
 
             <exclude>**/JmsSpringJcaTest.*</exclude>
           </excludes>
+          <forkMode>${surefire.fork.mode}</forkMode>
         </configuration>
       </plugin>
     </plugins>
