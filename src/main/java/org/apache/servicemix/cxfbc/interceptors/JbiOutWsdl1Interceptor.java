@@ -33,7 +33,6 @@ import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.helpers.NSStack;
-import org.apache.cxf.helpers.XMLUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.Phase;
@@ -61,7 +60,6 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
                 return;
             }
             Element element = new SourceTransformer().toDOMElement(source);
-            XMLUtils.printDOM(element);
             if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
                     .getNamespaceURI())
                     || !JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME
