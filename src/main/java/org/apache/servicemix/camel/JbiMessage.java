@@ -105,7 +105,7 @@ public class JbiMessage extends DefaultMessage {
         }
     }
 
-    @Override
+//    @Override
     public void setBody(Object body) {
         if (normalizedMessage != null) {
             if (!(body instanceof Source)) {

@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.seda.SedaEndpoint;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -40,15 +41,15 @@ public class SendFromCamelToJbiAndBackToCamelTest extends JbiTestSupport {
         SedaEndpoint receiverEndpoint = (SedaEndpoint) camelContext
                 .getEndpoint("seda:receiver");
 
-        BlockingQueue<SedaEndpoint.Entry> queue = receiverEndpoint.getQueue();
-        SedaEndpoint.Entry entry = queue.poll(5, TimeUnit.SECONDS);
+        BlockingQueue<Exchange> queue = receiverEndpoint.getQueue();
+        Exchange exchange = queue.poll(5, TimeUnit.SECONDS);
 
         assertNotNull(
                 "Camel Receiver queue should have received an exchange by now",
-                entry);
+                exchange);
 
-        log.debug("Receiver got exchange: " + entry.getExchange() + " with body: "
-                + entry.getExchange().getIn().getBody());
+        log.debug("Receiver got exchange: " + exchange + " with body: "
+                + exchange.getIn().getBody());
     }
 
     @Override
