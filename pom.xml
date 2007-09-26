@@ -34,6 +34,7 @@
     <description>A CXF Service Engine</description>     
  
     <properties>
+        <surefire.fork.mode>pertest</surefire.fork.mode>
     </properties>
 
 	<dependencies>
@@ -174,6 +175,7 @@
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
           </excludes>
+          <forkMode>${surefire.fork.mode}</forkMode>
         </configuration>
       </plugin>
     </plugins>

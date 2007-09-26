@@ -17,11 +17,14 @@
 package org.apache.servicemix.cxfse;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
@@ -71,6 +74,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     private List<Interceptor> outFault = new CopyOnWriteArrayList<Interceptor>();
 
     private List<Interceptor> inFault = new CopyOnWriteArrayList<Interceptor>();
+    
+    private Map properties;
 
     /**
      * @return the pojo
@@ -118,6 +123,15 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     public void setOutFaultInterceptors(List<Interceptor> interceptors) {
         outFault = interceptors;
     }
+
+    public Map getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map properties) {
+        this.properties = properties;
+    }
+
 
     /*
      * (non-Javadoc)
@@ -204,6 +218,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
             }
         });
         ReflectionUtils.callLifecycleMethod(getPojo(), PostConstruct.class);
+        injectPojo();
     }
 
     /*
@@ -223,4 +238,17 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         return ((CxfSeComponent) getServiceUnit().getComponent()).getBus();
     }
 
+    
+    @PostConstruct
+    protected void injectPojo() {
+        try {
+            Method mth = pojo.getClass().getMethod("setContext", new Class[] {ComponentContext.class });
+            if (mth != null) {
+                mth.invoke(pojo, new Object[] {getContext()});
+            }
+        } catch (Exception e) {
+            logger.debug("Unable to inject ComponentContext: " + e.getMessage());
+        }
+        
+    }
 }
