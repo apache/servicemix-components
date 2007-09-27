@@ -25,9 +25,9 @@ import javax.jbi.messaging.RobustInOnly;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.apache.servicemix.jms.AbstractJmsProcessor;
@@ -93,10 +93,9 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
                 }
             }
             MessageProducer producer = session.createProducer(destination);
-            
-            TextMessage msg = session.createTextMessage();
+
             NormalizedMessage nm = exchange.getMessage("in");
-            fromNMS(nm, msg);
+            Message msg = fromNMS(nm, session);
             producer.send(msg);
         } finally {
             if (session != null) {

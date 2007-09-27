@@ -16,9 +16,6 @@
  */
 package org.apache.servicemix.jms.multiplexing;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -26,16 +23,13 @@ import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
-import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.apache.servicemix.jms.AbstractJmsProcessor;
@@ -106,39 +100,25 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         }
         endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
             public void run() {
+                InOut exchange = null;
                 try {
                     if (log.isDebugEnabled()) {
                         log.debug("Handling jms message " + message);
                     }
-                    InOut exchange = (InOut) store.load(message.getJMSCorrelationID());
+                    exchange = (InOut) store.load(message.getJMSCorrelationID());
                     if (exchange == null) {
                         throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
                     }
-                    if (message instanceof ObjectMessage) {
-                        Object o = ((ObjectMessage) message).getObject();
-                        if (o instanceof Exception) {
-                            exchange.setError((Exception) o);
-                        } else {
-                            throw new UnsupportedOperationException("Can not handle objects of type " + o.getClass().getName());
-                        }
-                    } else {
-                        InputStream is = null;
-                        if (message instanceof TextMessage) {
-                            is = new ByteArrayInputStream(((TextMessage) message).getText().getBytes());
-                        } else if (message instanceof BytesMessage) {
-                            int length = (int) ((BytesMessage) message).getBodyLength();
-                            byte[] bytes = new byte[length];
-                            ((BytesMessage) message).readBytes(bytes);
-                            is = new ByteArrayInputStream(bytes);
-                        } else {
-                            throw new IllegalArgumentException("JMS message should be a text or bytes message");
-                        }
-                        SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, message.getStringProperty(CONTENT_TYPE));
-                        NormalizedMessage out = exchange.createMessage();
-                        soapHelper.getJBIMarshaler().toNMS(out, soap);
-                        ((InOut) exchange).setOutMessage(out);
-                    }
+                    SoapMessage soap = endpoint.getMarshaler().toSOAP(message);
+                    NormalizedMessage out = exchange.createMessage();
+                    soapHelper.getJBIMarshaler().toNMS(out, soap);
+                    ((InOut) exchange).setOutMessage(out);
                     channel.send(exchange);
+                } catch (Exception e) {
+                    log.error("Error while handling jms message", e);
+                    if (exchange != null) {
+                        exchange.setError(e);
+                    }                    
                 } catch (Throwable e) {
                     log.error("Error while handling jms message", e);
                 }
@@ -152,9 +132,8 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
-        TextMessage msg = session.createTextMessage();
         NormalizedMessage nm = exchange.getMessage("in");
-        fromNMS(nm, msg);
+        Message msg = fromNMS(nm, session);
 
         if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
             synchronized (producer) {

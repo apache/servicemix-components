@@ -104,9 +104,8 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
 
             MessageProducer producer = session.createProducer(destination);
             
-            TextMessage msg = session.createTextMessage();
             NormalizedMessage nm = exchange.getMessage("in");
-            fromNMS(nm, msg);
+            Message msg = fromNMS(nm, session);
     
             if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
                 producer.send(msg);

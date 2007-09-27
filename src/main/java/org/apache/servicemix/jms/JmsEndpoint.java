@@ -68,6 +68,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     protected ConnectionFactory connectionFactory;
     protected Destination destination;
     protected String processorName;
+    protected JmsMarshaler marshaler;
     //
     // JCA config
     //
@@ -85,6 +86,10 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
      */
     protected Store store;
     protected StoreFactory storeFactory;
+    
+    public JmsEndpoint() {
+        marshaler = new DefaultJmsMarshaler(this);
+    }
     
     /**
      * The BootstrapContext to use for a JCA consumer endpoint.
@@ -560,5 +565,13 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     public void setUseMsgIdInResponse(boolean useMsgIdInResponse) {
         this.useMsgIdInResponse = useMsgIdInResponse;
     }
+
+    public JmsMarshaler getMarshaler() {
+        return marshaler;
+    }
+
+    public void setMarshaler(JmsMarshaler marshaler) {
+        this.marshaler = marshaler;
+    }  
 
 }
