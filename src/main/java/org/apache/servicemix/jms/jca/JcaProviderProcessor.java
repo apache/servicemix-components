@@ -98,8 +98,6 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
             NormalizedMessage nm = exchange.getMessage("in");
             fromNMS(nm, msg);
             producer.send(msg);
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
         } finally {
             if (session != null) {
                 session.close();
@@ -108,6 +106,8 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
                 connection.close();
             }
         }
+        exchange.setStatus(ExchangeStatus.DONE);
+        channel.send(exchange);
     }
 
 }
