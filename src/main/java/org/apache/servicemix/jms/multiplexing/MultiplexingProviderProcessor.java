@@ -18,7 +18,6 @@ package org.apache.servicemix.jms.multiplexing;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Map;
 
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
@@ -39,8 +38,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
@@ -52,7 +49,6 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     protected Destination replyToDestination;
     protected MessageConsumer consumer;
     protected MessageProducer producer;
-    protected Map pendingExchanges = new ConcurrentHashMap();
     protected DeliveryChannel channel;
 
     public MultiplexingProviderProcessor(JmsEndpoint endpoint) throws Exception {
@@ -76,10 +72,20 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                 throw new IllegalStateException("No destination provided");
             }
         }
-        if (destination instanceof Queue) {
-            replyToDestination = session.createTemporaryQueue();
+        if (endpoint.getJndiReplyToName() != null) {
+            replyToDestination = (Destination) ctx.lookup(endpoint.getJndiReplyToName());
+        } else if (endpoint.getJmsProviderReplyToName() != null) {
+            if (destination instanceof Queue) {
+                replyToDestination = session.createQueue(endpoint.getJmsProviderReplyToName());
+            } else {
+                replyToDestination = session.createTopic(endpoint.getJmsProviderReplyToName());
+            }
         } else {
-            replyToDestination = session.createTemporaryTopic();
+            if (destination instanceof Queue) {
+                replyToDestination = session.createTemporaryQueue();
+            } else {    
+                replyToDestination = session.createTemporaryTopic();
+            }
         }
         producer = session.createProducer(destination);
         consumer = session.createConsumer(replyToDestination);
@@ -104,7 +110,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                     if (log.isDebugEnabled()) {
                         log.debug("Handling jms message " + message);
                     }
-                    InOut exchange = (InOut) pendingExchanges.remove(message.getJMSCorrelationID());
+                    InOut exchange = (InOut) store.load(message.getJMSCorrelationID());
                     if (exchange == null) {
                         throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
                     }
@@ -159,13 +165,13 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         } else if (exchange instanceof InOut) {
             msg.setJMSCorrelationID(exchange.getExchangeId());
             msg.setJMSReplyTo(replyToDestination);
-            pendingExchanges.put(exchange.getExchangeId(), exchange);
+            store.store(exchange.getExchangeId(), exchange);
             try {
                 synchronized (producer) {
                     producer.send(msg);
                 }
             } catch (Exception e) {
-                pendingExchanges.remove(exchange.getExchangeId());
+                store.load(exchange.getExchangeId());
                 throw e;
             }
         } else {

@@ -44,6 +44,7 @@ import org.apache.servicemix.soap.marshalers.SoapMessage;
 public class StandardProviderProcessor extends AbstractJmsProcessor {
 
     protected Destination destination;
+    protected Destination permanentReplyToDestination;
     protected DeliveryChannel channel;
     
     public StandardProviderProcessor(JmsEndpoint endpoint) throws Exception {
@@ -52,12 +53,37 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
 
     protected void doStart(InitialContext ctx) throws Exception {
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
+        Session session = null;
         destination = endpoint.getDestination();
-        if (destination == null) {
-            if (endpoint.getJndiDestinationName() != null) {
-                destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
-            } else if (endpoint.getJmsProviderDestinationName() == null) {
-                throw new IllegalStateException("No destination provided");
+        try {
+            if (destination == null) {
+                session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+                if (endpoint.getJndiDestinationName() != null) {
+                    destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
+                } else if (endpoint.getJmsProviderDestinationName() != null) {
+                    if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
+                        destination = session.createQueue(endpoint.getJmsProviderDestinationName());
+                    } else {
+                        destination = session.createTopic(endpoint.getJmsProviderDestinationName());
+                    }
+                } else {
+                    throw new IllegalStateException("No destination provided");
+                }
+
+                if (endpoint.getJndiReplyToName() != null) {
+                    permanentReplyToDestination = (Destination) ctx.lookup(endpoint.getJndiReplyToName());
+                } else if (endpoint.getJmsProviderReplyToName() != null) {
+                    if (destination instanceof Queue) {
+                        permanentReplyToDestination = session.createQueue(endpoint.getJmsProviderReplyToName());
+                    } else {
+                        permanentReplyToDestination = session.createTopic(endpoint.getJmsProviderReplyToName());
+                    }
+                }
+            }
+        } finally {
+            if (session != null) {
+                session.close();
             }
         }
     }
@@ -75,13 +101,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
         Session session = null;
         try {
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            if (destination == null) {
-                if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
-                    destination = session.createQueue(endpoint.getJmsProviderDestinationName());
-                } else {
-                    destination = session.createTopic(endpoint.getJmsProviderDestinationName());
-                }
-            }
+
             MessageProducer producer = session.createProducer(destination);
             
             TextMessage msg = session.createTextMessage();
@@ -94,10 +114,14 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
                 channel.send(exchange);
             } else if (exchange instanceof InOut) {
                 Destination replyToDestination;
-                if (destination instanceof Queue) {
-                    replyToDestination = session.createTemporaryQueue();
+                if (permanentReplyToDestination != null) {
+                    replyToDestination = permanentReplyToDestination;
                 } else {
-                    replyToDestination = session.createTemporaryTopic();
+                    if (destination instanceof Queue) {
+                        replyToDestination = session.createTemporaryQueue();
+                    } else {
+                        replyToDestination = session.createTemporaryTopic();
+                    }
                 }
                 MessageConsumer consumer = session.createConsumer(replyToDestination);
                 msg.setJMSCorrelationID(exchange.getExchangeId());

@@ -50,6 +50,8 @@ import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
+import org.apache.servicemix.store.Store;
+import org.apache.servicemix.store.memory.MemoryStoreFactory;
 
 public abstract class AbstractJmsProcessor implements ExchangeProcessor {
 
@@ -66,6 +68,8 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     protected ComponentContext context;
     protected DeliveryChannel channel;
 
+    protected Store store;
+
     public AbstractJmsProcessor(JmsEndpoint endpoint) throws Exception {
         this.endpoint = endpoint;
         this.soapHelper = new SoapHelper(endpoint);
@@ -80,6 +84,16 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             connectionFactory = getConnectionFactory(ctx);
             connection = connectionFactory.createConnection();
             connection.start();
+
+            // set up the Store
+            if (endpoint.store != null) {
+                store = endpoint.store;
+            } else if (endpoint.storeFactory != null) {
+                store = endpoint.storeFactory.open(endpoint.getService().toString() + endpoint.getEndpoint());
+            } else {
+                store = new MemoryStoreFactory().open(endpoint.getService().toString() + endpoint.getEndpoint());
+            }
+
             doStart(ctx);
         } catch (Exception e) {
             try {
@@ -124,6 +138,10 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
             return lf.getContext().getNamingContext();
         }
+    }
+
+    protected Store getStore() {
+        return store;
     }
 
     protected void doStart(InitialContext ctx) throws Exception {

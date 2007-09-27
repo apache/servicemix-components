@@ -36,6 +36,8 @@ import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
+import org.apache.servicemix.store.Store;
+import org.apache.servicemix.store.StoreFactory;
 
 /**
  * 
@@ -56,7 +58,9 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     protected String jndiConnectionFactoryName;
     protected String jndiDestinationName;
     protected String jmsProviderDestinationName;
-    
+    protected String jndiReplyToName;
+    protected String jmsProviderReplyToName;
+
     protected boolean useMsgIdInResponse;
     //
     // Spring configuration
@@ -75,6 +79,12 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     
     // Other configuration flags
     protected boolean needJavaIdentifiers;
+
+    /**
+     * The store to keep pending exchanges
+     */
+    protected Store store;
+    protected StoreFactory storeFactory;
     
     /**
      * The BootstrapContext to use for a JCA consumer endpoint.
@@ -190,6 +200,43 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
      */
     public void setJmsProviderDestinationName(String jmsProviderDestinationName) {
         this.jmsProviderDestinationName = jmsProviderDestinationName;
+    }
+
+    /**
+     * The name of the JMS Reply-to destination to lookup in JNDI.
+     * Optional: a temporary queue will be used
+     * if a replyTo is not provided.
+     *
+     * @return Returns the jndiReplyToName.
+     */
+    public String getJndiReplyToName() {
+        return jndiReplyToName;
+    }
+
+    /**
+     * @param jndiReplyToName The jndiReplyToName to set.
+     */
+    public void setJndiReplyToName(String jndiReplyToName) {
+        this.jndiReplyToName = jndiReplyToName;
+    }
+    /**
+     * The name of the reply destination create by a call to 
+     * <code>Session.createQueue</code> or <code>Session.createTopic</code>.
+     * This property is used when <code>jndiReplyToName</code> is
+     * <code>null</code>.  Optional: a temporary queue will be used
+     * if a replyTo is not provided.
+     * 
+     * @return Returns the jmsProviderReplyToName.
+     */
+    public String getJmsProviderReplyToName() {
+        return jmsProviderReplyToName;
+    }
+
+    /**
+     * @param jmsProviderReplyToName The jmsProviderReplyToName to set.
+     */
+    public void setJmsProviderReplyToName(String jmsProviderReplyToName) {
+        this.jmsProviderReplyToName = jmsProviderReplyToName;
     }
 
     /**
@@ -314,6 +361,31 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
      */
     public void setRoleAsString(String role) {
         super.setRoleAsString(role);
+    }
+
+    /**
+     * @return Returns the store.
+     */
+    public Store getStore() {
+        return store;
+    }
+    /**
+     * @param store The store to set.
+     */
+    public void setStore(Store store) {
+        this.store = store;
+    }
+    /**
+     * @return Returns the storeFactory.
+     */
+    public StoreFactory getStoreFactory() {
+        return storeFactory;
+    }
+    /**
+     * @param storeFactory The storeFactory to set.
+     */
+    public void setStoreFactory(StoreFactory storeFactory) {
+        this.storeFactory = storeFactory;
     }
 
     protected ExchangeProcessor createProviderProcessor() {
