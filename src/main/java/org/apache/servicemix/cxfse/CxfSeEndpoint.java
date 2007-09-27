@@ -147,8 +147,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         serviceFactory.setPopulateFromClass(true);
         endpoint = new EndpointImpl(getBus(), getPojo(),
                 new JaxWsServerFactoryBean(serviceFactory));
-        endpoint
-                .setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
         endpoint.setInInterceptors(getInInterceptors());
         endpoint.setInFaultInterceptors(getInFaultInterceptors());
         endpoint.setOutInterceptors(getOutInterceptors());
@@ -175,7 +174,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
                 .getDestination(exchange.getService().toString()
                         + exchange.getInterfaceName().toString());
         DeliveryChannel dc = getContext().getDeliveryChannel();
-        
+        jbiTransportFactory.setDeliveryChannel(dc);
         jbiDestination.setDeliveryChannel(dc);
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
@@ -242,9 +241,10 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     @PostConstruct
     protected void injectPojo() {
         try {
+            ComponentContext context = getContext();
             Method mth = pojo.getClass().getMethod("setContext", new Class[] {ComponentContext.class });
             if (mth != null) {
-                mth.invoke(pojo, new Object[] {getContext()});
+                mth.invoke(pojo, new Object[] {context});
             }
         } catch (Exception e) {
             logger.debug("Unable to inject ComponentContext: " + e.getMessage());

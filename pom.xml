@@ -136,32 +136,32 @@
 	</dependencies>
 	<build>
 		<plugins>
+                        <plugin>
+                                <groupId>org.apache.xbean</groupId>
+                                <artifactId>maven-xbean-plugin</artifactId>
+                                <!--version>${xbean-version}</version-->
+                                <executions>
+                                        <execution>
+                                                <configuration>
+                                                        <namespace>
+                                                                http://servicemix.apache.org/cxfse/1.0
+                                                        </namespace>
+                                                </configuration>
+                                                <goals>
+                                                        <goal>mapping</goal>
+                                                </goals>
+                                        </execution>
+                                </executions>
+                        </plugin>
 			<plugin>
 				<groupId>org.apache.servicemix.tooling</groupId>
 				<artifactId>jbi-maven-plugin</artifactId>
 				<version>${servicemix-version}</version>
-				<extensions>true</extensions>
+				<!--extensions>true</extensions-->
 				<configuration>
 					<type>service-engine</type>
 					<component>org.apache.servicemix.cxfse.CxfSeComponent</component>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.xbean</groupId>
-				<artifactId>maven-xbean-plugin</artifactId>
-				<version>${xbean-version}</version>
-				<executions>
-					<execution>
-						<configuration>
-							<namespace>
-								http://servicemix.apache.org/cxfse/1.0
-							</namespace>
-						</configuration>
-						<goals>
-							<goal>mapping</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
