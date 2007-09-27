@@ -95,8 +95,4 @@
     </plugins>
   </build>
 
-  <properties>
-    <saxon-version>8.8</saxon-version>
-  </properties>
-
 </project>

@@ -91,8 +91,6 @@ public class XsltEndpoint extends SaxonEndpoint {
             transformer.transform(src, result);
             out.setContent(new StringSource(buffer.toString()));
         } else {
-            // Saxon has a blocking bug
-            // see http://sourceforge.net/tracker/index.php?func=detail&aid=1558133&group_id=29872&atid=397617
             DOMResult result = new DOMResult();
             transformer.transform(src, result);
             out.setContent(new DOMSource(result.getNode()));
