@@ -129,7 +129,7 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         copyHeaderInformation(nm, method);
         RequestEntity entity = writeMessage(writer);
         // remove content-type header that may have been part of the in message
-        if (!getConfiguration().isWantContentTypeHeaderFromExchangeIntoHttpRequest()) {
+        if (!endpoint.isWantContentTypeHeaderFromExchangeIntoHttpRequest()) {
             method.removeRequestHeader(HEADER_CONTENT_TYPE);
             method.addRequestHeader(HEADER_CONTENT_TYPE, entity.getContentType());
         }

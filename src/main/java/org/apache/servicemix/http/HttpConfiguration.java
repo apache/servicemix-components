@@ -125,8 +125,6 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      */
     private boolean wantHeadersFromHttpIntoExchange;
 
-    private boolean wantContentTypeHeaderFromExchangeIntoHttpRequest;
-
     /**
      * @return Returns the rootDir.
      * @org.apache.xbean.Property hidden="true"
@@ -387,22 +385,6 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         this.wantHeadersFromHttpIntoExchange = wantHeadersFromHttpIntoExchange;
     }
 
-     /**
-     *
-     * @return
-     */
-    public boolean isWantContentTypeHeaderFromExchangeIntoHttpRequest() {
-        return wantContentTypeHeaderFromExchangeIntoHttpRequest;
-    }
-
-    /**
-     *
-     * @param wantContentTypeHeaderFromExchangeIntoHttpRequest
-     */
-    public void setWantContentTypeHeaderFromExchangeIntoHttpRequest(boolean wantContentTypeHeaderFromExchangeIntoHttpRequest) {
-        this.wantContentTypeHeaderFromExchangeIntoHttpRequest = wantContentTypeHeaderFromExchangeIntoHttpRequest;
-    }
-
     public void save() {
         setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);
@@ -418,8 +400,6 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         setProperty(componentName + ".proxyHost", proxyHost);
         setProperty(componentName + ".proxyPort", Integer.toString(proxyPort));
         setProperty(componentName + ".wantHeadersFromHttpIntoExchange", Boolean.toString(wantHeadersFromHttpIntoExchange));
-        setProperty(componentName + ".wantContentTypeHeaderFromExchangeIntoHttpRequest",
-                Boolean.toString(wantContentTypeHeaderFromExchangeIntoHttpRequest));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -507,11 +487,6 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         if (properties.getProperty(componentName + ".wantHeadersFromHttpIntoExchange") != null) {
             wantHeadersFromHttpIntoExchange =
                     Boolean.valueOf(properties.getProperty(componentName + ".wantHeadersFromHttpIntoExchange")).booleanValue();
-        }
-        if (properties.getProperty(componentName + ".wantContentTypeHeaderFromExchangeIntoHttpRequest") != null) {
-            wantContentTypeHeaderFromExchangeIntoHttpRequest =
-                    Boolean.valueOf(properties.getProperty(componentName
-                            + ".wantContentTypeHeaderFromExchangeIntoHttpRequest")).booleanValue();
         }
         return true;
     }

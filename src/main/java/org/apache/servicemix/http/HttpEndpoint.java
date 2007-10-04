@@ -59,6 +59,15 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected BasicAuthCredentials basicAuthentication;
     protected ProxyParameters proxy;
     protected boolean synchronous;
+    protected boolean wantContentTypeHeaderFromExchangeIntoHttpRequest;
+
+    public boolean isWantContentTypeHeaderFromExchangeIntoHttpRequest() {
+        return wantContentTypeHeaderFromExchangeIntoHttpRequest;
+    }
+
+    public void setWantContentTypeHeaderFromExchangeIntoHttpRequest(boolean wantContentTypeHeaderFromExchangeIntoHttpRequest) {
+        this.wantContentTypeHeaderFromExchangeIntoHttpRequest = wantContentTypeHeaderFromExchangeIntoHttpRequest;
+    }
 
     /**
      * @return the synchronous
