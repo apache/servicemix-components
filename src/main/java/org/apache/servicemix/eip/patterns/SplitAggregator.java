@@ -50,16 +50,16 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
  */
 public class SplitAggregator extends AbstractAggregator {
 
-    private Expression count = new PropertyExpression(AbstractSplitter.SPLITTER_COUNT);
-    private Expression index = new PropertyExpression(AbstractSplitter.SPLITTER_INDEX);
-    private Expression corrId = new PropertyExpression(AbstractSplitter.SPLITTER_CORRID);
+    protected Expression count = new PropertyExpression(AbstractSplitter.SPLITTER_COUNT);
+    protected Expression index = new PropertyExpression(AbstractSplitter.SPLITTER_INDEX);
+    protected Expression corrId = new PropertyExpression(AbstractSplitter.SPLITTER_CORRID);
     
-    private QName aggregateElementName = new QName("aggregate");
-    private QName messageElementName = new QName("message");
-    private String countAttribute = "count";
-    private String indexAttribute = "index";
+    protected QName aggregateElementName = new QName("aggregate");
+    protected QName messageElementName = new QName("message");
+    protected String countAttribute = "count";
+    protected String indexAttribute = "index";
     
-    private long timeout;
+    protected long timeout;
     
     /**
      * @return the aggregateElementName
@@ -244,17 +244,21 @@ public class SplitAggregator extends AbstractAggregator {
         root.setAttribute(countAttribute, Integer.toString(messages.length));
         for (int i = 0; i < messages.length; i++) {
             if (messages[i] != null) {
-                Element msg = createChildElement(messageElementName, root);
-                msg.setAttribute(indexAttribute, Integer.toString(i));
                 Element elem = st.toDOMElement(messages[i]);
-                msg.appendChild(doc.importNode(elem, true));
+                if (messageElementName != null) {
+                    Element msg = createChildElement(messageElementName, root);
+                    msg.setAttribute(indexAttribute, Integer.toString(i));
+                    msg.appendChild(doc.importNode(elem, true));
+                } else {
+                    root.appendChild(doc.importNode(elem, true));
+                }
             }
         }
         message.setContent(new DOMSource(doc));
         message.setProperty(AbstractSplitter.SPLITTER_CORRID, correlationId);
     }
     
-    private Element createChildElement(QName name, Node parent) {
+    protected Element createChildElement(QName name, Node parent) {
         Document doc = parent instanceof Document ? (Document) parent : parent.getOwnerDocument();
         Element elem;
         if ("".equals(name.getNamespaceURI())) {

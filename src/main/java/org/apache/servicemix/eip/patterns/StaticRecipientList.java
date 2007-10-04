@@ -41,6 +41,10 @@ import org.apache.servicemix.jbi.util.MessageUtil;
  */
 public class StaticRecipientList extends EIPEndpoint {
 
+    public static final String RECIPIENT_LIST_COUNT = "org.apache.servicemix.eip.recipientList.count";
+    public static final String RECIPIENT_LIST_INDEX = "org.apache.servicemix.eip.recipientList.index";
+    public static final String RECIPIENT_LIST_CORRID = "org.apache.servicemix.eip.recipientList.corrid";
+
     /**
      * List of recipients
      */
@@ -114,6 +118,9 @@ public class StaticRecipientList extends EIPEndpoint {
         for (int i = 0; i < recipients.length; i++) {
             MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
             recipients[i].configureTarget(me, getContext());
+            in.setProperty(RECIPIENT_LIST_COUNT, new Integer(recipients.length));
+            in.setProperty(RECIPIENT_LIST_INDEX, new Integer(i));
+            in.setProperty(RECIPIENT_LIST_CORRID, exchange.getExchangeId());
             MessageUtil.transferToIn(in, me);
             sendSync(me);
             if (me.getStatus() == ExchangeStatus.ERROR && reportErrors) {
