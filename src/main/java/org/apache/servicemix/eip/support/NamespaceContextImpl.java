@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.eip.support;
 
+import java.util.Map;
+
 
 /**
  * A simple namespace context with a clean xbean configuration.
@@ -27,4 +29,19 @@ package org.apache.servicemix.eip.support;
  */
 public class NamespaceContextImpl extends org.apache.servicemix.jbi.jaxp.NamespaceContextImpl {
     
+    /**
+     * @org.apache.xbean.Map entryName="namespace" keyName="prefix"
+     * @return Returns the namespaces.
+     */
+    public Map<String, String> getNamespaces() {
+        return super.getNamespaces();
+    }
+
+    /**
+     * @param namespaces The namespaces to set.
+     */
+    public void setNamespaces(Map<String, String> namespaces) {
+        super.setNamespaces(namespaces);
+    }
+
 }
