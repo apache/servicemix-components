@@ -52,6 +52,9 @@ public class SimpleDestinationChooser implements DestinationChooser {
         if (property instanceof Destination) {
             return (Destination) property;
         }
+        if (property instanceof String) {
+            return (String) property;
+        }
         if (getDefaultDestination() != null) {
             return getDefaultDestination();
         }
