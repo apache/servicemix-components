@@ -106,7 +106,6 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
     }
 
     public void start() throws Exception {
-        Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         String url = endpoint.getLocationURI();
         context = new EndpointComponentContext(endpoint);
         channel = context.getDeliveryChannel();
