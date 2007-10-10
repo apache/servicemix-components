@@ -17,11 +17,16 @@
 package org.apache.servicemix.cxfse;
 
 import javax.jbi.component.ComponentContext;
+import javax.jbi.messaging.DeliveryChannel;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
 import org.apache.activemq.util.IdGenerator;
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.apache.cxf.transport.ConduitInitiatorManager;
+import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.client.ClientFactory;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
@@ -33,25 +38,34 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * 
  * @author ffang
- * @org.apache.xbean.XBean element="proxy"
- *                  description="A CXF proxy"
+ * @org.apache.xbean.XBean element="proxy" description="A CXF proxy"
  * 
  */
-public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, DisposableBean {
-    
+public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
+        DisposableBean {
+
     private String name = ClientFactory.DEFAULT_JNDI_NAME;
+
     private JBIContainer container;
+
     private ClientFactory factory;
+
     private ComponentContext context;
+
     private Class type;
+
     private Object proxy;
+
     private QName service;
+
     private QName interfaceName;
+
     private String endpoint;
+
     private boolean propagateSecuritySubject;
-    
+
     private ServiceMixClient client;
-    
+
     public Object getObject() throws Exception {
         if (proxy == null) {
             proxy = createProxy();
@@ -65,10 +79,18 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
         cf.setServiceClass(type);
         cf.setAddress("jbi://" + new IdGenerator().generateSanitizedId());
         cf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        Bus bus = BusFactory.getDefaultBus();
+        JBITransportFactory jbiTransportFactory = (JBITransportFactory) bus
+                .getExtension(ConduitInitiatorManager.class)
+                .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+        if (getContext() != null) { 
+            DeliveryChannel dc = getContext().getDeliveryChannel();
+            if (dc != null) {
+                jbiTransportFactory.setDeliveryChannel(dc);
+            }
+        }
         return cf.create();
     }
-    
-
 
     public Class getObjectType() {
         return type;
@@ -77,7 +99,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     public boolean isSingleton() {
         return true;
     }
-    
+
     protected ComponentContext getInternalContext() throws Exception {
         if (context == null) {
             if (factory == null) {
@@ -133,7 +155,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     }
 
     /**
-     * @param context the context to set
+     * @param context
+     *            the context to set
      */
     public void setContext(ComponentContext context) {
         this.context = context;
@@ -147,7 +170,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     }
 
     /**
-     * @param container the container to set
+     * @param container
+     *            the container to set
      */
     public void setContainer(JBIContainer container) {
         this.container = container;
@@ -161,7 +185,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     }
 
     /**
-     * @param factory the factory to set
+     * @param factory
+     *            the factory to set
      */
     public void setFactory(ClientFactory factory) {
         this.factory = factory;
@@ -175,7 +200,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     }
 
     /**
-     * @param name the name to set
+     * @param name
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -189,7 +215,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     }
 
     /**
-     * @param propagateSecuritySubject the propagateSecuritySubject to set
+     * @param propagateSecuritySubject
+     *            the propagateSecuritySubject to set
      */
     public void setPropagateSecuritySubject(boolean propagateSecuritySubject) {
         this.propagateSecuritySubject = propagateSecuritySubject;
@@ -209,4 +236,3 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean, Dis
     }
 
 }
-
