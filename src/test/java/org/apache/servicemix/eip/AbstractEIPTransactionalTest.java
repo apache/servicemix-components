@@ -20,7 +20,6 @@ import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
-import javax.transaction.TransactionManager;
 
 import org.apache.activemq.broker.BrokerService;
 import org.apache.derby.jdbc.EmbeddedXADataSource;
@@ -40,7 +39,7 @@ import org.tranql.connector.jdbc.AbstractXADataSourceMCF;
 public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
 
     protected BrokerService broker;
-    protected TransactionManager tm;
+    protected GeronimoPlatformTransactionManager tm;
     protected DataSource dataSource;
     protected Store store;
     
