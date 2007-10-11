@@ -34,8 +34,7 @@ import org.apache.servicemix.jbi.resolver.URIResolver;
 public class JbiAddressingInterceptor extends AbstractPhaseInterceptor<Message> {
     
     
-    //private static final Logger LOG = Logger.getLogger(JbiAddressingInInterceptor.class.getName());
-        
+            
     public JbiAddressingInterceptor() {
         super(Phase.INVOKE);
         getBefore().add(CxfBcConsumer.JbiInvokerInterceptor.class.getName());

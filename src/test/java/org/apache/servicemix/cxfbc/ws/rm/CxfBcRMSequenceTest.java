@@ -34,6 +34,7 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.binding.soap.Soap11;
 import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.frontend.ClientProxy;
@@ -64,7 +65,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 public class CxfBcRMSequenceTest extends SpringTestSupport {
-    private static final Logger LOG = Logger.getLogger(CxfBcRMSequenceTest.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfBcRMSequenceTest.class);
     private static final String GREETMEONEWAY_ACTION = null;
     private static final String GREETME_ACTION = null;
     private static final String GREETME_RESPONSE_ACTION = null;

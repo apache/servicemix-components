@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
@@ -32,7 +33,7 @@ import org.apache.cxf.phase.Phase;
 
 public class InMessageRecorder extends AbstractPhaseInterceptor<Message> {
 
-    private static final Logger LOG = Logger.getLogger(InMessageRecorder.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(InMessageRecorder.class);
     private List<byte[]> inbound;
 
     public InMessageRecorder() {

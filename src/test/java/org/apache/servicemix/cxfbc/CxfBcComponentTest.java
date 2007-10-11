@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
@@ -45,8 +46,7 @@ import uri.helloworld.HelloService;
 
 public class CxfBcComponentTest extends TestCase {
 
-    static final Logger LOG = Logger.getLogger(CxfBcComponentTest.class
-            .getName());
+    static final Logger LOG = LogUtils.getL7dLogger(CxfBcComponentTest.class);
 
     private final QName serviceName = new QName("uri:HelloWorld",
             "HelloService");

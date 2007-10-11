@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.StaxOutInterceptor;
 import org.apache.cxf.io.CachedOutputStream;
@@ -36,7 +37,7 @@ import org.apache.cxf.ws.rm.RetransmissionInterceptor;
 
 public class OutMessageRecorder extends AbstractPhaseInterceptor {
     
-    private static final Logger LOG = Logger.getLogger(OutMessageRecorder.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(OutMessageRecorder.class);
     private List<byte[]> outbound;
 
     public OutMessageRecorder() {

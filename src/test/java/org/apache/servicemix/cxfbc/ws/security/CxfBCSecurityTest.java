@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.hello_world_soap_http.Greeter;
@@ -30,8 +31,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBCSecurityTest extends SpringTestSupport {
 
-    private static final Logger LOG = Logger.getLogger(CxfBCSecurityTest.class
-            .getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSecurityTest.class);
     
     private static final java.net.URL WSDL_LOC;
     static {

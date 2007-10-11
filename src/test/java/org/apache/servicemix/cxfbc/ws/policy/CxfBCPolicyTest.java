@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.greeter_control.BasicGreeterService;
@@ -37,8 +38,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBCPolicyTest extends SpringTestSupport {
 
-    private static final Logger LOG = Logger.getLogger(CxfBCPolicyTest.class
-            .getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfBCPolicyTest.class);
 
     public void testUsingAddressing() throws Exception {
         SpringBusFactory bf = new SpringBusFactory();

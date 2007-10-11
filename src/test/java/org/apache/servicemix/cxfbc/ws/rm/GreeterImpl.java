@@ -23,6 +23,7 @@ import javax.jws.WebService;
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Response;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.greeter_control.PingMeFault;
 import org.apache.cxf.greeter_control.types.FaultDetail;
 import org.apache.cxf.greeter_control.types.GreetMeResponse;
@@ -35,7 +36,7 @@ import org.apache.cxf.greeter_control.types.SayHiResponse;
         endpointInterface = "org.apache.cxf.greeter_control.Greeter",
         targetNamespace = "http://cxf.apache.org/greeter_control")
 public class GreeterImpl {
-    private static final Logger LOG = Logger.getLogger(GreeterImpl.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(GreeterImpl.class);
     private long delay;
     private String lastOnewayArg;
     private boolean throwAlways;
