@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -30,7 +31,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfSeContextInjectionTest extends SpringTestSupport {
 
-    private static final Logger LOG = Logger.getLogger(CxfSeContextInjectionTest.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfSeContextInjectionTest.class);
     private DefaultServiceMixClient client;
     private InOut io;
     

@@ -26,6 +26,7 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -34,7 +35,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public class CxfSeClientProxyTest extends TestCase {
 
-    private static final Logger LOG = Logger.getLogger(CxfSeClientProxyTest.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfSeClientProxyTest.class);
     private DefaultServiceMixClient client;
     private InOut io;
     private JBIContainer container;
@@ -64,7 +65,6 @@ public class CxfSeClientProxyTest extends TestCase {
         container.start();
         
         // Deploy SU
-//      Deploy SU
         component.getServiceUnitManager().deploy("target", getServiceUnitPath("target"));
         component.getServiceUnitManager().init("target", getServiceUnitPath("target"));
         component.getServiceUnitManager().start("target");
