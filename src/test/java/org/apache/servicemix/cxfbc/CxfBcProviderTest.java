@@ -32,6 +32,8 @@ import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.service.model.ServiceInfo;
+import org.apache.hello_world_soap_http.Greeter;
+import org.apache.hello_world_soap_http.GreeterImpl;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.cxfse.CxfSeComponent;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -46,26 +48,23 @@ public class CxfBcProviderTest extends SpringTestSupport {
     
     private DefaultServiceMixClient client;
     private InOut io;
-    
+    private CxfSeComponent component;
     
     protected void setUp() throws Exception {
         super.setUp();
-        client = new DefaultServiceMixClient(jbi);
-        io = client.createInOutExchange();
-        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
-        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
-        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
-    }
-    
-    
-    public void testProvider() throws Exception {
-        LOG.info("test provider");
-        CxfSeComponent component = new CxfSeComponent();
+        
+        component = new CxfSeComponent();
         jbi.activateComponent(component, "CxfSeComponent");
         //Deploy proxy SU
         component.getServiceUnitManager().deploy("proxy", getServiceUnitPath("provider"));
         component.getServiceUnitManager().init("proxy", getServiceUnitPath("provider"));
         component.getServiceUnitManager().start("proxy");
+    }
+    
+    
+    public void testProvider() throws Exception {
+        LOG.info("test provider");
+           
         
         //start external service
         JaxWsServerFactoryBean factory = new JaxWsServerFactoryBean();
@@ -79,7 +78,11 @@ public class CxfBcProviderTest extends SpringTestSupport {
         endpoint.getOutInterceptors().add(new LoggingOutInterceptor());
         ServiceInfo service = endpoint.getEndpointInfo().getService();
         assertNotNull(service);
-        
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
         //send message to proxy
         io.getInMessage().setContent(new StringSource(
                 "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
@@ -91,8 +94,56 @@ public class CxfBcProviderTest extends SpringTestSupport {
               + "</message>"));
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
-                io.getOutMessage()).indexOf("Hello ffang 3Negative number cant be added!") >= 0);
+                io.getOutMessage()).indexOf("Hello ffang 3") >= 0);
+
+        //test exception handle
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "exception test"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello exception test Negative number cant be added!") >= 0);
+        
+        //test onway
+        factory = new JaxWsServerFactoryBean();
+        factory.setServiceClass(Greeter.class);
+        factory.setServiceBean(new GreeterImpl());
+        address = "http://localhost:9002/providertest_oneway";
+        factory.setAddress(address);
+        server = factory.create();
+        endpoint = server.getEndpoint();
+        endpoint.getInInterceptors().add(new LoggingInInterceptor());
+        endpoint.getOutInterceptors().add(new LoggingOutInterceptor());
+        service = endpoint.getEndpointInfo().getService();
+        assertNotNull(service);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        //send message to proxy
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "oneway test"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello oneway test oneway") >= 0);
     }
+    
+     
     
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {

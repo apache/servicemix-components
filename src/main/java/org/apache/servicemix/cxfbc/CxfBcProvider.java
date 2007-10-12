@@ -29,6 +29,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
@@ -57,6 +58,7 @@ import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.Service;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
+import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.ConduitInitiator;
 import org.apache.cxf.transport.ConduitInitiatorManager;
@@ -149,6 +151,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
             //
         }
         message.setContent(XMLStreamWriter.class, writer);
+        message.put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
         outChain.doIntercept(message);
         XMLStreamWriter xtw = message.getContent(XMLStreamWriter.class);
         if (xtw != null) {
@@ -221,6 +224,16 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 
                 ei = cxfService.getServiceInfos().iterator().next()
                         .getEndpoints().iterator().next();
+                for (ServiceInfo serviceInfo : cxfService.getServiceInfos()) {
+                    if (serviceInfo.getName().equals(service)
+                        && getEndpoint() != null 
+                        && serviceInfo.getEndpoint(new QName(
+                                serviceInfo.getName().getNamespaceURI(), getEndpoint())) != null) {
+                        ei = serviceInfo.getEndpoint(new QName(
+                                    serviceInfo.getName().getNamespaceURI(), getEndpoint()));
+                 
+                    }
+                }
 
                 if (endpoint == null) {
                     endpoint = ei.getName().getLocalPart();

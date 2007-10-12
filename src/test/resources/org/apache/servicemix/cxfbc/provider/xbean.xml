@@ -21,7 +21,8 @@
        xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
        xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
        xmlns:test="urn:test"
-       xmlns:calculator="http://apache.org/cxf/calculator">
+       xmlns:calculator="http://apache.org/cxf/calculator"
+       xmlns:greeter="http://apache.org/hello_world_soap_http">
   
     
       <cxfse:endpoint>
@@ -29,6 +30,9 @@
           <bean class="org.apache.servicemix.cxfbc.GreeterImplForProvider">
               <property name="calculator">
                   <cxfse:proxy service="calculator:CalculatorService" context="#context" type="org.apache.cxf.calculator.CalculatorPortType" />
+              </property>
+              <property name="greeter">
+                  <cxfse:proxy service="greetr:SOAPService" context="#context" type="org.apache.hello_world_soap_http.Greeter" />
               </property>
           </bean>
               

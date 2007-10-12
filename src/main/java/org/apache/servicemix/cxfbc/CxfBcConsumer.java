@@ -64,6 +64,7 @@ import org.apache.cxf.service.model.BindingFaultInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
+import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.ChainInitiationObserver;
 import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
@@ -216,6 +217,17 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
             EndpointInfo ei = cxfService.getServiceInfos().iterator().next()
                     .getEndpoints().iterator().next();
+            for (ServiceInfo serviceInfo : cxfService.getServiceInfos()) {
+                if (serviceInfo.getName().equals(service)
+                    && getEndpoint() != null 
+                    && serviceInfo.getEndpoint(new QName(
+                            serviceInfo.getName().getNamespaceURI(), getEndpoint())) != null) {
+                    ei = serviceInfo.getEndpoint(new QName(
+                                serviceInfo.getName().getNamespaceURI(), getEndpoint()));
+             
+                }
+            }
+            
 
             if (endpoint == null) {
                 endpoint = ei.getName().getLocalPart();

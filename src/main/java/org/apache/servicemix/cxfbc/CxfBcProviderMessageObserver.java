@@ -57,8 +57,9 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
     private MessageExchange messageExchange;
 
     private CxfBcProvider providerEndpoint;
-    
-    public CxfBcProviderMessageObserver(MessageExchange exchange, CxfBcProvider providerEndpoint) {
+
+    public CxfBcProviderMessageObserver(MessageExchange exchange,
+            CxfBcProvider providerEndpoint) {
         this.messageExchange = exchange;
         this.providerEndpoint = providerEndpoint;
     }
@@ -80,36 +81,45 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
         try {
             contentType = (String) message.get(Message.CONTENT_TYPE);
             SoapMessage soapMessage = new SoapMessage(message);
-            
-            //create XmlStreamReader
+
+            // create XmlStreamReader
+            BindingOperationInfo boi = providerEndpoint.getEndpointInfo()
+                    .getBinding().getOperation(messageExchange.getOperation());
+            if (boi.getOperationInfo().isOneWay()) {
+                return;
+            }
             XMLStreamReader xmlStreamReader = createXMLStreamReaderFromMessage(soapMessage);
             soapMessage.setContent(XMLStreamReader.class, xmlStreamReader);
-            soapMessage.put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
+            soapMessage
+                    .put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
             Exchange cxfExchange = new ExchangeImpl();
             soapMessage.setExchange(cxfExchange);
-                   
-            BindingOperationInfo boi = providerEndpoint.getEndpointInfo().getBinding().getOperation(messageExchange.getOperation());
+
             cxfExchange.put(BindingOperationInfo.class, boi);
             cxfExchange.put(Endpoint.class, providerEndpoint.getCxfEndpoint());
-            //create Interceptor chain
-            
+            // create Interceptor chain
+
             PhaseChainCache inboundChainCache = new PhaseChainCache();
-            PhaseManager pm = providerEndpoint.getBus().getExtension(PhaseManager.class);
+            PhaseManager pm = providerEndpoint.getBus().getExtension(
+                    PhaseManager.class);
             List<Interceptor> inList = new ArrayList<Interceptor>();
             inList.add(new JbiInWsdl1Interceptor());
-            
-            PhaseInterceptorChain inChain = inboundChainCache.get(pm.getInPhases(), inList);
+
+            PhaseInterceptorChain inChain = inboundChainCache.get(pm
+                    .getInPhases(), inList);
             inChain.add(providerEndpoint.getOutInterceptors());
             inChain.add(providerEndpoint.getOutFaultInterceptors());
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
-            
-            if (soapMessage.get("jbiFault") != null 
-                    &&  soapMessage.get("jbiFault").equals(true)) {
+
+            if (boi.getOperationInfo().isOneWay()) {
+                messageExchange.setStatus(ExchangeStatus.DONE);
+            } else if (soapMessage.get("jbiFault") != null
+                    && soapMessage.get("jbiFault").equals(true)) {
                 Fault fault = messageExchange.createFault();
                 fault.setContent(soapMessage.getContent(Source.class));
                 messageExchange.setFault(fault);
-            } else  if (messageExchange instanceof InOut) {
+            } else if (messageExchange instanceof InOut) {
                 NormalizedMessage msg = messageExchange.createMessage();
                 msg.setContent(soapMessage.getContent(Source.class));
                 messageExchange.setMessage(msg, "out");
@@ -130,9 +140,11 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
                     && Boolean.TRUE.equals(messageExchange
                             .getProperty(JbiConstants.SEND_SYNC));
             if (txSync) {
-                providerEndpoint.getContext().getDeliveryChannel().sendSync(messageExchange);
+                providerEndpoint.getContext().getDeliveryChannel().sendSync(
+                        messageExchange);
             } else {
-                providerEndpoint.getContext().getDeliveryChannel().send(messageExchange);
+                providerEndpoint.getContext().getDeliveryChannel().send(
+                        messageExchange);
             }
 
         } catch (Exception e) {
@@ -144,16 +156,17 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             }
         }
     }
-    
+
     private XMLStreamReader createXMLStreamReaderFromMessage(Message message) {
         XMLStreamReader xmlReader = null;
         try {
-            StreamSource bodySource = new StreamSource(message.getContent(InputStream.class));
+            StreamSource bodySource = new StreamSource(message
+                    .getContent(InputStream.class));
             xmlReader = StaxUtils.createXMLStreamReader(bodySource);
             xmlReader.nextTag();
             xmlReader.nextTag();
             xmlReader.nextTag();
-        }  catch (XMLStreamException e) {
+        } catch (XMLStreamException e) {
             e.printStackTrace();
         }
         return xmlReader;

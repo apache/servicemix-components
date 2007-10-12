@@ -179,9 +179,6 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         Document doc = DomUtil.createDocument();
         
         Element jbiFault = DomUtil.createElement(doc, new QName(JBIConstants.NS_JBI_BINDING, JBIFault.JBI_FAULT_ROOT));
-        /*Node jbiFaultString = doc.importNode(soapFault.getElementsByTagName(
-                JBIFault.JBI_FAULT_STRING).item(0), true);
-        jbiFault.appendChild(jbiFaultString);*/
         Node jbiFaultDetail = doc.importNode(soapFault.getElementsByTagName(JBIFault.JBI_FAULT_DETAIL).item(0).getFirstChild(), true);
         jbiFault.appendChild(jbiFaultDetail);
         message.setContent(Source.class, new DOMSource(doc));

@@ -21,8 +21,9 @@ import javax.jws.WebService;
 
 import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorPortType;
+import org.apache.hello_world_soap_http.Greeter;
 
-@WebService(serviceName = "SOAPService", 
+@WebService(serviceName = "SOAPServiceProvider", 
         portName = "SoapPort", 
         endpointInterface = "org.apache.hello_world_soap_http.Greeter", 
         targetNamespace = "http://apache.org/hello_world_soap_http")
@@ -30,16 +31,22 @@ import org.apache.cxf.calculator.CalculatorPortType;
 public class GreeterImplForProvider {
     private ComponentContext context;
     private CalculatorPortType calculator;
+    private Greeter greeter;
     public String greetMe(String me) {
         String ret = "";
+        
         try {
-            
-            ret = ret + getCalculator().add(1, 2);
-            ret = ret + getCalculator().add(1, -1);
+            if ("ffang".equals(me)) {
+                ret = ret + getCalculator().add(1, 2);
+            } else if ("exception test".equals(me)) {
+                ret = ret + getCalculator().add(1, -1);
+            } else if ("oneway test".equals(me)) {
+                getGreeter().greetMeOneWay("oneway");
+                ret = "oneway";
+            }
                         
         } catch (AddNumbersFault e) {
-            //should catch exception here
-            
+            //should catch exception here if negative number is passed
             ret = ret + e.getFaultInfo().getMessage();
         }
         return "Hello " + me  + " " + ret;
@@ -59,6 +66,14 @@ public class GreeterImplForProvider {
 
     public CalculatorPortType getCalculator() {
         return calculator;
+    }
+
+    public void setGreeter(Greeter greeter) {
+        this.greeter = greeter;
+    }
+
+    public Greeter getGreeter() {
+        return greeter;
     }
 
 
