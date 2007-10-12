@@ -19,6 +19,7 @@ package org.apache.servicemix.cxfbc;
 import javax.jbi.component.ComponentContext;
 import javax.jws.WebService;
 
+import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorPortType;
 
 @WebService(serviceName = "SOAPService", 
@@ -30,13 +31,16 @@ public class GreeterImplForProvider {
     private ComponentContext context;
     private CalculatorPortType calculator;
     public String greetMe(String me) {
-        int ret = 0;
+        String ret = "";
         try {
             
-            ret = getCalculator().add(1, 2);
+            ret = ret + getCalculator().add(1, 2);
+            ret = ret + getCalculator().add(1, -1);
                         
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (AddNumbersFault e) {
+            //should catch exception here
+            
+            ret = ret + e.getFaultInfo().getMessage();
         }
         return "Hello " + me  + " " + ret;
     }

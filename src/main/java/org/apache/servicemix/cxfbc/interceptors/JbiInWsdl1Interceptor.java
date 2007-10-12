@@ -32,6 +32,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.apache.cxf.binding.jbi.JBIConstants;
+import org.apache.cxf.binding.jbi.JBIFault;
 import org.apache.cxf.binding.soap.SoapHeader;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
@@ -58,7 +60,6 @@ import org.apache.servicemix.soap.util.DomUtil;
 public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
 
     public JbiInWsdl1Interceptor() {
-        //super(Phase.UNMARSHAL);
         super(Phase.PRE_INVOKE);
         addAfter(JbiOperationInterceptor.class.getName());
     }
@@ -102,9 +103,15 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         if (style == null) {
             style = binding.getStyle();
         }
+
+        
         Element body = getBodyElement(message);
         if (body == null) {
-            //SOAP:Body is empty
+            return;
+        }
+        
+        if (body.getLocalName().equals("Fault")) {
+            handleJBIFault(message, body);
             return;
         }
         List<SoapHeaderInfo> headers = wsdlMessage.getExtensors(SoapHeaderInfo.class);
@@ -131,6 +138,21 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 }
             }
         }
+        processHeader(message, headers, headerElement, parts);
+        for (Object part : parts) {
+            if (part instanceof Node) {
+                addPart(root, (Node) part);
+            } else if (part instanceof NodeList) {
+                addPart(root, (NodeList) part);
+            } else if (part instanceof SoapHeader) {
+                addPart(root, (Node)((SoapHeader)part).getObject());
+            }
+        }
+        
+        message.setContent(Source.class, new DOMSource(document));
+    }
+
+    private void processHeader(SoapMessage message, List<SoapHeaderInfo> headers, List<Header> headerElement, List<Object> parts) {
         if (headers != null) {
             for (SoapHeaderInfo header : headers) {
                 MessagePartInfo part = header.getPart();
@@ -151,17 +173,19 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 }
             }
         }
-        for (Object part : parts) {
-            if (part instanceof Node) {
-                addPart(root, (Node) part);
-            } else if (part instanceof NodeList) {
-                addPart(root, (NodeList) part);
-            } else if (part instanceof SoapHeader) {
-                addPart(root, (Node)((SoapHeader)part).getObject());
-            }
-        }
+    }
+
+    private void handleJBIFault(SoapMessage message, Element soapFault) {
+        Document doc = DomUtil.createDocument();
         
-        message.setContent(Source.class, new DOMSource(document));
+        Element jbiFault = DomUtil.createElement(doc, new QName(JBIConstants.NS_JBI_BINDING, JBIFault.JBI_FAULT_ROOT));
+        /*Node jbiFaultString = doc.importNode(soapFault.getElementsByTagName(
+                JBIFault.JBI_FAULT_STRING).item(0), true);
+        jbiFault.appendChild(jbiFaultString);*/
+        Node jbiFaultDetail = doc.importNode(soapFault.getElementsByTagName(JBIFault.JBI_FAULT_DETAIL).item(0).getFirstChild(), true);
+        jbiFault.appendChild(jbiFaultDetail);
+        message.setContent(Source.class, new DOMSource(doc));
+        message.put("jbiFault", true);
     }
 
     private NodeList wrapNodeList(final NodeList childNodes) {
@@ -196,6 +220,8 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             throw new Fault(e);
         }
     }
+    
+    
     
     protected Header getHeaderElement(SoapMessage message, QName name) {
         Exchange exchange = message.getExchange();

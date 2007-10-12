@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
@@ -103,7 +104,12 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
             
-            if (messageExchange instanceof InOut) {
+            if (soapMessage.get("jbiFault") != null 
+                    &&  soapMessage.get("jbiFault").equals(true)) {
+                Fault fault = messageExchange.createFault();
+                fault.setContent(soapMessage.getContent(Source.class));
+                messageExchange.setFault(fault);
+            } else  if (messageExchange instanceof InOut) {
                 NormalizedMessage msg = messageExchange.createMessage();
                 msg.setContent(soapMessage.getContent(Source.class));
                 messageExchange.setMessage(msg, "out");

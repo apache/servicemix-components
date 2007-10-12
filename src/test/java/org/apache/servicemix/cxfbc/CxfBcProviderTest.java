@@ -91,7 +91,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
               + "</message>"));
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
-                io.getOutMessage()).indexOf("Hello ffang 3") > 0);
+                io.getOutMessage()).indexOf("Hello ffang 3Negative number cant be added!") >= 0);
     }
     
     @Override
