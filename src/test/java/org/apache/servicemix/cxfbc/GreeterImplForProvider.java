@@ -32,6 +32,7 @@ public class GreeterImplForProvider {
     private ComponentContext context;
     private CalculatorPortType calculator;
     private Greeter greeter;
+    private Greeter securityGreeter;
     public String greetMe(String me) {
         String ret = "";
         
@@ -43,6 +44,8 @@ public class GreeterImplForProvider {
             } else if ("oneway test".equals(me)) {
                 getGreeter().greetMeOneWay("oneway");
                 ret = "oneway";
+            } else if ("https test".equals(me)) {
+                ret = ret + securityGreeter.greetMe("ffang");
             }
                         
         } catch (AddNumbersFault e) {
@@ -74,6 +77,14 @@ public class GreeterImplForProvider {
 
     public Greeter getGreeter() {
         return greeter;
+    }
+
+    public void setSecurityGreeter(Greeter securityGreeter) {
+        this.securityGreeter = securityGreeter;
+    }
+
+    public Greeter getSecurityGreeter() {
+        return securityGreeter;
     }
 
 
