@@ -104,6 +104,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
 
     private Conduit conduit;
     
+    private boolean mtomEnabled;
+    
     public void processExchange(MessageExchange exchange) {
         
     }
@@ -240,6 +242,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 }
                 ei.getBinding().setProperty(
                         AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
+                
                 if (locationURI == null) {
                     // if not specify target address, get it from the wsdl
                     locationURI = new URI(ei.getAddress());
@@ -319,6 +322,14 @@ public class CxfBcProvider extends ProviderEndpoint implements
     
     EndpointInfo getEndpointInfo() {
         return this.ei;
+    }
+
+    public void setMtomEnabled(boolean mtomEnabled) {
+        this.mtomEnabled = mtomEnabled;
+    }
+
+    public boolean isMtomEnabled() {
+        return mtomEnabled;
     }
 
 }

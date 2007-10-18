@@ -16,12 +16,15 @@
  */
 package org.apache.servicemix.cxfbc;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.activation.DataHandler;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -30,10 +33,12 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import com.ibm.wsdl.Constants;
 import org.apache.cxf.Bus;
+import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.AbstractBindingFactory;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
@@ -53,6 +58,7 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.interceptor.OutgoingChainInterceptor;
 import org.apache.cxf.interceptor.StaxInInterceptor;
 import org.apache.cxf.interceptor.StaxOutInterceptor;
+import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageContentsList;
@@ -73,7 +79,9 @@ import org.apache.servicemix.cxfbc.interceptors.JbiInInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOperationInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
+import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.messaging.NormalizedMessageImpl;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
 
@@ -112,6 +120,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private BindingFaultInfo faultWanted;
 
     private Bus bus;
+    
+    private boolean mtomEnabled;
 
     /**
      * @return the wsdl
@@ -234,6 +244,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             }
             ei.getBinding().setProperty(
                     AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
+            
+            
             cxfService.getInInterceptors().add(
                     new ReadHeadersInterceptor(getBus()));
             cxfService.getInInterceptors().add(new MustUnderstandInterceptor());
@@ -250,6 +262,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getOutInterceptors().add(new JbiOutWsdl1Interceptor());
             cxfService.getOutInterceptors().add(new SoapActionOutInterceptor());
             cxfService.getOutInterceptors().add(new AttachmentOutInterceptor());
+            cxfService.getOutInterceptors().add(new MtomCheckInterceptor(isMtomEnabled()));
             cxfService.getOutInterceptors().add(new StaxOutInterceptor());
             cxfService.getOutInterceptors().add(
                     new SoapPreProtocolOutInterceptor());
@@ -404,6 +417,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             CxfBcConsumer.this.isOneway = message.getExchange().get(
                     BindingOperationInfo.class).getOperationInfo().isOneWay();
             message.getExchange().setOneWay(CxfBcConsumer.this.isOneway);
+            
 
             try {
                 if (CxfBcConsumer.this.synchronous
@@ -454,8 +468,19 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         outMessage = endpoint.getBinding().createMessage();
                         ex.setOutMessage(outMessage);
                     }
+                    NormalizedMessageImpl norMessage = 
+                        (NormalizedMessageImpl) exchange.getMessage("out");
+                    List<Attachment> attachmentList = new ArrayList<Attachment>();
                     outMessage.setContent(Source.class, exchange.getMessage(
                             "out").getContent());
+                    Iterator<String> iter = norMessage.listAttachments();
+                    while (iter.hasNext()) {
+                        String id = iter.next();
+                        DataHandler dh = norMessage.getAttachment(id);
+                        attachmentList.add(new AttachmentImpl(id, dh));
+                    }
+                    
+                    message.setAttachments(attachmentList);
                 }
             }
 
@@ -505,6 +530,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     public String getBusCfg() {
         return busCfg;
+    }
+
+    public void setMtomEnabled(boolean mtomEnabled) {
+        this.mtomEnabled = mtomEnabled;
+    }
+
+    public boolean isMtomEnabled() {
+        return mtomEnabled;
     }
 
 }
