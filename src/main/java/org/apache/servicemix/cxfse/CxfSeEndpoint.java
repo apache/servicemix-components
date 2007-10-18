@@ -47,6 +47,7 @@ import org.apache.cxf.transport.jbi.JBIDispatcherUtil;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
 import org.apache.servicemix.cxfse.support.ReflectionUtils;
 import org.apache.servicemix.id.IdGenerator;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -76,7 +77,10 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     private List<Interceptor> inFault = new CopyOnWriteArrayList<Interceptor>();
     
     private Map properties;
-
+    
+    private boolean mtomEnabled;
+    
+    
     /**
      * @return the pojo
      */
@@ -152,6 +156,9 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         endpoint.setInFaultInterceptors(getInFaultInterceptors());
         endpoint.setOutInterceptors(getOutInterceptors());
         endpoint.setOutFaultInterceptors(getOutFaultInterceptors());
+        if (isMtomEnabled()) {
+            endpoint.getInInterceptors().add(new AttachmentInInterceptor());
+        }
         JaxWsImplementorInfo implInfo = new JaxWsImplementorInfo(getPojo()
                 .getClass());
         setService(implInfo.getServiceName());
@@ -179,6 +186,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
         }
+        
     }
 
     /*
@@ -250,5 +258,13 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
             logger.debug("Unable to inject ComponentContext: " + e.getMessage());
         }
         
+    }
+
+    public void setMtomEnabled(boolean mtomEnabled) {
+        this.mtomEnabled = mtomEnabled;
+    }
+
+    public boolean isMtomEnabled() {
+        return mtomEnabled;
     }
 }
