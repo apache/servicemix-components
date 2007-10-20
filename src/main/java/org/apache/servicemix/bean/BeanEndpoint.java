@@ -19,21 +19,32 @@ package org.apache.servicemix.bean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
+import javax.jbi.management.MBeanNames;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+import javax.xml.namespace.QName;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.jexl.Expression;
@@ -75,7 +86,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     private String beanClassName;
     private MethodInvocationStrategy methodInvocationStrategy;
     private org.apache.servicemix.expression.Expression correlationExpression;
-    
+
     private Map<String, Holder> exchanges = new ConcurrentHashMap<String, Holder>();
     private Map<Object, Request> requests = new ConcurrentHashMap<Object, Request>();
     private ThreadLocal<Request> currentRequest = new ThreadLocal<Request>();
@@ -202,7 +213,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             throw new IllegalStateException("Unknown role: " + exchange.getRole());
         }
     }
-    
+
     protected void onProviderExchange(MessageExchange exchange) throws Exception {
         Object corId = getCorrelation(exchange);
         Request req = requests.get(corId);
@@ -259,7 +270,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             currentRequest.set(null);
         }
     }
-    
+
     protected void onConsumerExchange(MessageExchange exchange) throws Exception {
         Object corId = exchange.getExchangeId();
         Request req = requests.remove(corId);
@@ -282,7 +293,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         checkEndOfRequest(req, corId);
         currentRequest.set(null);
     }
-    
+
     protected Object getCorrelation(MessageExchange exchange) throws MessagingException {
         return getCorrelationExpression().evaluate(exchange, exchange.getMessage("in"));
     }
@@ -321,6 +332,8 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
      * @param target the bean to be injected
      */
     protected void injectBean(final Object target) {
+        final PojoContext ctx = new PojoContext();
+        final DeliveryChannel ch = ctx.channel;
         // Inject fields
         ReflectionUtils.doWithFields(target.getClass(), new ReflectionUtils.FieldCallback() {
             public void doWith(Field f) throws IllegalArgumentException, IllegalAccessException {
@@ -330,9 +343,9 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                 }
                 if (f.getAnnotation(Resource.class) != null) {
                     if (ComponentContext.class.isAssignableFrom(f.getType())) {
-                        ReflectionUtils.setField(f, target, context);
+                        ReflectionUtils.setField(f, target, ctx);
                     } else if (DeliveryChannel.class.isAssignableFrom(f.getType())) {
-                        ReflectionUtils.setField(f, target, channel);
+                        ReflectionUtils.setField(f, target, ch);
                     }
                 }
             }
@@ -368,7 +381,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             }
         });
     }
-    
+
     /**
      * Used by POJOs acting as a consumer
      * @param uri
@@ -380,7 +393,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             InOut me = getExchangeFactory().createInOutExchange();
             URIResolver.configureExchange(me, getServiceUnit().getComponent().getComponentContext(), uri);
             MessageUtil.transferTo(message, me, "in");
-            final Holder h = new Holder(); 
+            final Holder h = new Holder();
             requests.put(me.getExchangeId(), currentRequest.get());
             exchanges.put(me.getExchangeId(), h);
             BeanEndpoint.this.send(me);
@@ -389,7 +402,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             throw new RuntimeException(e);
         }
     }
-    
+
     protected void checkEndOfRequest(Request request, Object corId) {
         if (request.getExchange().getStatus() != ExchangeStatus.ACTIVE) {
             ReflectionUtils.callLifecycleMethod(request.getBean(), PreDestroy.class);
@@ -430,5 +443,138 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
      */
     public void setCorrelationExpression(org.apache.servicemix.expression.Expression correlationExpression) {
         this.correlationExpression = correlationExpression;
+    }
+
+    protected class PojoContext implements ComponentContext {
+
+        private DeliveryChannel channel = new PojoChannel();
+
+        public ServiceEndpoint activateEndpoint(QName qName, String s) throws JBIException {
+            return context.activateEndpoint(qName, s);
+        }
+
+        public void deactivateEndpoint(ServiceEndpoint serviceEndpoint) throws JBIException {
+            context.deactivateEndpoint(serviceEndpoint);
+        }
+
+        public void registerExternalEndpoint(ServiceEndpoint serviceEndpoint) throws JBIException {
+            context.registerExternalEndpoint(serviceEndpoint);
+        }
+
+        public void deregisterExternalEndpoint(ServiceEndpoint serviceEndpoint) throws JBIException {
+            context.deregisterExternalEndpoint(serviceEndpoint);
+        }
+
+        public ServiceEndpoint resolveEndpointReference(DocumentFragment documentFragment) {
+            return context.resolveEndpointReference(documentFragment);
+        }
+
+        public String getComponentName() {
+            return context.getComponentName();
+        }
+
+        public DeliveryChannel getDeliveryChannel() throws MessagingException {
+            return channel;
+        }
+
+        public ServiceEndpoint getEndpoint(QName qName, String s) {
+            return context.getEndpoint(qName, s);
+        }
+
+        public Document getEndpointDescriptor(ServiceEndpoint serviceEndpoint) throws JBIException {
+            return context.getEndpointDescriptor(serviceEndpoint);
+        }
+
+        public ServiceEndpoint[] getEndpoints(QName qName) {
+            return context.getEndpoints(qName);
+        }
+
+        public ServiceEndpoint[] getEndpointsForService(QName qName) {
+            return context.getEndpointsForService(qName);
+        }
+
+        public ServiceEndpoint[] getExternalEndpoints(QName qName) {
+            return context.getExternalEndpoints(qName);
+        }
+
+        public ServiceEndpoint[] getExternalEndpointsForService(QName qName) {
+            return context.getExternalEndpointsForService(qName);
+        }
+
+        public String getInstallRoot() {
+            return context.getInstallRoot();
+        }
+
+        public Logger getLogger(String s, String s1) throws MissingResourceException, JBIException {
+            return context.getLogger(s, s1);
+        }
+
+        public MBeanNames getMBeanNames() {
+            return context.getMBeanNames();
+        }
+
+        public MBeanServer getMBeanServer() {
+            return context.getMBeanServer();
+        }
+
+        public InitialContext getNamingContext() {
+            return context.getNamingContext();
+        }
+
+        public Object getTransactionManager() {
+            return context.getTransactionManager();
+        }
+
+        public String getWorkspaceRoot() {
+            return context.getWorkspaceRoot();
+        }
+    }
+
+    protected class PojoChannel implements DeliveryChannel {
+
+        public void close() throws MessagingException {
+            BeanEndpoint.this.channel.close();
+        }
+
+        public MessageExchangeFactory createExchangeFactory() {
+            return BeanEndpoint.this.channel.createExchangeFactory();
+        }
+
+        public MessageExchangeFactory createExchangeFactory(QName qName) {
+            return BeanEndpoint.this.channel.createExchangeFactory(qName);
+        }
+
+        public MessageExchangeFactory createExchangeFactoryForService(QName qName) {
+            return BeanEndpoint.this.channel.createExchangeFactoryForService(qName);
+        }
+
+        public MessageExchangeFactory createExchangeFactory(ServiceEndpoint serviceEndpoint) {
+            return BeanEndpoint.this.channel.createExchangeFactory(serviceEndpoint);
+        }
+
+        public MessageExchange accept() throws MessagingException {
+            return BeanEndpoint.this.channel.accept();
+        }
+
+        public MessageExchange accept(long l) throws MessagingException {
+            return BeanEndpoint.this.channel.accept(l);
+        }
+
+        public void send(MessageExchange messageExchange) throws MessagingException {
+            if (messageExchange.getRole() == MessageExchange.Role.CONSUMER
+                    && messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
+                requests.put(messageExchange.getExchangeId(), currentRequest.get());
+            }
+            BeanEndpoint.this.channel.send(messageExchange);
+        }
+
+        public boolean sendSync(MessageExchange messageExchange) throws MessagingException {
+            return BeanEndpoint.this.channel.sendSync(messageExchange);
+        }
+
+        public boolean sendSync(MessageExchange messageExchange, long l) throws MessagingException {
+            return BeanEndpoint.this.channel.sendSync(messageExchange, l);
+        }
+
     }
 }
