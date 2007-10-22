@@ -117,5 +117,6 @@ public class JbiMessage extends DefaultMessage {
                 throw new JbiException(e);
             }
         }
+        super.setBody(body);
     }
 }
