@@ -25,7 +25,7 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     targetNamespace="http://apache.org/hello_world_soap_http" name="HelloWorld">
     <wsdl:types>
-        <schema targetNamespace="http://apache.org/hello_world_soap_http/types" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:x1="http://apache.org/hello_world_soap_http/types" elementFormDefault="qualified">
+        <schema targetNamespace="http://apache.org/hello_world_soap_http/types" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:x1="http://apache.org/hello_world_soap_http/types"> <!--elementFormDefault="qualified"-->
             <element name="sayHi">
                 <complexType/>
             </element>
