@@ -36,10 +36,13 @@ import javax.xml.transform.Source;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.ibm.wsdl.Constants;
 import org.apache.cxf.Bus;
 import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.AbstractBindingFactory;
+import org.apache.cxf.binding.jbi.JBIFault;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
@@ -452,11 +455,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             }
             if (!ex.isOneWay()) {
                 if (exchange.getFault() != null) {
-                    Fault f = new Fault(new org.apache.cxf.common.i18n.Message(
+                    Fault f = new JBIFault(new org.apache.cxf.common.i18n.Message(
                             "Fault occured", (ResourceBundle) null));
 
-                    Element details = toElement(exchange.getFault()
-                            .getContent());
+                    Element details = toElement(exchange.getFault().getContent());
                     f.setDetail(details);
                     processFaultDetail(f, message);
                     message.put(BindingFaultInfo.class, faultWanted);
@@ -518,10 +520,30 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     private static Element toElement(Source src) throws Fault {
         try {
-            return new SourceTransformer().toDOMElement(src);
+            SourceTransformer transformer = new SourceTransformer();
+            Element ret = transformer.toDOMElement(src);
+            ret = removeEmptyDefaultTns(ret);
+            return ret;
         } catch (Exception e) {
             throw new Fault(e);
         }
+    }
+
+    private static Element removeEmptyDefaultTns(Element ret) {
+        //to make unquailied fault work
+        if (ret.hasAttribute("xmlns") 
+                && ret.getAttribute("xmlns").length() == 0) {
+            ret.removeAttribute("xmlns");
+        }
+        NodeList nodes = ret.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            if (nodes.item(i) instanceof Element) {
+                Element ele = (Element)nodes.item(i);
+                ele = removeEmptyDefaultTns(ele);
+                
+            }
+        }
+        return ret;
     }
 
     public void setBusCfg(String busCfg) {
