@@ -16,22 +16,23 @@
  */
 package org.apache.servicemix.camel;
 
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
+
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.util.ExchangeHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -39,6 +40,9 @@ import org.apache.camel.util.ExchangeHelper;
  * @version $Revision: 563665 $
  */
 public class JbiBinding {
+
+    private static final Log LOG = LogFactory.getLog(JbiBinding.class);
+
     private String messageExchangePattern;
 
     /**
@@ -54,10 +58,9 @@ public class JbiBinding {
     }
 
     public MessageExchange makeJbiMessageExchange(Exchange camelExchange,
-                                                  MessageExchangeFactory exchangeFactory,
-                                                  String defaultMep)
+                                                  MessageExchangeFactory exchangeFactory, String defaultMep)
         throws MessagingException, URISyntaxException {
-        
+
         MessageExchange jbiExchange = createJbiMessageExchange(camelExchange, exchangeFactory, defaultMep);
         NormalizedMessage normalizedMessage = jbiExchange.getMessage("in");
         if (normalizedMessage == null) {
@@ -70,7 +73,7 @@ public class JbiBinding {
     }
 
     // Properties
-    //-------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     public String getMessageExchangePattern() {
         return messageExchangePattern;
@@ -78,7 +81,7 @@ public class JbiBinding {
 
     /**
      * Sets the message exchange pattern to use for communicating with JBI
-     *
+     * 
      * @param messageExchangePattern
      */
     public void setMessageExchangePattern(String messageExchangePattern) {
@@ -86,8 +89,7 @@ public class JbiBinding {
     }
 
     protected MessageExchange createJbiMessageExchange(Exchange camelExchange,
-                                                       MessageExchangeFactory exchangeFactory,
-                                                       String defaultMep)
+        MessageExchangeFactory exchangeFactory, String defaultMep) 
         throws MessagingException, URISyntaxException {
 
         ExchangePattern mep = camelExchange.getPattern();
@@ -127,14 +129,16 @@ public class JbiBinding {
 
     protected Source getJbiInContent(Exchange camelExchange) {
         // TODO this should be more smart
-        Object value = camelExchange.getIn().getBody();
-        if (value instanceof String) {
-            return new StreamSource(new StringReader(value.toString()));
+        Source content = camelExchange.getIn().getBody(Source.class);
+        if (content == null && camelExchange.getIn().getBody() != null) {
+            LOG.warn("'in' message content of type " + camelExchange.getIn().getBody().getClass()
+                     + " could not be converted to Source and will be dropped");
         }
-        return camelExchange.getIn().getBody(Source.class);
+        return content;
     }
 
-    protected void addJbiHeaders(MessageExchange jbiExchange, NormalizedMessage normalizedMessage, Exchange camelExchange) {
+    protected void addJbiHeaders(MessageExchange jbiExchange, NormalizedMessage normalizedMessage,
+                                 Exchange camelExchange) {
         Set<Map.Entry<String, Object>> entries = camelExchange.getIn().getHeaders().entrySet();
         for (Map.Entry<String, Object> entry : entries) {
             normalizedMessage.setProperty(entry.getKey(), entry.getValue());
