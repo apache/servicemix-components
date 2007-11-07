@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>serviceengines</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <version>3.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>servicemix-saxon</artifactId>
