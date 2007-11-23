@@ -33,7 +33,7 @@ import org.apache.commons.net.ftp.FTPReply;
  */
 public class FTPClientPool extends SocketClientPoolSupport {
 
-    public static final int DEFAULT_DATA_TIMEOUT = -1;
+    public static final int DEFAULT_DATA_TIMEOUT = 120000; // two minutes
     public static final String DEFAULT_CONTROL_ENCODING = FTP.DEFAULT_CONTROL_ENCODING;
 
     private String username;
