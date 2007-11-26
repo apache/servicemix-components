@@ -159,8 +159,9 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                     if (log.isDebugEnabled()) {
                         log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
                     }
+                    exchanges.put(exchange.getExchangeId(), exchange);
                     boolean result = cont.suspend(suspentionTime);
-                    exchanges.remove(exchange.getExchangeId());
+                    exchange = exchanges.remove(exchange.getExchangeId());
                     if (!result) {
                         throw new Exception("Error sending exchange: aborted");
                     }

@@ -233,8 +233,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                         to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration()
                                             .getConsumerProcessorSuspendTime();
                     }
+                    exchanges.put(exchange.getExchangeId(), exchange);
                     boolean result = cont.suspend(to);
-                    exchanges.remove(exchange.getExchangeId());
+                    exchange = exchanges.remove(exchange.getExchangeId());
                     if (!result) {
                         locks.remove(exchange.getExchangeId());
                         throw new Exception("Exchange timed out");
