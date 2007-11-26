@@ -65,8 +65,8 @@ public class CxfSeClientProxyTest extends TestCase {
         container.start();
         
         // Deploy SU
-        component.getServiceUnitManager().deploy("target", getServiceUnitPath("target"));
-        component.getServiceUnitManager().init("target", getServiceUnitPath("target"));
+        component.getServiceUnitManager().deploy("target", getServiceUnitPath("proxytarget"));
+        component.getServiceUnitManager().init("target", getServiceUnitPath("proxytarget"));
         component.getServiceUnitManager().start("target");
         
         component.getServiceUnitManager().deploy("proxy", getServiceUnitPath("proxy"));
