@@ -27,6 +27,7 @@ import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
@@ -42,6 +43,7 @@ import org.apache.cxf.phase.PhaseChainCache;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.staxutils.DepthXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.transport.MessageObserver;
 import org.apache.servicemix.JbiConstants;
@@ -79,6 +81,10 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
 
     public void onMessage(Message message) {
         try {
+            if (messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
+                return;
+            }
+
             contentType = (String) message.get(Message.CONTENT_TYPE);
             SoapMessage soapMessage = new SoapMessage(message);
 
@@ -107,11 +113,11 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
 
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);
-            inChain.add(providerEndpoint.getOutInterceptors());
-            inChain.add(providerEndpoint.getOutFaultInterceptors());
+            inChain.add(providerEndpoint.getInInterceptors());
+            inChain.add(providerEndpoint.getInFaultInterceptors());
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
-
+           
             if (boi.getOperationInfo().isOneWay()) {
                 messageExchange.setStatus(ExchangeStatus.DONE);
             } else if (soapMessage.get("jbiFault") != null
@@ -159,16 +165,34 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
 
     private XMLStreamReader createXMLStreamReaderFromMessage(Message message) {
         XMLStreamReader xmlReader = null;
-        try {
-            StreamSource bodySource = new StreamSource(message
-                    .getContent(InputStream.class));
-            xmlReader = StaxUtils.createXMLStreamReader(bodySource);
-            xmlReader.nextTag();
-            xmlReader.nextTag();
-            xmlReader.nextTag();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        }
+        StreamSource bodySource = new StreamSource(message
+                .getContent(InputStream.class));
+        xmlReader = StaxUtils.createXMLStreamReader(bodySource);
+        
+        findBody(message, xmlReader);
+        
         return xmlReader;
+    }
+    
+    private void findBody(Message message, XMLStreamReader xmlReader) {
+        DepthXMLStreamReader reader = new DepthXMLStreamReader(xmlReader);
+        try {
+            int depth = reader.getDepth();
+            int event = reader.getEventType();
+            while (reader.getDepth() >= depth && reader.hasNext()) {
+                QName name = null;
+                if (event == XMLStreamReader.START_ELEMENT) {
+                    name = reader.getName();
+                }
+                if (event == XMLStreamReader.START_ELEMENT && name.equals(((SoapMessage)message).getVersion().getBody())) {
+                    reader.nextTag();
+                    return;
+                }
+                event = reader.next();
+            }
+            return;
+        } catch (XMLStreamException e) {
+            throw new RuntimeException("Couldn't parse stream.", e);
+        }
     }
 }
