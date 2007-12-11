@@ -46,7 +46,7 @@ public class CxfSeSpringTest extends SpringTestSupport {
     
     public void testCalculator() throws Exception {
         io.getInMessage().setContent(new StringSource(
-                  "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+                  "<message xmlns=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\">"
                 + "  <part>"
                 + "    <add xmlns='http://apache.org/cxf/calculator/types'>"
                 + "      <arg0>1</arg0>"
@@ -55,7 +55,12 @@ public class CxfSeSpringTest extends SpringTestSupport {
                 + "  </part>"
                 + "</message>"));
         client.sendSync(io);
-        System.err.println(new SourceTransformer().contentToString(io.getOutMessage()));
+        //the return message should have type as well
+        
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("type=\"msg:addResponse\"") >= 0);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("xmlns:msg=\"http://apache.org/cxf/calculator\"") >= 0);
     }
     
     
