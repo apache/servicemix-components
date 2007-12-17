@@ -73,6 +73,15 @@ public class CxfSeClientProxyTest extends TestCase {
         component.getServiceUnitManager().init("proxy", getServiceUnitPath("proxy"));
         component.getServiceUnitManager().start("proxy");
         
+        //test redepoly su
+        component.getServiceUnitManager().stop("target");
+        component.getServiceUnitManager().shutDown("target");
+        component.getServiceUnitManager().undeploy("target", getServiceUnitPath("proxytarget"));
+        
+        
+        component.getServiceUnitManager().init("target", getServiceUnitPath("proxytarget"));
+        component.getServiceUnitManager().start("target");
+        
         LOG.info("test clientProxy");
         io.getInMessage().setContent(new StringSource(
                 "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
@@ -85,6 +94,7 @@ public class CxfSeClientProxyTest extends TestCase {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello ffang 3") > 0);
+        
     }
     
     protected void tearDown() throws Exception {

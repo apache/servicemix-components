@@ -254,7 +254,12 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     public void stop() throws Exception {
         ReflectionUtils.callLifecycleMethod(getPojo(), PreDestroy.class);
         JBIDispatcherUtil.clean();
-        getBus().shutdown(true);
+        //getBus().shutdown(true);
+        JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
+            .getExtension(ConduitInitiatorManager.class)
+            .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+        jbiTransportFactory.removeDestination(getService().toString()
+                    + getInterfaceName().toString());
         super.stop();
     }
 

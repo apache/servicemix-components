@@ -17,10 +17,23 @@
 package org.apache.servicemix.cxfse;
 
 
+import java.util.concurrent.Future;
+
 import javax.jbi.component.ComponentContext;
 import javax.jws.WebService;
+import javax.xml.ws.AsyncHandler;
+import javax.xml.ws.Response;
 
 import org.apache.cxf.calculator.CalculatorPortType;
+import org.apache.hello_world_soap_http.BadRecordLitFault;
+import org.apache.hello_world_soap_http.Greeter;
+import org.apache.hello_world_soap_http.NoSuchCodeLitFault;
+import org.apache.hello_world_soap_http.types.GreetMeLaterResponse;
+import org.apache.hello_world_soap_http.types.GreetMeResponse;
+import org.apache.hello_world_soap_http.types.GreetMeSometimeResponse;
+import org.apache.hello_world_soap_http.types.SayHiResponse;
+import org.apache.hello_world_soap_http.types.TestDocLitFaultResponse;
+import org.apache.hello_world_soap_http.types.TestNillableResponse;
 
 
 
@@ -29,7 +42,7 @@ import org.apache.cxf.calculator.CalculatorPortType;
         endpointInterface = "org.apache.hello_world_soap_http.Greeter", 
         targetNamespace = "http://apache.org/hello_world_soap_http")
 
-public class GreeterImplForClientProxy {
+public class GreeterImplForClientProxy implements Greeter {
 
     private ComponentContext context;
     private CalculatorPortType calculator;
@@ -59,6 +72,96 @@ public class GreeterImplForClientProxy {
 
     public CalculatorPortType getCalculator() {
         return calculator;
+    }
+
+    public Response<GreetMeResponse> greetMeAsync(String requestType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> greetMeAsync(String requestType, AsyncHandler<GreetMeResponse> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String greetMeLater(long requestType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Response<GreetMeLaterResponse> greetMeLaterAsync(long requestType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> greetMeLaterAsync(long requestType, AsyncHandler<GreetMeLaterResponse> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void greetMeOneWay(String requestType) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public String greetMeSometime(String requestType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Response<GreetMeSometimeResponse> greetMeSometimeAsync(String requestType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> greetMeSometimeAsync(String requestType, AsyncHandler<GreetMeSometimeResponse> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String sayHi() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Response<SayHiResponse> sayHiAsync() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> sayHiAsync(AsyncHandler<SayHiResponse> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void testDocLitFault(String faultType) throws BadRecordLitFault, NoSuchCodeLitFault {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public Response<TestDocLitFaultResponse> testDocLitFaultAsync(String faultType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> testDocLitFaultAsync(String faultType, AsyncHandler<TestDocLitFaultResponse> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String testNillable(String nillElem, int intElem) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Response<TestNillableResponse> testNillableAsync(String nillElem, int intElem) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> testNillableAsync(String nillElem, int intElem, AsyncHandler<TestNillableResponse> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     
