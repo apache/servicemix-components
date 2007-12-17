@@ -66,9 +66,12 @@ import org.springframework.core.io.ClassPathResource;
 
 public class CxfBcRMSequenceTest extends SpringTestSupport {
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBcRMSequenceTest.class);
-    private static final String GREETMEONEWAY_ACTION = null;
-    private static final String GREETME_ACTION = null;
-    private static final String GREETME_RESPONSE_ACTION = null;
+    private static final String GREETMEONEWAY_ACTION 
+        = "http://cxf.apache.org/greeter_control/Greeter/greetMeOneWayRequest";
+    private static final String GREETME_ACTION
+        = "http://cxf.apache.org/greeter_control/Greeter/greetMeRequest";
+    private static final String GREETME_RESPONSE_ACTION
+        = "http://cxf.apache.org/greeter_control/Greeter/greetMeResponse";
     private static final QName CONTROL_SERVICE = new QName("http://cxf.apache.org/greeter_control", "ControlService");
     private static final QName GREETER_SERVICE = new QName("http://cxf.apache.org/greeter_control", "GreeterService");
     
@@ -715,7 +718,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         
         mf.verifyMessages(3, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        null, null};
+            GREETME_RESPONSE_ACTION, null};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
         mf.verifyAcknowledgements(new boolean[3] , false);
@@ -813,7 +816,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         
         mf.verifyMessages(3, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        null, null};
+            GREETME_RESPONSE_ACTION, null};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, false} , false);
