@@ -30,7 +30,7 @@
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-bc</artifactId>
   <packaging>jbi-component</packaging>
-  <name>ServiceMix :: CXF</name>
+  <name>ServiceMix :: CXF Binding Component</name>
   <description>A CXF Binding Component</description>
 
   <properties>
