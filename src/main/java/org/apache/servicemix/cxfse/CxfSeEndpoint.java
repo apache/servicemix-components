@@ -181,9 +181,19 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
                 .getExtension(ConduitInitiatorManager.class)
                 .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+        QName serviceName = exchange.getService();
+        if (serviceName == null) {
+            serviceName = getService();
+            exchange.setService(serviceName);
+        }
+        QName interfaceName = exchange.getInterfaceName();
+        if (interfaceName == null) {
+            interfaceName = getInterfaceName();
+            exchange.setInterfaceName(interfaceName);
+        }
         JBIDestination jbiDestination = jbiTransportFactory
-                .getDestination(exchange.getService().toString()
-                        + exchange.getInterfaceName().toString());
+                .getDestination(serviceName.toString()
+                        + interfaceName.toString());
         DeliveryChannel dc = getContext().getDeliveryChannel();
         jbiTransportFactory.setDeliveryChannel(dc);
         jbiDestination.setDeliveryChannel(dc);
@@ -254,7 +264,6 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     public void stop() throws Exception {
         ReflectionUtils.callLifecycleMethod(getPojo(), PreDestroy.class);
         JBIDispatcherUtil.clean();
-        //getBus().shutdown(true);
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
             .getExtension(ConduitInitiatorManager.class)
             .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);

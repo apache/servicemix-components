@@ -34,10 +34,7 @@ public class CxfSeSpringTest extends SpringTestSupport {
     protected void setUp() throws Exception {
         super.setUp();
         client = new DefaultServiceMixClient(jbi);
-        io = client.createInOutExchange();
-        io.setService(new QName("http://apache.org/cxf/calculator", "CalculatorService"));
-        io.setInterfaceName(new QName("http://apache.org/cxf/calculator", "CalculatorPortType"));
-        io.setOperation(new QName("http://apache.org/cxf/calculator", "add"));
+        
     }
     
     protected void tearDown() throws Exception {
@@ -45,6 +42,10 @@ public class CxfSeSpringTest extends SpringTestSupport {
     }
     
     public void testCalculator() throws Exception {
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/cxf/calculator", "CalculatorService"));
+        io.setInterfaceName(new QName("http://apache.org/cxf/calculator", "CalculatorPortType"));
+        io.setOperation(new QName("http://apache.org/cxf/calculator", "add"));
         io.getInMessage().setContent(new StringSource(
                   "<message xmlns=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\">"
                 + "  <part>"
@@ -62,7 +63,29 @@ public class CxfSeSpringTest extends SpringTestSupport {
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("xmlns:msg=\"http://apache.org/cxf/calculator\"") >= 0);
     }
-    
+
+    public void testCalculatorWithoutInterfaceName() throws Exception {
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/cxf/calculator", "CalculatorService"));
+        io.setOperation(new QName("http://apache.org/cxf/calculator", "add"));
+        io.getInMessage().setContent(new StringSource(
+                  "<message xmlns=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\">"
+                + "  <part>"
+                + "    <add xmlns='http://apache.org/cxf/calculator/types'>"
+                + "      <arg0>1</arg0>"
+                + "      <arg1>2</arg1>"
+                + "    </add>"
+                + "  </part>"
+                + "</message>"));
+        client.sendSync(io);
+        //the return message should have type as well
+        
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("type=\"msg:addResponse\"") >= 0);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("xmlns:msg=\"http://apache.org/cxf/calculator\"") >= 0);
+    }
+
     
     
     @Override
