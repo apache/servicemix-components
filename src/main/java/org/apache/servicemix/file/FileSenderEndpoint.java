@@ -40,13 +40,16 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
     private String tempFilePrefix = "servicemix-";
     private String tempFileSuffix = ".xml";
     private boolean autoCreateDirectory = true;
+    private boolean append = true;
 
 
     public FileSenderEndpoint() {
+        append = false;
     }
 
     public FileSenderEndpoint(FileComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
+        append = false;
     }
 
     public void validate() throws DeploymentException {
@@ -79,7 +82,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             if (logger.isDebugEnabled()) {
                 logger.debug("Writing to file: " + newFile.getCanonicalPath());
             }
-            out = new BufferedOutputStream(new FileOutputStream(newFile));
+            out = new BufferedOutputStream(new FileOutputStream(newFile, append));
             marshaler.writeMessage(exchange, in, out, name);
             success = true;
         } finally {
@@ -145,6 +148,14 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
 
     public void setAutoCreateDirectory(boolean autoCreateDirectory) {
         this.autoCreateDirectory = autoCreateDirectory;
+    }
+
+    public boolean isAppend() {
+        return append;
+    }
+
+    public void setAppend(boolean append) {
+        this.append = append;
     }
 
 }
