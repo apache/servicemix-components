@@ -84,6 +84,10 @@ public class ScriptExchangeProcessorEndpoint extends Endpoint implements Exchang
         return this;
     }
 
+    public DeliveryChannel getChannel() {
+        return channel;
+    }
+
     /*
      * (non-Javadoc)
      * 
