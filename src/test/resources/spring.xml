@@ -60,8 +60,14 @@
       	        </saxon:expression>
       	      </saxon:xslt>
       	      <!-- END SNIPPET: xslt-dynamic -->
-      	      
-      	      <!-- START SNIPPET: xquery --> 
+
+              <saxon:xslt service="test:xslt-doccall" endpoint="endpoint"
+                          resource="classpath:doc-call.xsl"
+                          useDomSourceForXslt="true"
+                          useDomSourceForContent="false"
+                          result="bytes" />
+
+              <!-- START SNIPPET: xquery -->
       	      <saxon:xquery service="test:xquery" endpoint="endpoint"
       	                    resource="classpath:query.xq" />
       	      <!-- END SNIPPET: xquery --> 

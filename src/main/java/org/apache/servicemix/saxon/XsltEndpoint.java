@@ -18,6 +18,7 @@ package org.apache.servicemix.saxon;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -32,9 +33,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import net.sf.saxon.TransformerFactoryImpl;
-
 import org.apache.servicemix.jbi.jaxp.BytesSource;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.springframework.core.io.Resource;
@@ -47,6 +48,8 @@ public class XsltEndpoint extends SaxonEndpoint {
     private TransformerFactory transformerFactory;
     private Source xsltSource;
     private Templates templates;
+    private boolean useDomSourceForXslt = true;
+    private Boolean useDomSourceForContent;
     
     public TransformerFactory getTransformerFactory() {
         if (transformerFactory == null) {
@@ -57,6 +60,22 @@ public class XsltEndpoint extends SaxonEndpoint {
 
     public void setTransformerFactory(TransformerFactory transformerFactory) {
         this.transformerFactory = transformerFactory;
+    }
+
+    public boolean isUseDomSourceForXslt() {
+        return useDomSourceForXslt;
+    }
+
+    public void setUseDomSourceForXslt(boolean useDomSourceForXslt) {
+        this.useDomSourceForXslt = useDomSourceForXslt;
+    }
+
+    public Boolean getUseDomSourceForContent() {
+        return useDomSourceForContent;
+    }
+
+    public void setUseDomSourceForContent(Boolean useDomSourceForContent) {
+        this.useDomSourceForContent = useDomSourceForContent;
     }
 
     public void validate() throws DeploymentException {
@@ -77,8 +96,14 @@ public class XsltEndpoint extends SaxonEndpoint {
     protected void transformContent(Transformer transformer, MessageExchange exchange, 
             NormalizedMessage in, NormalizedMessage out) throws Exception {
         Source src = in.getContent();
-        if (src instanceof DOMSource) {
+        if (useDomSourceForContent != null && useDomSourceForContent.booleanValue()) {
             src = new DOMSource(getSourceTransformer().toDOMDocument(src));
+        } else if (useDomSourceForContent != null && !useDomSourceForContent.booleanValue()) {
+            src = getSourceTransformer().toStreamSource(src);
+        } else {
+            if (src instanceof DOMSource) {
+                src = new DOMSource(getSourceTransformer().toDOMDocument(src));
+            }
         }
         if (RESULT_BYTES.equalsIgnoreCase(getResult())) {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -105,7 +130,17 @@ public class XsltEndpoint extends SaxonEndpoint {
     }
 
     protected Source createXsltSource(Resource res) throws Exception {
-        return new DOMSource(parse(res));
+        if (useDomSourceForXslt) {
+            String url = null;
+            try {
+                url = res.getURL().toURI().toString();
+            } catch (Exception e) {
+                // Ignore
+            }
+            return new DOMSource(parse(res), url);
+        } else {
+            return new StreamSource(res.getInputStream());
+        }
     }
 
     public Templates getTemplates() throws Exception {

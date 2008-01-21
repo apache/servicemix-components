@@ -268,7 +268,7 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     protected Document parse(Resource res) throws Exception {
         URL url = null;
         try {
-            res.getURL();
+            url = res.getURL();
         } catch (IOException e) {
             // Ignore
         }

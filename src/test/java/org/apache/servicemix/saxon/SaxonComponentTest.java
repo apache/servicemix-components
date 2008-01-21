@@ -35,6 +35,7 @@ import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
 public class SaxonComponentTest extends SpringTestSupport {
     private static transient Log log = LogFactory.getLog(SaxonComponentTest.class);
@@ -113,6 +114,27 @@ public class SaxonComponentTest extends SpringTestSupport {
         me.setService(new QName("urn:test", "xslt-params"));
         me.getInMessage().setContent(new StringSource("<sample id='777888' sent='"
                 + new Date() + "'>hello world!</sample>"));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        log.info(transformer.toString(me.getOutMessage().getContent()));
+        Element el = transformer.toDOMElement(me.getOutMessage());
+        assertEquals("cheeseyCheese", textValueOfXPath(el, "//param"));
+        assertEquals("4002", textValueOfXPath(el, "//integer"));
+    }
+
+    public void testXsltWithDocCall() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "xslt-doccall"));
+        me.getInMessage().setContent(new StreamSource(getClass().getClassLoader().getResourceAsStream("request.xml")));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
