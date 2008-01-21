@@ -35,7 +35,6 @@ import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 
 public class SaxonComponentTest extends SpringTestSupport {
     private static transient Log log = LogFactory.getLog(SaxonComponentTest.class);
@@ -146,9 +145,6 @@ public class SaxonComponentTest extends SpringTestSupport {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
         log.info(transformer.toString(me.getOutMessage().getContent()));
-        Element el = transformer.toDOMElement(me.getOutMessage());
-        assertEquals("cheeseyCheese", textValueOfXPath(el, "//param"));
-        assertEquals("4002", textValueOfXPath(el, "//integer"));
     }
 
     public void testXQuery() throws Exception {

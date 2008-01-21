@@ -18,7 +18,6 @@ package org.apache.servicemix.saxon;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 
