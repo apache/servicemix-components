@@ -52,6 +52,7 @@ public abstract class AbstractJmsTestSupport extends TestCase {
 
     protected void tearDown() throws Exception {
         if (container != null) {
+            container.stop();
             container.shutDown();
         }
         if (broker != null) {
