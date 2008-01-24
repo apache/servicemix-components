@@ -395,6 +395,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     public synchronized void stop() throws Exception {
         if (listenerContainer != null) {
             listenerContainer.stop();
+            listenerContainer.shutdown();
             listenerContainer = null;
         }
         super.stop();
