@@ -125,6 +125,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private Bus bus;
     
     private boolean mtomEnabled;
+    
+    private String locationURI;
 
     /**
      * @return the wsdl
@@ -173,10 +175,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         outFault = interceptors;
     }
 
-    @Override
-    public String getLocationURI() {
-        return null;
-    }
+   
 
     public void process(MessageExchange exchange) throws Exception {
         Message message = messages.remove(exchange.getExchangeId());
@@ -245,6 +244,11 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             if (endpoint == null) {
                 endpoint = ei.getName().getLocalPart();
             }
+            
+            if (locationURI != null) {
+                ei.setAddress(locationURI);
+            }
+            
             ei.getBinding().setProperty(
                     AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
             
@@ -304,7 +308,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     getBus().getOutInterceptors());
             cxfService.getOutFaultInterceptors().addAll(
                     getBus().getOutFaultInterceptors());
-
+            
             
             chain = new JbiChainInitiationObserver(ep, getBus());
             server = new ServerImpl(getBus(), ep, null, chain);
@@ -329,6 +333,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         }
     }
 
+    public void setLocationURI(String locationURI) {
+        this.locationURI = locationURI;
+    }
+
+    public String getLocationURI() {
+        return locationURI;
+    }
+    
     protected class JbiChainInitiationObserver extends ChainInitiationObserver {
 
         public JbiChainInitiationObserver(Endpoint endpoint, Bus bus) {
