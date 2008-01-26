@@ -421,7 +421,6 @@
               <name>derby.system.home</name>
               <value>${basedir}/target/derby</value>
             </property>
-                                                                                                                 222,39        22%
           </systemProperties>
 
         </configuration>
