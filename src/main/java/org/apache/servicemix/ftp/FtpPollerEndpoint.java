@@ -59,6 +59,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     private boolean recursive = true;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
+    private QName targetOperation;
     private URI uri;
 
     public FtpPollerEndpoint() {
@@ -190,6 +191,10 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         this.marshaler = marshaler;
     }
 
+    public QName getTargetOperation() { return targetOperation; }
+
+    public void setTargetOperation(QName targetOperation) { this.targetOperation = targetOperation; }
+
     // Implementation methods
     //-------------------------------------------------------------------------
 
@@ -290,6 +295,11 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         configureExchangeTarget(exchange);
         NormalizedMessage message = exchange.createMessage();
         exchange.setInMessage(message);
+
+        if (getTargetOperation() != null) { 
+            exchange.setOperation(getTargetOperation()); 
+        }
+
         marshaler.readMessage(exchange, message, in, file);
         sendSync(exchange);
         in.close();
