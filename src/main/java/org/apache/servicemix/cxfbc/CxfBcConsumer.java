@@ -494,7 +494,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         attachmentList.add(new AttachmentImpl(id, dh));
                     }
                     
-                    message.setAttachments(attachmentList);
+                    outMessage.setAttachments(attachmentList);
                 }
             }
 
