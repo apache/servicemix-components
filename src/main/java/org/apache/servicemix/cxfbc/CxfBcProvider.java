@@ -120,7 +120,15 @@ public class CxfBcProvider extends ProviderEndpoint implements
         Exchange cxfExchange = new ExchangeImpl();
         message.setExchange(cxfExchange);
                
-        BindingOperationInfo boi = ei.getBinding().getOperation(exchange.getOperation());
+        QName opeName = exchange.getOperation();
+        BindingOperationInfo boi = null;
+        if (opeName == null) {
+            // if interface only have one operation, may not specify the opeName in MessageExchange
+            boi = ei.getBinding().getOperations().iterator().next();
+        } else {
+            boi = ei.getBinding().getOperation(exchange.getOperation());   
+        }
+         
         cxfExchange.put(BindingOperationInfo.class, boi);
         cxfExchange.put(Endpoint.class, ep);
         PhaseChainCache outboundChainCache = new PhaseChainCache();
