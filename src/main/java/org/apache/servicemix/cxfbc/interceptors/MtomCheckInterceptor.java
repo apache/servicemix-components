@@ -32,8 +32,10 @@ public class MtomCheckInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
     public void handleMessage(Message message) throws Fault {
-        message.put(org.apache.cxf.message.Message.MTOM_ENABLED, mtomEnabled);
-        message.put("write.attachments", mtomEnabled);
+        if (message.getAttachments() != null && message.getAttachments().size() > 0) {
+            message.put(org.apache.cxf.message.Message.MTOM_ENABLED, mtomEnabled);
+            message.put("write.attachments", mtomEnabled);
+        }
     }
     
     
