@@ -22,6 +22,7 @@
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
     xmlns:tns="http://apache.org/hello_world_soap_http"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:jms="http://cxf.apache.org/transports/jms"
     targetNamespace="http://apache.org/hello_world_soap_http" 
     name="WSSecurity"
     >
@@ -38,6 +39,17 @@
             <soap:address location="http://localhost:9000/SOAPServiceWSSecurity/TimestampSignEncrypt"/>
         </wsdl:port>
     </wsdl:service>
+    <service name="HelloWorldService">
+           <port binding="tns:Greeter_SOAPBinding" name="HelloWorldPort">
+               <jms:address
+                   jndiConnectionFactoryName="ConnectionFactory"
+                   jndiDestinationName="dynamicQueues/test.jmstransport.text">                    <jms:JMSNamingProperty name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
+                   <jms:JMSNamingProperty name="java.naming.provider.url" value="tcp://localhost:61616"/>
+               </jms:address>
+
+               <jms:server durableSubscriberName="CXF_subscriber"/>
+           </port>
+    </service>
 
 </wsdl:definitions>
 

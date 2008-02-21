@@ -29,6 +29,7 @@ import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
@@ -76,6 +77,7 @@ import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.ChainInitiationObserver;
 import org.apache.cxf.ws.rm.Servant;
+import org.apache.cxf.wsdl.WSDLManager;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.cxfbc.interceptors.JbiInInterceptor;
@@ -210,8 +212,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 WSDLFactory wsdlFactory = WSDLFactory.newInstance();
                 WSDLReader reader = wsdlFactory.newWSDLReader();
                 reader.setFeature(Constants.FEATURE_VERBOSE, false);
-                definition = reader.readWSDL(wsdl.getURL().toString(),
-                        description);
+                //definition = reader.readWSDL(wsdl.getURL().toString(),
+                 //       description);
+                try {
+                    // use wsdl manager to parse wsdl or get cached definition
+                    definition = getBus().getExtension(WSDLManager.class).getDefinition(wsdl.getURL());
+                } catch (WSDLException ex) {
+                    //throw new ServiceConstructionException(new Message("SERVICE_CREATION_MSG", LOG), ex);
+                }
             }
             if (service == null) {
                 // looking for the servicename according to targetServiceName
