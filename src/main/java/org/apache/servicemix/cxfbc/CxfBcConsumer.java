@@ -44,6 +44,7 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.AbstractBindingFactory;
 import org.apache.cxf.binding.jbi.JBIFault;
+import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
@@ -76,6 +77,7 @@ import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.ChainInitiationObserver;
+import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl.WSDLManager;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
@@ -125,9 +127,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private BindingFaultInfo faultWanted;
 
     private Bus bus;
-    
+
     private boolean mtomEnabled;
-    
+
     private String locationURI;
 
     /**
@@ -177,8 +179,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         outFault = interceptors;
     }
 
-   
-
     public void process(MessageExchange exchange) throws Exception {
         Message message = messages.remove(exchange.getExchangeId());
         message.getInterceptorChain().resume();
@@ -212,13 +212,15 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 WSDLFactory wsdlFactory = WSDLFactory.newInstance();
                 WSDLReader reader = wsdlFactory.newWSDLReader();
                 reader.setFeature(Constants.FEATURE_VERBOSE, false);
-                //definition = reader.readWSDL(wsdl.getURL().toString(),
-                 //       description);
+                // definition = reader.readWSDL(wsdl.getURL().toString(),
+                // description);
                 try {
                     // use wsdl manager to parse wsdl or get cached definition
-                    definition = getBus().getExtension(WSDLManager.class).getDefinition(wsdl.getURL());
+                    definition = getBus().getExtension(WSDLManager.class)
+                            .getDefinition(wsdl.getURL());
                 } catch (WSDLException ex) {
-                    //throw new ServiceConstructionException(new Message("SERVICE_CREATION_MSG", LOG), ex);
+                    // throw new ServiceConstructionException(new
+                    // Message("SERVICE_CREATION_MSG", LOG), ex);
                 }
             }
             if (service == null) {
@@ -239,28 +241,26 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     .getEndpoints().iterator().next();
             for (ServiceInfo serviceInfo : cxfService.getServiceInfos()) {
                 if (serviceInfo.getName().equals(service)
-                    && getEndpoint() != null 
-                    && serviceInfo.getEndpoint(new QName(
-                            serviceInfo.getName().getNamespaceURI(), getEndpoint())) != null) {
-                    ei = serviceInfo.getEndpoint(new QName(
-                                serviceInfo.getName().getNamespaceURI(), getEndpoint()));
-             
+                        && getEndpoint() != null
+                        && serviceInfo.getEndpoint(new QName(serviceInfo
+                                .getName().getNamespaceURI(), getEndpoint())) != null) {
+                    ei = serviceInfo.getEndpoint(new QName(serviceInfo
+                            .getName().getNamespaceURI(), getEndpoint()));
+
                 }
             }
-            
 
             if (endpoint == null) {
                 endpoint = ei.getName().getLocalPart();
             }
-            
+
             if (locationURI != null) {
                 ei.setAddress(locationURI);
             }
-            
+
             ei.getBinding().setProperty(
                     AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
-            
-            
+
             cxfService.getInInterceptors().add(
                     new ReadHeadersInterceptor(getBus()));
             cxfService.getInInterceptors().add(new MustUnderstandInterceptor());
@@ -277,7 +277,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getOutInterceptors().add(new JbiOutWsdl1Interceptor());
             cxfService.getOutInterceptors().add(new SoapActionOutInterceptor());
             cxfService.getOutInterceptors().add(new AttachmentOutInterceptor());
-            cxfService.getOutInterceptors().add(new MtomCheckInterceptor(isMtomEnabled()));
+            cxfService.getOutInterceptors().add(
+                    new MtomCheckInterceptor(isMtomEnabled()));
             cxfService.getOutInterceptors().add(new StaxOutInterceptor());
             cxfService.getOutInterceptors().add(
                     new SoapPreProtocolOutInterceptor());
@@ -316,8 +317,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     getBus().getOutInterceptors());
             cxfService.getOutFaultInterceptors().addAll(
                     getBus().getOutFaultInterceptors());
-            
-            
+
             chain = new JbiChainInitiationObserver(ep, getBus());
             server = new ServerImpl(getBus(), ep, null, chain);
 
@@ -348,7 +348,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     public String getLocationURI() {
         return locationURI;
     }
-    
+
     protected class JbiChainInitiationObserver extends ChainInitiationObserver {
 
         public JbiChainInitiationObserver(Endpoint endpoint, Bus bus) {
@@ -391,6 +391,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         }
 
         public void handleMessage(final Message message) throws Fault {
+
             final Exchange cxfExchange = message.getExchange();
             final Endpoint endpoint = cxfExchange.get(Endpoint.class);
             final Service service = endpoint.getService();
@@ -440,7 +441,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             CxfBcConsumer.this.isOneway = message.getExchange().get(
                     BindingOperationInfo.class).getOperationInfo().isOneWay();
             message.getExchange().setOneWay(CxfBcConsumer.this.isOneway);
-            
 
             try {
                 if (CxfBcConsumer.this.synchronous
@@ -450,7 +450,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     process(exchange);
                 } else {
                     context.getDeliveryChannel().send(exchange);
-                    
+
                 }
             } catch (Exception e) {
                 throw new Fault(e);
@@ -475,10 +475,12 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             }
             if (!ex.isOneWay()) {
                 if (exchange.getFault() != null) {
-                    Fault f = new JBIFault(new org.apache.cxf.common.i18n.Message(
-                            "Fault occured", (ResourceBundle) null));
+                    Fault f = new JBIFault(
+                            new org.apache.cxf.common.i18n.Message(
+                                    "Fault occured", (ResourceBundle) null));
 
-                    Element details = toElement(exchange.getFault().getContent());
+                    Element details = toElement(exchange.getFault()
+                            .getContent());
                     f.setDetail(details);
                     processFaultDetail(f, message);
                     message.put(BindingFaultInfo.class, faultWanted);
@@ -490,8 +492,17 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         outMessage = endpoint.getBinding().createMessage();
                         ex.setOutMessage(outMessage);
                     }
-                    NormalizedMessageImpl norMessage = 
-                        (NormalizedMessageImpl) exchange.getMessage("out");
+                    NormalizedMessageImpl norMessage = (NormalizedMessageImpl) exchange
+                            .getMessage("out");
+
+                    // -- MODIFIED
+                    if (outMessage instanceof SoapMessage) {
+                        AddressingProperties addressingProperties = WSAUtils
+                                .getCXFAddressingPropertiesFromMap((Map<String, String>) norMessage
+                                        .getProperty(WSAUtils.WSA_HEADERS_OUTBOUND));
+                        outMessage.put(WSAUtils.WSA_HEADERS_OUTBOUND,
+                                addressingProperties);
+                    }
                     List<Attachment> attachmentList = new ArrayList<Attachment>();
                     outMessage.setContent(Source.class, exchange.getMessage(
                             "out").getContent());
@@ -501,7 +512,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         DataHandler dh = norMessage.getAttachment(id);
                         attachmentList.add(new AttachmentImpl(id, dh));
                     }
-                    
+
                     outMessage.setAttachments(attachmentList);
                 }
             }
@@ -550,17 +561,17 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     private static Element removeEmptyDefaultTns(Element ret) {
-        //to make unquailied fault work
-        if (ret.hasAttribute("xmlns") 
+        // to make unquailied fault work
+        if (ret.hasAttribute("xmlns")
                 && ret.getAttribute("xmlns").length() == 0) {
             ret.removeAttribute("xmlns");
         }
         NodeList nodes = ret.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             if (nodes.item(i) instanceof Element) {
-                Element ele = (Element)nodes.item(i);
+                Element ele = (Element) nodes.item(i);
                 ele = removeEmptyDefaultTns(ele);
-                
+
             }
         }
         return ret;

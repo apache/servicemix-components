@@ -38,6 +38,8 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.ws.addressing.AddressingProperties;
+import org.apache.servicemix.cxfbc.WSAUtils;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.soap.util.QNameUtil;
 
@@ -78,6 +80,10 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
             }
             // Put headers
             toNMSHeaders(nm, message);
+
+            // copy wsa headers if present
+            toNMSWSAHeaders(nm, message);
+
             // Put attachments
             toNMSAttachments(nm, message);
             // Put subject
@@ -133,6 +139,23 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
         MessageExchange me = mef.createExchange(mep);
         me.setOperation(operation.getName());
         return me;
+    }
+
+    private void toNMSWSAHeaders(NormalizedMessage normalizedMessage,
+            Message soapMessage) {
+        SoapMessage message = null;
+        if (!(soapMessage instanceof SoapMessage)) {
+            return;
+        } else {
+            message = (SoapMessage) soapMessage;
+        }
+
+        if (message.get(WSAUtils.WSA_HEADERS_INBOUND) != null) {
+            normalizedMessage.setProperty(WSAUtils.WSA_HEADERS_INBOUND,
+                    WSAUtils.getAsMap((AddressingProperties) message
+                            .get(WSAUtils.WSA_HEADERS_INBOUND)));
+        }
+
     }
 
     /**
