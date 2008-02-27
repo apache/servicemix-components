@@ -132,7 +132,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
         message.put(MessageExchange.class, exchange);
         Exchange cxfExchange = new ExchangeImpl();
         message.setExchange(cxfExchange);
-               
+        cxfExchange.setOutMessage(message);       
+        
         QName opeName = exchange.getOperation();
         BindingOperationInfo boi = null;
         if (opeName == null) {
