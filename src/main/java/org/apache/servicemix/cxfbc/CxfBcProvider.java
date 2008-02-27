@@ -20,12 +20,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
-import javax.activation.DataHandler;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -40,7 +38,6 @@ import javax.xml.transform.stream.StreamSource;
 import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.AbstractBindingFactory;
 import org.apache.cxf.binding.soap.SoapMessage;
 
@@ -55,7 +52,6 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.interceptor.StaxOutInterceptor;
 
 
-import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
@@ -73,9 +69,9 @@ import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIMessageHelper;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.cxfbc.interceptors.JbiOutInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
-import org.apache.servicemix.jbi.messaging.NormalizedMessageImpl;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
 
@@ -150,18 +146,10 @@ public class CxfBcProvider extends ProviderEndpoint implements
         PhaseManager pm = getBus().getExtension(PhaseManager.class);
         List<Interceptor> outList = new ArrayList<Interceptor>();
         if (isMtomEnabled()) {
-            List<Attachment> attachmentList = new ArrayList<Attachment>();
-            NormalizedMessageImpl norMessage = (NormalizedMessageImpl)nm;
-            Iterator<String> iter = norMessage.listAttachments();
-            while (iter.hasNext()) {
-                String id = iter.next();
-                DataHandler dh = norMessage.getAttachment(id);
-                attachmentList.add(new AttachmentImpl(id, dh));
-            }
+            outList.add(new JbiOutInterceptor());
             outList.add(new MtomCheckInterceptor(true));
             outList.add(new AttachmentOutInterceptor());
-            message.setAttachments(attachmentList);
-            message.put(Message.CONTENT_TYPE, "application/octet-stream");
+            
         }
         
         
