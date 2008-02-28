@@ -375,8 +375,13 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                 throw new IllegalStateException("Unable to send back answer or fault");
             }
             setCorrelationId(context.getMessage(), msg);
-            send(msg, session, dest);
-            done(exchange);
+            try {
+                send(msg, session, dest);
+                done(exchange);
+            } catch (Exception e) {
+                fail(exchange, e);
+                throw e;
+            }
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             Exception error = exchange.getError();
             if (error == null) {
