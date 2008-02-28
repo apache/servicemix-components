@@ -45,6 +45,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     private boolean overwrite;
     private URI uri;
     private String uploadSuffix;
+    private boolean checkDuplicates = true;
 
     public FtpSenderEndpoint() {
     }
@@ -70,6 +71,13 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         this.uri = uri;
     }
 
+    public boolean isCheckDuplicates() {
+        return checkDuplicates;
+    }
+
+    public void setCheckDuplicates(boolean checkDuplicates) {
+        this.checkDuplicates = checkDuplicates;
+    }
 
     public void start() throws Exception {
         super.start();
@@ -165,7 +173,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                     out = client.storeUniqueFileStream();
                 }
             } else {
-                if (client.listFiles(name).length > 0) {
+                if (checkDuplicates && client.listFiles(name).length > 0) {
                     if (overwrite) {
                         client.deleteFile(name);
                     } else {
