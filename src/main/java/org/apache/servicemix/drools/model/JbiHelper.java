@@ -27,8 +27,10 @@ import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
+import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.drools.DroolsEndpoint;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.URIResolver;
@@ -99,13 +101,27 @@ public class JbiHelper {
         }
     }
     */
-
     public void route(String uri) throws MessagingException {
+        routeTo(null, uri);
+    }
+    
+    public void routeTo(String content, String uri) throws MessagingException {
         MessageExchange me = this.exchange.getInternalExchange();
-        NormalizedMessage in = me.getMessage("in");
+        String correlationId = (String)exchange.getProperty(JbiConstants.CORRELATION_ID);
+        NormalizedMessage in = null;
+        if (content == null) {
+            in = me.getMessage("in");
+        } else {
+            in = me.createMessage();
+            in.setContent(new StringSource(content));
+        }
         MessageExchange newMe = getChannel().createExchangeFactory().createExchange(me.getPattern());
         URIResolver.configureExchange(newMe, getContext(), uri);
         MessageUtil.transferToIn(in, newMe);
+        // Set the sender endpoint property
+        String key = EndpointSupport.getKey(endpoint);
+        newMe.setProperty(JbiConstants.SENDER_ENDPOINT, key);
+        newMe.setProperty(JbiConstants.CORRELATION_ID, correlationId);
         getChannel().sendSync(newMe);
         if (newMe.getStatus() == ExchangeStatus.DONE) {
             me.setStatus(ExchangeStatus.DONE);
@@ -124,6 +140,10 @@ public class JbiHelper {
         }
         update();
     }
+    
+    public void routeToDefault(String content) throws MessagingException {
+        routeTo(content, endpoint.getDefaultRouteURI());
+    }
 
     public void fault(String content) throws Exception {
         MessageExchange me = this.exchange.getInternalExchange();
@@ -138,6 +158,8 @@ public class JbiHelper {
         }
         update();
     }
+    
+    
 
     public void answer(String content) throws Exception {
         MessageExchange me = this.exchange.getInternalExchange();

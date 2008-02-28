@@ -19,6 +19,7 @@ package org.apache.servicemix.drools;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import javax.jbi.JBIException;
@@ -49,7 +50,10 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private Resource ruleBaseResource;
     private URL ruleBaseURL;
     private NamespaceContext namespaceContext;
+    private QName defaultTargetService;
+    private String defaultTargetURI;
     private Map<String, Object> globals;
+    private List<Object> assertedObjects;
 
     public DroolsEndpoint() {
         super();
@@ -171,15 +175,26 @@ public class DroolsEndpoint extends ProviderEndpoint {
      */
     public void process(MessageExchange exchange) throws Exception {
         drools(exchange);
-        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
-        }
     }
     
     protected void drools(MessageExchange exchange) throws Exception {
         WorkingMemory memory = createWorkingMemory(exchange);
         populateWorkingMemory(memory, exchange);
         memory.fireAllRules();
+        postProcess(exchange, memory);
+    }
+
+    protected void postProcess(MessageExchange exchange, WorkingMemory memory) throws Exception {
+        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            String uri = getDefaultRouteURI();
+            if (uri != null) {
+                JbiHelper helper = (JbiHelper) memory.getGlobal("jbi");
+                helper.route(uri);
+            }
+        }
+        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+        }
     }
     
     protected WorkingMemory createWorkingMemory(MessageExchange exchange) throws Exception {
@@ -188,10 +203,51 @@ public class DroolsEndpoint extends ProviderEndpoint {
 
     protected void populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
         memory.setGlobal("jbi", new JbiHelper(this, exchange, memory));
+        if (assertedObjects != null) {
+            for (Object o : assertedObjects) {
+                memory.assertObject(o);
+            }
+        }
         if (globals != null) {
             for (Map.Entry<String, Object> e : globals.entrySet()) {
                 memory.setGlobal(e.getKey(), e.getValue());
             }
+        }
+    }
+
+    public QName getDefaultTargetService() {
+        return defaultTargetService;
+    }
+
+    public void setDefaultTargetService(QName defaultTargetService) {
+        this.defaultTargetService = defaultTargetService;
+    }
+
+    public String getDefaultTargetURI() {
+        return defaultTargetURI;
+    }
+
+    public void setDefaultTargetURI(String defaultTargetURI) {
+        this.defaultTargetURI = defaultTargetURI;
+    }
+
+    public List<Object> getAssertedObjects() {
+        return assertedObjects;
+    }
+
+    public void setAssertedObjects(List<Object> assertedObjects) {
+        this.assertedObjects = assertedObjects;
+    }
+
+    public String getDefaultRouteURI() {
+        if (defaultTargetURI != null) {
+            return defaultTargetURI;
+        } else if (defaultTargetService != null) {
+            String nsURI = defaultTargetService.getNamespaceURI();
+            String sep = (nsURI.indexOf("/") > 0) ? "/" : ":";
+            return "service:" + nsURI + sep + defaultTargetService.getLocalPart();
+        } else {
+            return null;
         }
     }
 }
