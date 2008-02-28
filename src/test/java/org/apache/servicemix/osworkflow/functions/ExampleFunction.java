@@ -23,17 +23,18 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.dom.DOMSource;
 
+import org.w3c.dom.Node;
+
+import com.opensymphony.module.propertyset.PropertySet;
+import com.opensymphony.workflow.FunctionProvider;
+import com.opensymphony.workflow.WorkflowException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.osworkflow.OSWorkflow;
 import org.apache.servicemix.osworkflow.OSWorkflowEndpoint;
 import org.apache.xpath.CachedXPathAPI;
-import org.w3c.dom.Node;
-
-import com.opensymphony.module.propertyset.PropertySet;
-import com.opensymphony.workflow.FunctionProvider;
-import com.opensymphony.workflow.WorkflowException;
 
 public class ExampleFunction implements FunctionProvider {
 
@@ -46,7 +47,7 @@ public class ExampleFunction implements FunctionProvider {
      *      java.util.Map, com.opensymphony.module.propertyset.PropertySet)
      */
     public void execute(Map transientVars, Map args, PropertySet propertySet)
-            throws WorkflowException {
+        throws WorkflowException {
 
         logger.info("Executing function...");
 

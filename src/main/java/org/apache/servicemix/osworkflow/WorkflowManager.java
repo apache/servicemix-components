@@ -22,10 +22,10 @@ import java.util.concurrent.Executors;
 /**
  * @author lhe
  */
-public class WorkflowManager {
+public final class WorkflowManager {
     private static final int WORKER_COUNT = 30;
 
-    private static WorkflowManager manager = null;
+    private static WorkflowManager manager;
 
     private ExecutorService executor;
 
@@ -41,7 +41,7 @@ public class WorkflowManager {
      * 
      * @return manager instance
      */
-    public synchronized static WorkflowManager getInstance() {
+    public static synchronized WorkflowManager getInstance() {
         if (manager == null) {
             manager = new WorkflowManager();
         }

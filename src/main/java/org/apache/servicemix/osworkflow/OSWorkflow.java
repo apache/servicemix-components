@@ -22,8 +22,6 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.RobustInOnly;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.opensymphony.workflow.InvalidInputException;
 import com.opensymphony.workflow.InvalidRoleException;
@@ -32,11 +30,14 @@ import com.opensymphony.workflow.WorkflowException;
 import com.opensymphony.workflow.basic.BasicWorkflow;
 import com.opensymphony.workflow.config.DefaultConfiguration;
 
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 /**
  * @author lhe
  */
 public class OSWorkflow extends Thread {
-    private static Log log = LogFactory.getLog(OSWorkflow.class);
+    
 
     public static final String KEY_EXCHANGE = "exchange";
 
@@ -48,25 +49,27 @@ public class OSWorkflow extends Thread {
 
     public static final String KEY_ASYNC_PROCESSING = "asynchronous";
 
-    private Workflow osWorkflowInstance = null;
+    private static Log log = LogFactory.getLog(OSWorkflow.class);
+    
+    private Workflow osWorkflowInstance;
 
-    private String caller = null;
+    private String caller;
 
-    private String osWorkflowName = null;
+    private String osWorkflowName;
 
-    private Map map = null;
+    private Map map;
 
     private int action = -1;
 
-    private long workflowId = -1l;
+    private long workflowId = -1L;
 
-    private boolean finished = false;
+    private boolean finished;
 
-    private boolean aborted = false;
+    private boolean aborted;
 
-    private OSWorkflowEndpoint endpoint = null;
+    private OSWorkflowEndpoint endpoint;
 
-    private MessageExchange exchange = null;
+    private MessageExchange exchange;
 
     /**
      * creates and initializes a new workflow object
@@ -105,7 +108,7 @@ public class OSWorkflow extends Thread {
         this.map
                 .put(
                         KEY_ASYNC_PROCESSING,
-                        (this.exchange instanceof InOnly || this.exchange instanceof RobustInOnly));
+                        this.exchange instanceof InOnly || this.exchange instanceof RobustInOnly);
     }
 
     /**
@@ -118,9 +121,9 @@ public class OSWorkflow extends Thread {
         this.osWorkflowInstance = new BasicWorkflow(this.caller);
         DefaultConfiguration config = new DefaultConfiguration();
         this.osWorkflowInstance.setConfiguration(config);
-        long workflowId = this.osWorkflowInstance.initialize(
+        long wfId = this.osWorkflowInstance.initialize(
                 this.osWorkflowName, this.action, this.map);
-        return workflowId;
+        return wfId;
     }
 
     /*

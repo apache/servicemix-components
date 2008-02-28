@@ -25,11 +25,11 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
@@ -152,20 +152,16 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
         // UnsupportedOperationException
         if (exchange.getRole() == Role.CONSUMER) {
             onConsumerExchange(exchange);
-        }
-
-        // The component acts as a provider, this means that another component
-        // has requested our
-        // service
-        // As this exchange is active, this is either an in or a fault (out are
-        // send by this
-        // component)
-        else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+        } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+//          The component acts as a provider, this means that another component
+            // has requested our
+            // service
+            // As this exchange is active, this is either an in or a fault (out are
+            // send by this
+            // component)
             onProviderExchange(exchange);
-        }
-
-        // Unknown role
-        else {
+        } else {
+            // Unknown role
             throw new MessagingException(
                     "OSWorkflowEndpoint.onMessageExchange(): Unknown role: "
                             + exchange.getRole());
@@ -179,21 +175,17 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      * @throws MessagingException
      */
     protected void onConsumerExchange(MessageExchange exchange)
-            throws MessagingException {
+        throws MessagingException {
         // Out message
         if (exchange.getMessage("out") != null) {
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);
-        }
-
-        // Fault message
-        else if (exchange.getFault() != null) {
+        } else if (exchange.getFault() != null) {
+            //Fault message
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);
-        }
-
-        // This is not compliant with the default MEPs
-        else {
+        } else {
+            //This is not compliant with the default MEPs
             throw new MessagingException(
                     "OSWorkflowEndpoint.onConsumerExchange(): Consumer exchange is ACTIVE, but no out or fault is provided");
         }
@@ -206,17 +198,16 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      * @throws MessagingException
      */
     protected void onProviderExchange(MessageExchange exchange)
-            throws MessagingException {
-        // Exchange is finished
+        throws MessagingException {
+        
         if (exchange.getStatus() == ExchangeStatus.DONE) {
+            //Exchange is finished
             return;
-        }
-        // Exchange has been aborted with an exception
-        else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            //Exchange has been aborted with an exception
             return;
-        }
-        // Fault message
-        else if (exchange.getFault() != null) {
+        } else if (exchange.getFault() != null) {
+            //Fault message
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);
         } else {
@@ -285,7 +276,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      *             on any messaging exception
      */
     public boolean sendMessage(QName service, Source source)
-            throws MessagingException {
+        throws MessagingException {
         InOnly inOnly = channel.createExchangeFactoryForService(service)
                 .createInOnlyExchange();
         NormalizedMessage msg = inOnly.createMessage();
@@ -310,7 +301,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      *             on any messaging exception
      */
     public Source sendRequest(QName service, Source source)
-            throws MessagingException {
+        throws MessagingException {
         InOut inOut = channel.createExchangeFactoryForService(service)
                 .createInOutExchange();
         NormalizedMessage msg = inOut.createMessage();
@@ -349,7 +340,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      *             on any messaging exception
      */
     public MessageExchange sendRawInOutRequest(QName service, Source source)
-            throws MessagingException {
+        throws MessagingException {
         InOut inOut = channel.createExchangeFactoryForService(service)
                 .createInOutExchange();
         NormalizedMessage msg = inOut.createMessage();
@@ -373,7 +364,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      * @throws MessagingException
      */
     public MessageExchange getNewExchange(QName qname, boolean inOut)
-            throws MessagingException {
+        throws MessagingException {
         MessageExchange exchange = null;
 
         if (inOut) {
@@ -406,7 +397,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      * @throws MessagingException
      */
     public void send(MessageExchange ex, boolean sync)
-            throws MessagingException {
+        throws MessagingException {
         if (sync) {
             channel.sendSync(ex, TIME_OUT);
         } else {

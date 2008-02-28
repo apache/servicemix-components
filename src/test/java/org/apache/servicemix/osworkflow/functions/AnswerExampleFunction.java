@@ -21,22 +21,21 @@ import java.util.Map;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.opensymphony.module.propertyset.PropertySet;
+import com.opensymphony.workflow.FunctionProvider;
+import com.opensymphony.workflow.WorkflowException;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.osworkflow.OSWorkflow;
 import org.apache.servicemix.osworkflow.OSWorkflowEndpoint;
 
-import com.opensymphony.module.propertyset.PropertySet;
-import com.opensymphony.workflow.FunctionProvider;
-import com.opensymphony.workflow.WorkflowException;
+
 
 /**
  * @author lhe
  */
 public class AnswerExampleFunction implements FunctionProvider {
 
-    private static Log logger = LogFactory.getLog(AnswerExampleFunction.class);
+    //private static Log logger = LogFactory.getLog(AnswerExampleFunction.class);
 
     /*
      * (non-Javadoc)
@@ -45,7 +44,7 @@ public class AnswerExampleFunction implements FunctionProvider {
      *      java.util.Map, com.opensymphony.module.propertyset.PropertySet)
      */
     public void execute(Map transientVars, Map args, PropertySet propertySet)
-            throws WorkflowException {
+        throws WorkflowException {
         OSWorkflowEndpoint ep = null;
         boolean isAsynchron = false;
         MessageExchange exchange = null;
