@@ -159,6 +159,9 @@ public class StaticRecipientList extends EIPEndpoint {
                 for (int i = 0; i < recipients.length; i++) {
                     MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
                     recipients[i].configureTarget(me, getContext());
+                    in.setProperty(RECIPIENT_LIST_COUNT, new Integer(recipients.length));
+                    in.setProperty(RECIPIENT_LIST_INDEX, new Integer(i));
+                    in.setProperty(RECIPIENT_LIST_CORRID, exchange.getExchangeId());
                     MessageUtil.transferToIn(in, me);
                     send(me);
                 }
