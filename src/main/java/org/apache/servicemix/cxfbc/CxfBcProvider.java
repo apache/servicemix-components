@@ -39,7 +39,6 @@ import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.binding.AbstractBindingFactory;
-import org.apache.cxf.binding.soap.SoapMessage;
 
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
@@ -55,7 +54,6 @@ import org.apache.cxf.interceptor.StaxOutInterceptor;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
-import org.apache.cxf.message.MessageImpl;
 import org.apache.cxf.phase.PhaseChainCache;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
@@ -124,7 +122,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                
         CxfBcProviderMessageObserver obs = new CxfBcProviderMessageObserver(exchange, this);
         conduit.setMessageObserver(obs);
-        SoapMessage message = new SoapMessage(new MessageImpl());
+        Message message = ep.getBinding().createMessage();
         message.put(MessageExchange.class, exchange);
         Exchange cxfExchange = new ExchangeImpl();
         message.setExchange(cxfExchange);
