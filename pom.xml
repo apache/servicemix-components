@@ -446,6 +446,12 @@
                                         <extraargs>
                                             <extraarg>-verbose</extraarg>
                                         </extraargs>
+				    </wsdlOption>
+                                    <wsdlOption>
+                                        <wsdl>${basedir}/src/test/resources/org/apache/servicemix/cxfbc/interceptors/quote.wsdl</wsdl>
+                                        <extraargs>
+                                            <extraarg>-verbose</extraarg>
+                                        </extraargs>
                                     </wsdlOption>
                                     <wsdlOption>
                                         <wsdl>${basedir}/src/test/resources/org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl</wsdl>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="java_first"
+	targetNamespace="http://servicemix.apache.org/cxfbc/interceptors" 
+	          xmlns:tns="http://servicemix.apache.org/cxfbc/interceptors" 
+		  xmlns:ns1="http://schemas.xmlsoap.org/wsdl/" 
+		  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+		  xmlns:xsd1="http://servicemix.apache.org/cxfbc/interceptors/types/quote" 
+		  xmlns:ns2="http://servicemix.apache.org/cxfbc/interceptors/types" 
+		  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+		  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+	  <schema targetNamespace="http://servicemix.apache.org/cxfbc/interceptors/types/quote"
+            xmlns="http://www.w3.org/2001/XMLSchema">>
+	    <complexType name="quote">
+              <sequence>
+               <element name="ID" type="string" minOccurs="0"/>
+	       <element name="time" type="string" minOccurs="0"/>
+               <element name="val" type="float"/>
+            </sequence>
+      </complexType>
+    </schema>
+  </wsdl:types>
+  
+  <wsdl:message name="getStockQuote">
+	  <wsdl:part name="stockTicker" type="xsd:string">          
+	  </wsdl:part>
+          <wsdl:part name="retailTicker" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStockQuoteResponse">
+	<wsdl:part name="updatedQuote" type="xsd1:quote">        
+	</wsdl:part>
+        <wsdl:part name="retailTicker" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  
+  <wsdl:portType name="QuoteReporterRPC">
+    <wsdl:operation name="getStockQuote">
+      <wsdl:input name="getStockQuote" message="tns:getStockQuote">
+    </wsdl:input>
+    <wsdl:output name="getStockQuoteResponse" message="tns:getStockQuoteResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:binding name="QuoteReporterRPCBinding" type="tns:QuoteReporterRPC">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getStockQuote">
+      <soap:operation style="rpc"/>
+      <wsdl:input name="getStockQuote">
+	      <soap:body use="literal" namespace="http://servicemix.:apache.org/cxfbc/interceptors"/>
+      </wsdl:input>
+      <wsdl:output name="getStockQuoteResponse">
+	      <soap:body use="literal"  namespace="http://servicemix.apache.org/cxfbc/interceptors"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  
+  <wsdl:service name="StockQuoteReporterRPCService">
+	  <wsdl:port name="StockQuoteReporterRPCPort" binding="tns:QuoteReporterRPCBinding">
+          <soap:address location="http://localhost:9092/StockQuoteReporterRPCService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

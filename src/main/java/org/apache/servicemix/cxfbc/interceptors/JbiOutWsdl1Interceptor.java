@@ -17,6 +17,7 @@
 package org.apache.servicemix.cxfbc.interceptors;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -38,6 +39,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.service.model.BindingMessageInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.util.QNameUtil;
@@ -68,24 +70,6 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
                         + QNameUtil.toString(element) + "' but expected '{"
                         + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}message'"));
             }
-            List<NodeList> partsContent = new ArrayList<NodeList>();
-            Element partWrapper = DomUtil.getFirstChildElement(element);
-            while (partWrapper != null) {
-                if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
-                        .getNamespaceURI())
-                        || !JbiConstants.WSDL11_WRAPPER_PART_LOCALNAME
-                                .equals(partWrapper.getLocalName())) {
-                    throw new Fault(new Exception(
-                            "Unexpected part wrapper element '"
-                                    + QNameUtil.toString(element)
-                                    + "' expected '{"
-                                    + JbiConstants.WSDL11_WRAPPER_NAMESPACE
-                                    + "}part'"));
-                }
-                NodeList nodes = partWrapper.getChildNodes();
-                partsContent.add(nodes);
-                partWrapper = DomUtil.getNextSiblingElement(partWrapper);
-            }
 
             BindingOperationInfo bop = message.getExchange().get(
                     BindingOperationInfo.class);
@@ -101,25 +85,24 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
             if (style == null) {
                 style = binding.getStyle();
             }
-            List<SoapHeaderInfo> headers = msg
-                    .getExtensors(SoapHeaderInfo.class);
-            for (SoapHeaderInfo header : headers) {
-                NodeList nl = partsContent.get(header.getPart().getIndex());
-                Element headerElement = message.get(Element.class);
-                for (int i = 0; i < nl.getLength(); i++) {
-                    headerElement.appendChild(nl.item(i));
-                }
-            }
 
             if ("rpc".equals(style)) {
                 addOperationNode(message, xmlWriter);
-            }
-            for (NodeList nl : partsContent) {
-                for (int i = 0; i < nl.getLength(); i++) {
-                    Node n = nl.item(i);
-                    StaxUtils.writeNode(n, xmlWriter, false);
+                getRPCPartWrapper(msg, element, message, xmlWriter);
+            } else {
+                Element partWrapper = DomUtil.getFirstChildElement(element);
+                while (partWrapper != null) {
+                    List<NodeList> partsContent = getPartsContent(message, element, partWrapper, msg); 
+                    for (NodeList nl : partsContent) {
+                        for (int i = 0; i < nl.getLength(); i++) {
+                            Node n = nl.item(i);                            
+                            StaxUtils.writeNode(n, xmlWriter, false);
+                        }
+                    }
+                    partWrapper = DomUtil.getNextSiblingElement(partWrapper);
                 }
             }
+
             if ("rpc".equals(style)) {
                 xmlWriter.writeEndElement();
             }
@@ -129,6 +112,71 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
             throw new Fault(e);
         }
     }
+
+    private void getRPCPartWrapper(BindingMessageInfo msg, 
+                                   Element element,
+                                   SoapMessage message, 
+                                   XMLStreamWriter xmlWriter) {
+        try {
+            List<MessagePartInfo> parts = msg.getMessageParts();
+            Iterator iter = parts.iterator();
+            Element partWrapper = DomUtil.getFirstChildElement(element);
+            while (partWrapper != null) {
+                MessagePartInfo msgPart = (MessagePartInfo) iter.next();
+                String prefix = msgPart.getName().getPrefix();
+                String name = msgPart.getName().getLocalPart();
+                StaxUtils.writeStartElement(xmlWriter, prefix, name, "");
+                List<NodeList> partsContent = getPartsContent(message, element,
+                                                              partWrapper, msg);
+                for (NodeList nl : partsContent) {
+                    for (int i = 0; i < nl.getLength(); i++) {
+                        Node n = nl.item(i);
+                        StaxUtils.writeNode(n, xmlWriter, false);
+                    }
+                }
+                xmlWriter.writeEndElement();
+                partWrapper = DomUtil.getNextSiblingElement(partWrapper);
+            }
+        } catch (Fault e) {
+            throw e;
+        } catch (Exception e) {
+            throw new Fault(e);
+        }
+    }
+    
+    // Get each parts content
+    private List<NodeList> getPartsContent(SoapMessage message,
+                                           Element element,
+                                           Element partWrapper, 
+                                           BindingMessageInfo msg) {
+        List<NodeList> partsContent = new ArrayList<NodeList>();        
+        if (partWrapper != null) {
+            if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element.getNamespaceURI())
+                    || !JbiConstants.WSDL11_WRAPPER_PART_LOCALNAME
+                            .equals(partWrapper.getLocalName())) {
+                throw new Fault(new Exception(
+                        "Unexpected part wrapper element '"
+                                + QNameUtil.toString(element)
+                                + "' expected '{"
+                                + JbiConstants.WSDL11_WRAPPER_NAMESPACE
+                                + "}part'"));
+            }
+            NodeList nodes = partWrapper.getChildNodes();
+            partsContent.add(nodes);
+        }
+            
+        List<SoapHeaderInfo> headers = msg.getExtensors(SoapHeaderInfo.class);
+        for (SoapHeaderInfo header : headers) {
+            NodeList nl = partsContent.get(header.getPart().getIndex());
+            Element headerElement = message.get(Element.class);
+            for (int i = 0; i < nl.getLength(); i++) {
+                headerElement.appendChild(nl.item(i));
+            }
+        }
+        
+        return partsContent;
+    }
+    
 
     protected String addOperationNode(Message message, XMLStreamWriter xmlWriter)
         throws XMLStreamException {

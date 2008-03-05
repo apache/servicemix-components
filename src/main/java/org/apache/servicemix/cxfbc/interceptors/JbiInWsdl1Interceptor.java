@@ -126,7 +126,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 Element param = DomUtil.getFirstChildElement(body);
                 boolean found = false;
                 while (param != null) {
-                    if (part.getName().equals(new QName(param.getNamespaceURI(), param.getLocalName()))) {
+                    if (part.getName().getLocalPart().equals(param.getLocalName())) {
                         found = true;
                         parts.add(wrapNodeList(param.getChildNodes()));
                         break;
