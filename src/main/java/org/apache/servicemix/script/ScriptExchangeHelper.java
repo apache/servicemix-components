@@ -16,7 +16,10 @@
  */
 package org.apache.servicemix.script;
 
+import javax.jbi.component.ComponentContext;
+import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 
 /**
@@ -50,5 +53,21 @@ public class ScriptExchangeHelper implements ScriptHelper {
 
     public void sendExchange(MessageExchange exchange) throws MessagingException {
         endpoint.send(exchange);
+    }
+
+    public void sendSyncExchange(MessageExchange exchange) throws MessagingException {
+        endpoint.sendSync(exchange);
+    }
+
+    public DeliveryChannel getChannel() {
+        return endpoint.getChannel();
+    }
+
+    public ComponentContext getContext() {
+        return endpoint.getContext();
+    }
+
+    public MessageExchangeFactory getExchangeFactory() {
+        return endpoint.getExchangeFactory();
     }
 }

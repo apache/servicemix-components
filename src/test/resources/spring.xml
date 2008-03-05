@@ -24,48 +24,66 @@
 
 	<sm:container id="jbi" embedded="true" createMBeanServer="false">
 		<sm:activationSpecs>
-			<sm:activationSpec>
+			<sm:activationSpec service="test:echo">
 				<sm:component>
-					<script:component>
-						<script:endpoints>
-							<!-- Groovy Endpoint  -->
-							<script:exchangeProcessor
-								service="test:groovy" endpoint="endpoint">
-								<property name="helpers">
-									<list>
-										<ref bean="groovyExchangeHelper" />
-									</list>
-								</property>
-								<property name="implementation"
-									ref="groovyExchangeProcessor" />
-							</script:exchangeProcessor>
+                    <bean class="org.apache.servicemix.components.util.EchoComponent" />
+                </sm:component>
+            </sm:activationSpec>
+        </sm:activationSpecs>
 
-							<!-- JRuby Endpoint  -->
-							<script:exchangeProcessor
-								service="test:jruby" endpoint="endpoint">
-								<property name="helpers">
-									<list>
-										<ref bean="jrubyExchangeHelper" />
-									</list>
-								</property>
-								<property name="implementation"
-									ref="jrubyExchangeProcessor" />
-							</script:exchangeProcessor>
-						</script:endpoints>
-					</script:component>
-				</sm:component>
-			</sm:activationSpec>
-		</sm:activationSpecs>
-	</sm:container>
+        <sm:endpoints>
 
-	<script:exchangeHelper id="groovyExchangeHelper" singleton="true" />
+            <!-- Groovy Endpoint  -->
+            <script:exchangeProcessor
+                service="test:groovy" endpoint="endpoint">
+                <property name="helpers">
+                    <list>
+                        <ref bean="groovyExchangeHelper" />
+                    </list>
+                </property>
+                <property name="implementation" ref="groovyExchangeProcessor" />
+            </script:exchangeProcessor>
+
+            <!-- Groovy Endpoint  -->
+            <script:exchangeProcessor
+                service="test:groovyConsumer" endpoint="endpoint">
+                <property name="helpers">
+                    <list>
+                        <ref bean="groovyConsumerExchangeHelper" />
+                    </list>
+                </property>
+                <property name="implementation" ref="groovyConsumerExchangeProcessor" />
+            </script:exchangeProcessor>
+
+            <!-- JRuby Endpoint  -->
+            <script:exchangeProcessor
+                service="test:jruby" endpoint="endpoint">
+                <property name="helpers">
+                    <list>
+                        <ref bean="jrubyExchangeHelper" />
+                    </list>
+                </property>
+                <property name="implementation" ref="jrubyExchangeProcessor" />
+            </script:exchangeProcessor>
+
+        </sm:endpoints>
+    </sm:container>
+
+    <script:exchangeHelper id="groovyExchangeHelper" singleton="true" />
+
+    <script:exchangeHelper id="groovyConsumerExchangeHelper" singleton="true" />
 
 	<script:exchangeHelper id="jrubyExchangeHelper" singleton="true" />
 
-	<lang:groovy id="groovyExchangeProcessor"
-		script-source="classpath:GroovyExchangeProcessor.groovy">
-		<lang:property name="exchangeHelper" ref="groovyExchangeHelper" />
-	</lang:groovy>
+    <lang:groovy id="groovyExchangeProcessor"
+        script-source="classpath:GroovyExchangeProcessor.groovy">
+        <lang:property name="exchangeHelper" ref="groovyExchangeHelper" />
+    </lang:groovy>
+
+    <lang:groovy id="groovyConsumerExchangeProcessor"
+        script-source="classpath:GroovyConsumerExchangeProcessor.groovy">
+        <lang:property name="exchangeHelper" ref="groovyConsumerExchangeHelper" />
+    </lang:groovy>
 
 	<lang:jruby id="jrubyExchangeProcessor"
 		script-interfaces="org.apache.servicemix.common.ExchangeProcessor"
