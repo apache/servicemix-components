@@ -78,7 +78,7 @@ public class WrapperOutInterceptor  extends AbstractOutDatabindingInterceptor {
             }
             for (int idx = 0; idx < parts.size(); idx++) {
                 MessagePartInfo part = parts.get(idx);
-                Object obj = objs.get(idx);
+                Object obj = objs.get(part.getIndex());
                 if (!part.isElement()) {
                     if (part.getTypeClass() == String.class) {
                         xmlWriter.writeStartElement(JBIConstants.NS_JBI_WRAPPER, 
