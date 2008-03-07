@@ -18,7 +18,6 @@ package org.apache.servicemix.cxfse;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -35,7 +34,6 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.WebServiceRef;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.binding.jbi.interceptor.JBIWrapperOutInterceptor;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.interceptor.InterceptorProvider;
 import org.apache.cxf.jaxws.EndpointImpl;
@@ -50,7 +48,6 @@ import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
-import org.apache.servicemix.cxfse.interceptors.WrapperOutInterceptor;
 import org.apache.servicemix.cxfse.support.ReflectionUtils;
 import org.apache.servicemix.id.IdGenerator;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -159,7 +156,6 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         endpoint.setInFaultInterceptors(getInFaultInterceptors());
         endpoint.setOutInterceptors(getOutInterceptors());
         endpoint.setOutFaultInterceptors(getOutFaultInterceptors());
-        endpoint.getOutInterceptors().add(new WrapperOutInterceptor());
         if (isMtomEnabled()) {
             endpoint.getInInterceptors().add(new AttachmentInInterceptor());
         }
@@ -213,7 +209,6 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         super.start();
         address = "jbi://" + ID_GENERATOR.generateSanitizedId();
         endpoint.publish(address);
-        removeJBIWrapperInterceptor(endpoint.getServer().getEndpoint().getBinding().getOutInterceptors());
         setService(endpoint.getServer().getEndpoint().getService().getName());
         setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo()
                 .getName().getLocalPart());
@@ -243,17 +238,6 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         injectPojo();
     }
 
-    private void removeJBIWrapperInterceptor(List<Interceptor> outInterceptors) {
-                            
-        Iterator<Interceptor> iter = outInterceptors.iterator();
-        while (iter.hasNext()) {
-            Interceptor interceptor = iter.next();
-            if (interceptor instanceof JBIWrapperOutInterceptor) {
-                outInterceptors.remove(interceptor);
-                break;
-            }
-        }
-    }
 
     /*
      * (non-Javadoc)
