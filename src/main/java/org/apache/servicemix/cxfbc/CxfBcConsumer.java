@@ -131,6 +131,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private boolean mtomEnabled;
 
     private String locationURI;
+    
+    private int timeout = 10;
 
     /**
      * @return the wsdl
@@ -446,7 +448,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 if (CxfBcConsumer.this.synchronous
                         && !CxfBcConsumer.this.isOneway) {
                     message.getInterceptorChain().pause();
-                    context.getDeliveryChannel().sendSync(exchange, 10000);
+                    context.getDeliveryChannel().sendSync(exchange, timeout * 1000);
                     process(exchange);
                 } else {
                     context.getDeliveryChannel().send(exchange);
@@ -591,6 +593,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     public boolean isMtomEnabled() {
         return mtomEnabled;
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+
+    public int getTimeout() {
+        return timeout;
     }
 
 }
