@@ -18,6 +18,7 @@ package org.apache.servicemix.camel;
 
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
@@ -25,8 +26,10 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.util.URISupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
@@ -66,6 +69,22 @@ public class ToJbiProcessor implements Processor {
         }
     }
 
+    private void addHeaders(MessageExchange messageExchange, Exchange camelExchange) {
+        Set entries = messageExchange.getPropertyNames();
+        for (Object o : entries) {
+            String key = o.toString();
+            camelExchange.setProperty(key, messageExchange.getProperty(key));
+        }
+    }
+
+    private void addHeaders(NormalizedMessage normalizedMessage, Message camelMessage) {
+        Set entries = normalizedMessage.getPropertyNames();
+        for (Object o : entries) {
+            String key = o.toString();
+            camelMessage.setHeader(key, normalizedMessage.getProperty(key));
+        }
+    }
+
     public void process(Exchange exchange) {
         try {
             DeliveryChannel deliveryChannel = componentContext.getDeliveryChannel();
@@ -78,10 +97,13 @@ public class ToJbiProcessor implements Processor {
             if (messageExchange.getStatus() == ExchangeStatus.ERROR) {
                 exchange.setException(messageExchange.getError());
             } else if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
+                addHeaders(messageExchange, exchange);
                 if (messageExchange.getFault() != null) {
                     exchange.getFault().setBody(messageExchange.getFault().getContent());
+                    addHeaders(messageExchange.getFault(), exchange.getFault());
                 } else {
                     exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
+                    addHeaders(messageExchange.getMessage("out"), exchange.getOut());
                 }
                 messageExchange.setStatus(ExchangeStatus.DONE);
                 deliveryChannel.send(messageExchange);
