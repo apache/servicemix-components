@@ -25,6 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.wsdl.factory.WSDLFactory;
@@ -117,6 +118,10 @@ public class CxfBcProvider extends ProviderEndpoint implements
     }
 
     public void process(MessageExchange exchange) throws Exception {
+        
+        if (exchange.getStatus() != ExchangeStatus.ACTIVE) {
+            return;
+        }
         NormalizedMessage nm = exchange.getMessage("in");
         
                
