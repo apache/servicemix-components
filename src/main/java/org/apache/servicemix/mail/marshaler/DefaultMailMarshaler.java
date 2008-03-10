@@ -162,7 +162,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         if (isPlainTextMessage && !isHtmlMessage) {
             // a plain text mail will be sent - no attachments
             if (content != null) {
-                content.setSubType("alternative");
+                content.setSubType("mixed");
                 MimeBodyPart textBodyPart = new MimeBodyPart();
                 textBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString(),
                                         "text/plain");
@@ -173,13 +173,13 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         } else if (isHtmlMessage && !isPlainTextMessage) {
             // a html message will be sent - no attachments
             if (content != null) {
-                content.setSubType("alternative");
+                content.setSubType("mixed");
                 MimeBodyPart htmlBodyPart = new MimeBodyPart();
                 htmlBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML).toString(),
                                         "text/html");
                 content.addBodyPart(htmlBodyPart);
             } else {
-                content = new MimeMultipart("alternative");
+                content = new MimeMultipart("mixed");
                 MimeBodyPart htmlBodyPart = new MimeBodyPart();
                 htmlBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML).toString(),
                                         "text/html");
@@ -190,7 +190,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         } else if (isHtmlMessage && isPlainTextMessage) {
             // both parts will be sent - plain text and html
             if (content != null) {
-                content.setSubType("alternative");
+                content.setSubType("mixed");
                 MimeBodyPart textBodyPart = new MimeBodyPart();
                 MimeBodyPart htmlBodyPart = new MimeBodyPart();
                 textBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString(),
@@ -200,7 +200,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                 content.addBodyPart(textBodyPart);
                 content.addBodyPart(htmlBodyPart);
             } else {
-                content = new MimeMultipart("alternative");
+                content = new MimeMultipart("mixed");
                 MimeBodyPart textBodyPart = new MimeBodyPart();
                 MimeBodyPart htmlBodyPart = new MimeBodyPart();
                 textBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString(),
@@ -220,12 +220,12 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
 
                 // a html message will be sent
                 if (content != null) {
-                    content.setSubType("alternative");
+                    content.setSubType("mixed");
                     MimeBodyPart htmlBodyPart = new MimeBodyPart();
                     htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
                     content.addBodyPart(htmlBodyPart);
                 } else {
-                    content = new MimeMultipart("alternative");
+                    content = new MimeMultipart("mixed");
                     MimeBodyPart htmlBodyPart = new MimeBodyPart();
                     htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
                     content.addBodyPart(htmlBodyPart);
@@ -235,7 +235,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             } catch (Exception ex) {
                 // no xml document - plain text used now
                 if (content != null) {
-                    content.setSubType("alternative");
+                    content.setSubType("mixed");
                     MimeBodyPart textBodyPart = new MimeBodyPart();
                     textBodyPart.setContent(st.contentToString(nmsg), "text/plain");
                     content.addBodyPart(textBodyPart);
