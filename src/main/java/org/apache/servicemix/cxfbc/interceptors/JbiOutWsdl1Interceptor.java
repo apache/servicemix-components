@@ -29,6 +29,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
@@ -46,13 +47,19 @@ import org.apache.servicemix.jbi.util.QNameUtil;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.util.DomUtil;
 
+
+
+
 /**
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
  */
 public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
-
-    public JbiOutWsdl1Interceptor() {
+    
+    private boolean useJBIWrapper = true;
+    
+    public JbiOutWsdl1Interceptor(boolean useJBIWrapper) {
         super(Phase.MARSHAL);
+        this.useJBIWrapper = useJBIWrapper;
     }
 
     public void handleMessage(SoapMessage message) {
@@ -61,7 +68,24 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
             if (source == null) {
                 return;
             }
+            
             Element element = new SourceTransformer().toDOMElement(source);
+            XMLStreamWriter xmlWriter = message
+                .getContent(XMLStreamWriter.class);
+            
+            if (!useJBIWrapper) {
+                SoapVersion soapVersion = message.getVersion();
+                if (element != null) {
+                    element = (Element) element.getElementsByTagNameNS(
+                            element.getNamespaceURI(),
+                            soapVersion.getBody().getLocalPart()).item(0);
+                    if (element != null) {
+                        StaxUtils.writeElement((Element)element.getFirstChild(), xmlWriter, false);
+                    }
+                }
+                return;
+            }
+            
             if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
                     .getNamespaceURI())
                     || !JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME
@@ -76,9 +100,7 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
             BindingMessageInfo msg = isRequestor(message) ? bop.getInput()
                     : bop.getOutput();
 
-            XMLStreamWriter xmlWriter = message
-                    .getContent(XMLStreamWriter.class);
-
+            
             SoapBindingInfo binding = (SoapBindingInfo) message.getExchange()
                     .get(Endpoint.class).getEndpointInfo().getBinding();
             String style = binding.getStyle(bop.getOperationInfo());
@@ -113,6 +135,8 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
         }
     }
 
+    
+    
     private void getRPCPartWrapper(BindingMessageInfo msg, 
                                    Element element,
                                    SoapMessage message, 

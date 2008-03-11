@@ -36,10 +36,16 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class CxfBcProviderConsumerTest extends SpringTestSupport {
 
     public void testBridge() throws Exception {
+        
+        URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
         // start external service
         JaxWsServerFactoryBean factory = new JaxWsServerFactoryBean();
         factory.setServiceClass(CalculatorPortType.class);
         factory.setServiceBean(new CalculatorImpl());
+        factory.setWsdlURL(wsdl.toString());
+        factory.setServiceName(new QName("http://apache.org/cxf/calculator", 
+                "CalculatorService"));
+        factory.setBindingId("http://schemas.xmlsoap.org/wsdl/soap12/");
         String address = "http://localhost:9001/bridgetest";
         factory.setAddress(address);
         Server server = factory.create();
@@ -50,7 +56,7 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
         assertNotNull(service);
 
         // start external client
-        URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
+        
         assertNotNull(wsdl);
         CalculatorService service1 = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));

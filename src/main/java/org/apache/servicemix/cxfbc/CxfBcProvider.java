@@ -113,6 +113,10 @@ public class CxfBcProvider extends ProviderEndpoint implements
     
     private boolean mtomEnabled;
     
+    private boolean useJBIWrapper = true;
+    
+    
+    
     public void processExchange(MessageExchange exchange) {
         
     }
@@ -156,9 +160,10 @@ public class CxfBcProvider extends ProviderEndpoint implements
         }
         
         
-        outList.add(new JbiOutWsdl1Interceptor());
+        outList.add(new JbiOutWsdl1Interceptor(isUseJBIWrapper()));
         outList.add(new SoapPreProtocolOutInterceptor());
         outList.add(new SoapOutInterceptor(getBus()));
+        
         PhaseInterceptorChain outChain = outboundChainCache.get(pm.getOutPhases(), outList);
         outChain.add(getOutInterceptors());
         outChain.add(getOutFaultInterceptors());
@@ -174,7 +179,6 @@ public class CxfBcProvider extends ProviderEndpoint implements
         OutputStream os = message.getContent(OutputStream.class);
         XMLStreamWriter writer = message.getContent(XMLStreamWriter.class);
         
-
         String encoding = getEncoding(message);
         
         try {
@@ -360,6 +364,14 @@ public class CxfBcProvider extends ProviderEndpoint implements
 
     public boolean isMtomEnabled() {
         return mtomEnabled;
+    }
+
+    public void setUseJBIWrapper(boolean useJBIWrapper) {
+        this.useJBIWrapper = useJBIWrapper;
+    }
+
+    public boolean isUseJBIWrapper() {
+        return useJBIWrapper;
     }
 
 }

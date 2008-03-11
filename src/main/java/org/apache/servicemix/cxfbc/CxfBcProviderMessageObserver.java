@@ -86,7 +86,8 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             }
 
             contentType = (String) message.get(Message.CONTENT_TYPE);
-            SoapMessage soapMessage = new SoapMessage(message);
+            SoapMessage soapMessage = 
+                (SoapMessage) this.providerEndpoint.getCxfEndpoint().getBinding().createMessage(message);
 
             // create XmlStreamReader
             BindingOperationInfo boi = providerEndpoint.getEndpointInfo()
@@ -109,7 +110,8 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             PhaseManager pm = providerEndpoint.getBus().getExtension(
                     PhaseManager.class);
             List<Interceptor> inList = new ArrayList<Interceptor>();
-            inList.add(new JbiInWsdl1Interceptor());
+            
+            inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper()));
 
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);

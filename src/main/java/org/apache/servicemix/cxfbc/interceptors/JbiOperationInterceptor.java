@@ -34,8 +34,10 @@ import org.apache.cxf.service.model.ServiceModelUtil;
 import org.apache.cxf.staxutils.DepthXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
 
+
 public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
 
+        
     public JbiOperationInterceptor() {
         super(Phase.UNMARSHAL);
         addAfter(URIMappingInterceptor.class.getName());
@@ -48,7 +50,9 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
         if (message.getExchange().get(BindingOperationInfo.class) != null) {
             return;
         }
+        
         DepthXMLStreamReader xmlReader = getXMLStreamReader(message);
+        
         BindingOperationInfo operation = null;
         if (!StaxUtils.toNextElement(xmlReader)) {
             message.setContent(Exception.class, new RuntimeException(
@@ -90,6 +94,7 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
     protected DepthXMLStreamReader getXMLStreamReader(Message message) {
+        
         XMLStreamReader xr = message.getContent(XMLStreamReader.class);
         if (xr instanceof DepthXMLStreamReader) {
             return (DepthXMLStreamReader) xr;

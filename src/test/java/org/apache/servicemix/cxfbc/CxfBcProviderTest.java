@@ -72,6 +72,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
         factory.setServiceBean(new CalculatorImpl());
         String address = "http://localhost:9001/providertest";
         factory.setAddress(address);
+        factory.setBindingId("http://schemas.xmlsoap.org/wsdl/soap12/");
         Server server = factory.create();
         Endpoint endpoint = server.getEndpoint();
         endpoint.getInInterceptors().add(new LoggingInInterceptor());
