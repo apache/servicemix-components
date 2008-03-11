@@ -80,6 +80,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     
     private boolean mtomEnabled;
     
+    private boolean useJBIWrapper = true;
+    
     
     /**
      * @return the pojo
@@ -151,7 +153,9 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         serviceFactory.setPopulateFromClass(true);
         endpoint = new EndpointImpl(getBus(), getPojo(),
                 new JaxWsServerFactoryBean(serviceFactory));
-        endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        if (isUseJBIWrapper()) {
+            endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        }
         endpoint.setInInterceptors(getInInterceptors());
         endpoint.setInFaultInterceptors(getInFaultInterceptors());
         endpoint.setOutInterceptors(getOutInterceptors());
@@ -281,5 +285,13 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
 
     public boolean isMtomEnabled() {
         return mtomEnabled;
+    }
+
+    public void setUseJBIWrapper(boolean useJBIWrapper) {
+        this.useJBIWrapper = useJBIWrapper;
+    }
+
+    public boolean isUseJBIWrapper() {
+        return useJBIWrapper;
     }
 }

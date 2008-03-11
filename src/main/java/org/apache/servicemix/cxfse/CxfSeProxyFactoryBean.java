@@ -65,6 +65,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     private boolean propagateSecuritySubject;
 
     private ServiceMixClient client;
+    
+    private boolean useJBIWrapper = true;
 
     public Object getObject() throws Exception {
         if (proxy == null) {
@@ -78,7 +80,9 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         cf.setServiceName(getService());
         cf.setServiceClass(type);
         cf.setAddress("jbi://" + new IdGenerator().generateSanitizedId());
-        cf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        if (isUseJBIWrapper()) {
+            cf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+        }
         Bus bus = BusFactory.getDefaultBus();
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) bus
                 .getExtension(ConduitInitiatorManager.class)
@@ -233,6 +237,14 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
             client.close();
             client = null;
         }
+    }
+
+    public void setUseJBIWrapper(boolean useJBIWrapper) {
+        this.useJBIWrapper = useJBIWrapper;
+    }
+
+    public boolean isUseJBIWrapper() {
+        return useJBIWrapper;
     }
 
 }
