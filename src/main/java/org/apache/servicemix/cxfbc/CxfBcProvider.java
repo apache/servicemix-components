@@ -101,14 +101,14 @@ public class CxfBcProvider extends ProviderEndpoint implements
     
     private Bus bus;
     
+    private ConduitInitiator conduitInit;
+    
     private URI locationURI;
     
     private EndpointInfo ei;
     
     private Endpoint ep;
 
-    private Conduit conduit;
-    
     private Service cxfService;
     
     private boolean mtomEnabled;
@@ -128,7 +128,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         }
         NormalizedMessage nm = exchange.getMessage("in");
         
-               
+        Conduit conduit = conduitInit.getConduit(ei);               
         CxfBcProviderMessageObserver obs = new CxfBcProviderMessageObserver(exchange, this);
         conduit.setMessageObserver(obs);
         Message message = ep.getBinding().createMessage();
@@ -287,11 +287,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 ei.setAddress(locationURI.toString());
                 
                 ConduitInitiatorManager conduitMgr = getBus().getExtension(ConduitInitiatorManager.class);
-                ConduitInitiator conduitInit = conduitMgr.getConduitInitiator("http://schemas.xmlsoap.org/soap/http");
-                conduit = conduitInit.getConduit(ei);
-
-                
-
+                conduitInit = conduitMgr.getConduitInitiator("http://schemas.xmlsoap.org/soap/http");
                 super.validate();
             }
         } catch (DeploymentException e) {

@@ -35,6 +35,7 @@ import org.apache.hello_world_soap_http.types.SayHiResponse;
 import org.apache.hello_world_soap_http.types.TestDocLitFaultResponse;
 import org.apache.hello_world_soap_http.types.TestNillableResponse;
 
+
 @WebService(serviceName = "SOAPServiceProvider", 
         portName = "SoapPort", 
         endpointInterface = "org.apache.hello_world_soap_http.Greeter", 
@@ -58,11 +59,30 @@ public class GreeterImplForProvider implements Greeter {
                 ret = "oneway";
             } else if ("https test".equals(me)) {
                 ret = ret + securityGreeter.greetMe("ffang");
+            } else if ("concurrency test".equals(me)) {
+                MultiClientThread[] clients = new MultiClientThread[10];
+                for (int i = 0; i < clients.length; i++) {
+                    clients[i] = new MultiClientThread(getCalculator(), i);
+                }
+                
+                for (int i = 0; i < clients.length; i++) {
+                    clients[i].start();
+                }
+                
+                for (int i = 0; i < clients.length; i++) {
+                    clients[i].join();
+                }
+                
+                for (int i = 0; i < clients.length; i++) {
+                    ret += i * 2 + " ";
+                }
             }
                         
         } catch (AddNumbersFault e) {
             //should catch exception here if negative number is passed
             ret = ret + e.getFaultInfo().getMessage();
+        } catch (InterruptedException e) {
+            //
         }
         return "Hello " + me  + " " + ret;
     }
@@ -190,4 +210,25 @@ public class GreeterImplForProvider implements Greeter {
     }
 
 
+    class MultiClientThread extends Thread {
+        private CalculatorPortType port;
+        private int index;
+        private int ret;
+        public MultiClientThread(CalculatorPortType port, int i) {
+            this.port = port;
+            this.index = i;
+        }
+        
+        public void run() {
+            try {
+                ret = port.add(index, index);
+            } catch (AddNumbersFault e) {
+                //  
+            }
+        }
+        
+        public int getRet() {
+            return ret;
+        }
+    }
 }

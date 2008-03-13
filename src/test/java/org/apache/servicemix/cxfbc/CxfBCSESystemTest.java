@@ -140,7 +140,6 @@ public class CxfBCSESystemTest extends SpringTestSupport {
             try {
                 assertEquals(port.add(1, 2), 3);
             } catch (AddNumbersFault e) {
-                // TODO Auto-generated catch block
                 fail();
             }
         }

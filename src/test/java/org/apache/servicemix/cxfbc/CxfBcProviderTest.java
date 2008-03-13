@@ -142,6 +142,23 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello oneway test oneway") >= 0);
+        
+        //test concurrency
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "concurrency test"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello concurrency test 0 2 4 6 8 10 12 14 16 18") >= 0);
     }
     
      
