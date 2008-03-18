@@ -517,6 +517,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
                 cont.setTransactionManager(new JtaTransactionManager(tm));
             }
         } else if (TRANSACTED_JMS.equals(transacted)) {
+            cont.setSessionTransacted(true);
             if (jms102) {
                 cont.setTransactionManager(new JmsTransactionManager102(getConnectionFactory(), isPubSubDomain()));
             } else {
