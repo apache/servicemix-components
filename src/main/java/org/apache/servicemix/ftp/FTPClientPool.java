@@ -147,10 +147,10 @@ public class FTPClientPool extends SocketClientPoolSupport {
         if (config != null) {
             ftp.configure(config);
         }
-        ftp.setDataTimeout(getDataTimeout());
         ftp.setControlEncoding(getControlEncoding());
 
         super.connect(ftp);
+        ftp.setDataTimeout(getDataTimeout());
 
         int code = ftp.getReplyCode();
         if (!FTPReply.isPositiveCompletion(code)) {

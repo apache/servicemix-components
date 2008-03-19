@@ -46,6 +46,7 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         if (pool == null) {
             GenericObjectPool goPool = new GenericObjectPool();
             goPool.setTestOnBorrow(true);
+            goPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
             pool = goPool;
         }
         pool.setFactory(this);
