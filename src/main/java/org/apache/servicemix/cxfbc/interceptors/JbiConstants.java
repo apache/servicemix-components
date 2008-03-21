@@ -76,5 +76,8 @@ public final class JbiConstants {
     public static final QName WSDL11_WRAPPER_PART = new QName(
             WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_PART_LOCALNAME,
             WSDL11_WRAPPER_PREFIX);
+    private JbiConstants() {
+        //Added to keep checkstyle 4.3 happy.
+    }
 
 }
