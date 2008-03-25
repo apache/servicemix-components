@@ -174,7 +174,13 @@ public class BeanInfo {
             return createContentExpression(marshaller);
         } else if (annotation instanceof XPath) {
             XPath xpathAnnotation = (XPath) annotation;
-            return new JAXPStringXPathExpression(xpathAnnotation.xpath());
+            JAXPStringXPathExpression expr = new JAXPStringXPathExpression(xpathAnnotation.xpath());
+            if (!annotation.prefix().equals("") && !annotation.uri().equals("")) {
+                DefaultNamespaceContext ctx = new DefaultNamespaceContext();
+                ctx.add(annotation.prefix(), annotation.uri());
+                expr.setNamespaceContext(ctx);
+            }
+            return expr; 
         }
         return null;
     }

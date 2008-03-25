@@ -31,5 +31,7 @@ import java.lang.annotation.Target;
 public @interface XPath {
 
     String xpath() default "";
+    String prefix() default "";
+    String uri() default "";
 
 }
