@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.drools.support;
 
+import java.util.Map;
 
 /**
  * A simple namespace context with a clean xbean configuration.
