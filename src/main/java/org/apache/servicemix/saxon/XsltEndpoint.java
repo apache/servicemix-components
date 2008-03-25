@@ -129,16 +129,16 @@ public class XsltEndpoint extends SaxonEndpoint {
     }
 
     protected Source createXsltSource(Resource res) throws Exception {
+        String url = null;
+        try {
+            url = res.getURL().toURI().toString();
+        } catch (Exception e) {
+            // Ignore
+        }
         if (useDomSourceForXslt) {
-            String url = null;
-            try {
-                url = res.getURL().toURI().toString();
-            } catch (Exception e) {
-                // Ignore
-            }
             return new DOMSource(parse(res), url);
         } else {
-            return new StreamSource(res.getInputStream());
+            return new StreamSource(res.getInputStream(), url);
         }
     }
 
