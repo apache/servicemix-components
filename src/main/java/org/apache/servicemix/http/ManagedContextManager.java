@@ -22,11 +22,11 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 import org.mortbay.jetty.MimeTypes;
 import org.mortbay.util.ByteArrayISO8859Writer;
