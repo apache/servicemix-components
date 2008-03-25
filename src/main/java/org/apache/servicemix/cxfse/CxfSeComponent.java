@@ -20,9 +20,7 @@ import java.util.List;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
-import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Deployer;
 
 /**
  * 
@@ -63,16 +61,6 @@ public class CxfSeComponent extends DefaultComponent {
     protected Class[] getEndpointClasses() {
         return new Class[] {CxfSeEndpoint.class };
     }
-    
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
-     */
-    @Override
-    public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] {new CxfSeXBeanDeployer(this) };
-        return new BaseServiceUnitManager(this, deployers);
-    }
-
     
     @Override
     protected void doInit() throws Exception {
