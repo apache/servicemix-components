@@ -23,12 +23,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import javax.activation.DataHandler;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
-import javax.jbi.messaging.MessageExchange.Role;
-import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOptionalOut;
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
@@ -44,22 +50,34 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.ibm.wsdl.Constants;
-
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.EndpointComponentContext;
-import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.EndpointDeliveryChannel;
 import org.apache.servicemix.common.ManagementSupport;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
+import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.apache.servicemix.jsr181.xfire.ServiceFactoryHelper;
+import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.annotations.AnnotationServiceFactory;
+import org.codehaus.xfire.attachments.Attachment;
+import org.codehaus.xfire.attachments.Attachments;
+import org.codehaus.xfire.attachments.JavaMailAttachments;
+import org.codehaus.xfire.attachments.SimpleAttachment;
+import org.codehaus.xfire.exchange.InMessage;
+import org.codehaus.xfire.fault.XFireFault;
 import org.codehaus.xfire.jaxb2.JaxbType;
+import org.codehaus.xfire.service.OperationInfo;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.service.invoker.BeanInvoker;
 import org.codehaus.xfire.soap.SoapConstants;
+import org.codehaus.xfire.transport.Channel;
+import org.codehaus.xfire.transport.Transport;
 import org.springframework.core.io.Resource;
 
 /**
@@ -70,8 +88,14 @@ import org.springframework.core.io.Resource;
  *                  description="A jsr181 endpoint"
  * 
  */
-public class Jsr181Endpoint extends Endpoint {
+public class Jsr181Endpoint extends ProviderEndpoint {
 
+    public static final String SOAP_FAULT_CODE = "org.apache.servicemix.soap.fault.code";
+    public static final String SOAP_FAULT_SUBCODE = "org.apache.servicemix.soap.fault.subcode";
+    public static final String SOAP_FAULT_REASON = "org.apache.servicemix.soap.fault.reason";
+    public static final String SOAP_FAULT_NODE = "org.apache.servicemix.soap.fault.node";
+    public static final String SOAP_FAULT_ROLE = "org.apache.servicemix.soap.fault.role";
+    
     protected Object pojo;
     protected String pojoClass;
     protected String annotations;
@@ -79,12 +103,11 @@ public class Jsr181Endpoint extends Endpoint {
     protected String serviceInterface;
     protected String style = "wrapped";
     
-    protected ServiceEndpoint activated;
     protected Service xfireService;
-    protected ExchangeProcessor processor;
     protected Resource wsdlResource;
     protected boolean mtomEnabled;
     protected Map properties;
+    protected StAXSourceTransformer transformer;
 
     /* should the payload be automaticaly validated by the ws engine
      * if not set then it is up to the engine to decide
@@ -92,7 +115,7 @@ public class Jsr181Endpoint extends Endpoint {
     private Boolean validationEnabled;
     
     public Jsr181Endpoint() {
-        processor = new Jsr181ExchangeProcessor(this);
+        this.transformer = new StAXSourceTransformer();
     }
     
     /**
@@ -190,34 +213,19 @@ public class Jsr181Endpoint extends Endpoint {
     }
 
     /* (non-Javadoc)
-     * @see org.servicemix.common.Endpoint#getRole()
-     * @org.apache.xbean.XBean hide="true"
+     * @see org.servicemix.common.endpoints.SimpleEndpoint#start()
      */
-    public Role getRole() {
-        return Role.PROVIDER;
+    public void start() throws Exception {
+        super.start();
+        injectPojo(getContext(), getContainer());
     }
 
     /* (non-Javadoc)
-     * @see org.servicemix.common.Endpoint#activate()
+     * @see org.servicemix.common.endpoints.SimpleEndpoint#stop()
      */
-    public void activate() throws Exception {
-        logger = this.serviceUnit.getComponent().getLogger();
-        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
-        activated = ctx.activateEndpoint(service, endpoint);
-        injectPojo(new EndpointComponentContext(this), getContainer());
-        processor.start();
-    }
-
-    /* (non-Javadoc)
-     * @see org.servicemix.common.Endpoint#deactivate()
-     */
-    public void deactivate() throws Exception {
-        ServiceEndpoint ep = activated;
-        activated = null;
-        processor.stop();
-        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
-        ctx.deactivateEndpoint(ep);
+    public void stop() throws Exception {
         injectPojo(null, null);
+        super.stop();
     }
 
     protected void injectPojo(ComponentContext context, JBIContainer container) {
@@ -447,6 +455,93 @@ public class Jsr181Endpoint extends Endpoint {
         return factory.newDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
     }
     
+    public void process(MessageExchange exchange) throws Exception {
+        if (exchange.getStatus() == ExchangeStatus.DONE) {
+            return;
+        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            return;
+        }
+
+        // TODO: clean this code
+        XFire xfire = getXFire();
+        Service service = getXFireService();
+        Transport t = xfire.getTransportManager().getTransport(JbiTransport.JBI_BINDING);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Channel c = t.createChannel();
+        MessageContext ctx = new MessageContext();
+        ctx.setXFire(xfire);
+        ctx.setService(service);
+        ctx.setProperty(Channel.BACKCHANNEL_URI, out);
+        ctx.setExchange(new org.codehaus.xfire.exchange.MessageExchange(ctx));
+        InMessage msg = new InMessage();
+        ctx.getExchange().setInMessage(msg);
+        if (exchange.getOperation() != null) {
+            OperationInfo op = service.getServiceInfo().getOperation(exchange.getOperation().getLocalPart());
+            if (op != null) {
+                ctx.getExchange().setOperation(op);
+            }
+        }
+        ctx.setCurrentMessage(msg);
+        NormalizedMessage in = exchange.getMessage("in");
+        msg.setXMLStreamReader(transformer.toXMLStreamReader(in.getContent()));
+        if (in.getAttachmentNames() != null && in.getAttachmentNames().size() > 0) {
+            JavaMailAttachments attachments = new JavaMailAttachments();
+            for (Iterator it = in.getAttachmentNames().iterator(); it.hasNext();) {
+                String name = (String) it.next();
+                DataHandler dh = in.getAttachment(name);
+                attachments.addPart(new SimpleAttachment(name, dh));
+            }
+            msg.setAttachments(attachments);
+        }
+        JBIContext.setMessageExchange(exchange);
+        try {
+            c.receive(ctx, msg);
+        } finally {
+            EndpointDeliveryChannel.setEndpoint(null);
+        }
+        c.close();
+        
+        // Set response or DONE status
+        if (exchange instanceof InOut || exchange instanceof InOptionalOut) {
+            if (ctx.getExchange().hasFaultMessage() && ctx.getExchange().getFaultMessage().getBody() != null) {
+                String charSet = ctx.getExchange().getFaultMessage().getEncoding();
+                Fault fault = exchange.getFault();
+                if (fault == null) {
+                    fault = exchange.createFault();
+                    exchange.setFault(fault);
+                }
+                fault.setContent(new StringSource(out.toString(charSet)));
+                XFireFault xFault = (XFireFault) ctx.getExchange().getFaultMessage().getBody();
+                fault.setProperty(SOAP_FAULT_CODE, xFault.getFaultCode());
+                fault.setProperty(SOAP_FAULT_REASON, xFault.getReason());
+                fault.setProperty(SOAP_FAULT_ROLE, xFault.getRole());
+                fault.setProperty(SOAP_FAULT_SUBCODE, xFault.getSubCode());
+            } else {
+                String charSet = ctx.getOutMessage().getEncoding();
+                NormalizedMessage outMsg = exchange.getMessage("out");
+                if (outMsg == null) {
+                    outMsg = exchange.createMessage();
+                    exchange.setMessage(outMsg, "out");
+                }
+                Attachments attachments = ctx.getCurrentMessage().getAttachments();
+                if (attachments != null) {
+                    for (Iterator it = attachments.getParts(); it.hasNext();) {
+                        Attachment att = (Attachment) it.next();
+                        outMsg.addAttachment(att.getId(), att.getDataHandler());
+                    }
+                }
+                outMsg.setContent(new StringSource(out.toString(charSet)));
+            }
+            if (exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC))) {
+                sendSync(exchange);
+            } else {
+                send(exchange);
+            }
+        } else {
+            done(exchange);
+        }
+    }
+
     public XFire getXFire() {
         Jsr181Component component = (Jsr181Component) this.serviceUnit.getComponent();
         return component.getXFire();
@@ -474,10 +569,6 @@ public class Jsr181Endpoint extends Endpoint {
 
     public void setTypeMapping(String typeMapping) {
         this.typeMapping = typeMapping;
-    }
-
-    public ExchangeProcessor getProcessor() {
-        return processor;
     }
 
     public String getServiceInterface() {

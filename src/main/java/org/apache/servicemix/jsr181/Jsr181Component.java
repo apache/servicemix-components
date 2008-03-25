@@ -20,9 +20,7 @@ import java.util.List;
 
 import javax.jbi.component.ComponentContext;
 
-import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
 import org.codehaus.xfire.DefaultXFire;
 import org.codehaus.xfire.XFire;
@@ -58,14 +56,6 @@ public class Jsr181Component extends DefaultComponent {
         return new Class[] {Jsr181Endpoint.class };
     }
     
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
-     */
-    public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] {new Jsr181XBeanDeployer(this) };
-        return new BaseServiceUnitManager(this, deployers);
-    }
-
     /**
      * @return Returns the xfire.
      */
