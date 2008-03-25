@@ -241,7 +241,6 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                     }
                     request.removeAttribute(MessageExchange.class.getName());
                 }
-                return;
             } else {
                 String id = (String) request.getAttribute(MessageExchange.class.getName());
                 locks.remove(id);
