@@ -23,9 +23,7 @@ import java.util.Map;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 
-import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.jbi.util.IntrospectionSupport;
 import org.apache.servicemix.jbi.util.URISupport;
@@ -46,15 +44,6 @@ public class BeanComponent extends DefaultComponent implements ApplicationContex
     private BeanEndpoint[] endpoints;
     private String[] searchPackages;
     private ApplicationContext applicationContext;
-
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
-     */
-    @Override
-    public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = new Deployer[] {new BeanXBeanDeployer(this) };
-        return new BaseServiceUnitManager(this, deployers);
-    }
 
     public BeanEndpoint[] getEndpoints() {
         return endpoints;
