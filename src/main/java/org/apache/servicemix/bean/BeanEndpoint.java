@@ -405,7 +405,10 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
 
     protected void checkEndOfRequest(Request request, Object corId) {
         if (request.getExchange().getStatus() != ExchangeStatus.ACTIVE) {
-            ReflectionUtils.callLifecycleMethod(request.getBean(), PreDestroy.class);
+            Object beanFromRequest = request.getBean();
+            if (beanFromRequest != bean) {
+                ReflectionUtils.callLifecycleMethod(beanFromRequest, PreDestroy.class);
+            }
             //request.setBean(null);
             //request.setExchange(null);
             requests.remove(corId);
