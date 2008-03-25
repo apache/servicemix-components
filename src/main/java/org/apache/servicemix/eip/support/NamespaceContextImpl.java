@@ -30,6 +30,7 @@ import java.util.Map;
 public class NamespaceContextImpl extends org.apache.servicemix.jbi.jaxp.NamespaceContextImpl {
     
     /**
+     * Keep the getter/setter to keep xbean annotation
      * @org.apache.xbean.Map entryName="namespace" keyName="prefix"
      * @return Returns the namespaces.
      */
@@ -38,6 +39,7 @@ public class NamespaceContextImpl extends org.apache.servicemix.jbi.jaxp.Namespa
     }
 
     /**
+     * Keep the getter/setter to keep xbean annotation
      * @param namespaces The namespaces to set.
      */
     public void setNamespaces(Map<String, String> namespaces) {
