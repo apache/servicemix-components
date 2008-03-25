@@ -27,6 +27,22 @@ package org.apache.servicemix.drools.support;
  */
 public class NamespaceContextImpl extends org.apache.servicemix.jbi.jaxp.NamespaceContextImpl {
 
-    
+    /**
+     * Keep the getter/setter to keep xbean annotation
+     * @org.apache.xbean.Map entryName="namespace" keyName="prefix"
+     * @return Returns the namespaces.
+     */
+    public Map<String, String> getNamespaces() {
+        return super.getNamespaces();
+    }
+
+    /**
+     * Keep the getter/setter to keep xbean annotation
+     * @param namespaces The namespaces to set.
+     */
+    public void setNamespaces(Map<String, String> namespaces) {
+        super.setNamespaces(namespaces);
+    }
+
 }
 
