@@ -302,7 +302,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setContent(new StringSource(TEXT));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -340,7 +340,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setContent(new StringSource(HTML));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -380,7 +380,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setContent(new StringSource(TEXT));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -421,7 +421,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setContent(new StringSource(TEXT));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -459,7 +459,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setContent(new StringSource(HTML));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -500,7 +500,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -551,7 +551,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -603,7 +603,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -656,7 +656,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]
@@ -707,7 +707,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
         // convert
-        marshaler.convertJBIToMail(mail, exchange, nmsg, null);
+        marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
 
         // test the result
         assertEquals("The FROM is invalid!", FROM, mail.getHeader(AbstractMailMarshaler.MAIL_TAG_FROM)[0]

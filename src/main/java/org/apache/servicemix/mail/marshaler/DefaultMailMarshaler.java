@@ -16,16 +16,17 @@
  */
 package org.apache.servicemix.mail.marshaler;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -45,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.ByteArrayDataSource;
+import org.apache.servicemix.jbi.util.FileUtil;
 
 /**
  * this is the default marshaler for conversion between the normalized message
@@ -73,16 +75,17 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
 
     /*
      * (non-Javadoc)
-     * 
-     * @see net.compart.jbi.mail.AMailMarshallerSupport#convertJBIToMail(javax.mail.internet.MimeMessage,
-     *      javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage, String)
+     * @see org.apache.servicemix.mail.marshaler.AbstractMailMarshaler#
+     * convertJBIToMail(javax.mail.internet.MimeMessage, javax.jbi.messaging.MessageExchange, 
+     * javax.jbi.messaging.NormalizedMessage, java.lang.String, java.lang.String)
      */
     @Override
-    public void convertJBIToMail(MimeMessage mimeMessage, MessageExchange exchange, NormalizedMessage nmsg, String configuredSender)
+    public void convertJBIToMail(MimeMessage mimeMessage, MessageExchange exchange, 
+                                 NormalizedMessage nmsg, String configuredSender, String configuredReceiver)
         throws javax.mail.MessagingException {
         try {
             // first fill the headers of the mail
-            fillMailHeaders(mimeMessage, exchange, nmsg, configuredSender);
+            fillMailHeaders(mimeMessage, exchange, nmsg, configuredSender, configuredReceiver);
 
             // fill the body and attachments
             fillMailBodyAndAttachments(mimeMessage, exchange, nmsg);
@@ -101,14 +104,10 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
      */
     protected void fillMailBodyAndAttachments(MimeMessage mimeMessage, MessageExchange exchange,
                                               NormalizedMessage nmsg) throws Exception {
-        // extract all attachments from the normalized message into a map
-        Map<String, DataSource> attachments = getAttachmentsMapFromNormalizedMessage(nmsg);
-
         // if there are attachments, then a multipart mime mail with
         // attachments will be sent
-        if (attachments.size() > 0) {
-            Set<String> attNames = attachments.keySet();
-            Iterator<String> itAttNames = attNames.iterator();
+        if (nmsg.getAttachmentNames().size() > 0) {
+            Iterator itAttNames = nmsg.getAttachmentNames().iterator();
 
             if (itAttNames.hasNext()) {
                 // there is at least one attachment
@@ -123,13 +122,34 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
 
                 // loop the existing attachments and put them to the mail
                 while (itAttNames.hasNext()) {
-                    String oneAttachmentName = itAttNames.next();
+                    String oneAttachmentName = (String)itAttNames.next();
+                    
+                    // For some strange reason the java mail tries to 
+                    // read the input stream of the attachments twice.
+                    // this is impossible if the used data source is of 
+                    // type StreamDataSource (used for example in the
+                    // binary file marshaler)
+                    // ----------------------------------------------------
+                    // As a not so nice workaround we do store the contents
+                    // of the stream as a temporary file and then attach
+                    // this file as FileDataSource to the mails attachment.
+                    // This may cause some slight performance loss.
+                    DataHandler dh = nmsg.getAttachment(oneAttachmentName);
+                    File f = File.createTempFile("" + System.currentTimeMillis() + "-", dh.getDataSource().getName());
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(f));
+                    FileUtil.copyInputStream(dh.getInputStream(), bos);
+                    bos.close();
+                    
+                    log.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
+                    
+                    // add the file to the temporary resources list
+                    addTemporaryResource(f);                    
                     // Create another body part
                     messageBodyPart = new MimeBodyPart();
                     // Set the data handler to the attachment
-                    messageBodyPart.setDataHandler(new DataHandler(attachments.get(oneAttachmentName)));
+                    messageBodyPart.setDataHandler(new DataHandler(new FileDataSource(f)));
                     // Set the filename
-                    messageBodyPart.setFileName(oneAttachmentName);
+                    messageBodyPart.setFileName(dh.getDataSource().getName());
                     // Set Disposition
                     messageBodyPart.setDisposition(Part.ATTACHMENT);
                     // Add part to multipart
@@ -160,7 +180,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         boolean isHtmlMessage = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML) != null;
 
         if (isPlainTextMessage && !isHtmlMessage) {
-            // a plain text mail will be sent - no attachments
+            // a plain text mail will be sent 
             if (content != null) {
                 content.setSubType("mixed");
                 MimeBodyPart textBodyPart = new MimeBodyPart();
@@ -171,7 +191,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                 mimeMessage.setText(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString());
             }
         } else if (isHtmlMessage && !isPlainTextMessage) {
-            // a html message will be sent - no attachments
+            // a html message will be sent 
             if (content != null) {
                 content.setSubType("mixed");
                 MimeBodyPart htmlBodyPart = new MimeBodyPart();
@@ -188,7 +208,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                 mimeMessage.setContent(content);
             }
         } else if (isHtmlMessage && isPlainTextMessage) {
-            // both parts will be sent - plain text and html
+            // both parts will be sent 
             if (content != null) {
                 content.setSubType("mixed");
                 MimeBodyPart textBodyPart = new MimeBodyPart();
@@ -213,35 +233,47 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                 mimeMessage.setContent(content);
             }
         } else {
-            // use the content of the message
-            SourceTransformer st = new SourceTransformer();
-            try {
-                st.toDOMDocument(nmsg);
-
-                // a html message will be sent
-                if (content != null) {
-                    content.setSubType("mixed");
-                    MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                    htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
-                    content.addBodyPart(htmlBodyPart);
-                } else {
-                    content = new MimeMultipart("mixed");
-                    MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                    htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
-                    content.addBodyPart(htmlBodyPart);
-                    // Put parts in message
-                    mimeMessage.setContent(content);
+            if (nmsg.getContent() != null) {
+                // use the content of the message
+                SourceTransformer st = new SourceTransformer();
+                try {
+                    st.toDOMDocument(nmsg);
+    
+                    // a html message will be sent
+                    if (content != null) {
+                        content.setSubType("mixed");
+                        MimeBodyPart htmlBodyPart = new MimeBodyPart();
+                        htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
+                        content.addBodyPart(htmlBodyPart);
+                    } else {
+                        content = new MimeMultipart("mixed");
+                        MimeBodyPart htmlBodyPart = new MimeBodyPart();
+                        htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
+                        content.addBodyPart(htmlBodyPart);
+                        // Put parts in message
+                        mimeMessage.setContent(content);
+                    }
+                } catch (Exception ex) {
+                    // no xml document - plain text used now
+                    if (content != null) {
+                        content.setSubType("mixed");
+                        MimeBodyPart textBodyPart = new MimeBodyPart();
+                        textBodyPart.setContent(st.contentToString(nmsg), "text/plain");
+                        content.addBodyPart(textBodyPart);
+                    } else {
+                        // Put text in message
+                        mimeMessage.setText(st.contentToString(nmsg));
+                    }
                 }
-            } catch (Exception ex) {
-                // no xml document - plain text used now
+            } else {
+                // a plain text mail will be sent
                 if (content != null) {
                     content.setSubType("mixed");
                     MimeBodyPart textBodyPart = new MimeBodyPart();
-                    textBodyPart.setContent(st.contentToString(nmsg), "text/plain");
+                    textBodyPart.setContent(AbstractMailMarshaler.DUMMY_CONTENT, "text/plain");
                     content.addBodyPart(textBodyPart);
                 } else {
-                    // Put text in message
-                    mimeMessage.setText(st.contentToString(nmsg));
+                    mimeMessage.setText(AbstractMailMarshaler.DUMMY_CONTENT);
                 }
             }
         }
@@ -254,16 +286,27 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
      * @param exchange the exchange received
      * @param nmsg the normalized message received
      * @param configuredSender the configured sender from xbean
+     * @param configuredReceiver the configured receiver from xbean
      * @throws Exception on errors
      */
-    protected void fillMailHeaders(MimeMessage mimeMessage, MessageExchange exchange, NormalizedMessage nmsg, String configuredSender)
+    protected void fillMailHeaders(MimeMessage mimeMessage, MessageExchange exchange, 
+                                   NormalizedMessage nmsg, String configuredSender, String configuredReceiver)
         throws Exception {
         // fill the "To" field of the mail
+        // if there is a TO property, this overrides the standard receiver
         if (nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TO) != null) {
             Address[] to = InternetAddress.parse(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TO)
                 .toString());
             if (to != null) {
                 mimeMessage.setRecipients(Message.RecipientType.TO, to);
+            } 
+        // there is no TO property, so try the configured receiver
+        } else {
+            if (configuredReceiver != null) {
+                Address[] to = InternetAddress.parse(configuredReceiver);
+                if (to != null) {
+                    mimeMessage.setRecipients(Message.RecipientType.TO, to);
+                } 
             }
         }
 
@@ -312,8 +355,12 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             String subject = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT).toString();
             if (subject != null) {
                 mimeMessage.setSubject(subject);
+            } else {
+                mimeMessage.setSubject(AbstractMailMarshaler.DUMMY_SUBJECT);
             }
-        }
+        } else {
+            mimeMessage.setSubject(AbstractMailMarshaler.DUMMY_SUBJECT);
+        }        
 
         // fill the "Date" field of the mail
         if (nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_SENTDATE) != null) {

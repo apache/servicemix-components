@@ -16,8 +16,11 @@
  */
 package org.apache.servicemix.mail.marshaler;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -153,6 +156,18 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     public static final String DEFAULT_SENDER = "no-reply@localhost";
 
     /**
+     * the dummy subject - set if no subject was provided
+     */
+    public static final String DUMMY_SUBJECT = "no subject";
+    
+    /**
+     * the dummy content - set if no content was provided
+     */
+    public static final String DUMMY_CONTENT = "no content";
+    
+    private List<File> temporaryFiles = new ArrayList<File>();
+    
+    /**
      * This method is used to convert a mime mail message received via an 
      * email server into a normalized message which will be sent to the bus.
      * If you want to specify your own conversion behaviour you have to override
@@ -172,14 +187,16 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      * If you want to specify your own conversion behaviour you have to override
      * this method with your own logic. 
      * 
-     * @param mimeMessage       the mime mail message to be filled by this method
-     * @param exchange          the message exchange from JBI bus
-     * @param nmsg              the normalized message to transform to mail message
-     * @param configuredSender  the sender configured in the xbean
+     * @param mimeMessage               the mime mail message to be filled by this method
+     * @param exchange                  the message exchange from JBI bus
+     * @param nmsg                      the normalized message to transform to mail message
+     * @param configuredSender          the sender configured in the xbean
+     * @param configuredReceiver        the receiver configured in the xbean
      * @throws javax.mail.MessagingException on conversion errors
      */
     public abstract void convertJBIToMail(MimeMessage mimeMessage, MessageExchange exchange,
-                                          NormalizedMessage nmsg, String configuredSender) throws javax.mail.MessagingException;
+                                          NormalizedMessage nmsg, String configuredSender, 
+                                          String configuredReceiver) throws javax.mail.MessagingException;
 
     /**
      * returns the default sender for outgoing mails
@@ -214,5 +231,24 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
         }
 
         return attachments;
+    }
+    
+    /**
+     * adds a temporary file resource to the list
+     * 
+     * @param tmpFile   the temporary file to delete after sending mail
+     */
+    protected final void addTemporaryResource(File tmpFile) {
+        this.temporaryFiles.add(tmpFile);
+    }    
+    
+    /**
+     * deletes all temporary resources
+     */
+    public final void cleanUpResources() {
+        for (File f : this.temporaryFiles) {
+            f.delete();
+        }
+        this.temporaryFiles.clear();
     }
 }

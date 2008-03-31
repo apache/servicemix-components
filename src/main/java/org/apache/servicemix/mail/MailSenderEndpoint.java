@@ -30,11 +30,8 @@ import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-
 import org.apache.servicemix.jbi.jaxp.StringSource;
-
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
@@ -54,6 +51,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     private String customTrustManagers;
     private String connection;
     private String sender;
+    private String receiver;
     private boolean debugMode;
 
     /*
@@ -107,13 +105,16 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 MimeMessage msg = new MimeMessage(session);
 
                 // let the marshaler to the conversion of message to mail
-                this.marshaler.convertJBIToMail(msg, exchange, in, this.sender);
+                this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
                 // Send message
                 Transport.send(msg);
             } catch (MessagingException mex) {
                 logger.error("Error sending mail...", mex);
                 throw mex;
+            } finally {
+                // delete all temporary allocated resources
+                this.marshaler.cleanUpResources();
             }
         }
     }
@@ -153,7 +154,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 MimeMessage msg = new MimeMessage(session);
 
                 // let the marshaler to the conversion of message to mail
-                this.marshaler.convertJBIToMail(msg, exchange, in, this.sender);
+                this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
                 // Send message
                 Transport.send(msg);
@@ -163,6 +164,9 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
             } catch (MessagingException mex) {
                 logger.error("Error sending mail...", mex);
                 throw mex;
+            } finally {
+                // delete all temporary allocated resources
+                this.marshaler.cleanUpResources();
             }
         }
     }
@@ -244,5 +248,19 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      */
     public void setCustomTrustManagers(String customTrustManagers) {
         this.customTrustManagers = customTrustManagers;
+    }
+
+    /** 
+     * @return Returns the receiver.
+     */
+    public String getReceiver() {
+        return this.receiver;
+    }
+
+    /**
+     * @param receiver The receiver to set.
+     */
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
     }
 }
