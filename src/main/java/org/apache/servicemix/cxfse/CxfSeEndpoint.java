@@ -30,6 +30,7 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.wsdl.WSDLException;
+import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebServiceRef;
 
@@ -220,6 +221,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
             definition = new ServiceWSDLBuilder(getBus(), endpoint.getServer()
                     .getEndpoint().getService().getServiceInfos().iterator()
                     .next()).build();
+            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
         } catch (WSDLException e) {
             throw new DeploymentException(e);
         }
