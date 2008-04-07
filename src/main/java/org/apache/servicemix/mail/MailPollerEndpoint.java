@@ -46,11 +46,15 @@ import org.apache.servicemix.mail.utils.MailUtils;
  * @org.apache.xbean.XBean element="poller"
  * @author lhein
  */
-public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointType {
-    private static final transient Log LOG = LogFactory.getLog(MailPollerEndpoint.class);
+public class MailPollerEndpoint extends PollingEndpoint implements
+        MailEndpointType {
+    private static final transient Log LOG = LogFactory
+            .getLog(MailPollerEndpoint.class);
 
     private AbstractMailMarshaler marshaler = new DefaultMailMarshaler();
+
     private String customTrustManagers;
+
     private MailConnectionConfiguration config;
 
     private String connection;
@@ -58,7 +62,9 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     private int maxFetchSize = 5;
 
     private boolean processOnlyUnseenMessages;
+
     private boolean deleteProcessedMessages;
+
     private boolean debugMode;
 
     /**
@@ -97,13 +103,15 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
      * @see org.apache.servicemix.components.util.PollingComponentSupport#poll()
      */
     public void poll() throws Exception {
-        LOG.debug("Polling mailfolder " + config.getFolderName() + " at host " + config.getHost() + "...");
+        LOG.debug("Polling mailfolder " + config.getFolderName() + " at host "
+                + config.getHost() + "...");
 
         Store store = null;
         Folder folder = null;
         Session session = null;
         try {
-            Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
+            Properties props = MailUtils.getPropertiesForProtocol(this.config,
+                    this.customTrustManagers);
             props.put("mail.debug", isDebugMode() ? "true" : "false");
 
             // Get session
@@ -113,29 +121,25 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
             session.setDebug(this.debugMode);
 
             store = session.getStore(config.getProtocol());
-            store.connect(config.getHost(), config.getUsername(), config.getPassword());
+            store.connect(config.getHost(), config.getUsername(), config
+                    .getPassword());
             folder = store.getFolder(config.getFolderName());
             if (folder == null || !folder.exists()) {
-                throw new Exception("Folder not found or invalid: " + config.getFolderName());
+                throw new Exception("Folder not found or invalid: "
+                        + config.getFolderName());
             }
             folder.open(Folder.READ_WRITE);
 
             int msgCount = 0;
-            // check for max fetch size
-            if (this.maxFetchSize == -1) {
-                // -1 means no restrictions at all - so poll all messages
-                msgCount = folder.getMessageCount();
-            } else {
-                // poll only the set max fetch size
-                msgCount = Math.min(this.maxFetchSize, folder.getMessageCount());
-            }
+            int msgInFolder = folder.getMessageCount();
 
-            for (int i = 1; i <= msgCount; i++) {
+            for (int cnt = 1; cnt <= msgInFolder; cnt++) {
                 // get the message
-                MimeMessage mailMsg = (MimeMessage)folder.getMessage(i);
+                MimeMessage mailMsg = (MimeMessage) folder.getMessage(cnt);
 
                 // check if the message may be processed
-                if (isProcessOnlyUnseenMessages() && mailMsg.isSet(Flags.Flag.SEEN)) {
+                if (isProcessOnlyUnseenMessages()
+                        && mailMsg.isSet(Flags.Flag.SEEN)) {
                     // this message should not be processed because
                     // the configuration says to process only unseen messages
                     LOG.debug("Skipped seen mail: " + mailMsg.getSubject());
@@ -165,7 +169,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                 if (io.getStatus() == ExchangeStatus.ERROR) {
                     Exception e = io.getError();
                     if (e == null) {
-                        e = new JBIException("Unexpected error: " + e.getMessage());
+                        e = new JBIException("Unexpected error: "
+                                + e.getMessage());
                     }
                     throw e;
                 } else {
@@ -177,6 +182,17 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                         // processed messages have to be marked as seen
                         mailMsg.setFlag(Flags.Flag.SEEN, true);
                     }
+                }
+
+                // increase processed msg counter
+                msgCount++;
+
+                // check if stop is required
+                if (getMaxFetchSize() > 0 && msgCount >= getMaxFetchSize()) {
+                    // break condition
+                    LOG
+                            .debug("Fetched max. configured mails from folder...skipping remaining mails.");
+                    break;
                 }
             }
         } finally {
@@ -202,7 +218,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     }
 
     /**
-     * @param deleteProcessedMessages the deleteProcessedMessages to set
+     * @param deleteProcessedMessages
+     *            the deleteProcessedMessages to set
      */
     public void setDeleteProcessedMessages(boolean deleteProcessedMessages) {
         this.deleteProcessedMessages = deleteProcessedMessages;
@@ -216,7 +233,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     }
 
     /**
-     * @param marshaler the marshaler to set
+     * @param marshaler
+     *            the marshaler to set
      */
     public void setMarshaler(AbstractMailMarshaler marshaler) {
         this.marshaler = marshaler;
@@ -230,7 +248,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     }
 
     /**
-     * @param maxFetchSize the maxFetchSize to set
+     * @param maxFetchSize
+     *            the maxFetchSize to set
      */
     public void setMaxFetchSize(int maxFetchSize) {
         this.maxFetchSize = maxFetchSize;
@@ -244,7 +263,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     }
 
     /**
-     * @param processOnlyUnseenMessages the processOnlyUnseenMessages to set
+     * @param processOnlyUnseenMessages
+     *            the processOnlyUnseenMessages to set
      */
     public void setProcessOnlyUnseenMessages(boolean processOnlyUnseenMessages) {
         this.processOnlyUnseenMessages = processOnlyUnseenMessages;
@@ -262,7 +282,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     /**
      * sets the connection uri
      * 
-     * @param connection The connection to set.
+     * @param connection
+     *            The connection to set.
      */
     public void setConnection(String connection) {
         this.connection = connection;
@@ -281,7 +302,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     }
 
     /**
-     * @param debugMode the debugMode to set
+     * @param debugMode
+     *            the debugMode to set
      */
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
@@ -295,7 +317,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     }
 
     /**
-     * @param customTrustManagers the customTrustManagers to set
+     * @param customTrustManagers
+     *            the customTrustManagers to set
      */
     public void setCustomTrustManagers(String customTrustManagers) {
         this.customTrustManagers = customTrustManagers;
