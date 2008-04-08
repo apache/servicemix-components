@@ -25,16 +25,16 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.mail.Flags;
 import javax.mail.Folder;
+import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
+import javax.mail.search.FlagTerm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
-
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
@@ -46,10 +46,8 @@ import org.apache.servicemix.mail.utils.MailUtils;
  * @org.apache.xbean.XBean element="poller"
  * @author lhein
  */
-public class MailPollerEndpoint extends PollingEndpoint implements
-        MailEndpointType {
-    private static final transient Log LOG = LogFactory
-            .getLog(MailPollerEndpoint.class);
+public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointType {
+    private static final transient Log LOG = LogFactory.getLog(MailPollerEndpoint.class);
 
     private AbstractMailMarshaler marshaler = new DefaultMailMarshaler();
 
@@ -103,15 +101,18 @@ public class MailPollerEndpoint extends PollingEndpoint implements
      * @see org.apache.servicemix.components.util.PollingComponentSupport#poll()
      */
     public void poll() throws Exception {
-        LOG.debug("Polling mailfolder " + config.getFolderName() + " at host "
-                + config.getHost() + "...");
+        LOG.debug("Polling mailfolder " + config.getFolderName() + " at host " + config.getHost() + "...");
+
+        if (maxFetchSize == 0) {
+            LOG.debug("The configuration is set to poll no new messages at all...skipping.");
+            return;
+        }
 
         Store store = null;
         Folder folder = null;
         Session session = null;
         try {
-            Properties props = MailUtils.getPropertiesForProtocol(this.config,
-                    this.customTrustManagers);
+            Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
             props.put("mail.debug", isDebugMode() ? "true" : "false");
 
             // Get session
@@ -121,30 +122,25 @@ public class MailPollerEndpoint extends PollingEndpoint implements
             session.setDebug(this.debugMode);
 
             store = session.getStore(config.getProtocol());
-            store.connect(config.getHost(), config.getUsername(), config
-                    .getPassword());
+            store.connect(config.getHost(), config.getUsername(), config.getPassword());
             folder = store.getFolder(config.getFolderName());
             if (folder == null || !folder.exists()) {
-                throw new Exception("Folder not found or invalid: "
-                        + config.getFolderName());
+                throw new Exception("Folder not found or invalid: " + config.getFolderName());
             }
             folder.open(Folder.READ_WRITE);
 
-            int msgCount = 0;
-            int msgInFolder = folder.getMessageCount();
+            Message[] messages = null;
+            if (isProcessOnlyUnseenMessages()) {
+                messages = folder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
+            } else {
+                messages = folder.getMessages();
+            }
 
-            for (int cnt = 1; cnt <= msgInFolder; cnt++) {
+            int fetchSize = getMaxFetchSize() == -1 ? messages.length : Math.min(getMaxFetchSize(),
+                                                                                 messages.length);
+            for (int cnt = 0; cnt < fetchSize; cnt++) {
                 // get the message
-                MimeMessage mailMsg = (MimeMessage) folder.getMessage(cnt);
-
-                // check if the message may be processed
-                if (isProcessOnlyUnseenMessages()
-                        && mailMsg.isSet(Flags.Flag.SEEN)) {
-                    // this message should not be processed because
-                    // the configuration says to process only unseen messages
-                    LOG.debug("Skipped seen mail: " + mailMsg.getSubject());
-                    continue;
-                }
+                MimeMessage mailMsg = (MimeMessage)messages[cnt];
 
                 // create a inOnly exchange
                 InOnly io = getExchangeFactory().createInOnlyExchange();
@@ -169,8 +165,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements
                 if (io.getStatus() == ExchangeStatus.ERROR) {
                     Exception e = io.getError();
                     if (e == null) {
-                        e = new JBIException("Unexpected error: "
-                                + e.getMessage());
+                        e = new JBIException("Unexpected error: " + e.getMessage());
                     }
                     throw e;
                 } else {
@@ -182,17 +177,6 @@ public class MailPollerEndpoint extends PollingEndpoint implements
                         // processed messages have to be marked as seen
                         mailMsg.setFlag(Flags.Flag.SEEN, true);
                     }
-                }
-
-                // increase processed msg counter
-                msgCount++;
-
-                // check if stop is required
-                if (getMaxFetchSize() > 0 && msgCount >= getMaxFetchSize()) {
-                    // break condition
-                    LOG
-                            .debug("Fetched max. configured mails from folder...skipping remaining mails.");
-                    break;
                 }
             }
         } finally {
