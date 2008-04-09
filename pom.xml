@@ -435,6 +435,12 @@
                             <configuration>
                                 <sourceRoot>${basedir}/target/generated</sourceRoot>
                                 <wsdlOptions>
+                                     <wsdlOption>
+                                             <wsdl>${basedir}/src/test/resources/hello_world.wsdl</wsdl>
+	                                    <extraargs>
+	                                        <extraarg>-verbose</extraarg>
+        	                            </extraargs>
+                                    </wsdlOption>
                                     <wsdlOption>
                                         <wsdl>${basedir}/src/test/resources/HelloWorld-DOC.wsdl</wsdl>
  					<extraargs>

@@ -74,13 +74,17 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
                 .getContent(XMLStreamWriter.class);
             
             if (!useJBIWrapper) {
-                SoapVersion soapVersion = message.getVersion();
-                if (element != null) {
-                    element = (Element) element.getElementsByTagNameNS(
+                SoapVersion soapVersion = message.getVersion();                
+                if (element != null) {                                                      
+                    // if this message is coming from the CxfBCConsumer
+                    Element bodyElement = (Element) element.getElementsByTagNameNS(
                             element.getNamespaceURI(),
                             soapVersion.getBody().getLocalPart()).item(0);
-                    if (element != null) {
-                        StaxUtils.writeElement((Element)element.getFirstChild(), xmlWriter, false);
+                    if (bodyElement != null) {
+                        StaxUtils.writeElement((Element)bodyElement.getFirstChild(), xmlWriter, false);                           
+                    } else {
+                        // if this message is coming from the CxfBCProvider 
+                        StaxUtils.writeElement(element, xmlWriter, false);
                     }
                 }
                 return;
