@@ -36,7 +36,7 @@
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <http:conduit name="{http://apache.org/hello_world_soap_http}TimestampSignEncrypt.http-conduit">
-    <http:tlsClientParameters>
+    <http:tlsClientParameters disableCNCheck="true">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="password"
                file="src/test/resources/org/apache/servicemix/cxfbc/ws/security/provider/certs/truststore.jks"/>
