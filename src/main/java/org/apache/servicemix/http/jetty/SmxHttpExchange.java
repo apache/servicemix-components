@@ -93,7 +93,7 @@ public class SmxHttpExchange extends HttpExchange {
     }
 
     /* ------------------------------------------------------------ */
-    protected void onResponsetHeader(Buffer name, Buffer value) throws IOException {
+    protected void onResponseHeader(Buffer name, Buffer value) throws IOException {
         if (responseFields != null) {
             responseFields.add(name, value);
         }
