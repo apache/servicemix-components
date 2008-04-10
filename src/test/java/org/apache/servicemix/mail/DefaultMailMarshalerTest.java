@@ -522,7 +522,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
         BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
         assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        assertEquals("DataHandler name is invalid!", FILE, att.getDataHandler().getName());
         if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
             fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
                  + att.getDataHandler().getInputStream().available());
@@ -573,7 +572,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
         BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
         assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        assertEquals("DataHandler name is invalid!", FILE, att.getDataHandler().getName());
         if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
             fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
                  + att.getDataHandler().getInputStream().available());
@@ -627,7 +625,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(2));
         BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(2);
         assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        assertEquals("DataHandler name is invalid!", FILE, att.getDataHandler().getName());
         if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
             fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
                  + att.getDataHandler().getInputStream().available());
@@ -678,7 +675,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
         BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
         assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        assertEquals("DataHandler name is invalid!", FILE, att.getDataHandler().getName());
         if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
             fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
                  + att.getDataHandler().getInputStream().available());
@@ -729,7 +725,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
         BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
         assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        assertEquals("DataHandler name is invalid!", FILE, att.getDataHandler().getName());
         if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
             fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
                  + att.getDataHandler().getInputStream().available());
