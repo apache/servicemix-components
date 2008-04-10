@@ -41,6 +41,7 @@ import com.ibm.wsdl.Constants;
 import org.apache.cxf.Bus;
 import org.apache.cxf.binding.AbstractBindingFactory;
 
+import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
 import org.apache.cxf.bus.spring.SpringBusFactory;
@@ -163,7 +164,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         outList.add(new JbiOutWsdl1Interceptor(isUseJBIWrapper()));
         outList.add(new SoapPreProtocolOutInterceptor());
         outList.add(new SoapOutInterceptor(getBus()));
-        
+        outList.add(new SoapActionOutInterceptor());
         PhaseInterceptorChain outChain = outboundChainCache.get(pm.getOutPhases(), outList);
         outChain.add(getOutInterceptors());
         outChain.add(getOutFaultInterceptors());
