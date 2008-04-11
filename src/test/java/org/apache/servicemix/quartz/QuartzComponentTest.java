@@ -49,16 +49,16 @@ public class QuartzComponentTest extends TestCase {
         
         jbi.start();
 
-        Thread.sleep(200);
+        Thread.sleep(1000);
         assertTrue(receiver.getMessageList().flushMessages().size() > 0);
         
         quartz.stop();
         receiver.getMessageList().flushMessages();
-        Thread.sleep(200);
+        Thread.sleep(1000);
         assertEquals(0, receiver.getMessageList().flushMessages().size());
         
         quartz.start();
-        Thread.sleep(200);
+        Thread.sleep(1000);
         assertTrue(receiver.getMessageList().flushMessages().size() > 0);
 
         jbi.shutDown();
