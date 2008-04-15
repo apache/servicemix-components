@@ -24,6 +24,7 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.transform.Source;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +33,7 @@ import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.drools.DroolsEndpoint;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.jbi.util.MessageUtil;
@@ -102,10 +104,19 @@ public class JbiHelper {
     }
     */
     public void route(String uri) throws MessagingException {
-        routeTo(null, uri);
+        Source src = null;
+        routeTo(src, uri);
     }
     
     public void routeTo(String content, String uri) throws MessagingException {
+        if (content == null) {
+            routeTo(this.exchange.getInternalExchange().getMessage("in").getContent(), uri);
+        } else {
+            routeTo(new StringSource(content), uri);
+        }
+    }
+    
+    public void routeTo(Source content, String uri) throws MessagingException {
         MessageExchange me = this.exchange.getInternalExchange();
         String correlationId = (String)exchange.getProperty(JbiConstants.CORRELATION_ID);
         NormalizedMessage in = null;
@@ -113,7 +124,7 @@ public class JbiHelper {
             in = me.getMessage("in");
         } else {
             in = me.createMessage();
-            in.setContent(new StringSource(content));
+            in.setContent(content);
         }
         MessageExchange newMe = getChannel().createExchangeFactory().createExchange(me.getPattern());
         URIResolver.configureExchange(newMe, getContext(), uri);
@@ -141,7 +152,12 @@ public class JbiHelper {
         update();
     }
     
+    
     public void routeToDefault(String content) throws MessagingException {
+        routeTo(content, endpoint.getDefaultRouteURI());
+    }
+    
+    public void routeToDefault(Source content) throws MessagingException {
         routeTo(content, endpoint.getDefaultRouteURI());
     }
 
@@ -159,12 +175,28 @@ public class JbiHelper {
         update();
     }
     
-    
+    public void fault(Source content) throws Exception {
+        MessageExchange me = this.exchange.getInternalExchange();
+        if (me instanceof InOnly) {
+            me.setError(new Exception(new SourceTransformer().toString(content)));
+            getChannel().send(me);
+        } else {
+            Fault fault = me.createFault();
+            fault.setContent(content);
+            me.setFault(fault);
+            getChannel().sendSync(me);
+        }
+        update();
+    }
 
     public void answer(String content) throws Exception {
+        answer(new StringSource(content));
+    }
+    
+    public void answer(Source content) throws Exception {
         MessageExchange me = this.exchange.getInternalExchange();
         NormalizedMessage out = me.createMessage();
-        out.setContent(new StringSource(content));
+        out.setContent(content);
         me.setMessage(out, "out");
         getChannel().sendSync(me);
         update();
