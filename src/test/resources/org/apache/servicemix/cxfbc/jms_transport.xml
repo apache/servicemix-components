@@ -27,7 +27,7 @@
   <sm:container id="jbi" embedded="true">
     
     <sm:endpoints>
-      <cxfse:endpoint>
+      <!--cxfse:endpoint>
         <cxfse:pojo>
           <bean class="org.apache.servicemix.cxfbc.GreeterImplTwoWayJMS" />
         </cxfse:pojo>
@@ -43,9 +43,9 @@
         <cxfse:outFaultInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfse:outFaultInterceptors>
-      </cxfse:endpoint>
+      </cxfse:endpoint-->
       <cxfbc:consumer wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
-                      targetEndpoint="HelloWorldPort"
+                      targetEndpoint="HelloWorldPortProxy"
                       targetService="greeter:HelloWorldService"
                       targetInterface="greeter:Greeter"
                       >
@@ -62,6 +62,24 @@
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfbc:outFaultInterceptors>
       </cxfbc:consumer>
+      <cxfbc:provider wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="greeter:HelloWorldService"
+                      endpoint="HelloWorldPortProxy"
+                      interfaceName="greeter:Greetr"
+                     >
+          <cxfbc:inInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          </cxfbc:inInterceptors>
+          <cxfbc:outInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          </cxfbc:outInterceptors>
+          <cxfbc:inFaultInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          </cxfbc:inFaultInterceptors>
+          <cxfbc:outFaultInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          </cxfbc:outFaultInterceptors>
+      </cxfbc:provider>
     </sm:endpoints>
     
   </sm:container>

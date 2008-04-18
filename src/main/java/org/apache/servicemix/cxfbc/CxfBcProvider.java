@@ -22,12 +22,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
@@ -45,7 +45,6 @@ import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
 import org.apache.cxf.bus.spring.SpringBusFactory;
-import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.interceptor.AttachmentOutInterceptor;
@@ -67,6 +66,7 @@ import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.ConduitInitiator;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIMessageHelper;
+import org.apache.cxf.wsdl.WSDLManager;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutInterceptor;
@@ -85,8 +85,7 @@ import org.springframework.core.io.Resource;
 public class CxfBcProvider extends ProviderEndpoint implements
         CxfBcEndpointWithInterceptor {
 
-    private static final Logger LOG = LogUtils.getL7dLogger(org.apache.servicemix.cxfbc.CxfBcProvider.class);
-    
+        
     
     List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
 
@@ -253,8 +252,13 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 WSDLFactory wsdlFactory = WSDLFactory.newInstance();
                 WSDLReader reader = wsdlFactory.newWSDLReader();
                 reader.setFeature(Constants.FEATURE_VERBOSE, false);
-                definition = reader.readWSDL(wsdl.getURL().toString(),
-                        description);
+                try {
+                    // use wsdl manager to parse wsdl or get cached definition
+                    definition = getBus().getExtension(WSDLManager.class)
+                            .getDefinition(wsdl.getURL());
+                } catch (WSDLException ex) {
+                    // 
+                }
                 WSDLServiceFactory factory = new WSDLServiceFactory(getBus(),
                         definition, service);
                 cxfService = factory.create();
@@ -277,18 +281,16 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 ei.getBinding().setProperty(
                         AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
                 
-                if (locationURI == null) {
-                    // if not specify target address, get it from the wsdl
-                    locationURI = new URI(ei.getAddress());
-                    LOG.fine("address is " + locationURI.toString());
-                }
+                
                 ep = new EndpointImpl(getBus(), cxfService, ei);
                 
                 //init transport
-                ei.setAddress(locationURI.toString());
+                if (locationURI != null) {
+                    ei.setAddress(locationURI.toString());
+                }
                 
                 ConduitInitiatorManager conduitMgr = getBus().getExtension(ConduitInitiatorManager.class);
-                conduitInit = conduitMgr.getConduitInitiator("http://schemas.xmlsoap.org/soap/http");
+                conduitInit = conduitMgr.getConduitInitiator(ei.getTransportId());
                 super.validate();
             }
         } catch (DeploymentException e) {

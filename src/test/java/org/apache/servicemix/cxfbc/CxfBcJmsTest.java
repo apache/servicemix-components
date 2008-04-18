@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
-
 import org.apache.cxf.testutil.common.ServerLauncher;
 import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
@@ -53,7 +52,8 @@ public class CxfBcJmsTest extends SpringTestSupport {
         
         assertTrue("server did not launch correctly", 
                    launchServer(EmbededJMSBrokerLauncher.class, props, false));
-
+        assertTrue("server did not launch correctly", 
+                launchServer(MyJMSServer.class, null, false));
         
         serversStarted = true;
     }
@@ -80,12 +80,13 @@ public class CxfBcJmsTest extends SpringTestSupport {
     }
 
     public void testJMSTransport() throws Exception {
+        URL wsdl = getWSDLURL("org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl");
 
         QName serviceName = getServiceName(new QName(
                 "http://apache.org/hello_world_soap_http", "HelloWorldService"));
         QName portName = getPortName(new QName(
                 "http://apache.org/hello_world_soap_http", "HelloWorldPort"));
-        URL wsdl = getWSDLURL("org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl");
+        
         assertNotNull(wsdl);
 
         HelloWorldService service = new HelloWorldService(wsdl, serviceName);
