@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.servicemix.cxfbc.interceptors.types.quote.Quote;
 
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -29,8 +30,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBcInterceptorTest extends SpringTestSupport {
 
-    static final Logger LOG = Logger.getLogger(CxfBcInterceptorTest.class
-            .getName());
+    static final Logger LOG = LogUtils.getL7dLogger(CxfBcInterceptorTest.class);
 
     public void testEndpointRPCWithExternalConsumerWithMultipleResponeParts() throws Exception {
         

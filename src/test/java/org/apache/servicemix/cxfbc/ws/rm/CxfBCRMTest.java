@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.greeter_control.Greeter;
 import org.apache.cxf.greeter_control.GreeterService;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
@@ -35,7 +36,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 public class CxfBCRMTest extends SpringTestSupport {
-    private static final Logger LOG = Logger.getLogger(CxfBCRMTest.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfBCRMTest.class);
     private Bus bus;
     
     public void testDecoupled() throws Exception {

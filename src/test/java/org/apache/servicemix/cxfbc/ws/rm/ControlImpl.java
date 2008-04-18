@@ -26,6 +26,7 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.Response;
 
 import org.apache.cxf.Bus;
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.greeter_control.FaultThrowingInterceptor;
 import org.apache.cxf.greeter_control.types.FaultLocation;
 import org.apache.cxf.greeter_control.types.StartGreeterResponse;
@@ -38,8 +39,7 @@ import org.apache.cxf.interceptor.Interceptor;
             targetNamespace = "http://cxf.apache.org/greeter_control")
 public class ControlImpl {
 
-    private static final Logger LOG = Logger.getLogger(ControlImpl.class
-            .getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(ControlImpl.class);
 
     protected Object implementor;
 

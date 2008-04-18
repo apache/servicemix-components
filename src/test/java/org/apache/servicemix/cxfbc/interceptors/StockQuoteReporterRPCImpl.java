@@ -18,6 +18,8 @@ package org.apache.servicemix.cxfbc.interceptors;
 
 import java.util.logging.Logger;
 
+import org.apache.cxf.common.logging.LogUtils;
+
 
 @javax.jws.WebService(endpointInterface = "org.apache.servicemix.cxfbc.interceptors.QuoteReporterRPC",
                 targetNamespace = "http://servicemix.apache.org/cxfbc/interceptors",
@@ -27,7 +29,7 @@ import java.util.logging.Logger;
 
 public class StockQuoteReporterRPCImpl implements QuoteReporterRPC {
 
-    private static final Logger LOG = Logger.getLogger(StockQuoteReporterRPCImpl.class.getName());
+    private static final Logger LOG = LogUtils.getL7dLogger(StockQuoteReporterRPCImpl.class);
 
     public org.apache.servicemix.cxfbc.interceptors.types.quote.Quote 
     getStockQuote(java.lang.String stockTicker, 
