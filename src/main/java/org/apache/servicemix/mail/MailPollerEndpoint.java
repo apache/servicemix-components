@@ -165,7 +165,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                 if (io.getStatus() == ExchangeStatus.ERROR) {
                     Exception e = io.getError();
                     if (e == null) {
-                        e = new JBIException("Unexpected error: " + e.getMessage());
+                        e = new JBIException("Unexpected error occured...");
                     }
                     throw e;
                 } else {
