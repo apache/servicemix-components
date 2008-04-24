@@ -49,6 +49,7 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.service.model.BindingMessageInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
+import org.apache.cxf.service.model.SchemaInfo;
 import org.apache.cxf.staxutils.PartialXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.servicemix.jbi.util.QNameUtil;
@@ -212,7 +213,6 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
 
     private void handleJBIFault(SoapMessage message, Element soapFault) {
         Document doc = DomUtil.createDocument();
-
         Element jbiFault = DomUtil.createElement(doc, new QName(
                 JBIConstants.NS_JBI_BINDING, JBIFault.JBI_FAULT_ROOT));
         Node jbiFaultDetail = null;
@@ -223,11 +223,34 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             jbiFaultDetail = doc.importNode(soapFault.getElementsByTagName(
                     "soap:Detail").item(0).getFirstChild(), true);
         }
+        SchemaInfo schemaInfo = 
+            getOperation(message).getBinding().getService().getSchema(jbiFaultDetail.getNamespaceURI());
+        if (!schemaInfo.isElementFormQualified()) {
+            //that's unquailied fault
+            jbiFaultDetail = addEmptyDefaultTns((Element)jbiFaultDetail);
+        }
         jbiFault.appendChild(jbiFaultDetail);
         message.setContent(Source.class, new DOMSource(doc));
         message.put("jbiFault", true);
     }
 
+    private Element addEmptyDefaultTns(Element ret) {
+        
+        if (!ret.hasAttribute("xmlns")) {
+            ret.setAttribute("xmlns", "");
+        }
+        NodeList nodes = ret.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            if (nodes.item(i) instanceof Element) {
+                Element ele = (Element) nodes.item(i);
+                ele = addEmptyDefaultTns(ele);
+
+            }
+        }
+        return ret;
+    }
+
+    
     private NodeList wrapNodeList(final NodeList childNodes) {
         return new NodeList() {
             public int getLength() {
