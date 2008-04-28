@@ -134,6 +134,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         Message message = ep.getBinding().createMessage();
         message.put(MessageExchange.class, exchange);
         Exchange cxfExchange = new ExchangeImpl();
+        
         message.setExchange(cxfExchange);
         cxfExchange.setOutMessage(message);       
         
@@ -145,7 +146,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         } else {
             boi = ei.getBinding().getOperation(exchange.getOperation());   
         }
-         
+        cxfExchange.setOneWay(boi.getOperationInfo().isOneWay()); 
         cxfExchange.put(BindingOperationInfo.class, boi);
         cxfExchange.put(Endpoint.class, ep);
         cxfExchange.put(Service.class, cxfService);

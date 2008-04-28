@@ -106,7 +106,7 @@ public class CxfBcJmsTest extends SpringTestSupport {
                 String reply = greeter.sayHi();
                 assertNotNull("no response received from service", reply);
                 assertEquals(response2, reply);
-
+                greeter.greetMeOneWay("test");
                 try {
                     greeter.testDocLitFault("BadRecordLitFault");
                     fail("Should have thrown BadRecoedLitFault");
