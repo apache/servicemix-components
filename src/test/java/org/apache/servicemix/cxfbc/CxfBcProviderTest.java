@@ -42,6 +42,8 @@ import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
+import uri.helloworld.HelloPortType;
+
 public class CxfBcProviderTest extends SpringTestSupport {
 
     private static final Logger LOG = LogUtils.getL7dLogger(org.apache.servicemix.cxfbc.CxfBcProviderTest.class);
@@ -142,6 +144,37 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello oneway test oneway") >= 0);
+        
+        factory = new JaxWsServerFactoryBean();
+        factory.setServiceClass(HelloPortType.class);
+        factory.setServiceBean(new HelloPortTypeImpl());
+        address = "http://localhost:9003/helloWorld";
+        factory.setAddress(address);
+        server = factory.create();
+        endpoint = server.getEndpoint();
+        endpoint.getInInterceptors().add(new LoggingInInterceptor());
+        endpoint.getOutInterceptors().add(new LoggingOutInterceptor());
+        service = endpoint.getEndpointInfo().getService();
+        assertNotNull(service);
+        
+        
+        
+        //test soap header using helloworld
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        io.getInMessage().setContent(new StringSource(
+            "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+            + "<part> "
+            + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+            + "header test"
+            + "</requestType></greetMe>"
+            + "</part> "
+            + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+            io.getOutMessage()).indexOf("Hello header test 12345") >= 0);
         
         //test concurrency
         io = client.createInOutExchange();

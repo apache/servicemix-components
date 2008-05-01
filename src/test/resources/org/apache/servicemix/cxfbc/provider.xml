@@ -21,54 +21,75 @@
        xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
        xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
        xmlns:test="urn:test"
+       xmlns:hello="uri:HelloWorld"
        xmlns:calculator="http://apache.org/cxf/calculator"
        xmlns:greeter="http://apache.org/hello_world_soap_http">
-  
-  <sm:container id="jbi" embedded="true">
-    
-    <sm:endpoints>
-      
-      <cxfbc:provider wsdl="/wsdl/calculator.wsdl"
-                      locationURI="http://localhost:9001/providertest"
-                      endpoint="CalculatorPort"
-                      service="calculator:CalculatorService"
-                      interfaceName="calculator:CalculatorPortType"
-                      >
-        <cxfbc:inInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-        </cxfbc:inInterceptors>
-        <cxfbc:outInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
-        </cxfbc:outInterceptors>
-        <cxfbc:inFaultInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-        </cxfbc:inFaultInterceptors>
-        <cxfbc:outFaultInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
-        </cxfbc:outFaultInterceptors>
-      </cxfbc:provider>
 
-    <cxfbc:provider wsdl="/wsdl/hello_world.wsdl"
-                      locationURI="http://localhost:9002/providertest_oneway"
-                      endpoint="SoapPort"
-                      service="greeter:SOAPService"
-                      interfaceName="greeter:Greeter"
-                      >
-        <cxfbc:inInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-        </cxfbc:inInterceptors>
-        <cxfbc:outInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
-        </cxfbc:outInterceptors>
-        <cxfbc:inFaultInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-        </cxfbc:inFaultInterceptors>
-        <cxfbc:outFaultInterceptors>
-          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
-        </cxfbc:outFaultInterceptors>
-      </cxfbc:provider>
-    </sm:endpoints>
-    
-  </sm:container>
-  
+    <sm:container id="jbi" embedded="true">
+
+        <sm:endpoints>
+
+            <cxfbc:provider wsdl="/wsdl/calculator.wsdl"
+                            locationURI="http://localhost:9001/providertest"
+                            endpoint="CalculatorPort"
+                            service="calculator:CalculatorService"
+                            interfaceName="calculator:CalculatorPortType"
+                    >
+                <cxfbc:inInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+                </cxfbc:inInterceptors>
+                <cxfbc:outInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                </cxfbc:outInterceptors>
+                <cxfbc:inFaultInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+                </cxfbc:inFaultInterceptors>
+                <cxfbc:outFaultInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                </cxfbc:outFaultInterceptors>
+            </cxfbc:provider>
+
+            <cxfbc:provider wsdl="/wsdl/hello_world.wsdl"
+                            locationURI="http://localhost:9002/providertest_oneway"
+                            endpoint="SoapPort"
+                            service="greeter:SOAPService"
+                            interfaceName="greeter:Greeter"
+                    >
+                <cxfbc:inInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+                </cxfbc:inInterceptors>
+                <cxfbc:outInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                </cxfbc:outInterceptors>
+                <cxfbc:inFaultInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+                </cxfbc:inFaultInterceptors>
+                <cxfbc:outFaultInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                </cxfbc:outFaultInterceptors>
+            </cxfbc:provider>
+
+            <cxfbc:provider wsdl="/HelloWorld-DOC.wsdl"
+                            locationURI="http://localhost:9003/helloWorld"
+                            endpoint="HelloPortProxy"
+                            service="hello:HelloService"
+                            interfaceName="hello:HelloPortType"
+                    >
+                <cxfbc:inInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+                </cxfbc:inInterceptors>
+                <cxfbc:outInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                </cxfbc:outInterceptors>
+                <cxfbc:inFaultInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+                </cxfbc:inFaultInterceptors>
+                <cxfbc:outFaultInterceptors>
+                    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                </cxfbc:outFaultInterceptors>
+            </cxfbc:provider>
+        </sm:endpoints>
+
+    </sm:container>
+
 </beans>

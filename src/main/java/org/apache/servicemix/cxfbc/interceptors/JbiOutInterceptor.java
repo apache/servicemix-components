@@ -27,17 +27,30 @@ import javax.activation.DataHandler;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
-
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.model.SoapBindingInfo;
+import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
+import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.headers.Header;
+import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.service.model.BindingMessageInfo;
+import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.servicemix.cxfbc.WSAUtils;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
+import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.soap.util.QNameUtil;
+
 
 public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
 
@@ -50,6 +63,82 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
         NormalizedMessage nm = me.getMessage("in");
         fromNMSAttachments(message, nm);
         fromNMSHeaders(message, nm);
+        extractHeaderFromMessagePart(message);
+    }
+
+    private void extractHeaderFromMessagePart(Message message) {
+        Source source = message.getContent(Source.class);
+        if (source == null) {
+            return;
+        }
+
+        Element element;
+        try {
+            element = new SourceTransformer().toDOMElement(source);
+        } catch (Exception e) {
+            throw new Fault(e);
+        }
+
+        if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
+                .getNamespaceURI())
+                || !JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME
+                        .equals(element.getLocalName())) {
+            message.setContent(Source.class, new DOMSource(element));
+            return;
+        }
+
+        BindingOperationInfo bop = message.getExchange().get(
+                BindingOperationInfo.class);
+        BindingMessageInfo msg = isRequestor(message) ? bop.getInput() : bop
+                .getOutput();
+
+        SoapBindingInfo binding = (SoapBindingInfo) message.getExchange().get(
+                Endpoint.class).getEndpointInfo().getBinding();
+        String style = binding.getStyle(bop.getOperationInfo());
+        if (style == null) {
+            style = binding.getStyle();
+        }
+
+        Element partWrapper = DomUtil.getFirstChildElement(element);
+        while (partWrapper != null) {
+            extractHeaderParts((SoapMessage) message, element, partWrapper, msg);
+            partWrapper = DomUtil.getNextSiblingElement(partWrapper);
+        }
+        message.setContent(Source.class, new DOMSource(element));
+    }
+
+    private void extractHeaderParts(SoapMessage message,
+            Element element, Element partWrapper, BindingMessageInfo msg) {
+        List<NodeList> partsContent = new ArrayList<NodeList>();
+        if (partWrapper != null) {
+            if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element
+                    .getNamespaceURI())
+                    || !JbiConstants.WSDL11_WRAPPER_PART_LOCALNAME
+                            .equals(partWrapper.getLocalName())) {
+                throw new Fault(new Exception(
+                        "Unexpected part wrapper element '"
+                                + QNameUtil.toString(element) + "' expected '{"
+                                + JbiConstants.WSDL11_WRAPPER_NAMESPACE
+                                + "}part'"));
+            }
+            NodeList nodes = partWrapper.getChildNodes();
+            partsContent.add(nodes);
+        }
+
+        List<Header> headerList = message.getHeaders();
+        List<SoapHeaderInfo> headers = msg.getExtensors(SoapHeaderInfo.class);
+        for (SoapHeaderInfo header : headers) {
+            NodeList nl = partsContent.get(0);
+            if (header.getPart().getConcreteName().getNamespaceURI().equals(
+                    nl.item(0).getNamespaceURI())
+                    && header.getPart().getConcreteName().getLocalPart()
+                            .equals(nl.item(0).getLocalName())) {
+                headerList.add(new Header(header.getPart().getConcreteName(),
+                        nl.item(0)));
+                partsContent.remove(0);
+            }
+
+        }
 
     }
 
@@ -105,9 +194,14 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
                         headerList.add(header);
                     }
 
-                } 
+                }
             }
         }
+    }
+
+    private boolean isRequestor(org.apache.cxf.message.Message message) {
+        return Boolean.TRUE.equals(message
+                .containsKey(org.apache.cxf.message.Message.REQUESTOR_ROLE));
     }
 
 }
