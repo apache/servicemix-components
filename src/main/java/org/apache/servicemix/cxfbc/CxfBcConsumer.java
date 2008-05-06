@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -29,6 +30,7 @@ import javax.jbi.component.ComponentContext;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
@@ -89,7 +91,6 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOperationInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.messaging.NormalizedMessageImpl;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
 
@@ -527,7 +528,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         outMessage = endpoint.getBinding().createMessage();
                         ex.setOutMessage(outMessage);
                     }
-                    NormalizedMessageImpl norMessage = (NormalizedMessageImpl) exchange
+                    
+                    NormalizedMessage norMessage = (NormalizedMessage) exchange
                             .getMessage("out");
 
                     if (outMessage instanceof SoapMessage) {
@@ -540,9 +542,11 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     List<Attachment> attachmentList = new ArrayList<Attachment>();
                     outMessage.setContent(Source.class, exchange.getMessage(
                             "out").getContent());
-                    Iterator<String> iter = norMessage.listAttachments();
+                    Set attachmentNames = norMessage.getAttachmentNames();
+                    
+                    Iterator iter = attachmentNames.iterator();
                     while (iter.hasNext()) {
-                        String id = iter.next();
+                        String id = (String)iter.next();
                         DataHandler dh = norMessage.getAttachment(id);
                         attachmentList.add(new AttachmentImpl(id, dh));
                     }
