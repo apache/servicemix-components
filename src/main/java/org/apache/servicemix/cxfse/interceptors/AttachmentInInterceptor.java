@@ -19,13 +19,12 @@ package org.apache.servicemix.cxfse.interceptors;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.jbi.messaging.MessageExchange;
 
 import org.apache.cxf.attachment.AttachmentImpl;
-import org.apache.cxf.common.logging.LogUtils;
+
 import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
@@ -33,8 +32,7 @@ import org.apache.cxf.phase.Phase;
 import org.apache.servicemix.jbi.messaging.NormalizedMessageImpl;
 
 public class AttachmentInInterceptor extends AbstractPhaseInterceptor<Message> {
-    private static final Logger LOG = LogUtils.getL7dLogger(AttachmentInInterceptor.class);
-    
+     
     
     public AttachmentInInterceptor() {
         super(Phase.RECEIVE);
@@ -52,7 +50,6 @@ public class AttachmentInInterceptor extends AbstractPhaseInterceptor<Message> {
             attachmentList.add(new AttachmentImpl(id, dh));
         }
         
-        LOG.info("the attachment size is " + attachmentList.size());
         message.setAttachments(attachmentList);
     }
 

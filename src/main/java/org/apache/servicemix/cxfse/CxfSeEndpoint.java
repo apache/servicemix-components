@@ -49,6 +49,7 @@ import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
+import org.apache.servicemix.cxfse.interceptors.AttachmentOutInterceptor;
 import org.apache.servicemix.cxfse.support.ReflectionUtils;
 import org.apache.servicemix.id.IdGenerator;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -163,6 +164,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         endpoint.setOutFaultInterceptors(getOutFaultInterceptors());
         if (isMtomEnabled()) {
             endpoint.getInInterceptors().add(new AttachmentInInterceptor());
+            endpoint.getOutInterceptors().add(new AttachmentOutInterceptor());
         }
         JaxWsImplementorInfo implInfo = new JaxWsImplementorInfo(getPojo()
                 .getClass());
@@ -214,6 +216,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         super.start();
         address = "jbi://" + ID_GENERATOR.generateSanitizedId();
         endpoint.publish(address);
+        
         setService(endpoint.getServer().getEndpoint().getService().getName());
         setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo()
                 .getName().getLocalPart());
