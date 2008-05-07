@@ -284,6 +284,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
             cxfService.getOutInterceptors().add(
                     new JbiOutWsdl1Interceptor(isUseJBIWrapper()));
+
             cxfService.getOutInterceptors().add(new SoapActionOutInterceptor());
             cxfService.getOutInterceptors().add(new AttachmentOutInterceptor());
             cxfService.getOutInterceptors().add(

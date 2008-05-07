@@ -60,6 +60,9 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
 
     public void handleMessage(Message message) {
         MessageExchange me = message.get(MessageExchange.class);
+        if (me == null) {
+            me = message.getContent(MessageExchange.class);
+        }
         NormalizedMessage nm = me.getMessage("in");
         fromNMSAttachments(message, nm);
         fromNMSHeaders(message, nm);
