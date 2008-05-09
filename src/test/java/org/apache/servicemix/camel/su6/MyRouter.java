@@ -23,6 +23,6 @@ import org.apache.camel.builder.RouteBuilder;
  */
 public class MyRouter extends RouteBuilder {
     public void configure() throws Exception {
-        from("jbi:name:cheese").to("jbi:service:namespace:echo?mep=in-out");
+        from("jbi:name:cheese").to("jbi:service:namespace:echo?mep=in-out&operation={http://hello}echo");
     }
 }

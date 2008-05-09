@@ -27,7 +27,7 @@ import org.apache.camel.impl.DefaultExchange;
  * An {@link org.apache.camel.Exchange} working with JBI which exposes the underlying JBI
  * features such as the JBI {@link #getMessageExchange()},
  * {@link #getInMessage()} and {@link #getOutMessage()}
- * 
+ *
  * @version $Revision: 563665 $
  */
 public class JbiExchange extends DefaultExchange {
@@ -82,6 +82,11 @@ public class JbiExchange extends DefaultExchange {
         return (JbiMessage) super.getFault(lazyCreate);
     }
 
+    @Override
+    public org.apache.camel.Exchange newInstance() {        
+        return new JbiExchange(this.getContext(), this.getBinding(), this.getMessageExchange());
+    }
+
     /**
      * @return the Camel <-> JBI binding
      */
@@ -95,7 +100,7 @@ public class JbiExchange extends DefaultExchange {
     /**
      * Returns the underlying JBI message exchange for an inbound exchange or
      * null for outbound messages
-     * 
+     *
      * @return the inbound message exchange
      */
     public MessageExchange getMessageExchange() {
@@ -104,7 +109,7 @@ public class JbiExchange extends DefaultExchange {
 
     /**
      * Returns the underlying In {@link NormalizedMessage}
-     * 
+     *
      * @return the In message
      */
     public NormalizedMessage getInMessage() {
@@ -113,7 +118,7 @@ public class JbiExchange extends DefaultExchange {
 
     /**
      * Returns the underlying Out {@link NormalizedMessage}
-     * 
+     *
      * @return the Out message
      */
     public NormalizedMessage getOutMessage() {
@@ -122,7 +127,7 @@ public class JbiExchange extends DefaultExchange {
 
     /**
      * Returns the underlying Fault {@link NormalizedMessage}
-     * 
+     *
      * @return the Fault message
      */
     public NormalizedMessage getFaultMessage() {

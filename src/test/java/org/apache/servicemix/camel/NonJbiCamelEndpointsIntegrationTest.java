@@ -74,9 +74,9 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                 configureExchange(client, exchange);
                 populateExchange(exchange);
                 client.sendSync(exchange);
-                assertNotNull(exchange.getMessage("out"));
+                checkResult(exchange);
                 //assertNotNull(exchange.getMessage("out").getContent());
-                // TODO: check out
+                // TODO: check out the exchange
                 client.done(exchange);
 
                 // Stop and undeploy
@@ -101,6 +101,10 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
             LOG.error("Caught: " + e, e);
             throw e;
         }
+    }
+
+    protected void checkResult(MessageExchange exchange) {
+        assertNotNull(exchange.getMessage("out"));
     }
 
     /*
@@ -141,7 +145,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
 
     protected InOut createExchange(ServiceMixClient client)
         throws MessagingException {
-        
+
         return client.createInOutExchange();
     }
 

@@ -28,7 +28,7 @@ import org.apache.camel.impl.DefaultMessage;
 /**
  * A JBI {@link org.apache.camel.Message} which provides access to the underlying JBI features
  * such as {@link #getNormalizedMessage()}
- * 
+ *
  * @version $Revision: 563665 $
  */
 public class JbiMessage extends DefaultMessage {
@@ -57,7 +57,7 @@ public class JbiMessage extends DefaultMessage {
 
     /**
      * Returns the underlying JBI message
-     * 
+     *
      * @return the underlying JBI message
      */
     public NormalizedMessage getNormalizedMessage() {
@@ -78,6 +78,15 @@ public class JbiMessage extends DefaultMessage {
             answer = super.getHeader(name);
         }
         return answer;
+    }
+
+    @Override
+    public void setHeader(String name , Object value) {
+        if (normalizedMessage != null) {
+            normalizedMessage.setProperty(name, value);
+        } else {
+            super.setHeader(name, value);
+        }
     }
 
     @Override

@@ -21,7 +21,6 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.components.util.EchoComponent;
 
 /**
  * @version $Revision: 1.1 $
@@ -36,7 +35,7 @@ public class JbiInOutTest extends
         suName = "su5";
         super.setUp();
 
-        EchoComponent echo = new EchoComponent();
+        MyEchoComponent echo = new MyEchoComponent();
         echo.setService(new QName("namespace", "echo"));
         echo.setEndpoint("endpoint");
         container.activateComponent(echo, "echo");

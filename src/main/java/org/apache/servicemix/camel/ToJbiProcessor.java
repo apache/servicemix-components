@@ -27,6 +27,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -36,7 +37,7 @@ import org.apache.servicemix.jbi.resolver.URIResolver;
 
 /**
  * A
- * 
+ *
  * @{link Processor} which takes a Camel {@link Exchange} and invokes it into
  *        JBI using the straight JBI API
  * @version $Revision: 563665 $
@@ -50,6 +51,8 @@ public class ToJbiProcessor implements Processor {
 
     private String mep;
 
+    private String operation;
+
     public ToJbiProcessor(JbiBinding binding, ComponentContext componentContext, String destinationUri) {
         this.binding = binding;
         this.componentContext = componentContext;
@@ -62,6 +65,7 @@ public class ToJbiProcessor implements Processor {
                 if (mep != null && !mep.startsWith("http://www.w3.org/ns/wsdl/")) {
                     mep = "http://www.w3.org/ns/wsdl/" + mep;
                 }
+                operation = (String) params.get("operation");
                 this.destinationUri = destinationUri.substring(0, idx);
             }
         } catch (URISyntaxException e) {
@@ -90,6 +94,10 @@ public class ToJbiProcessor implements Processor {
             DeliveryChannel deliveryChannel = componentContext.getDeliveryChannel();
             MessageExchangeFactory exchangeFactory = deliveryChannel.createExchangeFactory();
             MessageExchange messageExchange = binding.makeJbiMessageExchange(exchange, exchangeFactory, mep);
+
+            if (operation != null) {
+                messageExchange.setOperation(QName.valueOf(operation));
+            }
 
             URIResolver.configureExchange(messageExchange, componentContext, destinationUri);
             deliveryChannel.sendSync(messageExchange);
