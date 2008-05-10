@@ -109,10 +109,18 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 throw new IllegalArgumentException(
                         "messageType namespace is null or empty");
             }
-            root
-                    .setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
+            root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
                             + JbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX,
                             typeNamespace);
+            
+            root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
+                    + JbiConstants.WSDL11_WRAPPER_XSD_PREFIX,
+                    XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+            root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
+                    + JbiConstants.WSDL11_WRAPPER_XSI_PREFIX,
+                    XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+            
             String typeLocalName = wsdlMessage.getMessageInfo().getName()
                     .getLocalPart();
             if (typeLocalName == null || typeLocalName.length() == 0) {

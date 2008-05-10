@@ -72,7 +72,11 @@ public final class JbiConstants {
     public static final String WSDL11_WRAPPER_VERSION = "version";
 
     public static final String WSDL11_WRAPPER_PART_LOCALNAME = "part";
-
+    
+    public static final String WSDL11_WRAPPER_XSD_PREFIX = "xsd";
+    
+    public static final String WSDL11_WRAPPER_XSI_PREFIX = "xsi";
+        
     public static final QName WSDL11_WRAPPER_PART = new QName(
             WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_PART_LOCALNAME,
             WSDL11_WRAPPER_PREFIX);
