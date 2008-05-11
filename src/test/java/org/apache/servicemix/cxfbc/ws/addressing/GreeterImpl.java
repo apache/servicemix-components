@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.cxfbc.ws.addressing;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +40,7 @@ import org.apache.hello_world_soap_http.types.NoSuchCodeLit;
 import org.apache.hello_world_soap_http.types.SayHiResponse;
 import org.apache.hello_world_soap_http.types.TestDocLitFaultResponse;
 import org.apache.hello_world_soap_http.types.TestNillableResponse;
+import org.apache.servicemix.cxfbc.WSAUtils;
 
 import static org.apache.cxf.ws.addressing.JAXWSAConstants.SERVER_ADDRESSING_PROPERTIES_INBOUND;
 
@@ -112,8 +114,9 @@ public class GreeterImpl implements Greeter, VerificationCache {
     private void verifyMAPs() {
         if (context.getMessageContext() != null) {
             String property = SERVER_ADDRESSING_PROPERTIES_INBOUND;
-            AddressingProperties maps = (AddressingProperties)
-                context.getMessageContext().get(property);
+            AddressingProperties maps = WSAUtils
+                .getCXFAddressingPropertiesFromMap(
+                (Map<String, String>) context.getMessageContext().get(property));
             put(CxfBcAddressingTest.verifyMAPs(maps, this));
         }
     }
