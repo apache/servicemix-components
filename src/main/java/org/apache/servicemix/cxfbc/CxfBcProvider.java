@@ -20,7 +20,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jbi.management.DeploymentException;
@@ -35,7 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-
+import org.w3c.dom.Element;
 import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
@@ -61,12 +63,16 @@ import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.Service;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
+import org.apache.cxf.service.model.SchemaInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.ConduitInitiator;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIMessageHelper;
 import org.apache.cxf.wsdl.WSDLManager;
+import org.apache.cxf.wsdl11.SchemaUtil;
+import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
+import org.apache.cxf.wsdl11.WSDLServiceBuilder;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutInterceptor;
@@ -74,6 +80,7 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
+
 
 
 
@@ -257,6 +264,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
                     // use wsdl manager to parse wsdl or get cached definition
                     definition = getBus().getExtension(WSDLManager.class)
                             .getDefinition(wsdl.getURL());
+                    
+                    
                 } catch (WSDLException ex) {
                     // 
                 }
@@ -265,6 +274,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 cxfService = factory.create();
                 ei = cxfService.getServiceInfos().iterator().next()
                         .getEndpoints().iterator().next();
+                          
                 for (ServiceInfo serviceInfo : cxfService.getServiceInfos()) {
                     if (serviceInfo.getName().equals(service)
                         && getEndpoint() != null 
@@ -275,6 +285,32 @@ public class CxfBcProvider extends ProviderEndpoint implements
                  
                     }
                 }
+                //transform import xsd to inline xsd
+                ServiceWSDLBuilder swBuilder = new ServiceWSDLBuilder(getBus(), cxfService.getServiceInfos());
+                ServiceInfo serInfo = new ServiceInfo();
+                                                 
+                Map<String, Element> schemaList = new HashMap<String, Element>();
+                SchemaUtil schemaUtil = new SchemaUtil(bus, schemaList);
+                schemaUtil.getSchemas(definition, serInfo);
+                
+                serInfo = ei.getService();
+                for (String key : schemaList.keySet()) {
+                    Element ele = schemaList.get(key);
+                    for (SchemaInfo sInfo : serInfo.getSchemas()) {
+                        if (sInfo.getNamespaceURI() == null //it's import schema 
+                            && ((Element)sInfo.getElement().getElementsByTagNameNS(
+                                    "http://www.w3.org/2001/XMLSchema",
+                                    "import").item(0)).
+                                getAttribute("namespace").
+                                    equals(ele.getAttribute("targetNamespace"))) {
+                            
+                            sInfo.setElement(ele);
+                        }
+                    }
+                }
+                serInfo.setProperty(WSDLServiceBuilder.WSDL_DEFINITION, null);
+                description = WSDLFactory.newInstance().newWSDLWriter().getDocument(swBuilder.build());
+                               
 
                 if (endpoint == null) {
                     endpoint = ei.getName().getLocalPart();
