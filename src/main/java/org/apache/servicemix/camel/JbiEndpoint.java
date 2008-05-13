@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.camel;
 
+import java.net.URISyntaxException;
+import java.util.Map;
+
 import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -23,21 +26,29 @@ import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.util.URISupport;
 
 /**
  * Represents an {@link org.apache.camel.Endpoint} for interacting with JBI
- * 
+ *
  * @version $Revision: 563665 $
  */
 public class JbiEndpoint extends DefaultEndpoint<Exchange> {
     private Processor toJbiProcessor;
+
+    private String destinationUri;
+
+    private String mep;
+
+    private String operation;
 
     private final CamelJbiComponent jbiComponent;
 
     public JbiEndpoint(CamelJbiComponent jbiComponent, String uri) {
         super(uri, jbiComponent);
         this.jbiComponent = jbiComponent;
-        toJbiProcessor = new ToJbiProcessor(jbiComponent.getBinding(), jbiComponent.getComponentContext(), uri);
+        parseUri(uri);
+        toJbiProcessor = new ToJbiProcessor(jbiComponent.getBinding(), jbiComponent.getComponentContext(), this);
     }
 
     public Producer<Exchange> createProducer() throws Exception {
@@ -46,6 +57,48 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
                 toJbiProcessor.process(exchange);
             }
         };
+    }
+
+    private void parseUri(String uri) {
+        destinationUri = uri;
+        try {
+            int idx = destinationUri.indexOf('?');
+            if (idx > 0) {
+                Map params = URISupport.parseQuery(destinationUri.substring(idx + 1));
+                mep = (String) params.get("mep");
+                if (mep != null && !mep.startsWith("http://www.w3.org/ns/wsdl/")) {
+                    mep = "http://www.w3.org/ns/wsdl/" + mep;
+                }
+                operation = (String) params.get("operation");
+                this.destinationUri = destinationUri.substring(0, idx);
+            }
+        } catch (URISyntaxException e) {
+            throw new JbiException(e);
+        }
+    }
+
+    public void setMep(String str) {
+        mep = str;
+    }
+
+    public void setOperation(String str) {
+        operation = str;
+    }
+
+    public void setDestionationUri(String str) {
+        destinationUri = str;
+    }
+
+    public String getMep() {
+        return mep;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public String getDestinationUri() {
+        return destinationUri;
     }
 
     public Consumer<Exchange> createConsumer(final Processor processor) throws Exception {

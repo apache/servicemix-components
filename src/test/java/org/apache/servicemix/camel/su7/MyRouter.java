@@ -14,27 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.camel;
+package org.apache.servicemix.camel.su7;
 
-import javax.jbi.messaging.MessageExchange;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.servicemix.camel.JbiEndpoint;
 
 /**
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
-public class JavaCamelRouteTest extends JbiInOutTest {
-    /*
-     * @see TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        suName = "su6";
-    }
+public class MyRouter extends RouteBuilder {
+    String toUri = "jbi:service:namespace:echo?mep=in-out";
 
-    @Override
-    protected void checkResult(MessageExchange exchange) {
-        assertNotNull(exchange.getMessage("out"));
-        assertNotNull(exchange.getMessage("out").getProperty("operation"));
-        assertEquals(exchange.getMessage("out").getProperty("operation").toString(), "{http://hello}echo");
+    public void configure() throws Exception {
+        // Set the operation from Camel DSL
+        org.apache.camel.Endpoint endpoint = getContext().getEndpoint(toUri);
+        if (endpoint instanceof JbiEndpoint) {
+            JbiEndpoint jbiEndpoint = (JbiEndpoint) endpoint;
+            jbiEndpoint.setOperation("{http://test}echo");
+        }
+
+        from("jbi:name:cheese").to(toUri);
     }
 }

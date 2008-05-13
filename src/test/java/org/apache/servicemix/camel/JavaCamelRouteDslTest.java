@@ -19,22 +19,22 @@ package org.apache.servicemix.camel;
 import javax.jbi.messaging.MessageExchange;
 
 /**
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
-public class JavaCamelRouteTest extends JbiInOutTest {
+public class JavaCamelRouteDslTest extends JbiInOutTest {
     /*
      * @see TestCase#setUp()
      */
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        suName = "su6";
+        suName = "su7";
     }
 
     @Override
     protected void checkResult(MessageExchange exchange) {
         assertNotNull(exchange.getMessage("out"));
         assertNotNull(exchange.getMessage("out").getProperty("operation"));
-        assertEquals(exchange.getMessage("out").getProperty("operation").toString(), "{http://hello}echo");
+        assertEquals(exchange.getMessage("out").getProperty("operation").toString(), "{http://test}echo");
     }
 }
