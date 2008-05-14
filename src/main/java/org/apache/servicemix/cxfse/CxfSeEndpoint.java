@@ -181,9 +181,11 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
+        
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
                 .getExtension(ConduitInitiatorManager.class)
                 .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+        
         QName serviceName = exchange.getService();
         if (serviceName == null) {
             serviceName = getService();
@@ -199,6 +201,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
                         + interfaceName.toString());
         DeliveryChannel dc = getContext().getDeliveryChannel();
         jbiTransportFactory.setDeliveryChannel(dc);
+        
         jbiDestination.setDeliveryChannel(dc);
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
@@ -215,7 +218,11 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     public void start() throws Exception {
         super.start();
         address = "jbi://" + ID_GENERATOR.generateSanitizedId();
-        endpoint.publish(address);
+        try {
+            endpoint.publish(address);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         setService(endpoint.getServer().getEndpoint().getService().getName());
         setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo()
@@ -255,6 +262,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
      */
     @Override
     public void stop() throws Exception {
+        endpoint.stop();
         ReflectionUtils.callLifecycleMethod(getPojo(), PreDestroy.class);
         JBIDispatcherUtil.clean();
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()

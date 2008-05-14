@@ -48,11 +48,6 @@ public class CxfSeClientProxyTest extends TestCase {
         container.setNamingContext(new InitialContext());
         container.setEmbedded(true);
         container.init();
-        client = new DefaultServiceMixClient(container);
-        io = client.createInOutExchange();
-        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
-        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
-        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
         
     }
     
@@ -82,6 +77,40 @@ public class CxfSeClientProxyTest extends TestCase {
         component.getServiceUnitManager().init("target", getServiceUnitPath("proxytarget"));
         component.getServiceUnitManager().start("target");
         
+        client = new DefaultServiceMixClient(container);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        
+        LOG.info("test clientProxy");
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "ffang"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello ffang 3") > 0);
+        
+        //      test restart component
+        component.getServiceUnitManager().stop("target");
+        component.getServiceUnitManager().shutDown("target");
+        component.getServiceUnitManager().undeploy("target", getServiceUnitPath("proxytarget"));
+        component.stop();
+        
+        component.start();
+        component.getServiceUnitManager().init("target", getServiceUnitPath("proxytarget"));
+        component.getServiceUnitManager().start("target");
+        
+        client = new DefaultServiceMixClient(container);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
         LOG.info("test clientProxy");
         io.getInMessage().setContent(new StringSource(
                 "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
