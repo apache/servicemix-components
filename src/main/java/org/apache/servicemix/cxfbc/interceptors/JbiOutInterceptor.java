@@ -92,6 +92,10 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
 
         BindingOperationInfo bop = message.getExchange().get(
                 BindingOperationInfo.class);
+        if (bop == null) {
+            throw new Fault(
+                    new Exception("Operation not bound on this message"));
+        }
         BindingMessageInfo msg = isRequestor(message) ? bop.getInput() : bop
                 .getOutput();
 

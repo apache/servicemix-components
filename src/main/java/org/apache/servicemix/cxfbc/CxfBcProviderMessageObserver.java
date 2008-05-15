@@ -43,6 +43,7 @@ import org.apache.cxf.phase.PhaseChainCache;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.staxutils.DepthXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.transport.MessageObserver;
@@ -88,10 +89,24 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             contentType = (String) message.get(Message.CONTENT_TYPE);
             SoapMessage soapMessage = 
                 (SoapMessage) this.providerEndpoint.getCxfEndpoint().getBinding().createMessage(message);
-
+            
             // create XmlStreamReader
-            BindingOperationInfo boi = providerEndpoint.getEndpointInfo()
-                    .getBinding().getOperation(messageExchange.getOperation());
+            EndpointInfo ei = this.providerEndpoint.getEndpointInfo();
+            QName opeName = messageExchange.getOperation();
+            BindingOperationInfo boi = null;
+            if (opeName == null) {
+                // if interface only have one operation, may not specify the opeName in MessageExchange
+                if (ei.getBinding().getOperations().size() == 1) {
+                    boi = ei.getBinding().getOperations().iterator().next();
+                } else {
+                    throw new org.apache.cxf.interceptor.Fault(
+                                new Exception("Operation not bound on this MessageExchange"));
+                    
+                }
+            } else {
+                boi = ei.getBinding().getOperation(messageExchange.getOperation());   
+            }
+            
             if (boi.getOperationInfo().isOneWay()) {
                 return;
             }

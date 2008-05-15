@@ -50,6 +50,7 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.interceptor.AttachmentOutInterceptor;
+import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.interceptor.StaxOutInterceptor;
 
@@ -149,7 +150,13 @@ public class CxfBcProvider extends ProviderEndpoint implements
         BindingOperationInfo boi = null;
         if (opeName == null) {
             // if interface only have one operation, may not specify the opeName in MessageExchange
-            boi = ei.getBinding().getOperations().iterator().next();
+            if (ei.getBinding().getOperations().size() == 1) {
+                boi = ei.getBinding().getOperations().iterator().next();
+            } else {
+                throw new Fault(
+                            new Exception("Operation not bound on this MessageExchange"));
+                
+            }
         } else {
             boi = ei.getBinding().getOperation(exchange.getOperation());   
         }
