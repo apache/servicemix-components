@@ -35,6 +35,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.WebServiceRef;
 
 import org.apache.cxf.Bus;
+import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.interceptor.InterceptorProvider;
 import org.apache.cxf.jaxws.EndpointImpl;
@@ -42,6 +43,7 @@ import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.jaxws.ServiceImpl;
 import org.apache.cxf.jaxws.support.JaxWsImplementorInfo;
 import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
+import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIDestination;
 import org.apache.cxf.transport.jbi.JBIDispatcherUtil;
@@ -181,6 +183,20 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
+        
+        QName opeName = exchange.getOperation();
+        EndpointInfo ei = endpoint.getServer().getEndpoint().getEndpointInfo();
+        if (opeName == null) {
+            // if interface only have one operation, may not specify the opeName in MessageExchange
+            if (ei.getBinding().getOperations().size() == 1) {
+                opeName = ei.getBinding().getOperations().iterator().next().getName();
+                exchange.setOperation(opeName);
+            } else {
+                throw new Fault(
+                            new Exception("Operation not bound on this MessageExchange"));
+                
+            }
+        } 
         
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
                 .getExtension(ConduitInitiatorManager.class)
