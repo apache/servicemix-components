@@ -38,6 +38,8 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
@@ -304,12 +306,12 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 for (String key : schemaList.keySet()) {
                     Element ele = schemaList.get(key);
                     for (SchemaInfo sInfo : serInfo.getSchemas()) {
+                        Node nl = sInfo.getElement().getElementsByTagNameNS(
+                                  "http://www.w3.org/2001/XMLSchema", "import").item(0);
                         if (sInfo.getNamespaceURI() == null //it's import schema 
-                            && ((Element)sInfo.getElement().getElementsByTagNameNS(
-                                    "http://www.w3.org/2001/XMLSchema",
-                                    "import").item(0)).
-                                getAttribute("namespace").
-                                    equals(ele.getAttribute("targetNamespace"))) {
+                            && nl != null 
+                            && ((Element)nl).getAttribute("namespace")
+                                .equals(ele.getAttribute("targetNamespace"))) {
                             
                             sInfo.setElement(ele);
                         }
