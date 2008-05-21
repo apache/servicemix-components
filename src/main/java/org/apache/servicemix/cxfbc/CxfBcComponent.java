@@ -22,6 +22,8 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 
 /**
  * 
@@ -35,7 +37,9 @@ public class CxfBcComponent extends DefaultComponent {
     private Bus bus;
 
     private String busCfg;
-
+    
+    private CxfBcConfiguration configuration = new CxfBcConfiguration();
+    
     /**
      * @return the endpoints
      */
@@ -69,6 +73,15 @@ public class CxfBcComponent extends DefaultComponent {
         } else {
             bus = BusFactory.getDefaultBus();
         }
+        if (getConfiguration().getAuthenticationService() == null) {
+            try {
+                String name = getConfiguration().getAuthenticationServiceName();
+                Object as = context.getNamingContext().lookup(name);
+                getConfiguration().setAuthenticationService((AuthenticationService) as);
+            } catch (Throwable e) {
+                getConfiguration().setAuthenticationService(new JAASAuthenticationService());
+            }
+        }
         super.doInit();
     }
 
@@ -82,5 +95,13 @@ public class CxfBcComponent extends DefaultComponent {
 
     public String getBusConfig() {
         return busCfg;
+    }
+
+    public void setConfiguration(CxfBcConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    public CxfBcConfiguration getConfiguration() {
+        return configuration;
     }
 }

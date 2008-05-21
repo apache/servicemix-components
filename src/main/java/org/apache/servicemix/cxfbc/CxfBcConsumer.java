@@ -87,6 +87,7 @@ import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.cxfbc.interceptors.JbiInInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
+import org.apache.servicemix.cxfbc.interceptors.JbiJAASInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOperationInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
@@ -277,6 +278,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getInInterceptors().add(
                     new JbiInWsdl1Interceptor(isUseJBIWrapper()));
             cxfService.getInInterceptors().add(new JbiInInterceptor());
+            cxfService.getInInterceptors().add(new JbiJAASInterceptor(
+                    ((CxfBcComponent)this.getServiceUnit().getComponent()).
+                    getConfiguration().getAuthenticationService()));
             cxfService.getInInterceptors().add(new JbiInvokerInterceptor());
             cxfService.getInInterceptors().add(new JbiPostInvokerInterceptor());
 
