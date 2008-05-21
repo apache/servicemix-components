@@ -18,8 +18,8 @@
 
 -->
 <!DOCTYPE workflow PUBLIC 
-                 "-//OpenSymphony Group//DTD OSWorkflow 2.8//EN"
-                 "http://www.opensymphony.com/osworkflow/workflow_2_8.dtd">
+                 "-//OpenSymphony Group//DTD OSWorkflow 2.7//EN"
+                 "http://www.opensymphony.com/osworkflow/workflow_2_7.dtd">
 <workflow>
 
     <initial-actions>
