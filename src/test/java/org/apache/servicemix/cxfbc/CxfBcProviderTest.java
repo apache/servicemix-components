@@ -52,6 +52,8 @@ public class CxfBcProviderTest extends SpringTestSupport {
     private InOut io;
     private CxfSeComponent component;
     
+    
+    
     protected void setUp() throws Exception {
         super.setUp();
         
@@ -63,6 +65,32 @@ public class CxfBcProviderTest extends SpringTestSupport {
         component.getServiceUnitManager().start("proxy");
     }
     
+    protected void tearDown() throws Exception {
+        component.getServiceUnitManager().stop("proxy");
+        component.getServiceUnitManager().shutDown("proxy");
+        component.getServiceUnitManager().undeploy("proxy", getServiceUnitPath("provider"));
+    }
+    
+    public void testExternalServerNotExist() throws Exception {
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        //send message to proxy
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "ffang with no server"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("server is stop") >= 0);
+        
+    }
     
     public void testProvider() throws Exception {
         LOG.info("test provider");
@@ -115,6 +143,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello exception test Negative number cant be added!") >= 0);
+        
         
         //test onway
         factory = new JaxWsServerFactoryBean();

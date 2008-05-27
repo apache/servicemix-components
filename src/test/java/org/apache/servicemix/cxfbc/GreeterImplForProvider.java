@@ -88,6 +88,9 @@ public class GreeterImplForProvider implements Greeter {
                 for (int i = 0; i < clients.length; i++) {
                     ret += i * 2 + " ";
                 }
+            } else if ("ffang with no server".equals(me)) {
+                //should catch exception since external server is stop
+                getCalculator().add(1, 2);
             }
                         
         } catch (AddNumbersFault e) {
@@ -97,6 +100,8 @@ public class GreeterImplForProvider implements Greeter {
             ret = ret + e.getFaultInfo().getId();
         } catch (InterruptedException e) {
             //
+        } catch (Exception e) {
+            ret = ret + "server is stop";
         }
         return "Hello " + me  + " " + ret;
     }
