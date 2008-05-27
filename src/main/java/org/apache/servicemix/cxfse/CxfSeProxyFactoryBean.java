@@ -78,6 +78,9 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     private Object createProxy() throws Exception {
         JaxWsProxyFactoryBean cf = new JaxWsProxyFactoryBean();
         cf.setServiceName(getService());
+        if (getEndpoint() != null) {
+            cf.setEndpointName(new QName(getService().getNamespaceURI(), getEndpoint()));
+        }
         cf.setServiceClass(type);
         cf.setAddress("jbi://" + new IdGenerator().generateSanitizedId());
         if (isUseJBIWrapper()) {
