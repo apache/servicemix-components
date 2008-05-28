@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.camel;
 
+import javax.jbi.JBIException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
@@ -49,11 +50,6 @@ public class JbiExchange extends DefaultExchange {
         this.messageExchange = messageExchange;
 
         setPattern(ExchangePattern.fromWsdlUri(messageExchange.getPattern().toString()));
-        // TODO we could maybe use the typesafe APIs of different derived APIs
-        // from JBI
-        setIn(new JbiMessage(messageExchange.getMessage("in")));
-        setOut(new JbiMessage(messageExchange.getMessage("out")));
-        setFault(new JbiMessage(messageExchange.getMessage("fault")));
         populateProperties();
     }
 
@@ -139,17 +135,34 @@ public class JbiExchange extends DefaultExchange {
 
     @Override
     protected JbiMessage createInMessage() {
-        return new JbiMessage();
+        return createMessage("in");
     }
 
     @Override
     protected JbiMessage createOutMessage() {
-        return new JbiMessage();
+        return createMessage("out");
     }
 
     @Override
     protected JbiMessage createFaultMessage() {
-        return new JbiMessage();
+        return createMessage("fault");
+    }
+
+    private JbiMessage createMessage(String name) {
+        if (messageExchange != null) {
+            try {
+                NormalizedMessage msg = messageExchange.getMessage(name);
+                if (msg == null) {
+                    msg = messageExchange.createMessage();
+                    messageExchange.setMessage(msg, name);
+                }
+                return new JbiMessage(msg);
+            } catch (JBIException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return new JbiMessage();
+        }
     }
 
     private void populateProperties() {

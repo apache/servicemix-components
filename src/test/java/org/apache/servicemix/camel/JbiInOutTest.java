@@ -49,4 +49,11 @@ public class JbiInOutTest extends
         assertNotNull("Should have a Camel endpoint exposed in JBI!", endpoint);
         exchange.setEndpoint(endpoint);
     }
+
+    @Override
+    protected void checkResult(MessageExchange exchange) {
+        assertNotNull(exchange.getMessage("out"));
+        assertNotNull(exchange.getMessage("out").getContent());
+    }
+
 }

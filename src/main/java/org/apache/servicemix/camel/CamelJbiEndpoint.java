@@ -16,14 +16,17 @@
  */
 package org.apache.servicemix.camel;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 
@@ -56,20 +59,57 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
     }
 
     @Override
-    protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Received exchange: " + exchange);
+    public void process(MessageExchange exchange) throws Exception {
+        // The component acts as a provider, this means that another component has requested our service
+        // As this exchange is active, this is either an in or a fault (out are sent by this component)
+        if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+            // Exchange is finished
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                return;
+            // Exchange has been aborted with an exception
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                return;
+            // Exchange is active
+            } else {
+                handleActiveProviderExchange(exchange);
+
+            }
+        // Unsupported role: this should never happen has we never create exchanges
+        } else {
+            throw new IllegalStateException("Unsupported role: " + exchange.getRole());
         }
-        JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
-        camelProcessor.process(camelExchange);
     }
 
-    @Override
-    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Received exchange: " + exchange);
+    protected void handleActiveProviderExchange(MessageExchange exchange) throws Exception {
+        // Fault message
+        if (exchange.getFault() != null) {
+            done(exchange);
+        // In message
+        } else if (exchange.getMessage("in") != null) {
+            if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Received exchange: " + exchange);
+                }
+                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
+                camelProcessor.process(camelExchange);
+                done(exchange);
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Received exchange: " + exchange);
+                }
+                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
+                camelProcessor.process(camelExchange);
+                boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+                if (txSync) {
+                    sendSync(exchange);
+                } else {
+                    send(exchange);
+                }
+            }
+        // This is not compliant with the default MEPs
+        } else {
+            throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
         }
-        JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
-        camelProcessor.process(camelExchange);
     }
+
 }

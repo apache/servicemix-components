@@ -104,7 +104,6 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
     }
 
     protected void checkResult(MessageExchange exchange) {
-        assertNotNull(exchange.getMessage("out"));
     }
 
     /*

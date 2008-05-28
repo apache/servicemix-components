@@ -21,10 +21,13 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
 
 public class MyEchoComponent extends EchoComponent {
 
+    private static final Log LOG = LogFactory.getLog(MyEchoComponent.class);
 
     public MyEchoComponent() {
     }
@@ -34,10 +37,12 @@ public class MyEchoComponent extends EchoComponent {
     }
 
     protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+        getMessageTransformer().transform(exchange, in, out);
         // Put the operation information back to the out message
         if (exchange.getOperation() != null) {
             out.setProperty("operation", exchange.getOperation());
         }
+        LOG.info("Echoed back message: " + out);
         return true;
     }
 

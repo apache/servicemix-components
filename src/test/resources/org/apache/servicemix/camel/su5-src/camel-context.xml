@@ -28,6 +28,7 @@
   <camelContext xmlns="http://activemq.apache.org/camel/schema/spring">
     <route>
       <from uri="jbi:name:cheese"/>
+      <to uri="log:Su5Log" />
       <to uri="jbi:service:namespace:echo?mep=in-out"/>
     </route>
   </camelContext>
