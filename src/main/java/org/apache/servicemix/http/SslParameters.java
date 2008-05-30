@@ -296,7 +296,7 @@ public class SslParameters {
         return (s1 == null) ? s2 == null : s1.equals(s2);
     }
 
-    private static int hash(String... strings) {
+    private static int hash(String[] strings) {
         int result = 0;
         for (String s : strings) {
             result ^= hash(s);
