@@ -28,6 +28,7 @@ import org.apache.cxf.common.logging.LogUtils;
 
 import org.apache.cxf.testutil.common.ServerLauncher;
 
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -113,10 +114,15 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
 
     public void testGreetMeProviderWithOutJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
-        greetMeProviderTestBase();
+        greetMeProviderTestBase(false);
+    }
+    
+    public void testGreetMeProviderWithDynamicUri() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
+        greetMeProviderTestBase(true);
     }
         
-    private void greetMeProviderTestBase() throws Exception {
+    private void greetMeProviderTestBase(boolean useDynamicUri) throws Exception {
 
         client = new DefaultServiceMixClient(jbi);
         io = client.createInOutExchange();
@@ -128,6 +134,9 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
               "<greetMe xmlns='http://apache.org/hello_world_soap_http_provider/types'><requestType>"
               + "Edell"
               + "</requestType></greetMe>"));
+        if (useDynamicUri) {
+            io.getInMessage().setProperty(JbiConstants.HTTP_DESTINATION_URI, "http://localhost:9002/dynamicuritest");
+        }
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello Edell") >= 0);        

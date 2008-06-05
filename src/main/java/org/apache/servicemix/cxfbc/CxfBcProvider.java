@@ -138,6 +138,11 @@ public class CxfBcProvider extends ProviderEndpoint implements
         }
         NormalizedMessage nm = exchange.getMessage("in");
 
+        Object newDestinationURI = nm.getProperty(JbiConstants.HTTP_DESTINATION_URI);
+        if (newDestinationURI != null) {
+            ei.setAddress((String) newDestinationURI);
+        }
+        
         Conduit conduit = conduitInit.getConduit(ei);
         CxfBcProviderMessageObserver obs = new CxfBcProviderMessageObserver(
                 exchange, this);

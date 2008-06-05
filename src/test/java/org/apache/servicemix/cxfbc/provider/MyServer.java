@@ -24,8 +24,10 @@ public class MyServer extends AbstractBusTestServerBase {
     protected void run() {
         System.out.println("Starting Server");
         Object implementor = new GreeterImpl();
-        String address = "http://localhost:9000/SoapContext/SoapPort";
-        Endpoint.publish(address, implementor);
+        String address1 = "http://localhost:9000/SoapContext/SoapPort";
+        String address2 = "http://localhost:9002/dynamicuritest";
+        Endpoint.publish(address1, implementor);
+        Endpoint.publish(address2, implementor);
     }
   
     public static void main(String args[]) throws Exception {
