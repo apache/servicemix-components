@@ -21,7 +21,7 @@
 
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>engines-pom</artifactId>
+    <artifactId>components-pom</artifactId>
     <version>3.3-SNAPSHOT</version>
   </parent>
 
