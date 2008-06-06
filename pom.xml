@@ -22,16 +22,24 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>bindingcomponents</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-bc</artifactId>
+  <version>3.3-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
+
   <name>ServiceMix :: CXF Binding Component</name>
   <description>A CXF Binding Component</description>
+
+  <scm>
+      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</connection>
+      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</developerConnection>
+      <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/trunk</url>
+  </scm>
 
   <properties>
       <surefire.fork.mode>pertest</surefire.fork.mode>
