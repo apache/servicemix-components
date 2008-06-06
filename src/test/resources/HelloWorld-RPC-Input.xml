@@ -20,13 +20,13 @@
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
 
   <SOAP-ENV:Header>
-    <HelloHeader1 xmlns="uri:HelloWorld">
-      <id1>abcdefghij</id1>
-    </HelloHeader1>
+    <header1 xmlns="uri:HelloWorld">
+      abcdefghij
+    </header1>
     
-    <HelloHeader2 xmlns="uri:HelloWorld">
-      <id2>1234567890</id2>
-    </HelloHeader2>
+    <header2 xmlns="uri:HelloWorld">
+      1234567890
+    </header2>
   </SOAP-ENV:Header>
   
   <SOAP-ENV:Body>

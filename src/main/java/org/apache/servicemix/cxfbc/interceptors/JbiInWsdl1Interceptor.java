@@ -201,7 +201,9 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 MessagePartInfo part = header.getPart();
                 Header param = findHeader(headerElement, part);
                 int idx = part.getIndex();
-                QName element = part.getElementQName();
+                QName element = part.isElement() ? part.getElementQName() : part.getTypeQName();
+                
+                
                 Header hdr = getHeaderElement(message, element);
                 if (hdr == null) {
                     throw new Fault(new Exception(
@@ -314,7 +316,9 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         }
         List<Header> headerElement = message.getHeaders();
         for (SoapHeaderInfo header : headers) {
-            if (header.getPart().getElementQName().equals(name)) {
+            QName qname = header.getPart().isElement() 
+                ? header.getPart().getElementQName() : header.getPart().getTypeQName();
+            if (qname.equals(name)) {
                 MessagePartInfo mpi = header.getPart();
                 return findHeader(headerElement, mpi);
             }
@@ -351,13 +355,21 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         if (headerElement != null) {
             QName name = mpi.getConcreteName();
             for (Header header : headerElement) {
-                if (header.getName().getNamespaceURI() != null
+                if (mpi.isElement()) {
+                    if (header.getName().getNamespaceURI() != null
                         && header.getName().getNamespaceURI().equals(
                                 name.getNamespaceURI())
                         && header.getName().getLocalPart() != null
                         && header.getName().getLocalPart().equals(
                                 name.getLocalPart())) {
-                    param = header;
+                        param = header;
+                    }
+                } else {
+                    if (header.getName().getLocalPart() != null
+                            && header.getName().getLocalPart().equals(
+                                name.getLocalPart())) {
+                        param = header;
+                    }
                 }
             }
         }

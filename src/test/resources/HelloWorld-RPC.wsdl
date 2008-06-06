@@ -25,28 +25,11 @@
         xmlns="http://schemas.xmlsoap.org/wsdl/">
 
     <types>
-        <schema targetNamespace="uri:HelloWorld"
-                xmlns="http://www.w3.org/2000/10/XMLSchema">
-            <element name="HelloHeader1">
-                <complexType>
-                    <all>
-                        <element name="id1" type="string"/>
-                    </all>
-                </complexType>
-            </element>
-            <element name="HelloHeader2">
-                <complexType>
-                    <all>
-                        <element name="id2" type="string"/>
-                    </all>
-                </complexType>
-            </element>
-        </schema>
     </types>
 
     <message name="HelloRequest">
-        <part name="header1" element="tns:HelloHeader1"/>
-        <part name="header2" element="tns:HelloHeader2"/>
+        <part name="header1" type="xsd:string"/>
+        <part name="header2" type="xsd:string"/>
         <part name="param1" type="xsd:string"/>
         <part name="param2" type="xsd:int"/>
     </message>
