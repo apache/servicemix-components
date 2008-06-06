@@ -22,16 +22,24 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-bean</artifactId>
+  <version>3.3-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
+
   <name>ServiceMix :: Bean</name>
   <description>A Bean component</description>
+
+  <scm>
+      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</connection>
+      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</developerConnection>
+      <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-bean/trunk</url>
+  </scm>
 
   <dependencies>
     <dependency>
