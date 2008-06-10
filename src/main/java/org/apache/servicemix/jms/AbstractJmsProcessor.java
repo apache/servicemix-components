@@ -35,7 +35,6 @@ import javax.naming.NamingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.soap.Context;
@@ -127,8 +126,7 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             props.put(InitialContext.PROVIDER_URL, endpoint.getConfiguration().getJndiProviderUrl());
             return new InitialContext(props);
         } else {
-            BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-            return lf.getContext().getNamingContext();
+            return endpoint.getServiceUnit().getComponent().getComponentContext().getNamingContext();
         }
     }
 

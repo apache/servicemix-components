@@ -37,7 +37,6 @@ import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.common.BaseLifeCycle;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
@@ -112,8 +111,8 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                 channel.sendSync(exchange);
                 process(exchange);
             } else {
-                BaseLifeCycle lf = (BaseLifeCycle) endpoint.getServiceUnit().getComponent().getLifeCycle();
-                lf.sendConsumerExchange(exchange, JcaConsumerProcessor.this.endpoint);
+                endpoint.getServiceUnit().getComponent().prepareExchange(exchange, endpoint);
+                channel.send(exchange);
             }
         } catch (Throwable e) {
             LOG.error("Error while handling jms message", e);
