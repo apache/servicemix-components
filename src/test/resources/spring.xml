@@ -20,6 +20,7 @@
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
 	xmlns:script="http://org.apache.servicemix/script/1.0"
 	xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:test="urn:test">
 
 	<sm:container id="jbi" embedded="true" createMBeanServer="false">
@@ -65,7 +66,14 @@
                 </property>
                 <property name="implementation" ref="jrubyExchangeProcessor" />
             </script:exchangeProcessor>
-
+            
+            <!-- Groovy JSR-223 Endpoint  -->
+            <script:jsr223
+                service="test:groovy-jsr223" endpoint="endpoint"
+                script="classpath:GroovyExchangeProcessorJSR223.groovy"
+                bindings="#customBindings">
+            </script:jsr223>
+            
         </sm:endpoints>
     </sm:container>
 
@@ -90,5 +98,9 @@
 		script-source="classpath:RubyExchangeProcessor.rb">
 		<lang:property name="exchangeHelper" ref="jrubyExchangeHelper" />
 	</lang:jruby>
+
+    <util:map id="customBindings">
+        <entry key="answer" value="JSR-223 seems to work fine..." />
+    </util:map>   
 
 </beans>

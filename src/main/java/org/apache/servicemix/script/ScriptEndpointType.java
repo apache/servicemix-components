@@ -16,32 +16,9 @@
  */
 package org.apache.servicemix.script;
 
-import java.util.List;
-
-import org.apache.servicemix.common.DefaultComponent;
-
 /**
- * @org.apache.xbean.XBean element="component" description="ServiceMix Scripting
- *                         Component"
+ * @author lhein
  */
-public class ScriptComponent extends DefaultComponent {
-
-    private ScriptEndpointType[] endpoints;
-
-    protected Class[] getEndpointClasses() {
-        return new Class[] {ScriptExchangeProcessorEndpoint.class, ScriptEndpoint.class };
-    }
-
-    public ScriptEndpointType[] getEndpoints() {
-        return endpoints;
-    }
-
-    public void setEndpoints(ScriptEndpointType[] endpoints) {
-        this.endpoints = endpoints;
-    }
-
-    protected List getConfiguredEndpoints() {
-        return asList(endpoints);
-    }
-
+public interface ScriptEndpointType {
+    // just a grouping interface
 }

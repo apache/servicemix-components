@@ -89,6 +89,25 @@ public class ScriptComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
+    public void testGroovyJSR223() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "groovy-jsr223"));
+        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        client.done(me);
+    }
+    
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("spring.xml");
     }

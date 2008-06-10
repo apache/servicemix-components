@@ -14,34 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.script;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
-import java.util.List;
+println "Starting JSR-223 groovy processor";
 
-import org.apache.servicemix.common.DefaultComponent;
+println exchange;       
+def inputMessage = new SourceTransformer().toString(exchange.getInMessage().getContent());
+println "Hello, I got an input message " + inputMessage;
+NormalizedMessage out = exchange.createMessage();
+out.setContent(new StringSource("<response>" + bindings.get("answer") + "</response>"));
+exchange.setMessage(out, "out");
+println exchange;
 
-/**
- * @org.apache.xbean.XBean element="component" description="ServiceMix Scripting
- *                         Component"
- */
-public class ScriptComponent extends DefaultComponent {
-
-    private ScriptEndpointType[] endpoints;
-
-    protected Class[] getEndpointClasses() {
-        return new Class[] {ScriptExchangeProcessorEndpoint.class, ScriptEndpoint.class };
-    }
-
-    public ScriptEndpointType[] getEndpoints() {
-        return endpoints;
-    }
-
-    public void setEndpoints(ScriptEndpointType[] endpoints) {
-        this.endpoints = endpoints;
-    }
-
-    protected List getConfiguredEndpoints() {
-        return asList(endpoints);
-    }
-
-}
+println "Stopping JSR-223 groovy processor";
