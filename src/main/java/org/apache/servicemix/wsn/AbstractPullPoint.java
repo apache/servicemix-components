@@ -27,12 +27,6 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.wsn.jaxws.NotificationConsumer;
-import org.apache.servicemix.wsn.jaxws.PullPoint;
-import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
-import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPointFault;
-import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPointFault;
-import org.apache.servicemix.wsn.jaxws.UnableToGetMessagesFault;
 import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
 import org.oasis_open.docs.wsn.b_2.DestroyPullPoint;
 import org.oasis_open.docs.wsn.b_2.DestroyPullPointResponse;
@@ -41,8 +35,14 @@ import org.oasis_open.docs.wsn.b_2.GetMessagesResponse;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.oasis_open.docs.wsn.b_2.UnableToDestroyPullPointFaultType;
+import org.oasis_open.docs.wsn.bw_2.NotificationConsumer;
+import org.oasis_open.docs.wsn.bw_2.PullPoint;
+import org.oasis_open.docs.wsn.bw_2.UnableToCreatePullPointFault;
+import org.oasis_open.docs.wsn.bw_2.UnableToDestroyPullPointFault;
+import org.oasis_open.docs.wsn.bw_2.UnableToGetMessagesFault;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
 
-@WebService(endpointInterface = "org.apache.servicemix.wsn.PullPointConsumer")
+@WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.PullPoint")
 public abstract class AbstractPullPoint extends AbstractEndpoint implements PullPoint, NotificationConsumer {
 
     private static Log log = LogFactory.getLog(AbstractPullPoint.class);

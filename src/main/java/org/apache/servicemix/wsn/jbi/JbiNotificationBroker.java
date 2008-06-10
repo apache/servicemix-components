@@ -16,14 +16,16 @@
  */
 package org.apache.servicemix.wsn.jbi;
 
-import org.apache.servicemix.wsn.component.WSNLifeCycle;
+import javax.jbi.component.ComponentContext;
+
+import org.apache.servicemix.wsn.ComponentContextAware;
 import org.apache.servicemix.wsn.jms.JmsNotificationBroker;
 import org.apache.servicemix.wsn.jms.JmsPublisher;
 import org.apache.servicemix.wsn.jms.JmsSubscription;
 
-public class JbiNotificationBroker extends JmsNotificationBroker {
+public class JbiNotificationBroker extends JmsNotificationBroker implements ComponentContextAware {
 
-    private WSNLifeCycle lifeCycle;
+    private ComponentContext context;
 
     public JbiNotificationBroker(String name) {
         super(name);
@@ -32,24 +34,25 @@ public class JbiNotificationBroker extends JmsNotificationBroker {
     @Override
     protected JmsSubscription createJmsSubscription(String name) {
         JbiSubscription subscription = new JbiSubscription(name);
-        subscription.setLifeCycle(lifeCycle);
+        // The context here should be overriden by the EndpointManager with the endpoint's context
+        subscription.setContext(context);
         return subscription;
     }
 
     @Override
     protected JmsPublisher createJmsPublisher(String name) {
         JbiPublisher publisher = new JbiPublisher(name);
-        publisher.setLifeCycle(lifeCycle);
+        // The context here should be overriden by the EndpointManager with the endpoint's context
+        publisher.setContext(context);
         publisher.setNotificationBrokerAddress(address);
         return publisher;
     }
 
-    public WSNLifeCycle getLifeCycle() {
-        return lifeCycle;
+    public ComponentContext getContext() {
+        return context;
     }
 
-    public void setLifeCycle(WSNLifeCycle lifeCycle) {
-        this.lifeCycle = lifeCycle;
+    public void setContext(ComponentContext context) {
+        this.context = context;
     }
-
 }

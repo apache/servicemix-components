@@ -16,9 +16,6 @@
  */
 package org.apache.servicemix.wsn;
 
-import org.w3._2005._08.addressing.AttributedURIType;
-import org.w3._2005._08.addressing.EndpointReferenceType;
-
 public abstract class AbstractEndpoint {
 
     protected final String name;
@@ -65,13 +62,5 @@ public abstract class AbstractEndpoint {
     }
 
     protected abstract String createAddress();
-
-    public static EndpointReferenceType createEndpointReference(String address) {
-        EndpointReferenceType epr = new EndpointReferenceType();
-        AttributedURIType addressUri = new AttributedURIType();
-        addressUri.setValue(address);
-        epr.setAddress(addressUri);
-        return epr;
-    }
 
 }

@@ -16,33 +16,9 @@
  */
 package org.apache.servicemix.wsn;
 
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.jbi.component.ComponentContext;
 
-import org.oasis_open.docs.wsn.bw_2.PauseFailedFault;
-import org.oasis_open.docs.wsn.bw_2.ResumeFailedFault;
-import org.oasis_open.docs.wsn.bw_2.SubscribeCreationFailedFault;
-import org.oasis_open.docs.wsn.bw_2.UnacceptableTerminationTimeFault;
+public interface ComponentContextAware {
 
-public class DummySubscription extends AbstractSubscription {
-
-    public DummySubscription(String name) {
-        super(name);
-    }
-
-    @Override
-    protected void start() throws SubscribeCreationFailedFault {
-    }
-
-    @Override
-    protected void pause() throws PauseFailedFault {
-    }
-
-    @Override
-    protected void resume() throws ResumeFailedFault {
-    }
-
-    @Override
-    protected void renew(XMLGregorianCalendar terminationTime) throws UnacceptableTerminationTimeFault {
-    }
-
+    void setContext(ComponentContext context);
 }

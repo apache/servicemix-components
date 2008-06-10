@@ -22,14 +22,8 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
+import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
-import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationManager;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
-import org.apache.servicemix.wsn.jaxws.ResourceNotDestroyedFault;
-import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
-import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFaultType;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
@@ -38,12 +32,18 @@ import org.oasis_open.docs.wsn.br_2.DestroyRegistrationResponse;
 import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.ResourceNotDestroyedFaultType;
-import org.w3._2005._08.addressing.EndpointReferenceType;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationFailedFault;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationManager;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationRejectedFault;
+import org.oasis_open.docs.wsn.brw_2.ResourceNotDestroyedFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidTopicExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
 
-@WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.PublisherRegistrationManager")
+@WebService(endpointInterface = "org.oasis_open.docs.wsn.brw_2.PublisherRegistrationManager")
 public abstract class AbstractPublisher extends AbstractEndpoint implements PublisherRegistrationManager {
 
-    protected EndpointReferenceType publisherReference;
+    protected W3CEndpointReference publisherReference;
 
     protected boolean demand;
 

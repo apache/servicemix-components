@@ -33,14 +33,14 @@ import javax.xml.namespace.QName;
 
 import org.apache.activemq.util.IdGenerator;
 import org.apache.servicemix.common.AbstractDeployer;
-import org.apache.servicemix.common.BaseComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.wsn.EndpointManager;
 import org.apache.servicemix.wsn.EndpointRegistrationException;
-import org.apache.servicemix.wsn.jaxws.NotificationBroker;
+import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
 import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
 import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
@@ -49,6 +49,7 @@ import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
+import org.oasis_open.docs.wsn.brw_2.NotificationBroker;
 
 public class WSNDeployer extends AbstractDeployer implements Deployer {
 
@@ -56,7 +57,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
     protected JAXBContext context;
 
-    public WSNDeployer(BaseComponent component) {
+    public WSNDeployer(ServiceMixComponent component) {
         super(component);
         filter = new XmlFilter();
         try {
@@ -141,16 +142,16 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
                     .getNotificationBroker();
             response = broker.handleSubscribe(request, this);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
                     .getNotificationBroker();
-            broker.unsubscribe(response.getSubscriptionReference().getAddress().getValue());
+            broker.unsubscribe(AbstractWSAClient.getWSAAddress(response.getSubscriptionReference()));
         }
 
         @Override
@@ -186,16 +187,16 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+            JmsCreatePullPoint createPullPoint = ((WSNComponent) serviceUnit.getComponent())
                     .getCreatePullPoint();
             response = createPullPoint.createPullPoint(request);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JmsCreatePullPoint createPullPoint = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+            JmsCreatePullPoint createPullPoint = ((WSNComponent) serviceUnit.getComponent())
                     .getCreatePullPoint();
-            createPullPoint.destroyPullPoint(response.getPullPoint().getAddress().getValue());
+            createPullPoint.destroyPullPoint(AbstractWSAClient.getWSAAddress(response.getPullPoint()));
         }
 
         @Override
@@ -231,16 +232,16 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
 
         @Override
         public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
                     .getNotificationBroker();
             response = broker.handleRegisterPublisher(request, this);
         }
 
         @Override
         public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNLifeCycle) serviceUnit.getComponent().getLifeCycle())
+            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
                     .getNotificationBroker();
-            broker.unsubscribe(response.getPublisherRegistrationReference().getAddress().getValue());
+            broker.unsubscribe(AbstractWSAClient.getWSAAddress(response.getPublisherRegistrationReference()));
         }
 
         @Override

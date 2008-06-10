@@ -31,13 +31,14 @@ import org.apache.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.util.DOMUtil;
-import org.apache.servicemix.wsn.jaxws.CreatePullPoint;
-import org.apache.servicemix.wsn.jaxws.UnableToCreatePullPointFault;
-import org.apache.servicemix.wsn.jaxws.UnableToDestroyPullPointFault;
+import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_2.UnableToCreatePullPointFaultType;
+import org.oasis_open.docs.wsn.bw_2.CreatePullPoint;
+import org.oasis_open.docs.wsn.bw_2.UnableToCreatePullPointFault;
+import org.oasis_open.docs.wsn.bw_2.UnableToDestroyPullPointFault;
 
-@WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.CreatePullPoint")
+@WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.CreatePullPoint")
 public abstract class AbstractCreatePullPoint extends AbstractEndpoint implements CreatePullPoint {
 
     private static Log log = LogFactory.getLog(AbstractCreatePullPoint.class);
@@ -102,7 +103,7 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
             }
             pullPoint.register();
             CreatePullPointResponse response = new CreatePullPointResponse();
-            response.setPullPoint(createEndpointReference(pullPoint.getAddress()));
+            response.setPullPoint(AbstractWSAClient.createWSA(pullPoint.getAddress()));
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {

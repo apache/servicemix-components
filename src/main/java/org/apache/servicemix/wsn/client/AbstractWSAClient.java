@@ -21,22 +21,30 @@ import javax.jbi.component.ComponentContext;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.ws.wsaddressing.W3CEndpointReference;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.EndpointResolver;
 import org.apache.servicemix.jbi.resolver.ServiceAndEndpointNameResolver;
 import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.jbi.util.DOMUtil;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
-import org.w3._2005._08.addressing.AttributedURIType;
-import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public abstract class AbstractWSAClient {
 
-    private EndpointReferenceType endpoint;
+    private W3CEndpointReference endpoint;
 
     private EndpointResolver resolver;
 
@@ -45,18 +53,31 @@ public abstract class AbstractWSAClient {
     public AbstractWSAClient() {
     }
 
-    public AbstractWSAClient(EndpointReferenceType endpoint, ServiceMixClient client) {
+    public AbstractWSAClient(W3CEndpointReference endpoint, ServiceMixClient client) {
         this.endpoint = endpoint;
         this.resolver = resolveWSA(endpoint);
         this.client = client;
     }
 
-    public static EndpointReferenceType createWSA(String address) {
-        EndpointReferenceType epr = new EndpointReferenceType();
-        AttributedURIType attUri = new AttributedURIType();
-        attUri.setValue(address);
-        epr.setAddress(attUri);
-        return epr;
+    public static W3CEndpointReference createWSA(String address) {
+        Source src = new StringSource("<EndpointReference xmlns='http://www.w3.org/2005/08/addressing'><Address>"
+                                        + address + "</Address></EndpointReference>");
+        return new W3CEndpointReference(src);
+    }
+
+    public static String getWSAAddress(W3CEndpointReference ref) {
+        try {
+            Element element = new SourceTransformer().createDocument().createElement("elem");
+            ref.writeTo(new DOMResult(element));
+            NodeList nl = element.getElementsByTagNameNS("http://www.w3.org/2005/08/addressing", "Address");
+            if (nl != null && nl.getLength() > 0) {
+                Element e = (Element) nl.item(0);
+                return DOMUtil.getElementText(e).trim();
+            }
+        } catch (ParserConfigurationException e) {
+            // Ignore
+        }
+        return null;
     }
 
     public static ServiceMixClient createJaxbClient(JBIContainer container) throws JBIException, JAXBException {
@@ -71,16 +92,16 @@ public abstract class AbstractWSAClient {
         return client;
     }
 
-    public static EndpointResolver resolveWSA(EndpointReferenceType ref) {
-        String[] parts = URIResolver.split3(ref.getAddress().getValue());
+    public static EndpointResolver resolveWSA(W3CEndpointReference ref) {
+        String[] parts = URIResolver.split3(getWSAAddress(ref));
         return new ServiceAndEndpointNameResolver(new QName(parts[0], parts[1]), parts[2]);
     }
 
-    public EndpointReferenceType getEndpoint() {
+    public W3CEndpointReference getEndpoint() {
         return endpoint;
     }
 
-    public void setEndpoint(EndpointReferenceType endpoint) {
+    public void setEndpoint(W3CEndpointReference endpoint) {
         this.endpoint = endpoint;
     }
 

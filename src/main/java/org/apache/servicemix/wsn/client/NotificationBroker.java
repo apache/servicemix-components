@@ -24,6 +24,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
+import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
@@ -42,10 +43,8 @@ import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.oasis_open.docs.wsn.b_2.UseRaw;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
-import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class NotificationBroker extends AbstractWSAClient {
-
     
     public static final String WSN_URI = "http://servicemix.org/wsnotification";
 
@@ -102,15 +101,15 @@ public class NotificationBroker extends AbstractWSAClient {
         send(notify);
     }
 
-    public Subscription subscribe(EndpointReferenceType consumer, String topic) throws JBIException {
+    public Subscription subscribe(W3CEndpointReference consumer, String topic) throws JBIException {
         return subscribe(consumer, topic, null, false);
     }
 
-    public Subscription subscribe(EndpointReferenceType consumer, String topic, String xpath) throws JBIException {
+    public Subscription subscribe(W3CEndpointReference consumer, String topic, String xpath) throws JBIException {
         return subscribe(consumer, topic, xpath, false);
     }
 
-    public Subscription subscribe(EndpointReferenceType consumer, String topic, 
+    public Subscription subscribe(W3CEndpointReference consumer, String topic,
                                   String xpath, boolean raw) throws JBIException {
 
         Subscribe subscribeRequest = new Subscribe();
@@ -150,7 +149,7 @@ public class NotificationBroker extends AbstractWSAClient {
         return response.getAny();
     }
 
-    public Publisher registerPublisher(EndpointReferenceType publisherReference, 
+    public Publisher registerPublisher(W3CEndpointReference publisherReference,
                                        String topic, boolean demand) throws JBIException {
 
         RegisterPublisher registerPublisherRequest = new RegisterPublisher();

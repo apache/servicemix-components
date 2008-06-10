@@ -17,14 +17,14 @@
 package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
+import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.apache.servicemix.client.ServiceMixClient;
 import org.oasis_open.docs.wsn.br_2.DestroyRegistration;
-import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class Publisher extends AbstractWSAClient {
 
-    public Publisher(EndpointReferenceType publisherRegistrationReference, ServiceMixClient client) {
+    public Publisher(W3CEndpointReference publisherRegistrationReference, ServiceMixClient client) {
         super(publisherRegistrationReference, client);
     }
 

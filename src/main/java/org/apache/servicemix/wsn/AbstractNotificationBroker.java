@@ -24,26 +24,12 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
+import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.apache.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
-import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.MultipleTopicsSpecifiedFault;
-import org.apache.servicemix.wsn.jaxws.NoCurrentMessageOnTopicFault;
-import org.apache.servicemix.wsn.jaxws.NotificationBroker;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
-import org.apache.servicemix.wsn.jaxws.ResourceNotDestroyedFault;
-import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
-import org.apache.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
-import org.apache.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
-import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
-import org.apache.servicemix.wsn.jaxws.UnableToDestroySubscriptionFault;
-import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
+import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.oasis_open.docs.wsn.b_2.GetCurrentMessage;
 import org.oasis_open.docs.wsn.b_2.GetCurrentMessageResponse;
 import org.oasis_open.docs.wsn.b_2.NoCurrentMessageOnTopicFaultType;
@@ -55,9 +41,24 @@ import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
-import org.w3._2005._08.addressing.EndpointReferenceType;
+import org.oasis_open.docs.wsn.brw_2.NotificationBroker;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationFailedFault;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationRejectedFault;
+import org.oasis_open.docs.wsn.brw_2.ResourceNotDestroyedFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidFilterFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidMessageContentExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidProducerPropertiesExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidTopicExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.MultipleTopicsSpecifiedFault;
+import org.oasis_open.docs.wsn.bw_2.NoCurrentMessageOnTopicFault;
+import org.oasis_open.docs.wsn.bw_2.SubscribeCreationFailedFault;
+import org.oasis_open.docs.wsn.bw_2.TopicExpressionDialectUnknownFault;
+import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
+import org.oasis_open.docs.wsn.bw_2.UnableToDestroySubscriptionFault;
+import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
 
-@WebService(endpointInterface = "org.apache.servicemix.wsn.jaxws.NotificationBroker")
+@WebService(endpointInterface = "org.oasis_open.docs.wsn.brw_2.NotificationBroker")
 public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker {
 
     private static Log log = LogFactory.getLog(AbstractNotificationBroker.class);
@@ -110,7 +111,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 
     protected void handleNotify(Notify notify) {
         for (NotificationMessageHolderType messageHolder : notify.getNotificationMessage()) {
-            EndpointReferenceType producerReference = messageHolder.getProducerReference();
+            W3CEndpointReference producerReference = messageHolder.getProducerReference();
             AbstractPublisher publisher = getPublisher(producerReference);
             if (publisher != null) {
                 publisher.notify(messageHolder);
@@ -118,11 +119,10 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
         }
     }
 
-    protected AbstractPublisher getPublisher(EndpointReferenceType producerReference) {
+    protected AbstractPublisher getPublisher(W3CEndpointReference producerReference) {
         AbstractPublisher publisher = null;
-        if (producerReference != null && producerReference.getAddress() != null
-                && producerReference.getAddress().getValue() != null) {
-            String address = producerReference.getAddress().getValue();
+        if (producerReference != null) {
+            String address = AbstractWSAClient.getWSAAddress(producerReference);
             publisher = publishers.get(address);
         }
         if (publisher == null) {
@@ -165,9 +165,9 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
 
     public SubscribeResponse handleSubscribe(
                 Subscribe subscribeRequest, 
-                EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault, 
-                                                InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault,
-                                                SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
+                EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault,
+            InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault,
+            SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
                                                 TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
         AbstractSubscription subscription = null;
         boolean success = false;
@@ -181,7 +181,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
             }
             subscription.register();
             SubscribeResponse response = new SubscribeResponse();
-            response.setSubscriptionReference(createEndpointReference(subscription.getAddress()));
+            response.setSubscriptionReference(AbstractWSAClient.createWSA(subscription.getAddress()));
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {
@@ -274,7 +274,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
             publisher.register();
             publisher.create(registerPublisherRequest);
             RegisterPublisherResponse response = new RegisterPublisherResponse();
-            response.setPublisherRegistrationReference(createEndpointReference(publisher.getAddress()));
+            response.setPublisherRegistrationReference(AbstractWSAClient.createWSA(publisher.getAddress()));
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {

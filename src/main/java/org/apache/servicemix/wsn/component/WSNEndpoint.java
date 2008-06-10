@@ -23,15 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.jbi.component.ComponentContext;
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -41,21 +37,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebFault;
 
-import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.wsn.ComponentContextAware;
 import org.oasis_open.docs.wsrf.bf_2.BaseFaultType;
 
-public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
-
-    protected ServiceEndpoint activated;
+public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
 
     protected String address;
 
     protected Object pojo;
-
-    protected DeliveryChannel channel;
 
     protected JAXBContext jaxbContext;
 
@@ -70,12 +63,10 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
     }
 
     @Override
-    public Role getRole() {
-        return Role.PROVIDER;
-    }
-
-    @Override
-    public void activate() throws Exception {
+    public void start() throws Exception {
+        if (pojo instanceof ComponentContextAware) {
+            ((ComponentContextAware) pojo).setContext(getContext());
+        }
         logger = this.serviceUnit.getComponent().getLogger();
         WebService ws = getWebServiceAnnotation(pojo.getClass());
         if (ws == null) {
@@ -87,9 +78,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
         if (ws != null) {
             interfaceName = new QName(ws.targetNamespace(), ws.name());
         }
-        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
-        activated = ctx.activateEndpoint(service, endpoint);
-        channel = ctx.getDeliveryChannel();
+        super.start();
     }
 
     public static JAXBContext createJAXBContext(Class interfaceClass) throws JAXBException {
@@ -103,19 +92,6 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
             }
         }
         return JAXBContext.newInstance(classes.toArray(new Class[classes.size()]));
-    }
-
-    @Override
-    public void deactivate() throws Exception {
-        ServiceEndpoint ep = activated;
-        activated = null;
-        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
-        ctx.deactivateEndpoint(ep);
-    }
-
-    @Override
-    public ExchangeProcessor getProcessor() {
-        return this;
     }
 
     @SuppressWarnings("unchecked")
@@ -153,7 +129,7 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
                     StringWriter writer = new StringWriter();
                     jaxbContext.createMarshaller().marshal(new JbiFault(info), writer);
                     fault.setContent(new StringSource(writer.toString()));
-                    channel.send(exchange);
+                    send(exchange);
                     return;
                 } else {
                     throw (Exception) e.getCause();
@@ -166,14 +142,14 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
         }
         if (oneWay) {
             exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
+            send(exchange);
         } else {
             NormalizedMessage msg = exchange.createMessage();
             exchange.setMessage(msg, "out");
             StringWriter writer = new StringWriter();
             jaxbContext.createMarshaller().marshal(output, writer);
             msg.setContent(new StringSource(writer.toString()));
-            channel.send(exchange);
+            send(exchange);
         }
     }
 
@@ -221,14 +197,6 @@ public class WSNEndpoint extends Endpoint implements ExchangeProcessor {
             }
         }
         return null;
-    }
-
-    public void start() throws Exception {
-        // Nothing to do
-    }
-
-    public void stop() throws Exception {
-        // Nothing to do
     }
 
 }

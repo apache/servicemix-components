@@ -27,6 +27,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,8 +51,6 @@ import org.apache.servicemix.wsn.client.Subscription;
 import org.apache.servicemix.wsn.spring.PublisherComponent;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
-import org.w3._2005._08.addressing.AttributedURIType;
-import org.w3._2005._08.addressing.EndpointReferenceType;
 
 public class WSNComponentTest extends TestCase {
 
@@ -115,7 +114,7 @@ public class WSNComponentTest extends TestCase {
         ReceiverComponent receiver = new ReceiverComponent();
         jbi.activateComponent(receiver, "receiver");
 
-        EndpointReferenceType consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
+        W3CEndpointReference consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
         wsnBroker.subscribe(consumer, "myTopic", null);
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
@@ -136,7 +135,7 @@ public class WSNComponentTest extends TestCase {
         jbi.activateComponent(receiver, "receiver");
 
         // START SNIPPET: notify
-        EndpointReferenceType consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
+        W3CEndpointReference consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
         wsnBroker.subscribe(consumer, "myTopic", null, true);
 
         Element body = parse("<hello>world</hello>");
@@ -261,7 +260,7 @@ public class WSNComponentTest extends TestCase {
         publisherComponent.setDemand(true);
         jbi.activateComponent(publisherComponent, "publisher");
 
-        Thread.sleep(150);
+        Thread.sleep(500);
         assertNull(publisherComponent.getSubscription());
 
         PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
@@ -275,7 +274,7 @@ public class WSNComponentTest extends TestCase {
         Thread.sleep(500);
         assertNull(publisherComponent.getSubscription());
 
-        Thread.sleep(150);
+        Thread.sleep(500);
     }
 
     public void testDeployPullPoint() throws Exception {
@@ -338,11 +337,8 @@ public class WSNComponentTest extends TestCase {
         return doc.getDocumentElement();
     }
 
-    protected EndpointReferenceType createEPR(QName service, String endpoint) {
-        EndpointReferenceType epr = new EndpointReferenceType();
-        epr.setAddress(new AttributedURIType());
-        epr.getAddress().setValue(service.getNamespaceURI() + "/" + service.getLocalPart() + "/" + endpoint);
-        return epr;
+    protected W3CEndpointReference createEPR(QName service, String endpoint) {
+        return AbstractWSAClient.createWSA(service.getNamespaceURI() + "/" + service.getLocalPart() + "/" + endpoint);
     }
 
 }

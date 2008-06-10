@@ -22,22 +22,22 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.wsn.ComponentContextAware;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.Subscription;
-import org.apache.servicemix.wsn.component.WSNLifeCycle;
-import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationFailedFault;
-import org.apache.servicemix.wsn.jaxws.PublisherRegistrationRejectedFault;
-import org.apache.servicemix.wsn.jaxws.ResourceUnknownFault;
-import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
 import org.apache.servicemix.wsn.jms.JmsPublisher;
 import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationFailedFault;
+import org.oasis_open.docs.wsn.brw_2.PublisherRegistrationRejectedFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidTopicExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
 
-public class JbiPublisher extends JmsPublisher {
+public class JbiPublisher extends JmsPublisher implements ComponentContextAware {
 
-    private WSNLifeCycle lifeCycle;
+    private ComponentContext context;
 
     private ServiceEndpoint endpoint;
 
@@ -87,7 +87,7 @@ public class JbiPublisher extends JmsPublisher {
             PublisherRegistrationFailedFault, PublisherRegistrationRejectedFault, ResourceUnknownFault,
             TopicNotSupportedFault {
         super.validatePublisher(registerPublisherRequest);
-        String[] parts = split(publisherReference.getAddress().getValue());
+        String[] parts = split(AbstractWSAClient.getWSAAddress(publisherReference));
         endpoint = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
         if (endpoint == null) {
             PublisherRegistrationFailedFaultType fault = new PublisherRegistrationFailedFaultType();
@@ -111,15 +111,10 @@ public class JbiPublisher extends JmsPublisher {
     }
 
     public ComponentContext getContext() {
-        return lifeCycle.getContext();
+        return context;
     }
 
-    public WSNLifeCycle getLifeCycle() {
-        return lifeCycle;
+    public void setContext(ComponentContext context) {
+        this.context = context;
     }
-
-    public void setLifeCycle(WSNLifeCycle lifeCycle) {
-        this.lifeCycle = lifeCycle;
-    }
-
 }

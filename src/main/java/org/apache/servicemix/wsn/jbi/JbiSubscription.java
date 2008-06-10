@@ -18,9 +18,7 @@ package org.apache.servicemix.wsn.jbi;
 
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -37,33 +35,30 @@ import org.w3c.dom.NodeList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.common.ExchangeProcessor;
-import org.apache.servicemix.wsn.component.WSNLifeCycle;
-import org.apache.servicemix.wsn.jaxws.InvalidFilterFault;
-import org.apache.servicemix.wsn.jaxws.InvalidMessageContentExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidProducerPropertiesExpressionFault;
-import org.apache.servicemix.wsn.jaxws.InvalidTopicExpressionFault;
-import org.apache.servicemix.wsn.jaxws.SubscribeCreationFailedFault;
-import org.apache.servicemix.wsn.jaxws.TopicExpressionDialectUnknownFault;
-import org.apache.servicemix.wsn.jaxws.TopicNotSupportedFault;
-import org.apache.servicemix.wsn.jaxws.UnacceptableInitialTerminationTimeFault;
+import org.apache.servicemix.wsn.ComponentContextAware;
+import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.jms.JmsSubscription;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
+import org.oasis_open.docs.wsn.bw_2.InvalidFilterFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidMessageContentExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidProducerPropertiesExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.InvalidTopicExpressionFault;
+import org.oasis_open.docs.wsn.bw_2.SubscribeCreationFailedFault;
+import org.oasis_open.docs.wsn.bw_2.TopicExpressionDialectUnknownFault;
+import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
+import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
 
-public class JbiSubscription extends JmsSubscription {
+public class JbiSubscription extends JmsSubscription implements ComponentContextAware {
 
     private static Log log = LogFactory.getLog(JbiSubscription.class);
 
-    private WSNLifeCycle lifeCycle;
+    private ComponentContext context;
 
     private ServiceEndpoint endpoint;
 
-    private ExchangeProcessor processor;
-
     public JbiSubscription(String name) {
         super(name);
-        processor = new NoOpProcessor();
     }
 
     @Override
@@ -107,7 +102,7 @@ public class JbiSubscription extends JmsSubscription {
         epr.appendChild(el);
         ServiceEndpoint ep = getContext().resolveEndpointReference(epr);
         if (ep == null) {
-            String[] parts = split(subscribeRequest.getConsumerReference().getAddress().getValue().trim());
+            String[] parts = split(AbstractWSAClient.getWSAAddress(subscribeRequest.getConsumerReference()));
             ep = getContext().getEndpoint(new QName(parts[0], parts[1]), parts[2]);
         }
         return ep;
@@ -131,40 +126,22 @@ public class JbiSubscription extends JmsSubscription {
     @Override
     protected void doNotify(final Element content) {
         try {
-            DeliveryChannel channel = getContext().getDeliveryChannel();
-            MessageExchangeFactory factory = channel.createExchangeFactory(endpoint);
+            MessageExchangeFactory factory = context.getDeliveryChannel().createExchangeFactory(endpoint);
             InOnly inonly = factory.createInOnlyExchange();
             NormalizedMessage msg = inonly.createMessage();
             inonly.setInMessage(msg);
             msg.setContent(new DOMSource(content));
-            getLifeCycle().sendConsumerExchange(inonly, processor);
+            context.getDeliveryChannel().send(inonly);
         } catch (JBIException e) {
             log.warn("Could not deliver notification", e);
         }
     }
 
     public ComponentContext getContext() {
-        return lifeCycle.getContext();
+        return context;
     }
 
-    public WSNLifeCycle getLifeCycle() {
-        return lifeCycle;
+    public void setContext(ComponentContext context) {
+        this.context = context;
     }
-
-    public void setLifeCycle(WSNLifeCycle lifeCycle) {
-        this.lifeCycle = lifeCycle;
-    }
-
-    protected class NoOpProcessor implements ExchangeProcessor {
-
-        public void process(MessageExchange exchange) throws Exception {
-        }
-
-        public void start() throws Exception {
-        }
-
-        public void stop() throws Exception {
-        }
-    }
-
 }

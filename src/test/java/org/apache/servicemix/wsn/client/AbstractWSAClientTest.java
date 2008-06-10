@@ -16,29 +16,20 @@
  */
 package org.apache.servicemix.wsn.client;
 
-import javax.jbi.JBIException;
+import javax.xml.transform.Source;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
-import org.apache.servicemix.client.ServiceMixClient;
-import org.oasis_open.docs.wsn.b_2.PauseSubscription;
-import org.oasis_open.docs.wsn.b_2.ResumeSubscription;
-import org.oasis_open.docs.wsn.b_2.Unsubscribe;
+import junit.framework.TestCase;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 
-public class Subscription extends AbstractWSAClient {
+public class AbstractWSAClientTest extends TestCase {
 
-    public Subscription(W3CEndpointReference subscriptionReference, ServiceMixClient client) {
-        super(subscriptionReference, client);
+    public void test() {
+        Source src = new StringSource("<EndpointReference xmlns='http://www.w3.org/2005/08/addressing'><Address>"
+                                      + "endpoint:http://www.consumer.org/service/endpoint</Address></EndpointReference>");
+        W3CEndpointReference ref = new W3CEndpointReference(src);
+        String address = AbstractWSAClient.getWSAAddress(ref);
+        assertEquals("endpoint:http://www.consumer.org/service/endpoint", address);
     }
 
-    public void pause() throws JBIException {
-        request(new PauseSubscription());
-    }
-
-    public void resume() throws JBIException {
-        request(new ResumeSubscription());
-    }
-
-    public void unsubscribe() throws JBIException {
-        request(new Unsubscribe());
-    }
 }
