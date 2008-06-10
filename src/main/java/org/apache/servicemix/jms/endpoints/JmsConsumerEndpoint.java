@@ -508,6 +508,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
         cont.setReceiveTimeout(receiveTimeout);
         cont.setRecoveryInterval(recoveryInterval);
         if (TRANSACTED_XA.equals(transacted)) {
+            cont.setSessionTransacted(true);
             TransactionManager tm = (TransactionManager) getContext().getTransactionManager();
             if (tm == null) {
                 throw new IllegalStateException("No TransactionManager available");
