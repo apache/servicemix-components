@@ -33,12 +33,12 @@ rule Init
 		String t = $me.getIn().getContent().getTextContent();
 		int v = Integer.parseInt( t );
 		jbi.getLogger().debug("request value: " + v);
-		if (v > max.intValue()) {
+		if (v > max) {
 			jbi.getLogger().debug("Value too high");
 			jbi.fault( "<error/>" );
 		} else {
-			assert( new Request( v ) );
-			assert( new Fibonacci( v ) );
+			insert( new Request( v ) );
+			insert( new Fibonacci( v ) );
 		}
 end
 
@@ -57,7 +57,7 @@ rule Recurse
 	when
 		f : Fibonacci ( value == -1 )
 	then
-		assert( new Fibonacci( f.getSequence() - 1 ) );
+		insert( new Fibonacci( f.getSequence() - 1 ) );
 		jbi.getLogger().debug( "recurse for " + f.getSequence() );
 end
 
@@ -67,7 +67,7 @@ rule Bootstrap1
 		f : Fibonacci( sequence == 1, value == -1 )
 	then 
 		f.setValue( 1 );		
-		modify( f );
+		update( f );
 		jbi.getLogger().debug( f.getSequence() + " == " + f.getValue() );
 end
 
@@ -76,18 +76,18 @@ rule Bootstrap2
 		f : Fibonacci( sequence == 2, value == -1 )
 	then 
 		f.setValue( 1 );		
-		modify( f );
+		update( f );
 		jbi.getLogger().debug( f.getSequence() + " == " + f.getValue() );		
 end
 
 rule Calculate
 	when
 		f1 : Fibonacci( s1 : sequence, value != -1 )
-		f2 : Fibonacci( s2 : sequence == (new Integer( s1.intValue() + 1  ) ), value != -1 )
- 		f3 : Fibonacci( sequence == (new Integer( s2.intValue() + 1 ) ), value == -1 )				
+		f2 : Fibonacci( s2 : sequence == (new Integer( s1 + 1  ) ), value != -1 )
+ 		f3 : Fibonacci( sequence == (new Integer( s2 + 1 ) ), value == -1 )				
 	then	
 		f3.setValue( f1.getValue() + f2.getValue() );
-		modify( f3 );
+		update( f3 );
 		retract( f1 );
 		jbi.getLogger().debug( f3.getSequence() + " == " + f3.getValue() );
 end	

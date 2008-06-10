@@ -22,32 +22,32 @@ global org.apache.servicemix.drools.model.JbiHelper jbi;
  
 rule "Unspecified id"
 	when
-		me : Exchange( status == Exchange.ACTIVE, in : in != null )
-		eval( in.xpath("/test/@id <= 0") )
+		me : Exchange( status == Exchange.ACTIVE, $in : in != null )
+		eval( $in.xpath("/test/@id <= 0") )
 	then
 		jbi.fault( "<fault>Id must be > 0</fault>" );
 end
 
 rule "Route to target1"
 	when
-		me : Exchange( status == Exchange.ACTIVE, in : in != null )
-		eval( in.xpath("/test/@id = 1") )
+		me : Exchange( status == Exchange.ACTIVE, $in : in != null )
+		eval( $in.xpath("/test/@id = 1") )
 	then
 		jbi.route( "service::target1" );
 end
 
 rule "Route to target2"
 	when
-		me : Exchange( status == Exchange.ACTIVE, in : in != null )
-		eval( in.xpath("/test/@id = 2") )
+		me : Exchange( status == Exchange.ACTIVE, $in : in != null )
+		eval( $in.xpath("/test/@id = 2") )
 	then
 		jbi.route( "service::target2" );
 end
 
 rule "Route to target3"
 	when
-		me : Exchange( status == Exchange.ACTIVE, in : in != null )
-		eval( in.getProperty("prop") != null )
+		me : Exchange( status == Exchange.ACTIVE, $in : in != null )
+		eval( $in.getProperty("prop") != null )
 	then
 		jbi.route( "service::target3" );
 end

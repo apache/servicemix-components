@@ -198,14 +198,15 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
     
     protected WorkingMemory createWorkingMemory(MessageExchange exchange) throws Exception {
-        return ruleBase.newWorkingMemory();
+        return ruleBase.newStatefulSession();
+        //return ruleBase.newWorkingMemory();
     }
 
     protected void populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
         memory.setGlobal("jbi", new JbiHelper(this, exchange, memory));
         if (assertedObjects != null) {
             for (Object o : assertedObjects) {
-                memory.assertObject(o);
+                memory.insert(o);
             }
         }
         if (globals != null) {

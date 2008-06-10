@@ -58,7 +58,8 @@ public class JbiHelper {
         this.endpoint = endpoint;
         this.exchange = new Exchange(exchange, endpoint.getNamespaceContext());
         this.memory = memory;
-        this.exchangeFactHandle = this.memory.assertObject(this.exchange);
+        //this.exchangeFactHandle = this.memory.assertObject(this.exchange);
+        this.exchangeFactHandle = this.memory.insert(this.exchange);
     }
 
     public DroolsEndpoint getEndpoint() {
@@ -203,7 +204,8 @@ public class JbiHelper {
     }
 
     protected void update() {
-        this.memory.modifyObject(this.exchangeFactHandle, this.exchange);
+        // this.memory.modifyObject(this.exchangeFactHandle, this.exchange);
+        this.memory.update(this.exchangeFactHandle, this.exchange);
     }
 
 }
