@@ -36,6 +36,8 @@ public class CxfBcJmsTest extends SpringTestSupport {
 
     protected static boolean serversStarted;
     private ServerLauncher sl;
+    private ServerLauncher embeddedLauncher;
+    private ServerLauncher jmsLauncher;
 
     
     
@@ -52,8 +54,10 @@ public class CxfBcJmsTest extends SpringTestSupport {
         
         assertTrue("server did not launch correctly", 
                    launchServer(EmbededJMSBrokerLauncher.class, props, false));
+        embeddedLauncher =  sl;
         assertTrue("server did not launch correctly", 
                 launchServer(MyJMSServer.class, null, false));
+        jmsLauncher = sl;
         
         serversStarted = true;
     }
@@ -62,6 +66,22 @@ public class CxfBcJmsTest extends SpringTestSupport {
         startServers();
         super.setUp();
             
+    }
+    
+    protected void tearDown() throws Exception {
+        try {
+            embeddedLauncher.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + embeddedLauncher.getClass());
+        }
+        try {
+            jmsLauncher.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + jmsLauncher.getClass());
+        } 
+        serversStarted = false;
     }
     
     public boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {

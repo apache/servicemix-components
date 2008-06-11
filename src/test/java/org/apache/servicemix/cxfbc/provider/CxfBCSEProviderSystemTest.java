@@ -64,7 +64,7 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         startServers();
         //super.setUp();
         LOG.info("setUp is invoked");            
-    }
+    }       
     
     public boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
         boolean ok = false;
@@ -79,10 +79,7 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         }
         
         return ok;
-    }
-
-    
-    
+    }    
                
     public void setUpJBI(String beanFile) throws Exception {
         if (context != null) {
@@ -110,6 +107,14 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
             jbi.destroy();
             jbi = null;
         }
+        
+        try {
+            sl.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + sl.getClass());
+        }
+        serversStarted = false;
     }
 
     public void testGreetMeProviderWithOutJBIWrapper() throws Exception {

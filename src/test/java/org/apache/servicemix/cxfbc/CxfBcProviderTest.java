@@ -221,6 +221,8 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello concurrency test 0 2 4 6 8 10 12 14 16 18") >= 0);
+        // Shutdown CXF Service/Endpoint so that next test doesn't fail.
+        factory.getBus().shutdown(true);
     }
     
      

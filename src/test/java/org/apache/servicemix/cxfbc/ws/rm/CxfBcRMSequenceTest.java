@@ -66,22 +66,19 @@ import org.springframework.core.io.ClassPathResource;
 
 public class CxfBcRMSequenceTest extends SpringTestSupport {
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBcRMSequenceTest.class);
-    private static final String GREETMEONEWAY_ACTION 
-        = "http://cxf.apache.org/greeter_control/Greeter/greetMeOneWayRequest";
-    private static final String GREETME_ACTION
-        = "http://cxf.apache.org/greeter_control/Greeter/greetMeRequest";
-    private static final String GREETME_RESPONSE_ACTION
-        = "http://cxf.apache.org/greeter_control/Greeter/greetMeResponse";
+    private static final String GREETMEONEWAY_ACTION = "http://cxf.apache.org/greeter_control/Greeter/greetMeOneWayRequest";
+    private static final String GREETME_ACTION = "http://cxf.apache.org/greeter_control/Greeter/greetMeRequest";
+    private static final String GREETME_RESPONSE_ACTION = "http://cxf.apache.org/greeter_control/Greeter/greetMeResponse";
     private static final QName CONTROL_SERVICE = new QName("http://cxf.apache.org/greeter_control", "ControlService");
     private static final QName GREETER_SERVICE = new QName("http://cxf.apache.org/greeter_control", "GreeterService");
-    
-    
+
+
     private static int decoupledEndpointPort = 10000;
     private static String decoupledEndpoint;
 
-    
-    
-    
+
+
+
     private Bus controlBus;
     private Control control;
     private Bus greeterBus;
@@ -114,12 +111,12 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
     private boolean doTestServerSideMessageLoss = testAll;
     private boolean doTestTerminateOnShutdown = testAll;
 
-    
+
     public void setUp() throws Exception {
         //override super setup
         LOG.info("setUp is invoked");
     }
-    
+
     public void setUpJBI(String beanFile) throws Exception {
         if (context != null) {
             context.refresh();
@@ -130,11 +127,11 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         } else {
             context = createBeanFactory(beanFile);
         }
-                
+
         jbi = (SpringJBIContainer) context.getBean("jbi");
         assertNotNull("JBI Container not found in spring!", jbi);
     }
-    
+
     public void tearDown() throws Exception {
         stopGreeter();
         stopControl();
@@ -149,17 +146,17 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
     }
 
-    /** 
+    /**
       * Server is configured with RM interceptors, client without;
       * Addressing interceptors are installed on either side.
       * The (oneway) application request should be dispatched straight to the
       * implementor.
       */
-    
+
     public void testRMServerPlainClient() throws Exception {
         setUpJBI(null);
         SpringBusFactory bf = new SpringBusFactory();
-        
+
         controlBus = bf.createBus();
         BusFactory.setDefaultBus(controlBus);
         URL wsdl = new ClassPathResource("/wsdl/greeter_control.wsdl").getURL();
@@ -192,7 +189,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
     }
 
-   
+
     public void testOnewayAnonymousAcks() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         if (!doTestOnewayAnonymousAcks) {
@@ -207,7 +204,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         // three application messages plus createSequence
 
         awaitMessages(4, 4);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(4, true);
@@ -217,7 +214,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
 
         // createSequenceResponse plus 3 partial responses
-        
+
         mf.verifyMessages(4, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                         RMConstants.getSequenceAcknowledgmentAction(),
@@ -227,8 +224,8 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessageNumbers(new String[] {null, null, null, null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, true, true}, false);
     }
-    
-    
+
+
     public void testOnewayDeferredAnonymousAcks() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/deferred.xml");
         if (!doTestOnewayDeferredAnonymousAcks) {
@@ -249,7 +246,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         awaitMessages(4, 4);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-                
+
         // three application messages plus createSequence
         mf.verifyMessages(4, true);
         String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), GREETMEONEWAY_ACTION,
@@ -261,15 +258,15 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         // last one should include a sequence acknowledgment
 
         mf.verifyMessages(4, false);
-        expectedActions = 
-            new String[] {RMConstants.getCreateSequenceResponseAction(), null, null, 
+        expectedActions =
+            new String[] {RMConstants.getCreateSequenceResponseAction(), null, null,
                           RMConstants.getSequenceAcknowledgmentAction()};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, null, null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, false, false, true}, false);
     }
-    
-    
+
+
     public void testOnewayDeferredNonAnonymousAcks() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/deferred.xml");
         if (!doTestOnewayDeferredNonAnonymousAcks) {
@@ -284,9 +281,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         awaitMessages(3, 4);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION};
         mf.verifyActions(expectedActions, true);
@@ -298,14 +295,14 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessages(4, false);
         mf.verifyMessageNumbers(new String[4], false);
         mf.verifyAcknowledgements(new boolean[4], false);
-        
-        mf.verifyPartialResponses(3);        
+
+        mf.verifyPartialResponses(3);
         mf.purgePartialResponses();
-  
+
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction()};
         mf.verifyActionsIgnoringPartialResponses(expectedActions);
         mf.purge();
-        
+
         try {
             Thread.sleep(3 * 1000);
         } catch (InterruptedException ex) {
@@ -314,7 +311,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         // a standalone acknowledgement should have been sent from the server
         // side by now
-        
+
         awaitMessages(0, 1);
         mf.reset(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
@@ -323,7 +320,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyAcknowledgements(new boolean[] {true}, false);
 
     }
-    
+
 
     public void testOnewayAnonymousAcksSequenceLength1() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/seqlength1.xml");
@@ -339,14 +336,14 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         // terminateSequence
 
         awaitMessages(6, 6);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(6, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
                                                  RMConstants.getTerminateSequenceAction(),
-                                                 RMConstants.getCreateSequenceAction(), 
+                                                 RMConstants.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
                                                  RMConstants.getTerminateSequenceAction()};
         mf.verifyActions(expectedActions, true);
@@ -358,16 +355,16 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         mf.verifyMessages(6, false);
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
+        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                         RMConstants.getSequenceAcknowledgmentAction(), null,
-                                        RMConstants.getCreateSequenceResponseAction(), 
+                                        RMConstants.getCreateSequenceResponseAction(),
                                         RMConstants.getSequenceAcknowledgmentAction(), null};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, null, null, null, null}, false);
         mf.verifyLastMessage(new boolean[] {false, false, false, false, false, false}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, false, false, true, false}, false);
     }
-   
+
 
     public void testOnewayAnonymousAcksSuppressed() throws Exception {
         if (!doTestOnewayAnonymousAcksSuppressed) {
@@ -377,7 +374,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
     }
 
 
-    public void testOnewayAnonymousAcksSuppressedAsyncExecutor() throws Exception {
+    public void xtestOnewayAnonymousAcksSuppressedAsyncExecutor() throws Exception {
         if (!doTestOnewayAnonymousAcksSuppressedAsyncExecutor) {
             return;
         }
@@ -387,21 +384,21 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
     private void testOnewayAnonymousAcksSuppressed(Executor executor) throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/suppressed.xml");
         init("org/apache/servicemix/cxfbc/ws/rm/suppressed.xml", false, executor);
- 
+
         greeter.greetMeOneWay("once");
         greeter.greetMeOneWay("twice");
         greeter.greetMeOneWay("thrice");
 
         // three application messages plus createSequence
-        
+
         awaitMessages(4, 4, 2000);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
-                                                 GREETMEONEWAY_ACTION, 
+                                                 GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
@@ -412,10 +409,10 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessages(4, false);
         mf.verifyPartialResponses(3, new boolean[3]);
         mf.purgePartialResponses();
-        
+
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction()};
         mf.verifyActions(expectedActions, false);
-        
+
         mf.purge();
         assertEquals(0, outRecorder.getOutboundMessages().size());
         assertEquals(0, inRecorder.getInboundMessages().size());
@@ -423,11 +420,11 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         // allow resends to kick in
         // await multiple of 3 resends to avoid shutting down server
         // in the course of retransmission - this is harmless but pollutes test output
-        
+
         awaitMessages(3, 0, 7500);
-        
+
     }
-    
+
 
     public void testTwowayNonAnonymous() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
@@ -444,14 +441,14 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         // TODO there should be partial responses to the decoupled responses!
 
         awaitMessages(4, 8);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
-        
+
+
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETME_ACTION,
-                                                 GREETME_ACTION, 
+                                                 GREETME_ACTION,
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
@@ -467,9 +464,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         mf.purgePartialResponses();
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
-                                        GREETME_RESPONSE_ACTION, 
-                                        GREETME_RESPONSE_ACTION, 
+        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+                                        GREETME_RESPONSE_ACTION,
+                                        GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, false);
@@ -496,14 +493,14 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         // TODO there should be partial responses to the decoupled responses!
 
         awaitMessages(4, 8);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
-        
+
+
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETME_ACTION,
-                                                 GREETME_ACTION, 
+                                                 GREETME_ACTION,
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
@@ -519,9 +516,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         mf.purgePartialResponses();
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
-                                        GREETME_RESPONSE_ACTION, 
-                                        GREETME_RESPONSE_ACTION, 
+        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+                                        GREETME_RESPONSE_ACTION,
+                                        GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, false);
@@ -545,9 +542,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         awaitMessages(3, 6);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
@@ -562,29 +559,29 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessages(6, false);
         mf.verifyLastMessage(new boolean[6], false);
         mf.verifyAcknowledgements(new boolean[6], false);
-        
+
         mf.verifyPartialResponses(3);
         mf.purgePartialResponses();
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
-                                        GREETME_RESPONSE_ACTION, 
+        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+                                        GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2"}, false);
         mf.purge();
-        
+
 
         // one standalone acknowledgement should have been sent from the client and one
         // should have been received from the server
-   
+
         awaitMessages(1, 0);
         mf.reset(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessageNumbers(new String[1], true);
         mf.verifyLastMessage(new boolean[1], true);
         mf.verifyAcknowledgements(new boolean[] {true}, true);
 
     }
-    
+
     /**
      * A maximum sequence length of 2 is configured for the client only (server allows 10).
      * However, as we use the defaults regarding the including and acceptance
@@ -596,30 +593,30 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
      * or nor acknowledgments are delivered steadily with every response.
      */
 
-    public void testTwowayNonAnonymousMaximumSequenceLength2() throws Exception {
+    public void xtestTwowayNonAnonymousMaximumSequenceLength2() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/seqlength10.xml");
         if (!doTestTwowayNonAnonymousMaximumSequenceLength2) {
             return;
         }
         init("org/apache/servicemix/cxfbc/ws/rm/seqlength10.xml", true);
-        
+
         RMManager manager = greeterBus.getExtension(RMManager.class);
-        assertEquals("Unexpected maximum sequence length.", BigInteger.TEN, 
+        assertEquals("Unexpected maximum sequence length.", BigInteger.TEN,
             manager.getSourcePolicy().getSequenceTerminationPolicy().getMaxLength());
         manager.getSourcePolicy().getSequenceTerminationPolicy().setMaxLength(
             new BigInteger("2"));
-        
+
         greeter.greetMe("one");
         greeter.greetMe("two");
         greeter.greetMe("three");
 
         awaitMessages(7, 13, 5000);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(7, true);
         String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETME_ACTION,
-                                                 GREETME_ACTION, 
+                                                 GREETME_ACTION,
                                                  RMConstants.getTerminateSequenceAction(),
                                                  RMConstants.getSequenceAckAction(),
                                                  RMConstants.getCreateSequenceAction(),
@@ -641,9 +638,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
-                                        GREETME_RESPONSE_ACTION, 
+                                        GREETME_RESPONSE_ACTION,
                                         RMConstants.getTerminateSequenceAction(),
-                                        RMConstants.getCreateSequenceResponseAction(), 
+                                        RMConstants.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", null, null, "1"}, false);
@@ -654,21 +651,21 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         expected[5] = true;
         mf.verifyAcknowledgements(expected, false);
     }
-    
+
 
     public void testTwowayAtMostOnce() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/atmostonce.xml");
         if (!doTestTwowayAtMostOnce) {
             return;
         }
-        
+
         init("org/apache/servicemix/cxfbc/ws/rm/atmostonce.xml");
-        
+
         class MessageNumberInterceptor extends AbstractPhaseInterceptor {
             public MessageNumberInterceptor() {
                 super(Phase.USER_LOGICAL);
             }
-            
+
             public void handleMessage(Message m) {
                 RMProperties rmps = RMContextUtils.retrieveRMProperties(m, true);
                 if (null != rmps && null != rmps.getSequence()) {
@@ -679,7 +676,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         greeterBus.getOutInterceptors().add(new MessageNumberInterceptor());
         RMManager manager = greeterBus.getExtension(RMManager.class);
         manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
-        
+
         greeter.greetMe("one");
         try {
             greeter.greetMe("two");
@@ -690,19 +687,19 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             assertNull("Unexpected sub code.", sf.getSubCode());
             assertTrue("Unexpected reason.", sf.getReason().endsWith("has already been delivered."));
         }
-        
-        // wait for resend to occur 
-        
+
+        // wait for resend to occur
+
         awaitMessages(3, 3, 5000);
-         
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         // Expected outbound:
-        // CreateSequence 
+        // CreateSequence
         // + two requests
-       
+
         String[] expectedActions = new String[3];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();        
+        expectedActions[0] = RMConstants.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
@@ -710,34 +707,34 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessageNumbers(new String[] {null, "1", "1"}, true);
         mf.verifyLastMessage(new boolean[3], true);
         mf.verifyAcknowledgements(new boolean[3], true);
- 
+
         // Expected inbound:
         // createSequenceResponse
         // + 1 response without acknowledgement
         // + 1 fault
-        
+
         mf.verifyMessages(3, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-            GREETME_RESPONSE_ACTION, null};
+                                        GREETME_RESPONSE_ACTION, null};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
         mf.verifyAcknowledgements(new boolean[3] , false);
-        
+
     }
-    
+
     public void testUnknownSequence() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         if (!doTestUnknownSequence) {
             return;
         }
-        
+
         init("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
-        
+
         class SequenceIdInterceptor extends AbstractPhaseInterceptor {
             public SequenceIdInterceptor() {
                 super(Phase.USER_LOGICAL);
             }
-            
+
             public void handleMessage(Message m) {
                 RMProperties rmps = RMContextUtils.retrieveRMProperties(m, true);
                 if (null != rmps && null != rmps.getSequence()) {
@@ -748,7 +745,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         greeterBus.getOutInterceptors().add(new SequenceIdInterceptor());
         RMManager manager = greeterBus.getExtension(RMManager.class);
         manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
-       
+
         try {
             greeter.greetMe("one");
             fail("Expected fault.");
@@ -757,29 +754,29 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             assertEquals("Unexpected fault code.", Soap11.getInstance().getSender(), sf.getFaultCode());
             assertNull("Unexpected sub code.", sf.getSubCode());
             assertTrue("Unexpected reason.", sf.getReason().endsWith("is not a known Sequence identifier."));
-        }   
-        
+        }
+
         // the third inbound message has a SequenceFault header
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
         mf.verifySequenceFault(RMConstants.getUnknownSequenceFaultCode(), false, 1);
     }
-    
+
     public void testInactivityTimeout() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/inactivity-timeout.xml");
         if (!doTestInactivityTimeout) {
             return;
         }
-        
+
         init("org/apache/servicemix/cxfbc/ws/rm/inactivity-timeout.xml");
-       
+
         greeter.greetMe("one");
-        
+
         try {
-            Thread.sleep(500);
+            Thread.sleep(200);
         } catch (InterruptedException ex) {
             // ignore
-        }        
-        
+        }
+
         try {
             greeter.greetMe("two");
             fail("Expected fault.");
@@ -788,19 +785,19 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             assertEquals("Unexpected fault code.", Soap11.getInstance().getSender(), sf.getFaultCode());
             assertNull("Unexpected sub code.", sf.getSubCode());
             assertTrue("Unexpected reason.", sf.getReason().endsWith("is not a known Sequence identifier."));
-        }   
-        
-        awaitMessages(3, 3, 5000);
-        
+        }
+
+        awaitMessages(3, 3, 2000);
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         // Expected outbound:
-        // CreateSequence 
-        // + two requests (second request does not include acknowledgement for first response as 
+        // CreateSequence
+        // + two requests (second request does not include acknowledgement for first response as
         // in the meantime the client has terminated the sequence
-       
+
         String[] expectedActions = new String[3];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();        
+        expectedActions[0] = RMConstants.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
@@ -808,66 +805,66 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessageNumbers(new String[] {null, "1", "2"}, true);
         mf.verifyLastMessage(new boolean[3], true);
         mf.verifyAcknowledgements(new boolean[] {false, false, false}, true);
- 
+
         // Expected inbound:
         // createSequenceResponse
         // + 1 response with acknowledgement
         // + 1 fault without acknowledgement
-        
+
         mf.verifyMessages(3, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-            GREETME_RESPONSE_ACTION, null};
+                                        GREETME_RESPONSE_ACTION, null};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, false} , false);
-        
+
         // the third inbound message has a SequenceFault header
-        
+
         mf.verifySequenceFault(RMConstants.getUnknownSequenceFaultCode(), false, 2);
-     
+
     }
 
-    
+
     public void testOnewayMessageLoss() throws Exception {
         if (!doTestOnewayMessageLoss) {
             return;
         }
         testOnewayMessageLoss(null);
     }
-    
-        
+
+
     public void testOnewayMessageLossAsyncExecutor() throws Exception {
         if (!doTestOnewayMessageLossAsyncExecutor) {
             return;
         }
         testOnewayMessageLoss(Executors.newSingleThreadExecutor());
-    } 
+    }
 
     private void testOnewayMessageLoss(Executor executor) throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/message-loss.xml");
         init("org/apache/servicemix/cxfbc/ws/rm/message-loss.xml", false, executor);
-        
+
         greeterBus.getOutInterceptors().add(new MessageLossSimulator());
         RMManager manager = greeterBus.getExtension(RMManager.class);
         manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
-        
+
         greeter.greetMeOneWay("one");
         greeter.greetMeOneWay("two");
         greeter.greetMeOneWay("three");
         greeter.greetMeOneWay("four");
-        
+
         awaitMessages(7, 5, 10000);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         // Expected outbound:
-        // CreateSequence 
+        // CreateSequence
         // + 4 greetMe messages
         // + at least 2 resends (message may be resent multiple times depending
         // on the timing of the ACKs)
-       
+
         String[] expectedActions = new String[7];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();        
+        expectedActions[0] = RMConstants.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETMEONEWAY_ACTION;
         }
@@ -875,12 +872,12 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3", "4", "2", "4"}, true, false);
         mf.verifyLastMessage(new boolean[7], true);
         mf.verifyAcknowledgements(new boolean[7], true);
- 
+
         // Expected inbound:
         // createSequenceResponse
         // + 2 partial responses to successfully transmitted messages
         // + 2 partial responses to resent messages
-        
+
         mf.verifyMessages(5, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                         RMConstants.getSequenceAcknowledgmentAction(),
@@ -890,10 +887,10 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, null, null, null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, true, true, true}, false);
-  
+
     }
 
-    public void testTwowayMessageLoss() throws Exception {
+    public void xtestTwowayMessageLoss() throws Exception {
         if (!doTestTwowayMessageLoss) {
             return;
         }
@@ -906,11 +903,11 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
         testTwowayMessageLoss(Executors.newSingleThreadExecutor());
     }
-    
+
     private void testTwowayMessageLoss(Executor executor) throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/message-loss.xml");
         init("org/apache/servicemix/cxfbc/ws/rm/message-loss.xml", true, executor);
-        
+
         greeterBus.getOutInterceptors().add(new MessageLossSimulator());
         RMManager manager = greeterBus.getExtension(RMManager.class);
         manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
@@ -919,18 +916,18 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         greeter.greetMe("two");
         greeter.greetMe("three");
         greeter.greetMe("four");
-        
+
         awaitMessages(7, 10, 10000);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         // Expected outbound:
-        // CreateSequence 
+        // CreateSequence
         // + 4 greetMe messages
         // + 2 resends
-       
+
         String[] expectedActions = new String[7];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();        
+        expectedActions[0] = RMConstants.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
@@ -942,43 +939,43 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             expectedAcks[i] = true;
         }
         mf.verifyAcknowledgements(expectedAcks , true);
- 
+
         // Expected inbound:
-        // createSequenceResponse 
-        // + 4 greetMeResponse actions (to original or resent) 
+        // createSequenceResponse
+        // + 4 greetMeResponse actions (to original or resent)
         // + 5 partial responses (to CSR & each of the initial greetMe messages)
         // + at least 2 further partial response (for each of the resends)
-        
+
         mf.verifyPartialResponses(5);
         mf.purgePartialResponses();
-        
+
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION, GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION, GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3", "4"}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, true, true, true}, false);
-  
+
     }
-    
+
     public void testTwowayNonAnonymousNoOffer() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/no-offer.xml");
         if (!doTestTwowayNonAnonymousNoOffer) {
             return;
         }
-        init("org/apache/servicemix/cxfbc/ws/rm/no-offer.xml", true);        
-        
+        init("org/apache/servicemix/cxfbc/ws/rm/no-offer.xml", true);
+
         greeter.greetMe("one");
         // greeter.greetMe("two");
 
         // Outbound expected:
         // CreateSequence + greetMe + CreateSequenceResponse = 3 messages
-  
+
         awaitMessages(3, 6);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  RMConstants.getCreateSequenceResponseAction()};
         mf.verifyActions(expectedActions, true);
@@ -990,7 +987,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.purgePartialResponses();
 
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getCreateSequenceAction(), 
+                                        RMConstants.getCreateSequenceAction(),
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, "1"}, false);
@@ -1013,7 +1010,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         awaitMessages(6, 12, 7500);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(6, true);
         String[] expectedActions = new String[6];
         expectedActions[0] = RMConstants.getCreateSequenceAction();
@@ -1022,26 +1019,26 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
         mf.verifyActions(expectedActions, true);
     }
-  
-    public void testMultiClientOneway() throws Exception {
+
+    public void xtestMultiClientOneway() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         if (!doTestMultiClientOneway) {
             return;
         }
-        
+
         SpringBusFactory bf = new SpringBusFactory();
-        String cfgResource = "org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml";            
+        String cfgResource = "org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml";
         initControl(bf, cfgResource);
-    
+
         class ClientThread extends Thread {
-            
+
             Greeter greeter;
             Bus greeterBus;
             InMessageRecorder inRecorder;
-            OutMessageRecorder outRecorder;  
+            OutMessageRecorder outRecorder;
             String id;
-            
-            ClientThread(SpringBusFactory bf, String cfgResource, int n) { 
+
+            ClientThread(SpringBusFactory bf, String cfgResource, int n) {
                 CxfBcRMSequenceTest.this.initGreeter(bf, cfgResource, false, null);
                 greeter = CxfBcRMSequenceTest.this.greeter;
                 greeterBus = CxfBcRMSequenceTest.this.greeterBus;
@@ -1049,7 +1046,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
                 outRecorder = CxfBcRMSequenceTest.this.outRecorder;
                 id = "client " + n;
             }
-            
+
             public void run() {
                 greeter.greetMeOneWay(id + ": once");
                 greeter.greetMeOneWay(id + ": twice");
@@ -1060,9 +1057,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
                 awaitMessages(4, 4);
             }
         }
-        
+
         ClientThread clients[] = new ClientThread[2];
-        
+
         try {
             for (int i = 0; i < clients.length; i++) {
                 clients[i] = new ClientThread(bf, cfgResource, i);
@@ -1087,7 +1084,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
                 // createSequenceResponse plus 3 partial responses
 
                 mf.verifyMessages(4, false);
-                expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
+                expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                                 RMConstants.getSequenceAcknowledgmentAction(),
                                                 RMConstants.getSequenceAcknowledgmentAction(),
                                                 RMConstants.getSequenceAcknowledgmentAction()};
@@ -1100,31 +1097,31 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             for (int i = 0; i < clients.length; i++) {
                 greeter = clients[i].greeter;
                 greeterBus = clients[i].greeterBus;
-                stopGreeter();                
+                stopGreeter();
             }
             greeter = null;
-        }        
+        }
     }
-    
+
     public void testMultiClientTwoway() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         if (!doTestMultiClientTwoway) {
             return;
         }
-        
+
         SpringBusFactory bf = new SpringBusFactory();
-        String cfgResource = "org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml";            
+        String cfgResource = "org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml";
         initControl(bf, cfgResource);
-    
+
         class ClientThread extends Thread {
-            
+
             Greeter greeter;
             Bus greeterBus;
             InMessageRecorder inRecorder;
-            OutMessageRecorder outRecorder;  
+            OutMessageRecorder outRecorder;
             String id;
-            
-            ClientThread(SpringBusFactory bf, String cfgResource, int n) { 
+
+            ClientThread(SpringBusFactory bf, String cfgResource, int n) {
                 CxfBcRMSequenceTest.this.initGreeter(bf, cfgResource, true, null);
                 greeter = CxfBcRMSequenceTest.this.greeter;
                 greeterBus = CxfBcRMSequenceTest.this.greeterBus;
@@ -1132,7 +1129,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
                 outRecorder = CxfBcRMSequenceTest.this.outRecorder;
                 id = "client " + n;
             }
-            
+
             public void run() {
                 greeter.greetMe(id + ": a");
                 greeter.greetMe(id + ": b");
@@ -1143,9 +1140,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
                 awaitMessages(4, 8);
             }
         }
-        
+
         ClientThread clients[] = new ClientThread[2];
-        
+
         try {
             for (int i = 0; i < clients.length; i++) {
                 clients[i] = new ClientThread(bf, cfgResource, i);
@@ -1157,13 +1154,13 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
             for (int i = 0; i < clients.length; i++) {
                 clients[i].join();
-                MessageFlow mf = new MessageFlow(clients[i].outRecorder.getOutboundMessages(), 
+                MessageFlow mf = new MessageFlow(clients[i].outRecorder.getOutboundMessages(),
                                                  clients[i].inRecorder.getInboundMessages());
-                                
+
                 mf.verifyMessages(4, true);
-                String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+                String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                          GREETME_ACTION,
-                                                         GREETME_ACTION, 
+                                                         GREETME_ACTION,
                                                          GREETME_ACTION};
                 mf.verifyActions(expectedActions, true);
                 mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
@@ -1179,9 +1176,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
                 mf.purgePartialResponses();
 
-                expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
-                                                GREETME_RESPONSE_ACTION, 
-                                                GREETME_RESPONSE_ACTION, 
+                expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+                                                GREETME_RESPONSE_ACTION,
+                                                GREETME_RESPONSE_ACTION,
                                                 GREETME_RESPONSE_ACTION};
                 mf.verifyActions(expectedActions, false);
                 mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, false);
@@ -1193,19 +1190,19 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             for (int i = 0; i < clients.length; i++) {
                 greeter = clients[i].greeter;
                 greeterBus = clients[i].greeterBus;
-                stopGreeter();                
+                stopGreeter();
             }
             greeter = null;
-        }        
+        }
     }
-    
+
     public void testServerSideMessageLoss() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/message-loss-server.xml");
         if (!doTestServerSideMessageLoss) {
             return;
         }
         init("org/apache/servicemix/cxfbc/ws/rm/message-loss-server.xml", true);
-        
+
         // avoid client side message loss
         List<Interceptor> outInterceptors = greeterBus.getOutInterceptors();
         for (Interceptor i : outInterceptors) {
@@ -1221,16 +1218,16 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         greeter.greetMe("one");
         greeter.greetMe("two");
 
-        // outbound: CreateSequence and two greetMe messages 
+        // outbound: CreateSequence and two greetMe messages
 
         awaitMessages(3, 6);
-        
+
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
-        
+
+
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
-                                                 GREETME_ACTION, 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+                                                 GREETME_ACTION,
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2"}, true);
@@ -1246,22 +1243,22 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         mf.purgePartialResponses();
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
-                                        GREETME_RESPONSE_ACTION, 
+        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+                                        GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2"}, false);
         mf.verifyLastMessage(new boolean[3], false);
         mf.verifyAcknowledgements(new boolean[] {false, true, true}, false);
     }
-     
+
     public void testTerminateOnShutdown() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/terminate-on-shutdown.xml");
         if (!doTestTerminateOnShutdown) {
             return;
         }
         init("org/apache/servicemix/cxfbc/ws/rm/terminate-on-shutdown.xml", true);
-        
+
         greeter.greetMeOneWay("neutrophil");
         greeter.greetMeOneWay("basophil");
         greeter.greetMeOneWay("eosinophil");
@@ -1269,33 +1266,33 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
 
         awaitMessages(6, 8);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        
+
         mf.verifyMessages(6, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), 
+        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
-                                                 GREETMEONEWAY_ACTION, 
+                                                 GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION,
                                                  RMConstants.getLastMessageAction(),
                                                  RMConstants.getTerminateSequenceAction()};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3", "4", null}, true);
-        
+
         // inbound: CreateSequenceResponse, out-of-band SequenceAcknowledgement
         // plus 6 partial responses
-        
+
         mf.verifyMessages(8, false);
         mf.verifyMessageNumbers(new String[8], false);
-        
+
         mf.verifyPartialResponses(6);
         mf.purgePartialResponses();
-        
-        
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(), 
+
+
+        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
                                         RMConstants.getSequenceAckAction()};
         mf.verifyActions(expectedActions, false);
         mf.verifyAcknowledgements(new boolean[] {false, true}, false);
-        
-    }    
+
+    }
 
     // --- test utilities ---
 
@@ -1306,14 +1303,14 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
     private void init(String cfgResource, boolean useDecoupledEndpoint) {
         init(cfgResource, useDecoupledEndpoint, null);
     }
-    
+
     private void init(String cfgResource, boolean useDecoupledEndpoint, Executor executor) {
-        
+
         SpringBusFactory bf = new SpringBusFactory();
         initControl(bf, cfgResource);
         initGreeter(bf, cfgResource, useDecoupledEndpoint, executor);
     }
-    
+
     private void initControl(SpringBusFactory bf, String cfgResource) {
         controlBus = bf.createBus();
         BusFactory.setDefaultBus(controlBus);
@@ -1325,8 +1322,8 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
         ControlService cs = new ControlService(wsdl, CONTROL_SERVICE);
         control = cs.getControlPort();
-        
-        assertTrue("Failed to start greeter", control.startGreeter(cfgResource));        
+
+        assertTrue("Failed to start greeter", control.startGreeter(cfgResource));
     }
     
     private void initGreeter(SpringBusFactory bf, String cfgResource, 

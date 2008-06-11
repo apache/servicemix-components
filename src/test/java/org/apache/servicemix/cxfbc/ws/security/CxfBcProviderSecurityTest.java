@@ -55,11 +55,23 @@ public class CxfBcProviderSecurityTest extends SpringTestSupport {
             launchServer(HttpsServer.class, false));
     }
     
+    protected void tearDown() throws Exception {
+        component.getServiceUnitManager().stop("proxy");
+        component.getServiceUnitManager().shutDown("proxy");
+        component.getServiceUnitManager().undeploy("proxy", getServiceUnitPath("provider"));
+        try {
+            sl.stopServer();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + sl.getClass());
+        } 
+    }
+    
     public boolean launchServer(Class<?> clz, boolean inProcess) {
         boolean ok = false;
         try { 
             sl = new ServerLauncher(clz.getName(), inProcess);
-            ok = sl.launchServer();
+            ok = sl.launchServer();            
             assertTrue("server failed to launch", ok);
             
         } catch (IOException ex) {
