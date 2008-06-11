@@ -29,7 +29,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 /**
  * @org.apache.xbean.XBean element="exchangeProcessor"
  */
-public class ScriptExchangeProcessorEndpoint extends ProviderEndpoint implements ScriptEndpointType {
+public class ScriptExchangeProcessorEndpoint extends ProviderEndpoint {
 
     private ExchangeProcessor implementation;
 

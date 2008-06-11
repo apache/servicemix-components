@@ -26,17 +26,17 @@ import org.apache.servicemix.common.DefaultComponent;
  */
 public class ScriptComponent extends DefaultComponent {
 
-    private ScriptEndpointType[] endpoints;
+    private ScriptExchangeProcessorEndpoint[] endpoints;
 
     protected Class[] getEndpointClasses() {
-        return new Class[] {ScriptExchangeProcessorEndpoint.class, ScriptEndpoint.class };
+        return new Class[] {ScriptExchangeProcessorEndpoint.class };
     }
 
-    public ScriptEndpointType[] getEndpoints() {
+    public ScriptExchangeProcessorEndpoint[] getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(ScriptEndpointType[] endpoints) {
+    public void setEndpoints(ScriptExchangeProcessorEndpoint[] endpoints) {
         this.endpoints = endpoints;
     }
 
