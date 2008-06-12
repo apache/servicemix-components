@@ -27,8 +27,8 @@ import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.messaging.MessagingException;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -45,87 +45,125 @@ import org.springframework.core.io.Resource;
  * @author lhein
  */
 public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndpointType {
-    private static Log logger = LogFactory.getLog(ScriptingEndpoint.class);
+    public static final String KEY_CHANNEL = "deliveryChannel";
 
+    public static final String KEY_COMPONENT_NAMESPACE = "componentNamespace";
     public static final String KEY_CONTEXT = "componentContext";
     public static final String KEY_ENDPOINT = "endpoint";
-    public static final String KEY_IN_MSG = "inMessage";
-    public static final String KEY_IN_EXCHANGE = "exchange";
-    public static final String KEY_CHANNEL = "deliveryChannel";
-    public static final String KEY_LOGGER = "log";
-    public static final String KEY_COMPONENT_NAMESPACE = "componentNamespace";
-    public static final String KEY_USER_BINDINGS = "bindings";
     public static final String KEY_ENDPOINTNAME = "endpointname";
-    public static final String KEY_SERVICENAME = "servicename";
+    public static final String KEY_IN_EXCHANGE = "exchange";
+    public static final String KEY_IN_MSG = "inMessage";
     public static final String KEY_INTERFACENAME = "interfacename";
+    public static final String KEY_LOGGER = "log";
     public static final String KEY_SCRIPT = "script";
-
+    public static final String KEY_SERVICENAME = "servicename";
+    public static final String KEY_USER_BINDINGS = "bindings";
     public static final String LANGUAGE_AUTODETECT = "autodetect";
 
-    private ScriptEngineManager manager = null;
-    private ScriptEngine engine = null;
-    private ScriptingMarshalerSupport marshaler = new DefaultScriptingMarshaler();
-    private Resource script;
+    private static Log logger = LogFactory.getLog(ScriptingEndpoint.class);
+
+    private Map<String, Object> bindings;
+    private boolean disableOutput;
+    private ScriptEngine engine;
     private String language = LANGUAGE_AUTODETECT;
     private String logResourceBundle;
+    private ScriptEngineManager manager;
+    private ScriptingMarshalerSupport marshaler = new DefaultScriptingMarshaler();
+    private Resource script;
     private Logger scriptLogger;
-    private boolean disableOutput = false;
-    private Map<String, Object> bindings;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#start()
+    /**
+     * @return
+     * @throws MessagingException
      */
-    public void start() throws Exception {
-        super.start();
-        try {
-            // lazy instatiation
-            this.manager = new ScriptEngineManager();
-
-            if (script == null) {
-                throw new IllegalArgumentException("Property script must be set");
-            } else {
-                // initialize the script engine
-                if (this.language.equalsIgnoreCase(LANGUAGE_AUTODETECT)) {
-                    // detect language by file extension
-                    this.engine = this.manager.getEngineByExtension(FilenameUtils.getExtension(script
-                        .getFilename()));
-                    if (this.engine == null) {
-                        throw new RuntimeException("There is no script engine registered for extension "
-                                                   + FilenameUtils.getExtension(script.getFilename()));
-                    }
-                } else {
-                    // use predefined language from xbean
-                    this.engine = this.manager.getEngineByName(this.language);
-                    if (this.engine == null) {
-                        throw new RuntimeException("There is no script engine for language " + this.language);
-                    }
-                }
+    protected Logger createScriptLogger() throws MessagingException {
+        if (logResourceBundle != null) {
+            try {
+                return getContext().getLogger(getClass().getName(), logResourceBundle);
+            } catch (JBIException e) {
+                throw new MessagingException(e);
             }
-
-            // do custom startup logic
-            marshaler.onStartup(this);
-        } catch (Exception ex) {
-            throw new JBIException(ex);
+        } else {
+            return Logger.getLogger(getClass().getName());
         }
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#stop()
+     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#done(javax.jbi.messaging.MessageExchange)
      */
-    @Override
-    public void stop() throws Exception {
-        try {
-            // do custom startup logic
-            marshaler.onShutdown(this);
-        } catch (Exception ex) {
-            throw new JBIException(ex);
-        }
+    protected void done(MessageExchange messageExchange) throws MessagingException {
+        super.done(messageExchange);
+    }
 
-        super.stop();
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#fail(javax.jbi.messaging.MessageExchange,
+     *      java.lang.Exception)
+     */
+    protected void fail(MessageExchange messageExchange, Exception e) throws MessagingException {
+        super.fail(messageExchange, e);
+    }
+
+    /**
+     * @return the bindings
+     */
+    public Map<String, Object> getBindings() {
+        return this.bindings;
+    }
+
+    /**
+     * *
+     * 
+     * @return Returns the language.
+     */
+    public String getLanguage() {
+        return this.language;
+    }
+
+    /**
+     * *
+     * 
+     * @return Returns the logResourceBundle.
+     */
+    public String getLogResourceBundle() {
+        return this.logResourceBundle;
+    }
+
+    /**
+     * @return the marshaler
+     */
+    public ScriptingMarshalerSupport getMarshaler() {
+        return this.marshaler;
+    }
+
+    /**
+     * @return the script
+     */
+    public Resource getScript() {
+        return this.script;
+    }
+
+    /**
+     * returns the script logger
+     * 
+     * @return the script logger
+     * @throws MessagingException
+     */
+    public Logger getScriptLogger() throws MessagingException {
+        if (scriptLogger == null) {
+            scriptLogger = createScriptLogger();
+        }
+        return scriptLogger;
+    }
+
+    /**
+     * @return the disableOutput
+     */
+    public boolean isDisableOutput() {
+        return this.disableOutput;
     }
 
     /*
@@ -146,27 +184,24 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
         // If this component does not create / send exchanges, you may just
         // throw an
         // UnsupportedOperationException
-        if (exchange.getRole() == Role.CONSUMER) {
-            return;
-        }
+        if (exchange.getRole() == Role.CONSUMER) { 
+            return; 
+        } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+            // The component acts as a provider, this means that another component
+            // has requested our
+            // service
+            // As this exchange is active, this is either an in or a fault (out are
+            // send by this
+            // component)
 
-        // The component acts as a provider, this means that another component
-        // has requested our
-        // service
-        // As this exchange is active, this is either an in or a fault (out are
-        // send by this
-        // component)
-        else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
             // Exchange is finished
             if (exchange.getStatus() == ExchangeStatus.DONE) {
                 return;
-            }
-            // Exchange has been aborted with an exception
-            else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                // Exchange has been aborted with an exception
                 return;
-            }
-            // Fault message
-            else if (exchange.getFault() != null) {
+            } else if (exchange.getFault() != null) {
+                // Fault message
                 done(exchange);
             } else {
                 Bindings scriptBindings = engine.createBindings();
@@ -244,78 +279,10 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                     fail(exchange, ex);
                 }
             }
-        }
-
-        // Unknown role
-        else {
+        } else { 
+            // Unknown role
             throw new MessagingException("ScriptingEndpoint.process(): Unknown role: " + exchange.getRole());
         }
-    }
-
-    /**
-     * @return the script
-     */
-    public Resource getScript() {
-        return this.script;
-    }
-
-    /**
-     * @param script the script to set
-     */
-    public void setScript(Resource script) {
-        this.script = script;
-    }
-
-    /**
-     * @return the marshaler
-     */
-    public ScriptingMarshalerSupport getMarshaler() {
-        return this.marshaler;
-    }
-
-    /**
-     * @param marshaler the marshaler to set
-     */
-    public void setMarshaler(ScriptingMarshalerSupport marshaler) {
-        this.marshaler = marshaler;
-    }
-
-    /**
-     * @return the disableOutput
-     */
-    public boolean isDisableOutput() {
-        return this.disableOutput;
-    }
-
-    /**
-     * @param disableOutput the disableOutput to set
-     */
-    public void setDisableOutput(boolean disableOutput) {
-        this.disableOutput = disableOutput;
-    }
-
-    /**
-     * @return the bindings
-     */
-    public Map<String, Object> getBindings() {
-        return this.bindings;
-    }
-
-    /**
-     * @param bindings the bindings to set
-     */
-    public void setBindings(Map<String, Object> bindings) {
-        this.bindings = bindings;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#fail(javax.jbi.messaging.MessageExchange,
-     *      java.lang.Exception)
-     */
-    protected void fail(MessageExchange messageExchange, Exception e) throws MessagingException {
-        super.fail(messageExchange, e);
     }
 
     /*
@@ -336,38 +303,18 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
         super.sendSync(messageExchange);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#done(javax.jbi.messaging.MessageExchange)
+    /**
+     * @param bindings the bindings to set
      */
-    protected void done(MessageExchange messageExchange) throws MessagingException {
-        super.done(messageExchange);
+    public void setBindings(Map<String, Object> bindings) {
+        this.bindings = bindings;
     }
 
     /**
-     * @return
-     * @throws MessagingException
+     * @param disableOutput the disableOutput to set
      */
-    protected Logger createScriptLogger() throws MessagingException {
-        if (logResourceBundle != null) {
-            try {
-                return getContext().getLogger(getClass().getName(), logResourceBundle);
-            } catch (JBIException e) {
-                throw new MessagingException(e);
-            }
-        } else {
-            return Logger.getLogger(getClass().getName());
-        }
-    }
-
-    /**
-     * *
-     * 
-     * @return Returns the language.
-     */
-    public String getLanguage() {
-        return this.language;
+    public void setDisableOutput(boolean disableOutput) {
+        this.disableOutput = disableOutput;
     }
 
     /**
@@ -378,15 +325,6 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     }
 
     /**
-     * *
-     * 
-     * @return Returns the logResourceBundle.
-     */
-    public String getLogResourceBundle() {
-        return this.logResourceBundle;
-    }
-
-    /**
      * @param logResourceBundle The logResourceBundle to set.
      */
     public void setLogResourceBundle(String logResourceBundle) {
@@ -394,16 +332,17 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     }
 
     /**
-     * returns the script logger
-     * 
-     * @return the script logger
-     * @throws MessagingException
+     * @param marshaler the marshaler to set
      */
-    public Logger getScriptLogger() throws MessagingException {
-        if (scriptLogger == null) {
-            scriptLogger = createScriptLogger();
-        }
-        return scriptLogger;
+    public void setMarshaler(ScriptingMarshalerSupport marshaler) {
+        this.marshaler = marshaler;
+    }
+
+    /**
+     * @param script the script to set
+     */
+    public void setScript(Resource script) {
+        this.script = script;
     }
 
     /**
@@ -413,5 +352,61 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
      */
     public void setScriptLogger(Logger scriptLogger) {
         this.scriptLogger = scriptLogger;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#start()
+     */
+    public void start() throws Exception {
+        super.start();
+        try {
+            // lazy instatiation
+            this.manager = new ScriptEngineManager();
+
+            if (script == null) {
+                throw new IllegalArgumentException("Property script must be set");
+            } else {
+                // initialize the script engine
+                if (this.language.equalsIgnoreCase(LANGUAGE_AUTODETECT)) {
+                    // detect language by file extension
+                    this.engine = this.manager.getEngineByExtension(FilenameUtils.getExtension(script
+                        .getFilename()));
+                    if (this.engine == null) {
+                        throw new RuntimeException("There is no script engine registered for extension "
+                                                   + FilenameUtils.getExtension(script.getFilename()));
+                    }
+                } else {
+                    // use predefined language from xbean
+                    this.engine = this.manager.getEngineByName(this.language);
+                    if (this.engine == null) {
+                        throw new RuntimeException("There is no script engine for language " + this.language);
+                    }
+                }
+            }
+
+            // do custom startup logic
+            marshaler.onStartup(this);
+        } catch (Exception ex) {
+            throw new JBIException(ex);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#stop()
+     */
+    @Override
+    public void stop() throws Exception {
+        try {
+            // do custom startup logic
+            marshaler.onShutdown(this);
+        } catch (Exception ex) {
+            throw new JBIException(ex);
+        }
+
+        super.stop();
     }
 }
