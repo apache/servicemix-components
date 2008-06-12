@@ -50,7 +50,7 @@ public class ScriptingComponentTest extends SpringTestSupport {
         log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
-    
+
     public void testJRuby() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -69,7 +69,7 @@ public class ScriptingComponentTest extends SpringTestSupport {
         log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
-    
+
     public void testJavaScript() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
@@ -88,9 +88,9 @@ public class ScriptingComponentTest extends SpringTestSupport {
         log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
-    
+
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("spring.xml");
     }
-    
+
 }

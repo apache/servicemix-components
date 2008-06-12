@@ -49,7 +49,8 @@ public interface ScriptingMarshalerSupport {
      * @param exchange the message exchange
      * @return the code of the script as string
      */
-    InputStream getScriptCode(final ScriptingEndpoint endpoint, final MessageExchange exchange) throws IOException;
+    InputStream getScriptCode(final ScriptingEndpoint endpoint, final MessageExchange exchange)
+        throws IOException;
 
     /**
      * hook method for filling user beans into the available variables from

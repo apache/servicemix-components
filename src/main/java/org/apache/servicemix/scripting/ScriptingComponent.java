@@ -23,13 +23,14 @@ import org.apache.servicemix.common.DefaultComponent;
 /**
  * @org.apache.xbean.XBean element="component" description="ServiceMix Scripting
  *                         Component"
+ * @author lhein
  */
 public class ScriptingComponent extends DefaultComponent {
 
     private ScriptingEndpointType[] endpoints;
 
     protected Class[] getEndpointClasses() {
-        return new Class[] { ScriptingEndpoint.class };
+        return new Class[] {ScriptingEndpoint.class};
     }
 
     public ScriptingEndpointType[] getEndpoints() {

@@ -230,7 +230,8 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                             send(exchange);
                         }
                     } else {
-                        // if InOnly exchange then we only answer if user wants to
+                        // if InOnly exchange then we only answer if user wants
+                        // to
                         done(exchange);
                     }
                 } catch (ScriptException ex) {
@@ -345,7 +346,6 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     }
 
     /**
-     * 
      * @return
      * @throws MessagingException
      */
@@ -377,7 +377,10 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
         this.language = language;
     }
 
-    /** * @return Returns the logResourceBundle.
+    /**
+     * *
+     * 
+     * @return Returns the logResourceBundle.
      */
     public String getLogResourceBundle() {
         return this.logResourceBundle;
@@ -392,7 +395,8 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
 
     /**
      * returns the script logger
-     * @return  the script logger
+     * 
+     * @return the script logger
      * @throws MessagingException
      */
     public Logger getScriptLogger() throws MessagingException {
@@ -404,7 +408,7 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
 
     /**
      * Sets the logger to use if the script decides to log
-     *
+     * 
      * @param scriptLogger
      */
     public void setScriptLogger(Logger scriptLogger) {

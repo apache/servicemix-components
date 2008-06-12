@@ -26,29 +26,39 @@ import javax.script.Bindings;
  * @author lhein
  */
 public class DefaultScriptingMarshaler implements ScriptingMarshalerSupport {
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.servicemix.script.ScriptingMarshalerSupport#onStartup(org.apache.servicemix.script.ScriptEndpoint)
      */
     public void onStartup(ScriptingEndpoint endpoint) throws Exception {
         // nothing to do for now
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.servicemix.script.ScriptingMarshalerSupport#onShutdown(org.apache.servicemix.script.ScriptEndpoint)
      */
     public void onShutdown(ScriptingEndpoint endpoint) throws Exception {
-        // nothing to do for now        
+        // nothing to do for now
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.script.ScriptingMarshalerSupport#registerUserBeans(org.apache.servicemix.script.ScriptEndpoint, javax.jbi.messaging.MessageExchange, javax.script.Bindings)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.script.ScriptingMarshalerSupport#registerUserBeans(org.apache.servicemix.script.ScriptEndpoint,
+     *      javax.jbi.messaging.MessageExchange, javax.script.Bindings)
      */
     public void registerUserBeans(ScriptingEndpoint endpoint, MessageExchange exchange, Bindings bindings) {
-        // no additional beans needed for now        
+        // no additional beans needed for now
     }
-    
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.script.ScriptingMarshalerSupport#getScriptCode(org.apache.servicemix.script.ScriptEndpoint, javax.jbi.messaging.MessageExchange)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.script.ScriptingMarshalerSupport#getScriptCode(org.apache.servicemix.script.ScriptEndpoint,
+     *      javax.jbi.messaging.MessageExchange)
      */
     public InputStream getScriptCode(ScriptingEndpoint endpoint, MessageExchange exchange) throws IOException {
         return endpoint.getScript().getInputStream();
