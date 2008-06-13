@@ -26,7 +26,7 @@
     </xsd:documentation>
   </xsd:annotation>
 
-  <xsd:include schemaLocation="address/address.xsd"/>
+  <xsd:include schemaLocation="address.xsd"/>
 
   <xsd:element name="purchaseOrder" type="PurchaseOrderType"/>
 
