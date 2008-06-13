@@ -90,14 +90,14 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Received exchange: " + exchange);
                 }
-                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
+                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getCamelContext(), binding, exchange);
                 camelProcessor.process(camelExchange);
                 done(exchange);
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Received exchange: " + exchange);
                 }
-                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getContext(), binding, exchange);
+                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getCamelContext(), binding, exchange);
                 camelProcessor.process(camelExchange);
                 boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
                 if (txSync) {

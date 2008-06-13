@@ -17,6 +17,7 @@
 package org.apache.servicemix.camel;
 
 import javax.jbi.JBIException;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
@@ -140,7 +141,12 @@ public class JbiExchange extends DefaultExchange {
 
     @Override
     protected JbiMessage createOutMessage() {
-        return createMessage("out");
+        if (messageExchange instanceof InOnly) {
+            //just create an Camel Message without trying to create a matching JBI 'out' NormalizedMessage
+            return new JbiMessage();
+        } else {
+            return createMessage("out");
+        }
     }
 
     @Override

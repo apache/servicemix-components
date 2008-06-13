@@ -122,7 +122,7 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
     }
 
     public JbiExchange createExchange() {
-        return new JbiExchange(getContext(), getBinding());
+        return new JbiExchange(getCamelContext(), getBinding());
     }
 
     public JbiBinding getBinding() {
