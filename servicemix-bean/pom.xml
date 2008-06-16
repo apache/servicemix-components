@@ -35,12 +35,6 @@
   <name>ServiceMix :: Bean</name>
   <description>A Bean component</description>
 
-  <scm>
-      <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</connection>
-      <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</developerConnection>
-      <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-bean/trunk</url>
-  </scm>
-
  <properties>
     <servicemix-version>3.2.1</servicemix-version>
   </properties>
