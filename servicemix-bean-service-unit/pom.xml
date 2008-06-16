@@ -23,12 +23,13 @@
 
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>components-pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>servicemix-bean-pom</artifactId>
+    <version>3.3-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.servicemix.tooling</groupId>
   <artifactId>servicemix-bean-service-unit</artifactId>
+  <version>3.3-SNAPSHOT</version>
   <name>ServiceMix :: Archetypes :: BeanServiceUnit</name>
 
   <build>
@@ -37,6 +38,11 @@
 				<inherited>true</inherited>
 				<groupId>org.apache.servicemix.tooling</groupId>
 				<artifactId>res-maven-plugin</artifactId>
+				<configuration>
+					<filters>
+			      <component-version>${pom.version}</component-version>
+					</filters>
+				</configuration>
       </plugin>
     </plugins>
   </build>

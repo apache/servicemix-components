@@ -34,13 +34,7 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-bean</artifactId>
-      <version>${servicemix-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
-      <version>${servicemix-version}</version>
-      <scope>provided</scope>
+      <version>@{component-version}</version>
     </dependency>
   </dependencies>
   <build>
@@ -63,7 +57,7 @@
       <plugin>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>jbi-maven-plugin</artifactId>
-        <version>${servicemix-version}</version>
+        <version>@{jbi-maven-plugin-version}</version>
         <extensions>true</extensions>
       </plugin>
     </plugins>
