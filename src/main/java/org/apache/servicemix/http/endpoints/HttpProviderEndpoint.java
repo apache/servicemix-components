@@ -44,6 +44,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
     //private BasicAuthCredentials basicAuthentication;
     private HttpProviderMarshaler marshaler;
     private String locationURI;
+    private int clientSoTimeout = 60000;
     
     public HttpProviderEndpoint() {
         super();
@@ -136,7 +137,9 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
 
     protected org.mortbay.jetty.client.HttpClient getConnectionPool() {
         HttpComponent comp =  (HttpComponent) getServiceUnit().getComponent();
-        return comp.getConnectionPool();
+        org.mortbay.jetty.client.HttpClient client = comp.getConnectionPool();
+        client.setSoTimeout(getClientSoTimeout());  
+        return client;
     }
     
     protected class Exchange extends SmxHttpExchange {
@@ -148,5 +151,13 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
             handle(this, jbiExchange);
         }
     }
+
+    public int getClientSoTimeout() { 
+        return clientSoTimeout; 
+    } 
+
+    public void setClientSoTimeout(int clientTimeout) { 
+        this.clientSoTimeout = clientTimeout; 
+    } 
 
 }
