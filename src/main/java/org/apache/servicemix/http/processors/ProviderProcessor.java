@@ -330,7 +330,9 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
 
     protected HttpClient getClient() {
         HttpComponent comp =  (HttpComponent) endpoint.getServiceUnit().getComponent();
-        return comp.getClient();
+        HttpClient client = comp.getClient();
+        client.getParams().setSoTimeout(endpoint.getTimeout());
+        return client;
     }
 
     public static class StreamingRequestEntity implements RequestEntity {

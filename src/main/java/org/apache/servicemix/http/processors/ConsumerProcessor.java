@@ -79,7 +79,10 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
         this.soapHelper = new SoapHelper(endpoint);
         this.locks = new ConcurrentHashMap<String, Continuation>();
         this.exchanges = new ConcurrentHashMap<String, MessageExchange>();
-        this.suspentionTime = getConfiguration().getConsumerProcessorSuspendTime();
+        this.suspentionTime = endpoint.getTimeout();
+        if (suspentionTime <= 0) {
+            this.suspentionTime = getConfiguration().getConsumerProcessorSuspendTime();
+        }
     }
     
     public SslParameters getSsl() {
@@ -162,6 +165,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                     boolean result = cont.suspend(suspentionTime);
                     exchange = exchanges.remove(exchange.getExchangeId());
                     if (!result) {
+                        locks.remove(exchange.getExchangeId());
                         throw new Exception("Error sending exchange: aborted");
                     }
                     request.removeAttribute(MessageExchange.class.getName());
@@ -172,7 +176,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                 sendFault(fault, request, response);
                 return;
             } catch (Exception e) {
-                SoapFault fault = new SoapFault(e); 
+                SoapFault fault = new SoapFault(e);
                 sendFault(fault, request, response);
                 return;
             }
