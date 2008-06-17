@@ -22,8 +22,8 @@
 
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>servicemix-bean-pom</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <artifactId>components-pom</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
@@ -36,7 +36,14 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <servicemix-version>3.2.1</servicemix-version>
   </properties>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-bean/trunk</url>
+  </scm>
 
   <dependencies>
     <dependency>
