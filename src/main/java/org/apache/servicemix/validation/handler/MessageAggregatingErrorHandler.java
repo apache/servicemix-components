@@ -30,6 +30,7 @@ import org.xml.sax.SAXParseException;
 
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.validation.ValidationEndpoint;
 
 /**
  * An implementation of {@link ErrorHandler} which aggregates all warnings and
@@ -41,12 +42,12 @@ public class MessageAggregatingErrorHandler implements MessageAwareErrorHandler 
     
     private static final String OPEN_CDATA = "<![CDATA[";
     private static final String CLOSE_CDATA = "]]>";
-    private static final String OPEN_ERROR = "<error>";
-    private static final String CLOSE_ERROR = "</error>";
-    private static final String OPEN_FATAL = "<fatalError>";
-    private static final String CLOSE_FATAL = "</fataError>";
-    private static final String OPEN_WARNING = "<warning>";
-    private static final String CLOSE_WARNING = "</warning>";
+    private static final String OPEN_ERROR = ValidationEndpoint.TAG_ERROR_START;
+    private static final String CLOSE_ERROR = ValidationEndpoint.TAG_ERROR_END;
+    private static final String OPEN_FATAL = ValidationEndpoint.TAG_FATAL_START;
+    private static final String CLOSE_FATAL = ValidationEndpoint.TAG_FATAL_END;
+    private static final String OPEN_WARNING = ValidationEndpoint.TAG_WARNING_START;
+    private static final String CLOSE_WARNING = ValidationEndpoint.TAG_WARNING_END;
     
     private String openRootElement;
     private String closeRootElement;

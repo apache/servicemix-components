@@ -68,9 +68,9 @@ public class ValidationEndpoint extends ProviderEndpoint implements
 
     public static final String TAG_ERROR_END = "</error>";
 
-    public static final String TAG_FATAL_START = "<fatal>";
+    public static final String TAG_FATAL_START = "<fatalError>";
 
-    public static final String TAG_FATAL_END = "</fatal>";
+    public static final String TAG_FATAL_END = "</fatalError>";
 
     private String handlingErrorMethod = "FAULT_JBI";
 
