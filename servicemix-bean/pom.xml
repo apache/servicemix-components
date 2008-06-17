@@ -34,6 +34,10 @@
   <name>ServiceMix :: Bean</name>
   <description>A Bean component</description>
 
+  <properties>
+    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
