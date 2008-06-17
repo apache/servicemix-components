@@ -28,7 +28,7 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-bean</artifactId>
-  <version>3.3-SNAPSHOT</version>
+  <version>4.0-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: Bean</name>
