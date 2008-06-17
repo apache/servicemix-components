@@ -33,6 +33,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.xml.sax.SAXException;
+
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jbi.FaultException;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -42,7 +44,6 @@ import org.apache.servicemix.validation.handler.CountingErrorHandlerFactory;
 import org.apache.servicemix.validation.handler.MessageAwareErrorHandler;
 import org.apache.servicemix.validation.handler.MessageAwareErrorHandlerFactory;
 import org.springframework.core.io.Resource;
-import org.xml.sax.SAXException;
 
 /**
  * @org.apache.xbean.XBean element="endpoint"
@@ -110,7 +111,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
                     } else {
                         schemaSource = new StreamSource(schemaResource
                                 .getInputStream(), schemaResource.getURL()
-                                .toExternalForm());
+                                    .toExternalForm());
                     }
                 }
                 schema = factory.newSchema(schemaSource);
@@ -140,7 +141,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
      */
     @Override
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in)
-            throws Exception {
+        throws Exception {
         NormalizedMessage out = exchange.createMessage();
         Fault fault = exchange.createFault();
         this.startValidation(exchange, in, out, fault);
@@ -191,7 +192,8 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         try {
             // Only DOMSource and SAXSource are allowed for validating
             // See
-            // http://java.sun.com/j2se/1.5.0/docs/api/javax/xml/validation/Validator.html#validate(javax.xml.transform.Source,%20javax.xml.transform.Result)
+            // http://java.sun.com/j2se/1.5.0/docs/api/javax/xml/validation/
+            // Validator.html#validate(javax.xml.transform.Source,%20javax.xml.transform.Result)
             // As we expect a DOMResult as output, we must ensure that the input
             // is a DOMSource
             DOMSource src = sourceTransformer.toDOMSource(in.getContent());
@@ -301,7 +303,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
      *      java.lang.Exception)
      */
     protected void fail(MessageExchange messageExchange, Exception e)
-            throws MessagingException {
+        throws MessagingException {
         super.fail(messageExchange, e);
     }
 
@@ -311,7 +313,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
      * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#send(javax.jbi.messaging.MessageExchange)
      */
     protected void send(MessageExchange messageExchange)
-            throws MessagingException {
+        throws MessagingException {
         super.send(messageExchange);
     }
 
@@ -321,7 +323,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
      * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#sendSync(javax.jbi.messaging.MessageExchange)
      */
     protected void sendSync(MessageExchange messageExchange)
-            throws MessagingException {
+        throws MessagingException {
         super.sendSync(messageExchange);
     }
 
@@ -331,7 +333,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
      * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#done(javax.jbi.messaging.MessageExchange)
      */
     protected void done(MessageExchange messageExchange)
-            throws MessagingException {
+        throws MessagingException {
         super.done(messageExchange);
     }
 

@@ -21,56 +21,54 @@ import javax.jbi.messaging.MessagingException;
 import org.xml.sax.ErrorHandler;
 
 public interface MessageAwareErrorHandler extends ErrorHandler {
-	
+
     /**
      * Does the error handler contain any error messages?
      * 
      * @return
      */
-	public boolean hasErrors();
+    boolean hasErrors();
 
     /**
      * Return the number of warnings.
      * 
      * @return
      */
-	public int getWarningCount();
+    int getWarningCount();
 
     /**
      * Return the number of errors.
      * 
      * @return
      */
-	public int getErrorCount();
+    int getErrorCount();
 
     /**
      * Return the number of fatal errors.
      * 
      * @return
      */
-    public int getFatalErrorCount();
+    int getFatalErrorCount();
 
-	/**
-	 * Does this ErrorHandler implementation capture error messages?
-	 * 
-	 * @return
-	 */
-	public boolean capturesMessages();
-	
-	/**
-	 * Get the messages from this ErrorHandler in a particular format.
-	 * 
-	 * @return
-	 */
-	public Object getMessagesAs(Class format) throws MessagingException;
-	
-	/**
-	 * Does the message support a given format?
-	 * 
-	 * @param clazz
-	 * 		The Class of the format for which support is required.
-	 * @return
-	 */
-	public boolean supportsMessageFormat(Class format);
-	
+    /**
+     * Does this ErrorHandler implementation capture error messages?
+     * 
+     * @return
+     */
+    boolean capturesMessages();
+
+    /**
+     * Get the messages from this ErrorHandler in a particular format.
+     * 
+     * @return
+     */
+    Object getMessagesAs(Class format) throws MessagingException;
+
+    /**
+     * Does the message support a given format?
+     * 
+     * @param clazz The Class of the format for which support is required.
+     * @return
+     */
+    boolean supportsMessageFormat(Class format);
 }

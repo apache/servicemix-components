@@ -41,7 +41,7 @@ public class ValidationComponentTest extends SpringTestSupport {
     private static final String VALID_FILE = "target/test-classes/requestValid.xml";
     private static final String INVALID_FILE = "target/test-classes/requestInvalid.xml";
     
-    public void testValidationOK_Flow() throws Exception {
+    public void testValidationOKFlow() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "service"));
@@ -63,7 +63,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
-    public void testValidationNotOK_Flow() throws Exception {
+    public void testValidationNotOKFlow() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "service"));
@@ -80,7 +80,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
-    public void testValidationOK_Jbi() throws Exception {
+    public void testValidationOKJbi() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "service2"));
@@ -102,7 +102,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
-    public void testValidationNotOK_Jbi() throws Exception {
+    public void testValidationNotOKJbi() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "service2"));
@@ -119,7 +119,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
     }
     
-    public void testValidationOK_Flow_Captures() throws Exception {
+    public void testValidationOKFlowCaptures() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "service3"));
@@ -141,7 +141,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         client.done(me);
     }
     
-    public void testValidationNotOK_Flow_Captures() throws Exception {
+    public void testValidationNotOKFlowCaptures() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "service3"));

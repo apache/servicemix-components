@@ -25,11 +25,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXException;
 
 /**
  * An implementation of {@link ErrorHandler} which aggregates all warnings and
@@ -39,14 +39,14 @@ import org.xml.sax.SAXException;
  */
 public class MessageAggregatingErrorHandler implements MessageAwareErrorHandler {
     
-    private static final String openCDATA = "<![CDATA[";
-    private static final String closeCDATA = "]]>";
-    private static final String openError = "<error>";
-    private static final String closeError = "</error>";
-    private static final String openFatalError = "<fatalError>";
-    private static final String closeFatalError = "</fataError>";
-    private static final String openWarning = "<warning>";
-    private static final String closeWarning = "</warning>";
+    private static final String OPEN_CDATA = "<![CDATA[";
+    private static final String CLOSE_CDATA = "]]>";
+    private static final String OPEN_ERROR = "<error>";
+    private static final String CLOSE_ERROR = "</error>";
+    private static final String OPEN_FATAL = "<fatalError>";
+    private static final String CLOSE_FATAL = "</fataError>";
+    private static final String OPEN_WARNING = "<warning>";
+    private static final String CLOSE_WARNING = "</warning>";
     
     private String openRootElement;
     private String closeRootElement;
@@ -134,7 +134,8 @@ public class MessageAggregatingErrorHandler implements MessageAwareErrorHandler 
         }
         
         if (pathElements.length > 0) {
-            for (int i = 1, j = pathElements.length - 1; i < pathElements.length; i++, j--) {
+            int j = pathElements.length - 1;
+            for (int i = 1; i < pathElements.length; i++, j--) {
                 openRootElementSB.append("<").append(pathElements[i]).append(">");
                 closeRootElementSB.append("</").append(pathElements[j]).append(">");
             }
@@ -182,13 +183,13 @@ public class MessageAggregatingErrorHandler implements MessageAwareErrorHandler 
         ++warningCount;
 
         // open warning and CDATA tags
-        messages.append(openWarning).append(openCDATA);
+        messages.append(OPEN_WARNING).append(OPEN_CDATA);
         
         // append the fatal error message
         appendErrorMessage(e);
         
         // close CDATA and warning tags
-        messages.append(closeCDATA).append(closeWarning);
+        messages.append(CLOSE_CDATA).append(CLOSE_WARNING);
     }
 
     /*  (non-Javadoc)
@@ -198,13 +199,13 @@ public class MessageAggregatingErrorHandler implements MessageAwareErrorHandler 
         ++errorCount;
 
         // open fatal error and CDATA tags
-        messages.append(openError).append(openCDATA);
+        messages.append(OPEN_ERROR).append(OPEN_CDATA);
         
         // append the error message
         appendErrorMessage(e);
         
         // close CDATA and error tags
-        messages.append(closeCDATA).append(closeError);
+        messages.append(CLOSE_CDATA).append(CLOSE_ERROR);
     }
 
     /*  (non-Javadoc)
@@ -214,13 +215,13 @@ public class MessageAggregatingErrorHandler implements MessageAwareErrorHandler 
         ++fatalErrorCount;
         
         // open fatal error and CDATA tags
-        messages.append(openFatalError).append(openCDATA);
+        messages.append(OPEN_FATAL).append(OPEN_CDATA);
         
         // append the fatal error message
         appendErrorMessage(e);
         
         // close CDATA and fatal error tags
-        messages.append(closeCDATA).append(closeFatalError);
+        messages.append(CLOSE_CDATA).append(CLOSE_FATAL);
     }
 
     /**

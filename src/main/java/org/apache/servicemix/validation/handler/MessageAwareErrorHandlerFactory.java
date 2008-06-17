@@ -20,14 +20,12 @@ package org.apache.servicemix.validation.handler;
  * Simple factory interface to a MessageAwareErrorHandler implementation
  * 
  * @author gmcdonald
- *
  */
-public interface MessageAwareErrorHandlerFactory {
-    
+public interface MessageAwareErrorHandlerFactory {    
     /**
      * Create and return a concrete MessageAwareErrorHandler implementation
      * 
      * @return
      */
-    public MessageAwareErrorHandler createMessageAwareErrorHandler();
+    MessageAwareErrorHandler createMessageAwareErrorHandler();
 }

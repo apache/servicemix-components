@@ -18,9 +18,8 @@ package org.apache.servicemix.validation.handler;
 
 import javax.jbi.messaging.MessagingException;
 
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * A simple implementation of {@link ErrorHandler} which just counts the number of warnings, errors and fatal errors.
@@ -85,21 +84,25 @@ public class CountingErrorHandler implements MessageAwareErrorHandler {
      * @see org.apache.servicemix.components.validation.MessageAwareErrorHandler#capturesMessages()
      */
     public boolean capturesMessages() {
-    	return false;
+        return false;
     }
 
-	/* (non-Javadoc)
-	 * @see org.apache.servicemix.components.validation.MessageAwareErrorHandler#getMessagesAs(java.lang.Class)
-	 */
-	public Object getMessagesAs(Class format) throws MessagingException {
-		throw new MessagingException("Unsupported message format: " + format.getName());
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.components.validation.MessageAwareErrorHandler#getMessagesAs(java.lang.Class)
+     */
+    public Object getMessagesAs(Class format) throws MessagingException {
+        throw new MessagingException("Unsupported message format: " + format.getName());
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.servicemix.components.validation.MessageAwareErrorHandler#supportsMessageFormat(java.lang.Class)
-	 */
-	public boolean supportsMessageFormat(Class format) {
-		return false;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.servicemix.components.validation.MessageAwareErrorHandler#supportsMessageFormat(java.lang.Class)
+     */
+    public boolean supportsMessageFormat(Class format) {
+        return false;
+    }
     
 }
