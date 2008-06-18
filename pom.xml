@@ -36,7 +36,7 @@
 
   <properties>
     <servicemix-version>3.2.1</servicemix-version>
-    <servicemix-components-common-version>4.0-SNAPSHOT</servicemix-components-common-version>
+    <servicemix-common-version>4.0-SNAPSHOT</servicemix-common-version>
   </properties>
 
   <modules>
