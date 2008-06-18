@@ -18,9 +18,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>shared-libraries-pom</artifactId>
@@ -45,26 +43,30 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-soap</artifactId>
       <version>${servicemix-common-version}</version>
-    </dependency>
+    </dependency>    
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-soap2</artifactId>
       <version>${servicemix-common-version}</version>
-    </dependency>
+    </dependency>    
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.13</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>wsdl4j</groupId>
-      <artifactId>wsdl4j</artifactId>
-      <scope>provided</scope>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.servicemix</groupId>
+          <artifactId>servicemix-jbi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

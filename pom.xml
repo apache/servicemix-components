@@ -41,7 +41,6 @@
 
   <modules>
     <module>servicemix-shared</module>
-    <module>servicemix-shared-compat</module>
   </modules>
 
 </project>
