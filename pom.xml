@@ -20,18 +20,24 @@
 -->
 
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>deployables</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <artifactId>components-pom</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
-  <artifactId>sharedlibraries</artifactId>
-  <version>3.3-SNAPSHOT</version>
-  <name>ServiceMix :: Shared Libraries</name>
+  <artifactId>shared-libraries-pom</artifactId>
+  <version>4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+  
+  <name>ServiceMix :: Shared Libraries</name>
+
+
+  <properties>
+    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-components-common-version>4.0-SNAPSHOT</servicemix-components-common-version>
+  </properties>
 
   <modules>
     <module>servicemix-shared</module>
