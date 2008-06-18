@@ -72,6 +72,7 @@ import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.Service;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
+import org.apache.cxf.service.model.OperationInfo;
 import org.apache.cxf.service.model.SchemaInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.Conduit;
@@ -377,10 +378,15 @@ public class CxfBcProvider extends ProviderEndpoint implements
                                                         .getAttribute("targetNamespace"))) {
 
                             sInfo.setElement(ele);
+                            
                         }
                     }
                 }
                 serInfo.setProperty(WSDLServiceBuilder.WSDL_DEFINITION, null);
+                serInfo.getInterface().setProperty(WSDLServiceBuilder.WSDL_PORTTYPE, null);
+                for (OperationInfo opInfo : serInfo.getInterface().getOperations()) {
+                    opInfo.setProperty(WSDLServiceBuilder.WSDL_OPERATION, null);
+                }
                 description = WSDLFactory.newInstance().newWSDLWriter()
                         .getDocument(swBuilder.build());
 

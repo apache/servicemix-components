@@ -66,6 +66,8 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
 
     }
 
+    
+    
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext(
