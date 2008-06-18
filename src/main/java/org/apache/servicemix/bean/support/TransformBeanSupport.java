@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.bean.support;
 
-import javax.annotation.Resource;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -34,13 +33,20 @@ import org.apache.servicemix.components.util.CopyTransformer;
  */
 public abstract class TransformBeanSupport extends BeanSupport implements MessageExchangeListener {
     
-    @Resource
     private ExchangeTarget target;
 
     private boolean copyProperties = true;
     private boolean copyAttachments = true;
 
     protected TransformBeanSupport() {
+    }
+
+    public ExchangeTarget getTarget() {
+        return target;
+    }
+
+    public void setTarget(ExchangeTarget target) {
+        this.target = target;
     }
 
     public void onMessageExchange(MessageExchange exchange) {
