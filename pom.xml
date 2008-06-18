@@ -46,6 +46,8 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+
     <cxf-version>2.1.1-SNAPSHOT</cxf-version>
     <jetty-version>6.1.6</jetty-version>
     <spring-version>2.0.6</spring-version>
@@ -65,11 +67,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-shared</artifactId>
-      <version>${servicemix-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
@@ -79,6 +76,11 @@
       <artifactId>servicemix-services</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-shared</artifactId>
+      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
