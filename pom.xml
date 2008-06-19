@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,26 +17,38 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>bindingcomponents</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <artifactId>components-pom</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
-
-  <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-file</artifactId>
+  <version>4.0-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
+  
   <name>ServiceMix :: File</name>
   <description>A File component</description>
+  
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-file/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-file/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-file/trunk</url>
+  </scm>
 
+  <properties>
+    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+  </properties>
+    
   <dependencies>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
-      <version>${servicemix-version}</version>
+      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
@@ -48,17 +59,14 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
-
+  
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>jbi-maven-plugin</artifactId>
-        <version>${servicemix-version}</version>
         <extensions>true</extensions>
         <configuration>
           <type>binding-component</type>
@@ -68,7 +76,6 @@
       <plugin>
         <groupId>org.apache.xbean</groupId>
         <artifactId>maven-xbean-plugin</artifactId>
-        <version>${xbean-version}</version>
         <executions>
           <execution>
             <goals>
@@ -80,17 +87,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <workingDirectory>${basedir}</workingDirectory>
-          <includes>
-            <include>**/*Test.*</include>
-          </includes>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
-
 </project>
