@@ -37,17 +37,17 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-common</artifactId>
-      <version>${servicemix-common-version}</version>
+      <version>${pom.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-soap</artifactId>
-      <version>${servicemix-common-version}</version>
+      <version>${pom.version}</version>
     </dependency>    
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-soap2</artifactId>
-      <version>${servicemix-common-version}</version>
+      <version>${pom.version}</version>
     </dependency>    
     <dependency>
       <groupId>org.apache.servicemix</groupId>

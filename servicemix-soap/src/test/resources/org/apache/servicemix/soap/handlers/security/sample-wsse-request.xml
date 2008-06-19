@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:q0="http://www.gawda.org/GAWDA/"
+  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+  <!--
+    
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+    
+    http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    
+  -->
+  <soapenv:Header>
+    <wsse:Security soapenv:mustUnderstand="1">
+      <wsse:UsernameToken>
+        <wsse:Username>first</wsse:Username>
+        <wsse:Password>secret</wsse:Password>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </soapenv:Header>
+  <soapenv:Body>
+    <q0:PriceCheckRequest>
+      <q0:PriceCheckRequestHeader>
+        <q0:PriceCheckRequestID>Test Request</q0:PriceCheckRequestID>
+        <q0:PriceCheckRequestIssueDate>2005-11-15T15:22:42.296Z</q0:PriceCheckRequestIssueDate>
+        <q0:SellerDB>512001</q0:SellerDB>
+      </q0:PriceCheckRequestHeader>
+      <q0:PriceCheckRequestItemDetails>
+        <q0:PriceCheckRequestItemDetail>
+          <q0:BuyerLineItemNum>100</q0:BuyerLineItemNum>
+          <q0:ManufacturerItemNum>3M 1100</q0:ManufacturerItemNum>
+          <q0:RequestedQuantity>1</q0:RequestedQuantity>
+          <q0:UnitOfMeasurement>EA</q0:UnitOfMeasurement>
+        </q0:PriceCheckRequestItemDetail>
+      </q0:PriceCheckRequestItemDetails>
+    </q0:PriceCheckRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

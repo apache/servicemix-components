@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<wsdl:description targetNamespace="http://example.org/Person" 
+  xmlns:tns="http://example.org/Person"
+  xmlns:wsdl="http://www.w3.org/2006/01/wsdl" 
+  xmlns:whttp="http://www.w3.org/2006/01/wsdl/http"
+  xmlns:wsdlx="http://www.w3.org/2006/01/wsdl-extensions" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.w3.org/2006/01/wsdl http://www.w3.org/2006/03/wsdl/wsdl20.xsd
+                      http://www.w3.org/2006/01/wsdl-extensions http://www.w3.org/2002/ws/desc/ns/wsdl-extensions.xsd
+                      http://www.w3.org/2006/01/wsdl/http http://www.w3.org/2002/ws/desc/ns/http.xsd">
+  
+  <wsdl:documentation>This test shows a valid use of the HTTP binding.</wsdl:documentation>
+  
+  <wsdl:types>
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://example.org/Person">
+      <xsd:element name="GetPerson">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetPersonResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="ssn" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="AddPerson">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="ssn" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="UpdatePerson">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="ssn" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="UpdatePersonResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+            <xsd:element name="ssn" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="DeletePerson">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="UnknownPersonFault">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="PersonAlreadyExistFault">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="id" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  
+  <wsdl:interface name="PersonInterface">
+    <wsdl:operation name="getPerson" 
+      pattern="http://www.w3.org/2006/01/wsdl/in-out" 
+      style="http://www.w3.org/2006/01/wsdl/style/iri"
+      wsdlx:safe="true">
+      <wsdl:input element="tns:GetPerson" />
+      <wsdl:output element="tns:GetPersonResponse" />
+      <wsdl:infault ref="tns:unknownPersonFault" />
+    </wsdl:operation>
+    <wsdl:operation name="updatePerson"
+      pattern="http://www.w3.org/2006/01/wsdl/in-out"
+      style="http://www.w3.org/2006/01/wsdl/style/iri">
+      <wsdl:input element="tns:UpdatePerson" />
+      <wsdl:output element="tns:UpdatePersonResponse" />
+      <wsdl:infault ref="tns:unknownPersonFault" />
+    </wsdl:operation>
+    <wsdl:operation name="addPerson"
+      pattern="http://www.w3.org/2006/01/wsdl/robust-in-only"
+      style="http://www.w3.org/2006/01/wsdl/style/iri">
+      <wsdl:input element="tns:AddPerson" />
+      <wsdl:outfault ref="tns:personAlreadyExistFault" />
+    </wsdl:operation>
+    <wsdl:operation name="deletePerson"
+      pattern="http://www.w3.org/2006/01/wsdl/robust-in-only"
+      style="http://www.w3.org/2006/01/wsdl/style/iri">
+      <wsdl:input element="tns:DeletePerson" />
+      <wsdl:outfault ref="tns:unknownPersonFault" />
+    </wsdl:operation>
+    <wsdl:fault name="personAlreadyExistFault" element="tns:PersonAlreadyExistFault" />
+    <wsdl:fault name="unknownPersonFault" element="tns:UnknownPersonFault" />
+  </wsdl:interface>
+  
+  <wsdl:binding name="PersonHTTPBinding" 
+    interface="tns:PersonInterface" 
+    type="http://www.w3.org/2006/01/wsdl/http"
+    whttp:version="1.1">
+    <wsdl:operation ref="tns:getPerson"
+      whttp:location="{id}" 
+      whttp:method="GET">
+       </wsdl:operation>
+    <wsdl:operation ref="tns:updatePerson"
+      whttp:inputSerialization="application/x-www-form-urlencoded"
+      whttp:location="{id}"
+      whttp:method="POST" />
+    <wsdl:operation ref="tns:addPerson"
+      whttp:inputSerialization="application/x-www-form-urlencoded"
+      whttp:location="{id}"
+      whttp:method="PUT" />
+    <wsdl:operation ref="tns:deletePerson"
+      whttp:location="{id}"
+      whttp:method="DELETE" />
+  </wsdl:binding>
+  
+  
+  <wsdl:service name="PersonService" interface="tns:PersonInterface">
+    <wsdl:documentation>The Person service.</wsdl:documentation>
+    <wsdl:endpoint name="PersonHTTPEndpoint" 
+      binding="tns:PersonHTTPBinding" 
+      address="http://example.org/person"
+      whttp:authenticationType="basic"
+      whttp:authenticationRealm="example.org Realm" />
+  </wsdl:service>
+  
+</wsdl:description>

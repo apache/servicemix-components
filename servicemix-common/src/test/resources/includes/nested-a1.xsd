@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://mycompany.com/nested/types"
+	xmlns:tns="http://mycompany.com/nested/types"
+	elementFormDefault="qualified">
+	<include schemaLocation="nested-b1.xsd" />
+    <include schemaLocation="nested-b2.xsd" />
+    <include schemaLocation="nested-b3.xsd" />
+	<complexType name="response">
+		<sequence>
+			<element name="person" type="tns:person"></element>
+			<element name="approved" type="boolean"></element>
+		</sequence>
+	</complexType>
+</schema>
