@@ -38,6 +38,16 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+    <servicemix.osgi.import>
+      org.apache.commons.jexl*;resolution:=optional,
+      org.apache.servicemix;resolution:=optional,
+      org.apache.servicemix.client*;resolution:=optional,
+      org.apache.servicemix.common.osgi,
+      org.apache.servicemix.components*;resolution:=optional,
+      org.apache.servicemix.expression*;resolution:=optional,
+      org.apache.servicemix.jbi*;resolution:=optional,
+      *
+	</servicemix.osgi.import>
   </properties>
 
   <scm>
