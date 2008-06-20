@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -16,12 +16,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
@@ -32,9 +27,15 @@
   <artifactId>servicemix-camel</artifactId>
   <packaging>jbi-component</packaging>
   <version>4.0-SNAPSHOT</version>
-
+  
   <name>ServiceMix :: Camel</name>
   <description>Camel Service Engine</description>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-camel/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-camel/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-camel/trunk</url>
+  </scm>
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
@@ -50,9 +51,9 @@
       org.apache.servicemix.expression*;resolution:=optional,
       org.apache.servicemix.jbi*;resolution:=optional,
       *
-	</servicemix.osgi.import>
+  	</servicemix.osgi.import>
   </properties>
-
+  
   <dependencies>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -100,52 +101,27 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
-    </dependency>   
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-aop</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-remoting</artifactId>
-      <version>${spring-version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-web</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-aop</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>aopalliance</groupId>
-          <artifactId>aopalliance</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <scope>provided</scope>
     </dependency>
-
     <!-- testing -->
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -159,7 +135,6 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-
     <!-- provided dependencies -->
     <dependency>
       <groupId>stax</groupId>
@@ -172,7 +147,7 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
+  
   <build>
     <plugins>
       <plugin>
@@ -184,20 +159,13 @@
           <component>org.apache.servicemix.camel.CamelJbiComponent</component>
         </configuration>
       </plugin>
-
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <childDelegation>false</childDelegation>
           <useFile>true</useFile>
-          <includes>
-            <include>**/*Test.*</include>
-          </includes>
-          <excludes>
-          </excludes>
         </configuration>
       </plugin>
-
     </plugins>
   </build>
 </project>
