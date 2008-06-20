@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,25 +17,32 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-
+  
+  <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-eip</artifactId>
-  <packaging>jbi-component</packaging>
   <version>4.0-SNAPSHOT</version>
+  <packaging>jbi-component</packaging>
+  
   <name>ServiceMix :: EIP</name>
   <description>EIP Service Engine</description>
   
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-eip/trunk</url>
+  </scm>
+
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+
     <servicemix.osgi.import>
         org.apache.commons.jexl*;resolution:=optional,
         org.apache.servicemix;resolution:=optional,
@@ -48,9 +54,8 @@
         *
     </servicemix.osgi.import>
   </properties>
-
+  
   <dependencies>
-
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
@@ -65,7 +70,7 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
-        <version>${servicemix-version}</version>
+      <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -100,10 +105,9 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring</artifactId>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
-
+  
   <build>
     <plugins>
       <plugin>
@@ -134,10 +138,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <workingDirectory>${basedir}</workingDirectory>
-          <includes>
-            <include>**/*Test.*</include>
-          </includes>
           <excludes>
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
@@ -146,5 +146,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
