@@ -20,7 +20,8 @@
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
        xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
        xmlns:test="urn:test"
-       xmlns:greeter="http://apache.org/hello_world_soap_http_provider">
+       xmlns:greeter="http://apache.org/hello_world_soap_http_provider"
+       xmlns:jmsgreeter="http://apache.org/hello_world_soap_http">
 
        
   <sm:container id="jbi" embedded="true">
@@ -46,6 +47,26 @@
         <cxfbc:outFaultInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfbc:outFaultInterceptors>
+      </cxfbc:provider>
+       
+      <cxfbc:provider wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="jmsgreeter:HelloWorldService"
+                      endpoint="HelloWorldPortProxy"
+                      interfaceName="jmsgreeter:Greetr"
+                      useJBIWrapper="false"
+                     >
+          <cxfbc:inInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          </cxfbc:inInterceptors>
+          <cxfbc:outInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          </cxfbc:outInterceptors>
+          <cxfbc:inFaultInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          </cxfbc:inFaultInterceptors>
+          <cxfbc:outFaultInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          </cxfbc:outFaultInterceptors>
       </cxfbc:provider>
     </sm:endpoints>
     

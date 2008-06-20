@@ -30,6 +30,8 @@ import org.apache.cxf.testutil.common.ServerLauncher;
 
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.cxfbc.EmbededJMSBrokerLauncher;
+import org.apache.servicemix.cxfbc.MyJMSServer;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -45,6 +47,8 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
     private InOut io;    
 
     private ServerLauncher sl;
+    private ServerLauncher embeddedLauncher;
+    private ServerLauncher jmsLauncher;
     
     
     public void startServers() throws Exception {
@@ -53,9 +57,23 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         }
         Map<String, String> props = new HashMap<String, String>();                
         
-        assertTrue("server did not launch correctly", 
-                   launchServer(MyServer.class, props, false));
+        
 
+        if (System.getProperty("activemq.store.dir") != null) {
+            props.put("activemq.store.dir", System.getProperty("activemq.store.dir"));
+        }
+        props.put("java.util.logging.config.file", 
+                  System.getProperty("java.util.logging.config.file"));
+        
+        assertTrue("server did not launch correctly", 
+                   launchServer(EmbededJMSBrokerLauncher.class, props, false));
+        embeddedLauncher =  sl;
+        assertTrue("server did not launch correctly", 
+                launchServer(MyJMSServer.class, null, false));
+        jmsLauncher = sl;
+        
+        assertTrue("server did not launch correctly", 
+                launchServer(MyServer.class, props, false));
         
         serversStarted = true;
     }
@@ -109,6 +127,19 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         }
         
         try {
+            embeddedLauncher.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + embeddedLauncher.getClass());
+        }
+        try {
+            jmsLauncher.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + jmsLauncher.getClass());
+        } 
+        
+        try {
             sl.stopServer();         
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -125,6 +156,26 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
     public void testGreetMeProviderWithDynamicUri() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderTestBase(true);
+    }
+    
+    public void testGreetMeProviderWithJmSTransportSync() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
+        greetMeProviderJmsTestBase(true, "Edell");
+    }
+    
+    public void testGreetMeProviderWithJmSTransportAsync() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
+        greetMeProviderJmsTestBase(false, "Edell");
+    }
+    
+    public void testGreetMeProviderWithJmSTransportSyncTimeOut() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
+        greetMeProviderJmsTestBase(true, "ffang");
+    }
+    
+    public void testGreetMeProviderWithJmSTransportAsyncTimeOut() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
+        greetMeProviderJmsTestBase(false, "ffang");
     }
         
     private void greetMeProviderTestBase(boolean useDynamicUri) throws Exception {
@@ -143,11 +194,43 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
             io.getInMessage().setProperty(JbiConstants.HTTP_DESTINATION_URI, "http://localhost:9002/dynamicuritest");
         }
         client.sendSync(io);
+        
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello Edell") >= 0);        
         
     }
     
+    private void greetMeProviderJmsTestBase(boolean sync, String name) throws Exception {
+
+        client = new DefaultServiceMixClient(jbi);
+        
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "HelloWorldService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        //send message to proxy
+        io.getInMessage().setContent(new StringSource(
+              "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + name
+              + "</requestType></greetMe>"));
+        
+        if (sync) {
+            client.sendSync(io);
+        } else {
+            client.send(io);
+            Thread.sleep(5000);
+        }
+        if ("ffang".equals(name)) {
+            //in this case, the server is intended to sleep 3 sec, 
+            //which will cause time out both for sync and async invoke
+            assertTrue(new SourceTransformer().contentToString(
+                    io.getFault()).indexOf("JMSClientTransport.receive() timed out. No message available.") >= 0);
+        } else {
+            //in this case, both sync and async invocation shouldn't see the timeout problem
+            assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello " + name) >= 0);
+        }
+    }
 
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {

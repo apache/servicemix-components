@@ -29,6 +29,14 @@ public class GreeterImplTwoWayJMS
     extends org.apache.hello_world_soap_http.GreeterImpl {
     public String greetMe(String me) {
         System.out.println("\n\n*** GreetMe called with: " + me + "***\n\n");
+        if ("ffang".equals(me)) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         return "Hello " + me;
     }
         
