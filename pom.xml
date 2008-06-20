@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,90 +17,96 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>serviceengines</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <artifactId>components-pom</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
-
+  
+  <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-quartz</artifactId>
+  <version>4.0-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
+  
   <name>ServiceMix :: Quartz</name>
   <description>Quartz Service Engine</description>
   
-  <dependencies>
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-quartz/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-quartz/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-quartz/trunk</url>
+  </scm>
 
+  <properties>
+    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+  </properties>
+
+  <dependencies>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
+      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-services</artifactId>
+      <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
+      <version>1.2.13</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>quartz</groupId>
       <artifactId>quartz</artifactId>
+      <version>1.5.2</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-support</artifactId>
-      <version>${spring-version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>${spring-version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>stax</groupId>
       <artifactId>stax-api</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
-
+  
   <build>
     <plugins>
       <plugin>
@@ -110,13 +115,6 @@
         <configuration>
           <type>service-engine</type>
           <component>org.apache.servicemix.quartz.QuartzComponent</component>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
         </configuration>
       </plugin>
       <plugin>
@@ -137,10 +135,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <workingDirectory>${basedir}</workingDirectory>
-          <includes>
-            <include>**/*Test.*</include>
-          </includes>
           <excludes>
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
@@ -149,5 +143,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
