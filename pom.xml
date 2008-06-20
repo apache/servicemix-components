@@ -47,7 +47,7 @@
       org.apache.servicemix.expression*;resolution:=optional,
       org.apache.servicemix.jbi*;resolution:=optional,
       *
-	</servicemix.osgi.import>
+  	</servicemix.osgi.import>
   </properties>
 
   <scm>
