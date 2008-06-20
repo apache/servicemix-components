@@ -21,7 +21,6 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
@@ -29,6 +28,7 @@ import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.client.ClientFactory;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.container.JBIContainer;
 
 import org.springframework.beans.factory.DisposableBean;
