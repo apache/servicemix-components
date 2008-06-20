@@ -24,17 +24,36 @@
 
   <parent>
     <groupId>org.apache.servicemix</groupId>
-    <artifactId>serviceengines</artifactId>
-    <version>3.3-SNAPSHOT</version>
+    <artifactId>components-pom</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-camel</artifactId>
   <packaging>jbi-component</packaging>
+  <version>4.0-SNAPSHOT</version>
+
   <name>ServiceMix :: Camel</name>
   <description>Camel Service Engine</description>
 
-  <dependencies>
+  <properties>
+    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <camel-version>1.4-SNAPSHOT</camel-version>
+    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+    <servicemix.osgi.import>
+      org.apache.commons.jexl*;resolution:=optional,
+      org.apache.servicemix;resolution:=optional,
+      org.apache.servicemix.client*;resolution:=optional,
+      org.apache.servicemix.common.osgi,
+      org.apache.servicemix.components*;resolution:=optional,
+      org.apache.servicemix.expression*;resolution:=optional,
+      org.apache.servicemix.jbi*;resolution:=optional,
+      *
+	</servicemix.osgi.import>
+  </properties>
 
+  <dependencies>
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-core</artifactId>
@@ -64,20 +83,18 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
+      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-jbi</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-common</artifactId>
+      <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -128,11 +145,6 @@
       <artifactId>commons-logging</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
     <!-- testing -->
     <dependency>
@@ -157,22 +169,6 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-      <version>1.1</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
