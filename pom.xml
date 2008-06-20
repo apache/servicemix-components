@@ -33,9 +33,9 @@
   <description>An XMPP component for communicating with Jabber networks</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-truezip/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-xmpp/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-xmpp/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-xmpp/trunk</url>
   </scm>
 
   <properties>
