@@ -26,7 +26,7 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-jms</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>4.0-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: JMS</name>
