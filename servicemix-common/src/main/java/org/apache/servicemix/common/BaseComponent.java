@@ -41,7 +41,7 @@ import javax.xml.namespace.QName;
 @Deprecated
 public abstract class BaseComponent implements ServiceMixComponent {
 
-    protected final transient Log logger = LogFactory.getLog(getClass());
+	protected final transient Log logger = LogFactory.getLog(getClass());
     
     protected BaseLifeCycle lifeCycle;
     protected Registry registry;
@@ -212,4 +212,10 @@ public abstract class BaseComponent implements ServiceMixComponent {
     public void sendConsumerExchange(MessageExchange exchange, Endpoint endpoint) throws MessagingException {
         lifeCycle.sendConsumerExchange(exchange, endpoint);
     }
+    
+    public Container getContainer() {
+        return lifeCycle.getContainer();
+    }
+
+
 }
