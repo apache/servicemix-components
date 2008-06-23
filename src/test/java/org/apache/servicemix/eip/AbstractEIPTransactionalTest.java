@@ -83,9 +83,12 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
     }
     
     protected void tearDown() throws Exception {
-        listener.assertExchangeCompleted();
-        jbi.shutDown();
-        broker.stop();
+        try {
+            listener.assertExchangeCompleted();
+        } finally {
+            jbi.shutDown();
+            broker.stop();
+        }
     }
 
     protected void configurePattern(EIPEndpoint endpoint) {
