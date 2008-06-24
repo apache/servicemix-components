@@ -178,6 +178,11 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         greetMeProviderJmsTestBase(false, "ffang");
     }
         
+    public void testGreetMeProviderWithBusLoggerFeature() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_with_bus_logger_feature.xml");
+        greetMeProviderTestBase(true);
+    }
+    
     private void greetMeProviderTestBase(boolean useDynamicUri) throws Exception {
 
         client = new DefaultServiceMixClient(jbi);

@@ -34,8 +34,6 @@ import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
@@ -72,7 +70,6 @@ import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.Service;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
-import org.apache.cxf.service.model.OperationInfo;
 import org.apache.cxf.service.model.SchemaInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.Conduit;
@@ -189,6 +186,14 @@ public class CxfBcProvider extends ProviderEndpoint implements
         outList.add(new SoapPreProtocolOutInterceptor());
         outList.add(new SoapOutInterceptor(getBus()));
         outList.add(new SoapActionOutInterceptor());
+        outList.add(new StaxOutInterceptor());
+        
+        
+        getInInterceptors().addAll(getBus().getInInterceptors());
+        getInFaultInterceptors().addAll(getBus().getInFaultInterceptors());
+        getOutInterceptors().addAll(getBus().getOutInterceptors());
+        getOutFaultInterceptors()
+                .addAll(getBus().getOutFaultInterceptors());
         PhaseInterceptorChain outChain = outboundChainCache.get(pm
                 .getOutPhases(), outList);
         outChain.add(getOutInterceptors());
@@ -204,17 +209,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
 
         conduit.prepare(message);
         OutputStream os = message.getContent(OutputStream.class);
-        XMLStreamWriter writer = message.getContent(XMLStreamWriter.class);
-
-        String encoding = getEncoding(message);
-
-        try {
-            writer = StaxOutInterceptor.getXMLOutputFactory(message)
-                    .createXMLStreamWriter(os, encoding);
-        } catch (XMLStreamException e) {
-            //
-        }
-        message.setContent(XMLStreamWriter.class, writer);
+        
         message.put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
         try {
             outChain.doIntercept(message);
@@ -228,12 +223,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 throw ex;
             }
             
-            XMLStreamWriter xtw = message.getContent(XMLStreamWriter.class);
-            if (xtw != null) {
-                xtw.writeEndDocument();
-                xtw.close();
-            }
-
+            
+            os = message.getContent(OutputStream.class);
             os.flush();
             is.close();
             os.close();
@@ -378,15 +369,10 @@ public class CxfBcProvider extends ProviderEndpoint implements
                                                         .getAttribute("targetNamespace"))) {
 
                             sInfo.setElement(ele);
-                            
                         }
                     }
                 }
                 serInfo.setProperty(WSDLServiceBuilder.WSDL_DEFINITION, null);
-                serInfo.getInterface().setProperty(WSDLServiceBuilder.WSDL_PORTTYPE, null);
-                for (OperationInfo opInfo : serInfo.getInterface().getOperations()) {
-                    opInfo.setProperty(WSDLServiceBuilder.WSDL_OPERATION, null);
-                }
                 description = WSDLFactory.newInstance().newWSDLWriter()
                         .getDocument(swBuilder.build());
 
@@ -451,20 +437,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         return locationURI;
     }
 
-    private String getEncoding(Message message) {
-        Exchange ex = message.getExchange();
-        String encoding = (String) message.get(Message.ENCODING);
-        if (encoding == null && ex.getInMessage() != null) {
-            encoding = (String) ex.getInMessage().get(Message.ENCODING);
-            message.put(Message.ENCODING, encoding);
-        }
-
-        if (encoding == null) {
-            encoding = "UTF-8";
-            message.put(Message.ENCODING, encoding);
-        }
-        return encoding;
-    }
+    
 
     Endpoint getCxfEndpoint() {
         return this.ep;
