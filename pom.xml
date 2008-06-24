@@ -42,8 +42,11 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
-    
-    <saxon-version>8.9</saxon-version>
+    <saxon-version>9.0</saxon-version>
+    <servicemix.osgi.import>
+      org.apache.servicemix.common.osgi,
+      *
+  	</servicemix.osgi.import>
   </properties>
   
   <dependencies>
@@ -68,11 +71,13 @@
       <artifactId>saxon-dom</artifactId>
       <version>${saxon-version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>saxon-sql</artifactId>
       <version>${saxon-version}</version>
     </dependency>
+    -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

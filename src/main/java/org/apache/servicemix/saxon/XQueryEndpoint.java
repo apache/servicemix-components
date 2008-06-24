@@ -35,6 +35,7 @@ import net.sf.saxon.om.DocumentInfo;
 import net.sf.saxon.query.DynamicQueryContext;
 import net.sf.saxon.query.StaticQueryContext;
 import net.sf.saxon.query.XQueryExpression;
+import net.sf.saxon.query.QueryModule;
 
 import org.apache.servicemix.jbi.jaxp.BytesSource;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -98,10 +99,8 @@ public class XQueryEndpoint extends SaxonEndpoint {
         staticEnv = new StaticQueryContext(config);
         if (getQuery() != null) {
             exp = staticEnv.compileQuery(getQuery());
-            staticEnv = exp.getStaticContext();
         } else if (getResource() != null) {
             exp = staticEnv.compileQuery(getResource().getInputStream(), null);
-            staticEnv = exp.getStaticContext();
         }
     }
     
