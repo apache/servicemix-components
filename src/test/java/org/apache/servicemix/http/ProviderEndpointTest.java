@@ -17,6 +17,7 @@
 package org.apache.servicemix.http;
 
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
@@ -136,5 +137,38 @@ public class ProviderEndpointTest extends TestCase {
                              +  "  </jbi:part>"
                              +  "</jbi:message>"));
         client.sendSync(me);
+    }
+
+    public void testSendProblem() throws Exception {
+        HttpComponent http = new HttpComponent();
+
+        HttpSoapProviderEndpoint ep1 = new HttpSoapProviderEndpoint();
+        ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep1.setEndpoint("soap");
+        ep1.setWsdl(new ClassPathResource("person.wsdl"));
+        ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
+        ep1.setUseJbiWrapper(true);
+
+        http.addEndpoint(ep1);
+        container.activateComponent(http, "http");
+
+        container.start();
+
+        ServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        me.setOperation(new QName("http://servicemix.apache.org/samples/wsdl-first", "GetPerson"));
+        me.getInMessage().setContent(new StringSource(
+                                "<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\""
+                             +  "             xmlns:msg=\"http://servicemix.apache.org/samples/wsdl-first/types\" "
+                             +  "             name=\"Hello\" "
+                             +  "             type=\"msg:HelloRequest\" "
+                             +  "             version=\"1.0\">"
+                             +  "  <jbi:part>"
+                             +  "    <msg:GetPerson><msg:personId>id</msg:personId></msg:GetPerson>"
+                             +  "  </jbi:part>"
+                             +  "</jbi:message>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
     }
 }
