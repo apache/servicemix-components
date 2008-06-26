@@ -69,7 +69,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private String authMethod;
     private SslParameters ssl;
     private String locationURI;
-    private HttpConsumerMarshaler marshaler = new DefaultHttpConsumerMarshaler();
+    private HttpConsumerMarshaler marshaler;
     private long timeout; // 0 => default to the timeout configured on component
     private URI defaultMep = MessageExchangeSupport.IN_OUT;
 
@@ -394,6 +394,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
 
     public void validate() throws DeploymentException {
         super.validate();
+        if (marshaler == null) {
+            marshaler = new DefaultHttpConsumerMarshaler();
+        }
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
             ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
         }

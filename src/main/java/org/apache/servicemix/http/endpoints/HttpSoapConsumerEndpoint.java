@@ -107,7 +107,14 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         if (wsdl == null) {
             throw new DeploymentException("wsdl property must be set");
         }
-        HttpSoapConsumerMarshaler marshaler = new HttpSoapConsumerMarshaler();
+        HttpSoapConsumerMarshaler marshaler;
+        if (getMarshaler() instanceof HttpSoapConsumerMarshaler) {
+            marshaler = (HttpSoapConsumerMarshaler) getMarshaler();
+        } else if (getMarshaler() == null) {
+            marshaler = new HttpSoapConsumerMarshaler();
+        } else {
+            throw new DeploymentException("The configured marshaler must inherit HttpSoapConsumerMarshaler");
+        }
         try {
             description = DomUtil.parse(wsdl.getInputStream());
             Element elem = description.getDocumentElement();

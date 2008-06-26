@@ -108,7 +108,14 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
         if (wsdl == null) {
             throw new DeploymentException("wsdl property must be set");
         }
-        HttpSoapProviderMarshaler marshaler = new HttpSoapProviderMarshaler();
+        HttpSoapProviderMarshaler marshaler;
+        if (getMarshaler() instanceof HttpSoapProviderMarshaler) {
+            marshaler = (HttpSoapProviderMarshaler) getMarshaler();
+        } else if (getMarshaler() == null) {
+            marshaler = new HttpSoapProviderMarshaler();
+        } else {
+            throw new DeploymentException("The configured marshaler must inherit HttpSoapProviderMarshaler");
+        }
         try {
             description = DomUtil.parse(wsdl.getInputStream());
             Element elem = description.getDocumentElement();
