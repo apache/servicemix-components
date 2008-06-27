@@ -27,6 +27,8 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -98,6 +100,30 @@ public class CxfBcComponentTest extends TestCase {
         System.err.println(baos.toString());
 
         Thread.sleep(100);
+    }
+    
+    public void testListService() throws Exception {
+        CxfBcComponent comp = new CxfBcComponent();
+        CxfBcConsumer ep = new CxfBcConsumer();
+        ep.setWsdl(new ClassPathResource("HelloWorld-DOC.wsdl"));
+        ep.setTargetService(new QName("urn:test", "target"));
+        comp.setEndpoints(new CxfBcEndpointType[] {ep});
+        jbi.activateComponent(comp, "servicemix-cxfbc");
+
+        MockServiceComponent echo = new MockServiceComponent();
+        echo.setService(new QName("urn:test", "target"));
+        echo.setEndpoint("endpoint");
+        echo.setResponseXml("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'><jbi:part>" 
+                + "<ns2:HelloResponse xmlns:ns2='uri:HelloWorld'><text>helloffang</text></ns2:HelloResponse></jbi:part></jbi:message>");
+        jbi.activateComponent(echo, "echo");
+        URL wsdl = getClass().getResource("/HelloWorld-DOC.wsdl");
+        assertNotNull(wsdl);
+        GetMethod getMethod = new GetMethod("http://localhost:8080");
+        HttpClient httpClient = new HttpClient();
+        httpClient.executeMethod(getMethod);
+        String response = getMethod.getResponseBodyAsString();
+        assertTrue(response.indexOf("Known services on cxf bc component are:") >= 0);
+        assertTrue(response.indexOf("http://localhost:8080/hello") >= 0);
     }
 
     public void testEndpointDOCWithExternalConsumer() throws Exception {

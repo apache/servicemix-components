@@ -73,7 +73,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
     private static final QName GREETER_SERVICE = new QName("http://cxf.apache.org/greeter_control", "GreeterService");
 
 
-    private static int decoupledEndpointPort = 10000;
+    private static int decoupledEndpointPort = 11000;
     private static String decoupledEndpoint;
 
 

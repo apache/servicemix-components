@@ -61,6 +61,7 @@ import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.endpoint.ServerImpl;
+import org.apache.cxf.endpoint.ServerRegistry;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.AttachmentInInterceptor;
 import org.apache.cxf.interceptor.AttachmentOutInterceptor;
@@ -83,6 +84,8 @@ import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.ChainInitiationObserver;
+import org.apache.cxf.transport.http_jetty.JettyHTTPDestination;
+import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngine;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl.WSDLManager;
@@ -96,6 +99,7 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
+import org.mortbay.jetty.Handler;
 import org.springframework.core.io.Resource;
 
 
@@ -203,7 +207,22 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     @Override
     public void start() throws Exception {
         super.start();
+        registerListServiceHandler();
         server.start();
+    }
+
+    private void registerListServiceHandler() {
+        if (server.getDestination() instanceof JettyHTTPDestination) {
+            JettyHTTPDestination jettyDest = (JettyHTTPDestination) server.getDestination();
+            JettyHTTPServerEngine jettyEng = (JettyHTTPServerEngine) jettyDest.getEngine();
+            List<Handler> handlers = jettyEng.getHandlers();
+            if (handlers == null) {
+                handlers = new ArrayList<Handler>();
+                jettyEng.setHandlers(handlers);
+            }
+            handlers.add(new ListServiceHandler(getBus().getExtension(ServerRegistry.class)));
+                
+        }
     }
 
     @Override
