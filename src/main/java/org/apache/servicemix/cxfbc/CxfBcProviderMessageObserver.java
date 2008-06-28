@@ -25,13 +25,16 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.endpoint.Endpoint;
+import org.apache.cxf.interceptor.AttachmentInInterceptor;
 import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
@@ -121,6 +124,9 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             
             inList.add(new RetrievePayLoadInterceptor());
             inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper()));
+            if (providerEndpoint.isMtomEnabled()) {
+                inList.add(new AttachmentInInterceptor());
+            }
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);
             inChain.add(providerEndpoint.getInInterceptors());
@@ -140,11 +146,17 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             } else if (messageExchange instanceof InOut) {
                 NormalizedMessage msg = messageExchange.createMessage();
                 msg.setContent(soapMessage.getContent(Source.class));
+                if (providerEndpoint.isMtomEnabled()) {
+                    toNMSAttachments(msg, soapMessage);
+                }
                 messageExchange.setMessage(msg, "out");
             } else if (messageExchange instanceof InOptionalOut) {
                 if (soapMessage.getContent(Source.class) != null) {
                     NormalizedMessage msg = messageExchange.createMessage();
                     msg.setContent(soapMessage.getContent(Source.class));
+                    if (providerEndpoint.isMtomEnabled()) {
+                        toNMSAttachments(msg, soapMessage);
+                    }
                     messageExchange.setMessage(msg, "out");
                 } else {
                     messageExchange.setStatus(ExchangeStatus.DONE);
@@ -171,6 +183,16 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             synchronized (this) {
                 written = true;
                 notifyAll();
+            }
+        }
+    }
+    
+    private void toNMSAttachments(NormalizedMessage normalizedMessage,
+            Message soapMessage) throws MessagingException {
+        if (soapMessage.getAttachments() != null) {
+            for (Attachment att : soapMessage.getAttachments()) {
+                normalizedMessage.addAttachment(att.getId(), att
+                        .getDataHandler());
             }
         }
     }

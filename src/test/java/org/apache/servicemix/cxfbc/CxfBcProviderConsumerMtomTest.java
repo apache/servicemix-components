@@ -32,12 +32,10 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.endpoint.ClientImpl;
-import org.apache.cxf.endpoint.Endpoint;
-import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.jaxws.JaxWsClientProxy;
-import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.jaxws.binding.soap.SOAPBindingImpl;
 import org.apache.cxf.jaxws.support.JaxWsEndpointImpl;
 import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
@@ -45,7 +43,6 @@ import org.apache.cxf.mime.TestMtom;
 import org.apache.cxf.service.Service;
 import org.apache.cxf.service.factory.ReflectionServiceFactoryBean;
 import org.apache.cxf.service.model.EndpointInfo;
-import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.servicemix.cxfbc.mtom.TestMtomImpl;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
@@ -61,18 +58,15 @@ public class CxfBcProviderConsumerMtomTest extends SpringTestSupport {
 
     public void testBridge() throws Exception {
         // start external service
-        JaxWsServerFactoryBean factory = new JaxWsServerFactoryBean();
-        factory.setServiceClass(TestMtom.class);
-        factory.setServiceBean(new TestMtomImpl());
-        String address = "http://localhost:9001/mtombridgetest";
-        factory.setAddress(address);
-        Server server = factory.create();
-        Endpoint endpoint = server.getEndpoint();
+        EndpointImpl endpoint =
+            (EndpointImpl)javax.xml.ws.Endpoint.publish("http://localhost:9001/mtombridgetest", 
+                new TestMtomImpl());
+             
+        SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
+        binding.setMTOMEnabled(true);
         endpoint.getInInterceptors().add(new LoggingInInterceptor());
         endpoint.getOutInterceptors().add(new LoggingOutInterceptor());
-        ServiceInfo service = endpoint.getEndpointInfo().getService();
-        assertNotNull(service);
-
+        
         // start external client
         TestMtom mtomPort = createPort(MTOM_SERVICE, MTOM_PORT, TestMtom.class,
                 true);
