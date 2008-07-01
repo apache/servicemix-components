@@ -55,8 +55,32 @@
       <version>${servicemix-version}</version>
       <exclusions>
         <exclusion>
+          <groupId>mx4j</groupId>
+          <artifactId>mx4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>mx4j</groupId>
+          <artifactId>mx4j-remote</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.activemq</groupId>
+          <artifactId>activemq-core</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.servicemix</groupId>
           <artifactId>servicemix-jbi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.xbean</groupId>
+          <artifactId>xbean-kernel</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.xbean</groupId>
+          <artifactId>xbean-server</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jencks</groupId>
+          <artifactId>jencks</artifactId>
         </exclusion>
         <exclusion>
           <groupId>xml-apis</groupId>
@@ -67,6 +91,11 @@
           <artifactId>xercesImpl</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>wsdl4j</groupId>
+      <artifactId>wsdl4j</artifactId>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 
