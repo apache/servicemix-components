@@ -44,9 +44,6 @@
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
 
     <cxf-version>2.1.1-SNAPSHOT</cxf-version>
-    <jaxb-api-version>2.1</jaxb-api-version>
-    <jaxb-impl-version>2.1.4</jaxb-impl-version>
-    <jaxb-xjc-version>2.1.4</jaxb-xjc-version>
   </properties>
   
   <dependencies>
@@ -125,7 +122,6 @@
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>${jaxb-api-version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.xml.bind</groupId>
@@ -148,7 +144,6 @@
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
-      <version>${jaxb-impl-version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.xml.bind</groupId>
@@ -176,7 +171,6 @@
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-xjc</artifactId>
-      <version>${jaxb-xjc-version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.xml.bind</groupId>
