@@ -86,11 +86,11 @@ public interface KeystoreManager {
 
     public static final class Proxy {
         public static KeystoreManager create(final Object target) {
-            return (KeystoreManager) java.lang.reflect.Proxy.newProxyInstance(AuthenticationService.class.getClassLoader(), 
-                                                                              new Class[] { KeystoreManager.class }, 
+            return (KeystoreManager) java.lang.reflect.Proxy.newProxyInstance(KeystoreManager.class.getClassLoader(),
+                                                                              new Class[] { KeystoreManager.class },
                                                                               new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(proxy, args);
+                    Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(target, args);
                     if (method.getName().equals("getKeystore")) {
                         o = KeystoreInstance.Proxy.create(o);
                     }

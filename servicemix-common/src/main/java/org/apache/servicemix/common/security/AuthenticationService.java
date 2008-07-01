@@ -48,11 +48,16 @@ public interface AuthenticationService {
                                                                                     new Class[] { AuthenticationService.class },
                                                                                     new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(proxy, args);
-                    return o;
+                    try {
+                        Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(target, args);
+                        return o;
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        throw t;
+                    }
                 }
             });
         }
     }
-    
+
 }
