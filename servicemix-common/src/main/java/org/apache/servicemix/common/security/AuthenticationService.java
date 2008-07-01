@@ -44,7 +44,9 @@ public interface AuthenticationService {
 
     public static final class Proxy {
         public static AuthenticationService create(final Object target) {
-            return (AuthenticationService) java.lang.reflect.Proxy.newProxyInstance(null, new Class[] { AuthenticationService.class }, new InvocationHandler() {
+            return (AuthenticationService) java.lang.reflect.Proxy.newProxyInstance(AuthenticationService.class.getClassLoader(), 
+                                                                                    new Class[] { AuthenticationService.class },
+                                                                                    new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(proxy, args);
                     return o;

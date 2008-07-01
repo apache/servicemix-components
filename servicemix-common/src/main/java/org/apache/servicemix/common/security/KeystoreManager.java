@@ -86,7 +86,9 @@ public interface KeystoreManager {
 
     public static final class Proxy {
         public static KeystoreManager create(final Object target) {
-            return (KeystoreManager) java.lang.reflect.Proxy.newProxyInstance(null, new Class[] { KeystoreManager.class }, new InvocationHandler() {
+            return (KeystoreManager) java.lang.reflect.Proxy.newProxyInstance(AuthenticationService.class.getClassLoader(), 
+                                                                              new Class[] { KeystoreManager.class }, 
+                                                                              new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(proxy, args);
                     if (method.getName().equals("getKeystore")) {

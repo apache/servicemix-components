@@ -57,7 +57,9 @@ public interface KeystoreInstance {
 
     public static final class Proxy {
         public static KeystoreInstance create(final Object target) {
-            return (KeystoreInstance) java.lang.reflect.Proxy.newProxyInstance(null, new Class[] { KeystoreInstance.class }, new InvocationHandler() {
+            return (KeystoreInstance) java.lang.reflect.Proxy.newProxyInstance(AuthenticationService.class.getClassLoader(), 
+                                                                               new Class[] { KeystoreInstance.class },
+                                                                               new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     Object o = target.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(proxy, args);
                     return o;
