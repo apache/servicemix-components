@@ -52,8 +52,8 @@ import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.service.model.SchemaInfo;
 import org.apache.cxf.staxutils.PartialXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
-import org.apache.servicemix.jbi.util.QNameUtil;
 import org.apache.servicemix.soap.util.DomUtil;
+import org.apache.servicemix.soap.util.QNameUtil;
 
 /**
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>

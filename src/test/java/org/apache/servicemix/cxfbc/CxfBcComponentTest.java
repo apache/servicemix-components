@@ -37,7 +37,6 @@ import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.cxfse.CxfSeComponent;
 import org.apache.servicemix.cxfse.CxfSeEndpoint;
 import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jbi.util.FileUtil;
 import org.springframework.core.io.ClassPathResource;
 
 import uri.helloworld.HelloHeader;
@@ -92,11 +91,11 @@ public class CxfBcComponentTest extends TestCase {
         // Post the request file.
         InputStream fis = new ClassPathResource("HelloWorld-DOC-Input.xml")
                 .getInputStream();
-        FileUtil.copyInputStream(fis, os);
+        copyInputStream(fis, os);
         // Read the response.
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtil.copyInputStream(is, baos);
+        copyInputStream(is, baos);
         System.err.println(baos.toString());
 
         Thread.sleep(100);
@@ -210,14 +209,25 @@ public class CxfBcComponentTest extends TestCase {
         // Post the request file.
         InputStream fis = new ClassPathResource("HelloWorld-RPC-Input.xml")
                 .getInputStream();
-        FileUtil.copyInputStream(fis, os);
+        copyInputStream(fis, os);
         // Read the response.
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtil.copyInputStream(is, baos);
+        copyInputStream(is, baos);
         System.err.println(baos.toString());
 
         Thread.sleep(100);
+    }
+
+    public static void copyInputStream(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[8192];
+        int len = in.read(buffer);
+        while (len >= 0) {
+            out.write(buffer, 0, len);
+            len = in.read(buffer);
+        }
+        in.close();
+        out.close();
     }
 
 }

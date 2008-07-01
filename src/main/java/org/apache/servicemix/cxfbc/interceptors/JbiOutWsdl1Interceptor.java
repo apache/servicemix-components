@@ -44,12 +44,9 @@ import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.util.QNameUtil;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.util.DomUtil;
-
-
-
+import org.apache.servicemix.soap.util.QNameUtil;
 
 /**
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
