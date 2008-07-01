@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.common;
 
+import java.net.URI;
+
 public interface JbiConstants {
 
     String SEND_SYNC = "javax.jbi.messaging.sendSync";
@@ -49,5 +51,24 @@ public interface JbiConstants {
      * of the provider exchange if the property does not exist.
      */
     String CORRELATION_ID = "org.apache.servicemix.correlationId";
+
+    /**
+     * In Only MEP.
+     */
+    URI IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/in-only");
+    /**
+     * In Out MEP.
+     */
+    URI IN_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-out");
+
+    /**
+     * In Optional Out MEP.
+     */
+    URI IN_OPTIONAL_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-opt-out");
+
+    /**
+     * Robust In Only MEP.
+     */
+    URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
 
 }
