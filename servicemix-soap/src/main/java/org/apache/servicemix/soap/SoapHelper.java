@@ -50,6 +50,8 @@ import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
+import org.apache.servicemix.common.JbiConstants;
+
 import org.w3c.dom.Document;
 
 import com.ibm.wsdl.Constants;
@@ -64,10 +66,6 @@ import com.ibm.wsdl.Constants;
 public class SoapHelper {
 
     private static final Log logger = LogFactory.getLog(SoapHelper.class);
-
-    public static final URI IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/in-only");
-    public static final URI IN_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-out");
-    public static final URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
 
     private SoapEndpoint endpoint;
     private List policies;
@@ -255,11 +253,11 @@ public class SoapHelper {
                             && oper.getOutput().getMessage().getParts().size() > 0;
             boolean faults = oper.getFaults().size() > 0;
             if (output) {
-                mep = IN_OUT;
+                mep = JbiConstants.IN_OUT;
             } else if (faults) {
-                mep = ROBUST_IN_ONLY;
+                mep = JbiConstants.ROBUST_IN_ONLY;
             } else {
-                mep = IN_ONLY;
+                mep = JbiConstants.IN_ONLY;
             }
         }
         return mep;
