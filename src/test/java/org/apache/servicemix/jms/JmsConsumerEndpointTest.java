@@ -26,11 +26,11 @@ import org.w3c.dom.Element;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.jms.endpoints.DefaultConsumerMarshaler;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
@@ -141,7 +141,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
         endpoint.setReplyDestinationName("replyDestination");
-        endpoint.setMarshaler(new DefaultConsumerMarshaler(MessageExchangeSupport.IN_OUT));
+        endpoint.setMarshaler(new DefaultConsumerMarshaler(JbiConstants.IN_OUT));
         component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
@@ -180,7 +180,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setDestinationName("destination");
         endpoint.setReplyDestinationName("replyDestination");
         endpoint.setTransacted("jms");
-        endpoint.setMarshaler(new DefaultConsumerMarshaler(MessageExchangeSupport.IN_OUT));
+        endpoint.setMarshaler(new DefaultConsumerMarshaler(JbiConstants.IN_OUT));
         component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 

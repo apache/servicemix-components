@@ -33,8 +33,8 @@ import javax.wsdl.Service;
 
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ExternalEndpoint;
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
+import org.apache.servicemix.common.security.AuthenticationService;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
@@ -544,13 +544,13 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     public AuthenticationService getAuthenticationService() {
-        JmsComponent component = (JmsComponent) getServiceUnit().getComponent();
-        return component.getAuthenticationService();
+        JmsComponent comp = (JmsComponent) getServiceUnit().getComponent();
+        return AuthenticationService.Proxy.create(comp.getAuthenticationService());
     }
 
     public KeystoreManager getKeystoreManager() {
-        JmsComponent component = (JmsComponent) getServiceUnit().getComponent();
-        return component.getKeystoreManager();
+        JmsComponent comp = (JmsComponent) getServiceUnit().getComponent();
+        return KeystoreManager.Proxy.create(comp.getKeystoreManager());
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.jms.jca;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 import javax.jbi.messaging.ExchangeStatus;
@@ -32,8 +33,6 @@ import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

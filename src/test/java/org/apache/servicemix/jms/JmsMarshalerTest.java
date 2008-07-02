@@ -32,9 +32,9 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.xbean.BrokerFactoryBean;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.core.io.ClassPathResource;
 
@@ -82,7 +82,7 @@ public class JmsMarshalerTest extends TestCase {
         ep.setRole(MessageExchange.Role.CONSUMER);
         ep.setDestinationStyle(AbstractJmsProcessor.STYLE_QUEUE);
         ep.setDestination(queue);
-        ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
+        ep.setDefaultMep(JbiConstants.IN_ONLY);
         ep.setMarshaler(new DefaultJmsMarshaler(ep));
         jms.setEndpoints(new JmsEndpoint[] {ep });
         container.activateComponent(jms, "servicemix-jms");

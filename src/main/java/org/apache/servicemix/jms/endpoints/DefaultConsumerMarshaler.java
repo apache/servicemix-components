@@ -31,16 +31,16 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.transform.Source;
 
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 
 public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
     
     private URI mep;
 
     public DefaultConsumerMarshaler() {
-        this.mep = MessageExchangeSupport.IN_ONLY;
+        this.mep = JbiConstants.IN_ONLY;
     }
     
     public DefaultConsumerMarshaler(URI mep) {

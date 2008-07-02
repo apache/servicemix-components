@@ -25,9 +25,6 @@ import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
 
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
-
 /**
  * @author gnodet
  * @org.apache.xbean.XBean element="configuration"
@@ -46,8 +43,8 @@ public class JmsConfiguration implements JmsConfigurationMBean {
     private String jndiConnectionFactoryName;
     private String processorName = "multiplexing";
     private transient ConnectionFactory connectionFactory;
-    private transient KeystoreManager keystoreManager;
-    private transient AuthenticationService authenticationService;
+    private transient Object keystoreManager;
+    private transient Object authenticationService;
     
     /**
      * The JNDI name of the AuthenticationService object
@@ -93,13 +90,13 @@ public class JmsConfiguration implements JmsConfigurationMBean {
     /**
      * @return the authenticationService
      */
-    public AuthenticationService getAuthenticationService() {
+    public Object getAuthenticationService() {
         return authenticationService;
     }
     /**
      * @param authenticationService the authenticationService to set
      */
-    public void setAuthenticationService(AuthenticationService authenticationService) {
+    public void setAuthenticationService(Object authenticationService) {
         this.authenticationService = authenticationService;
     }
     /**
@@ -117,13 +114,13 @@ public class JmsConfiguration implements JmsConfigurationMBean {
     /**
      * @return the keystoreManager
      */
-    public KeystoreManager getKeystoreManager() {
+    public Object getKeystoreManager() {
         return keystoreManager;
     }
     /**
      * @param keystoreManager the keystoreManager to set
      */
-    public void setKeystoreManager(KeystoreManager keystoreManager) {
+    public void setKeystoreManager(Object keystoreManager) {
         this.keystoreManager = keystoreManager;
     }
     /**

@@ -30,10 +30,10 @@ import org.w3c.dom.Element;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
-import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class JmsURITest extends AbstractJmsTestSupport {
@@ -47,7 +47,7 @@ public class JmsURITest extends AbstractJmsTestSupport {
         ep.setRole(MessageExchange.Role.CONSUMER);
         ep.setService(ReceiverComponent.SERVICE);
         ep.setEndpoint(ReceiverComponent.ENDPOINT);
-        ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
+        ep.setDefaultMep(JbiConstants.IN_ONLY);
         ep.setJmsProviderDestinationName("foo.bar.myqueue");
         ep.setDestinationStyle(AbstractJmsProcessor.STYLE_QUEUE);
         jms.setEndpoints(new JmsEndpoint[] {ep});
