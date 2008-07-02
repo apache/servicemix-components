@@ -28,7 +28,13 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
 import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.DefaultComponent;
@@ -39,6 +45,7 @@ import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.JmsTemplate102;
 import org.springframework.jms.core.SessionCallback;
 import org.springframework.jms.listener.adapter.ListenerExecutionFailedException;
 import org.springframework.jms.support.JmsUtils;
@@ -70,7 +77,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     private boolean stateless;
     private StoreFactory storeFactory;
     private Store store;
-    
+    private boolean jms102;
+
     public AbstractConsumerEndpoint() {
         super();
     }
@@ -311,7 +319,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     public synchronized void start() throws Exception {
         super.start();
         if (template == null) {
-            template = new JmsTemplate(getConnectionFactory());
+            if (isJms102()) {
+                template = new JmsTemplate102(getConnectionFactory(), isPubSubDomain());
+            } else {
+                template = new JmsTemplate(getConnectionFactory());
+            }
         }
         if (store == null && !stateless) {
             if (storeFactory == null) {
@@ -397,11 +409,35 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     protected void send(Message msg, Session session, Destination dest) throws JMSException {
-        MessageProducer producer = session.createProducer(dest);
+        MessageProducer producer;
+        if (isJms102()) {
+            if (isPubSubDomain()) {
+                producer = ((TopicSession) session).createPublisher((Topic) dest);
+            } else {
+                producer = ((QueueSession) session).createSender((Queue) dest);
+            }
+        } else {
+            producer = session.createProducer(dest);
+        }
         try {
             if (replyProperties != null) {
                 for (Map.Entry<String, Object> e : replyProperties.entrySet()) {
                     msg.setObjectProperty(e.getKey(), e.getValue());
+                }
+            }
+            if (isJms102()) {
+                if (isPubSubDomain()) {
+                    if (replyExplicitQosEnabled) {
+                        ((TopicPublisher) producer).publish(msg, replyDeliveryMode, replyPriority, replyTimeToLive);
+                    } else {
+                        ((TopicPublisher) producer).publish(msg);
+                    }
+                } else {
+                    if (replyExplicitQosEnabled) {
+                        ((QueueSender) producer).send(msg, replyDeliveryMode, replyPriority, replyTimeToLive);
+                    } else {
+                        ((QueueSender) producer).send(msg);
+                    }
                 }
             }
             if (replyExplicitQosEnabled) {
@@ -553,5 +589,19 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         setCorrelationId(context.getMessage(), msg);
         send(msg, session, dest);
     }
-     
+
+    /**
+     * @return the jms102
+     */
+    public boolean isJms102() {
+        return jms102;
+    }
+
+    /**
+     * @param jms102 the jms102 to set
+     */
+    public void setJms102(boolean jms102) {
+        this.jms102 = jms102;
+    }
+
 }

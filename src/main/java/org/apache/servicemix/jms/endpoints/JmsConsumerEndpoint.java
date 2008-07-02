@@ -61,7 +61,6 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     
     // type of listener
     private String listenerType = LISTENER_TYPE_DEFAULT;
-    private boolean jms102;
     private String transacted = TRANSACTED_NONE;
     
     // Standard jms properties
@@ -223,20 +222,6 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
      */
     public void setExceptionListener(ExceptionListener exceptionListener) {
         this.exceptionListener = exceptionListener;
-    }
-
-    /**
-     * @return the jms102
-     */
-    public boolean isJms102() {
-        return jms102;
-    }
-
-    /**
-     * @param jms102 the jms102 to set
-     */
-    public void setJms102(boolean jms102) {
-        this.jms102 = jms102;
     }
 
     /**
@@ -465,7 +450,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
 
     private AbstractMessageListenerContainer createServerSessionMessageListenerContainer() {
         final ServerSessionMessageListenerContainer cont;
-        if (jms102) {
+        if (isJms102()) {
             cont = new ServerSessionMessageListenerContainer102();
         } else {
             cont = new ServerSessionMessageListenerContainer();
@@ -480,7 +465,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
 
     private AbstractMessageListenerContainer createSimpleMessageListenerContainer() {
         final SimpleMessageListenerContainer cont;
-        if (jms102) {
+        if (isJms102()) {
             cont = new SimpleMessageListenerContainer102();
         } else {
             cont = new SimpleMessageListenerContainer();
@@ -496,7 +481,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
 
     private AbstractMessageListenerContainer createDefaultMessageListenerContainer() {
         final DefaultMessageListenerContainer cont;
-        if (jms102) {
+        if (isJms102()) {
             cont = new DefaultMessageListenerContainer102();
         } else {
             cont = new DefaultMessageListenerContainer();
@@ -519,7 +504,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
             }
         } else if (TRANSACTED_JMS.equals(transacted)) {
             cont.setSessionTransacted(true);
-            if (jms102) {
+            if (isJms102()) {
                 cont.setTransactionManager(new JmsTransactionManager102(getConnectionFactory(), isPubSubDomain()));
             } else {
                 cont.setTransactionManager(new JmsTransactionManager(getConnectionFactory()));
