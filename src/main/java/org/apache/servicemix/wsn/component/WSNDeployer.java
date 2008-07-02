@@ -31,13 +31,13 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.servicemix.common.AbstractDeployer;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.wsn.EndpointManager;
 import org.apache.servicemix.wsn.EndpointRegistrationException;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;

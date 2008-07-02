@@ -46,6 +46,18 @@
     <activemq-version>5.1.0</activemq-version>
     <xbean-version>3.4.1</xbean-version>
     <cxf-version>2.1.1-SNAPSHOT</cxf-version>
+
+    <servicemix.osgi.import>
+        org.apache.servicemix.client*;resolution:=optional,
+        org.apache.servicemix.common.osgi,
+        org.apache.xbean.spring.context.v2,
+        org.springframework.beans.factory.xml,
+        *
+    </servicemix.osgi.import>
+    <servicemix.osgi.export>
+        org.apache.servicemix*;version=${project.version},
+        META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.wsn
+    </servicemix.osgi.export>
   </properties>
     
   <dependencies>
