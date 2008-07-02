@@ -41,6 +41,7 @@ import org.w3c.dom.Node;
 
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.http.ContextManager;
 import org.apache.servicemix.http.HttpComponent;
@@ -49,7 +50,6 @@ import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
@@ -71,7 +71,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private String locationURI;
     private HttpConsumerMarshaler marshaler;
     private long timeout; // 0 => default to the timeout configured on component
-    private URI defaultMep = MessageExchangeSupport.IN_OUT;
+    private URI defaultMep = JbiConstants.IN_OUT;
 
     private Map<String, Object> resources = new HashMap<String, Object>();
     private Map<String, Continuation> locks = new ConcurrentHashMap<String, Continuation>();

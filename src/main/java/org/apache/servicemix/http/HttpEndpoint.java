@@ -346,12 +346,12 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
 
     public AuthenticationService getAuthenticationService() {
         HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
-        return comp.getAuthenticationService();
+        return AuthenticationService.Proxy.create(comp.getAuthenticationService());
     }
 
     public KeystoreManager getKeystoreManager() {
         HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
-        return comp.getKeystoreManager();
+        return KeystoreManager.Proxy.create(comp.getKeystoreManager());
     }
 
     public void validate() throws DeploymentException {

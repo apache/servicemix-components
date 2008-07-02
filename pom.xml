@@ -47,7 +47,25 @@
     -->
     <servicemix-version>3.3-SNAPSHOT</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
-    <jetty-version>6.1.6</jetty-version>
+    <jetty-version>6.1.11</jetty-version>
+    <activemq-version>5.1.0</activemq-version>
+
+    <servicemix.osgi.import>
+        com.thoughtworks.xstream*;resolution:=optional,
+        org.apache.servicemix.jbi.container*;resolution:=optional,
+        org.apache.servicemix.jbi.framework*;resolution:=optional,
+        org.apache.servicemix.common.osgi,
+        org.apache.woden*;resolution:=optional,
+        org.apache.xbean.spring.context.v2,
+        org.mortbay.jetty.client*;resolution:=optional,
+        org.springframework.beans.factory.xml,
+        org.springframework.web*;resolution:=optional,
+        *
+    </servicemix.osgi.import>
+    <servicemix.osgi.export>
+        org.apache.servicemix*;version=${project.version},
+        META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.http
+    </servicemix.osgi.export>
   </properties>
 
   <dependencies>
@@ -62,6 +80,12 @@
       <scope>provided</scope>
       <version>${servicemix-version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-ra</artifactId>
+      <version>${activemq-version}</version>
+    </dependency>
+
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
@@ -127,7 +151,7 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-components</artifactId>
-      <version>3.2.1</version>
+      <version>${servicemix-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

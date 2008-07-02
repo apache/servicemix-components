@@ -25,7 +25,7 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.jbi.management.DeploymentException;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;

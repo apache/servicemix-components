@@ -31,6 +31,8 @@ import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.util.IntrospectionSupport;
+import org.apache.servicemix.common.util.URISupport;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
@@ -38,9 +40,6 @@ import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
-import org.apache.servicemix.jbi.util.IntrospectionSupport;
-import org.apache.servicemix.jbi.util.URISupport;
 
 /**
  * 
@@ -198,7 +197,7 @@ public class HttpComponent extends DefaultComponent {
             try {
                 String name = configuration.getKeystoreManagerName();
                 Object km = context.getNamingContext().lookup(name);
-                configuration.setKeystoreManager((KeystoreManager) km);
+                configuration.setKeystoreManager(km);
             } catch (Throwable e) {
                 // ignore
             }
@@ -207,11 +206,14 @@ public class HttpComponent extends DefaultComponent {
             try {
                 String name = configuration.getAuthenticationServiceName();
                 Object as = context.getNamingContext().lookup(name);
-                configuration.setAuthenticationService((AuthenticationService) as);
+                configuration.setAuthenticationService(as);
             } catch (Throwable e) {
-                //TODO: gnodet - should I make SMX3 core depends on components common?
-                //               this way, we should be able to make JAASAuthenticationService implement the new interface
-                //configuration.setAuthenticationService(new JAASAuthenticationService());
+                try {
+                    Class cl = Class.forName("org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService");
+                    configuration.setAuthenticationService(cl.newInstance());
+                } catch (Throwable t) {
+                    logger.warn("Unable to retrieve or create the authentication service");
+                }
             }
         }
         // Create client
@@ -295,7 +297,7 @@ public class HttpComponent extends DefaultComponent {
     /**
      * @return the keystoreManager
      */
-    public KeystoreManager getKeystoreManager() {
+    public Object getKeystoreManager() {
         return configuration.getKeystoreManager();
     }
 
@@ -303,14 +305,14 @@ public class HttpComponent extends DefaultComponent {
      * @param keystoreManager
      *            the keystoreManager to set
      */
-    public void setKeystoreManager(KeystoreManager keystoreManager) {
+    public void setKeystoreManager(Object keystoreManager) {
         this.configuration.setKeystoreManager(keystoreManager);
     }
 
     /**
      * @return the authenticationService
      */
-    public AuthenticationService getAuthenticationService() {
+    public Object getAuthenticationService() {
         return configuration.getAuthenticationService();
     }
 
@@ -318,15 +320,13 @@ public class HttpComponent extends DefaultComponent {
      * @param authenticationService
      *            the authenticationService to set
      */
-    public void setAuthenticationService(AuthenticationService authenticationService) {
+    public void setAuthenticationService(Object authenticationService) {
         this.configuration.setAuthenticationService(authenticationService);
     }
 
     /**
      * When servicemix-http is embedded inside a web application and configured to reuse the existing servlet container,
      * this method will create and return the HTTPProcessor which will handle all servlet calls
-     * 
-     * @param mappings
      */
     public HttpProcessor getMainProcessor() {
         return server.getMainProcessor();

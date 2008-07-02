@@ -50,8 +50,9 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.soap.Context;
@@ -267,7 +268,7 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
                 if (protocol == null) {
                     ProtocolSocketFactory sf = new CommonsHttpSSLSocketFactory(
                                     endpoint.getSsl(),
-                                    endpoint.getKeystoreManager());
+                                    KeystoreManager.Proxy.create(endpoint.getKeystoreManager()));
                     protocol = new Protocol("https", sf, 443);
                 }
             }

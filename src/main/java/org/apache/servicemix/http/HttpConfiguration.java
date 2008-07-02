@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.servicemix.common.security.AuthenticationService;
-import org.apache.servicemix.common.security.KeystoreManager;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 
 /**
@@ -43,8 +41,8 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private Properties properties = new Properties();
     private boolean streamingEnabled;
     private String jettyConnectorClassName = DEFAULT_JETTY_CONNECTOR_CLASS_NAME;
-    private transient KeystoreManager keystoreManager;
-    private transient AuthenticationService authenticationService;
+    private transient Object keystoreManager;
+    private transient Object authenticationService;
     
     /**
      * The JNDI name of the AuthenticationService object
@@ -206,14 +204,14 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     /**
      * @return the authenticationService
      */
-    public AuthenticationService getAuthenticationService() {
+    public Object getAuthenticationService() {
         return authenticationService;
     }
 
     /**
      * @param authenticationService the authenticationService to set
      */
-    public void setAuthenticationService(AuthenticationService authenticationService) {
+    public void setAuthenticationService(Object authenticationService) {
         this.authenticationService = authenticationService;
     }
 
@@ -235,14 +233,14 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     /**
      * @return the keystoreManager
      */
-    public KeystoreManager getKeystoreManager() {
+    public Object getKeystoreManager() {
         return keystoreManager;
     }
 
     /**
      * @param keystoreManager the keystoreManager to set
      */
-    public void setKeystoreManager(KeystoreManager keystoreManager) {
+    public void setKeystoreManager(Object keystoreManager) {
         this.keystoreManager = keystoreManager;
     }
 

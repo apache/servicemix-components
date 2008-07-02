@@ -38,6 +38,8 @@ import org.apache.servicemix.http.HttpBridgeServlet;
 import org.apache.servicemix.http.HttpConfiguration;
 import org.apache.servicemix.http.HttpProcessor;
 import org.apache.servicemix.http.SslParameters;
+import org.apache.servicemix.common.security.KeystoreManager;
+import org.apache.servicemix.common.security.AuthenticationService;
 import org.mortbay.component.AbstractLifeCycle;
 import org.mortbay.jetty.AbstractConnector;
 import org.mortbay.jetty.Connector;
@@ -197,7 +199,7 @@ public class JettyContextManager implements ContextManager {
             secHandler.setAuthMethod(processor.getAuthMethod());
             JaasUserRealm realm = new JaasUserRealm();
             if (configuration.getAuthenticationService() != null) {
-                realm.setAuthenticationService(configuration.getAuthenticationService());
+                realm.setAuthenticationService(AuthenticationService.Proxy.create(configuration.getAuthenticationService()));
             }
             secHandler.setUserRealm(realm);
             context.setHandler(secHandler);
@@ -358,7 +360,7 @@ public class JettyContextManager implements ContextManager {
         sslConnector.setKeyAlias(ssl.getKeyAlias());
         sslConnector.setNeedClientAuth(ssl.isNeedClientAuth());
         sslConnector.setWantClientAuth(ssl.isWantClientAuth());
-        sslConnector.setKeystoreManager(getConfiguration().getKeystoreManager());
+        sslConnector.setKeystoreManager(KeystoreManager.Proxy.create(getConfiguration().getKeystoreManager()));
         // important to set this values for selfsigned keys
         // otherwise the standard truststore of the jre is used
         sslConnector.setTruststore(ssl.getTrustStore());

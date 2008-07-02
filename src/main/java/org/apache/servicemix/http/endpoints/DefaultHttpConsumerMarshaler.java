@@ -34,7 +34,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.XMLStreamHelper;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.common.JbiConstants;
 
 /**
  * The default consumer marshaler used for non-soap consumer endpoints.
@@ -48,7 +48,7 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
     private URI defaultMep;
 
     public DefaultHttpConsumerMarshaler() {
-        this(MessageExchangeSupport.IN_OUT);
+        this(JbiConstants.IN_OUT);
     }
 
     public DefaultHttpConsumerMarshaler(URI defaultMep) {

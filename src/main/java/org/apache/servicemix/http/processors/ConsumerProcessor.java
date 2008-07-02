@@ -38,7 +38,7 @@ import org.w3c.dom.Node;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.ContextManager;
@@ -60,10 +60,6 @@ import org.mortbay.util.ajax.ContinuationSupport;
 
 public class ConsumerProcessor extends AbstractProcessor implements ExchangeProcessor, HttpProcessor {
 
-    public static final URI IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/in-only");
-    public static final URI IN_OUT = URI.create("http://www.w3.org/2004/08/wsdl/in-out");
-    public static final URI ROBUST_IN_ONLY = URI.create("http://www.w3.org/2004/08/wsdl/robust-in-only");
-    
     private static Log log = LogFactory.getLog(ConsumerProcessor.class);
 
     protected Object httpContext;

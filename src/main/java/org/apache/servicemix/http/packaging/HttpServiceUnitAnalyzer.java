@@ -32,7 +32,7 @@ import org.apache.servicemix.http.HttpEndpoint;
  * and provides
  *
  * @author Philip Dodds
- * @see ServiceUnitAnalyzer, {@link ServiceUnitAnalyzer}
+ * @see org.apache.servicemix.common.packaging.ServiceUnitAnalyzer , {@link org.apache.servicemix.common.packaging.ServiceUnitAnalyzer}
  * @since 3.0
  */
 public class HttpServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer {
