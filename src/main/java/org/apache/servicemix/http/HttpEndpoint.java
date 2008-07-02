@@ -30,16 +30,17 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
 import javax.xml.namespace.QName;
 
-import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.ManagementSupport;
+import org.apache.servicemix.common.security.AuthenticationService;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
 import org.apache.servicemix.http.tools.PortTypeDecorator;
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
+
+import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 
 /**
  * 

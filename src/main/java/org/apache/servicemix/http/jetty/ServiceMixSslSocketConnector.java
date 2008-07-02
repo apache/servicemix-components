@@ -18,7 +18,7 @@ package org.apache.servicemix.http.jetty;
 
 import javax.net.ssl.SSLServerSocketFactory;
 
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.mortbay.jetty.security.SslSocketConnector;
 
 public class ServiceMixSslSocketConnector extends SslSocketConnector {

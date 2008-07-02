@@ -31,14 +31,14 @@ import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.security.AuthenticationService;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
 import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.apache.servicemix.jbi.util.IntrospectionSupport;
 import org.apache.servicemix.jbi.util.URISupport;
 
@@ -209,7 +209,9 @@ public class HttpComponent extends DefaultComponent {
                 Object as = context.getNamingContext().lookup(name);
                 configuration.setAuthenticationService((AuthenticationService) as);
             } catch (Throwable e) {
-                configuration.setAuthenticationService(new JAASAuthenticationService());
+                //TODO: gnodet - should I make SMX3 core depends on components common?
+                //               this way, we should be able to make JAASAuthenticationService implement the new interface
+                //configuration.setAuthenticationService(new JAASAuthenticationService());
             }
         }
         // Create client

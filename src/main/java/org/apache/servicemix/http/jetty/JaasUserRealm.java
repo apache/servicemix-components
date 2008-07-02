@@ -25,7 +25,7 @@ import javax.security.auth.Subject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.security.UserRealm;
@@ -41,7 +41,7 @@ public class JaasUserRealm implements UserRealm {
 
     private String name = getClass().getName();
     private String domain = "servicemix-domain";
-    private AuthenticationService authenticationService = new JAASAuthenticationService();
+    private AuthenticationService authenticationService /*= new JAASAuthenticationService()*/;
     private final Map<String, JaasJettyPrincipal> userMap = new ConcurrentHashMap<String, JaasJettyPrincipal>();
 
     /**

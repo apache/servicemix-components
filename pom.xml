@@ -190,6 +190,12 @@
       <scope>provided</scope>
       <version>1.1.2</version>
     </dependency>
+    <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+      <scope>test</scope>
+      <version>1.0</version>
+    </dependency>
   </dependencies>
   
   <build>

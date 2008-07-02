@@ -34,8 +34,8 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.SslParameters;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
 import org.mortbay.resource.Resource;
 import org.springframework.core.io.ClassPathResource;
 
