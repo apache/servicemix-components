@@ -52,6 +52,17 @@
     <spring-version>2.0.6</spring-version>
     <derby-version>10.2.2.0</derby-version>
     <surefire.fork.mode>pertest</surefire.fork.mode>
+
+    <servicemix.osgi.import>
+        org.apache.servicemix.common.osgi,
+        org.apache.xbean.spring.context.v2,
+        org.springframework.beans.factory.xml,
+        *
+    </servicemix.osgi.import>
+    <servicemix.osgi.export>
+        org.apache.servicemix*;version=${project.version},
+        META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.cxfbc
+    </servicemix.osgi.export>
   </properties>
 
   <dependencies>
@@ -130,29 +141,6 @@
       <version>${cxf-version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-transports-jbi</artifactId>
-      <version>${cxf-version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.servicemix</groupId>
-          <artifactId>servicemix-jbi</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-bindings-jbi</artifactId>
-      <version>${cxf-version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.servicemix</groupId>
-          <artifactId>servicemix-jbi</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>

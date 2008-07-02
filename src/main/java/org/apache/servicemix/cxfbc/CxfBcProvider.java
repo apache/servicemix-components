@@ -18,6 +18,9 @@ package org.apache.servicemix.cxfbc;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +38,12 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -46,9 +53,6 @@ import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.binding.AbstractBindingFactory;
-
-import org.apache.cxf.binding.jbi.JBIConstants;
-import org.apache.cxf.binding.jbi.JBIFault;
 
 import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
@@ -76,17 +80,18 @@ import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.ConduitInitiator;
 import org.apache.cxf.transport.ConduitInitiatorManager;
-import org.apache.cxf.transport.jbi.JBIMessageHelper;
 import org.apache.cxf.wsdl.WSDLManager;
 import org.apache.cxf.wsdl11.SchemaUtil;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
 import org.apache.cxf.wsdl11.WSDLServiceBuilder;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
+import org.apache.servicemix.cxfbc.interceptors.JbiFault;
+import org.apache.servicemix.cxfbc.interceptors.CxfJbiConstants;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
 
@@ -97,6 +102,8 @@ import org.springframework.core.io.Resource;
  */
 public class CxfBcProvider extends ProviderEndpoint implements
         CxfBcEndpointWithInterceptor {
+
+    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
 
     List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
 
@@ -200,7 +207,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         outChain.add(getOutInterceptors());
         outChain.add(getOutFaultInterceptors());
         message.setInterceptorChain(outChain);
-        InputStream is = JBIMessageHelper.convertMessageToInputStream(nm
+        InputStream is = convertMessageToInputStream(nm
                 .getContent());
 
         StreamSource source = new StreamSource(is);
@@ -259,8 +266,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
     private void handleJBIFault(Message message, String detail) {
         Document doc = DomUtil.createDocument();
         Element jbiFault = DomUtil.createElement(doc, new QName(
-                JBIConstants.NS_JBI_BINDING, JBIFault.JBI_FAULT_ROOT));
-        Node jbiFaultDetail = DomUtil.createElement(jbiFault, new QName("", JBIFault.JBI_FAULT_DETAIL));
+                CxfJbiConstants.WSDL11_WRAPPER_NAMESPACE, JbiFault.JBI_FAULT_ROOT));
+        Node jbiFaultDetail = DomUtil.createElement(jbiFault, new QName("", JbiFault.JBI_FAULT_DETAIL));
         jbiFaultDetail.setTextContent(detail);
         jbiFault.appendChild(jbiFaultDetail);
         message.setContent(Source.class, new DOMSource(doc));
@@ -468,4 +475,11 @@ public class CxfBcProvider extends ProviderEndpoint implements
         return useJBIWrapper;
     }
 
+    protected InputStream convertMessageToInputStream(Source src) throws IOException, TransformerException {
+        final Transformer transformer = TRANSFORMER_FACTORY.newTransformer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StreamResult result = new StreamResult(baos);
+        transformer.transform(src, result);
+        return new ByteArrayInputStream(baos.toByteArray());
+    }
 }

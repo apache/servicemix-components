@@ -28,7 +28,7 @@ import org.apache.cxf.ws.addressing.AddressingPropertiesImpl;
 import org.apache.cxf.ws.addressing.AttributedURIType;
 import org.apache.cxf.ws.addressing.ContextUtils;
 import org.apache.servicemix.cxfbc.CxfBcConsumer;
-import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.common.util.URIResolver;
 
 
 public class JbiAddressingInterceptor extends AbstractPhaseInterceptor<Message> {
@@ -50,8 +50,8 @@ public class JbiAddressingInterceptor extends AbstractPhaseInterceptor<Message> 
         if (action != null) {
             String value = action.getValue();
             
-            if (value != null && value.endsWith(JbiConstants.JBI_SUFFIX)) {
-                value = value.substring(0, value.indexOf(JbiConstants.JBI_SUFFIX) - 1);
+            if (value != null && value.endsWith(CxfJbiConstants.JBI_SUFFIX)) {
+                value = value.substring(0, value.indexOf(CxfJbiConstants.JBI_SUFFIX) - 1);
                 String[] parts = URIResolver.split3(value);
                 MessageExchange exchange = message.getContent(MessageExchange.class);
                 exchange.setOperation(new QName(parts[0], parts[2]));
@@ -62,8 +62,8 @@ public class JbiAddressingInterceptor extends AbstractPhaseInterceptor<Message> 
         AttributedURIType to = maps.getTo();
         if (to != null) {
             String toAddress = to.getValue();
-            if (toAddress != null && toAddress.endsWith(JbiConstants.JBI_SUFFIX)) {
-                toAddress = toAddress.substring(0, toAddress.indexOf(JbiConstants.JBI_SUFFIX) - 1);
+            if (toAddress != null && toAddress.endsWith(CxfJbiConstants.JBI_SUFFIX)) {
+                toAddress = toAddress.substring(0, toAddress.indexOf(CxfJbiConstants.JBI_SUFFIX) - 1);
                 String[] parts = URIResolver.split3(toAddress);
                 MessageExchange exchange = message.getContent(MessageExchange.class);
                 exchange.setService(new QName(parts[0], parts[1]));

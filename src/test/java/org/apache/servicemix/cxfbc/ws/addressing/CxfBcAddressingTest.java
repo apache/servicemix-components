@@ -45,7 +45,7 @@ import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
 import org.apache.hello_world_soap_http.NoSuchCodeLitFault;
 import org.apache.hello_world_soap_http.SOAPService;
-import org.apache.servicemix.cxfbc.interceptors.JbiConstants;
+import org.apache.servicemix.cxfbc.interceptors.CxfJbiConstants;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -194,7 +194,7 @@ public class CxfBcAddressingTest extends SpringTestSupport implements Verificati
         String serviceName = "SOAPServiceWSSecurity";
         String endpointName = "TimestampSignEncrypt";
         
-        to.setValue(ns + delimiter + serviceName + delimiter + endpointName + delimiter + JbiConstants.JBI_SUFFIX);
+        to.setValue(ns + delimiter + serviceName + delimiter + endpointName + delimiter + CxfJbiConstants.JBI_SUFFIX);
         EndpointReferenceType toRef = new EndpointReferenceType();
         toRef.setAddress(to);
         maps.setTo(toRef);
@@ -219,7 +219,7 @@ public class CxfBcAddressingTest extends SpringTestSupport implements Verificati
             String ns = "http://apache.org/hello_world_soap_http";
             String interfaceName = "Greeter";
             String operationName = "greetMeSometime";
-            action.setValue(ns + delimiter + interfaceName + delimiter + operationName + delimiter + JbiConstants.JBI_SUFFIX);
+            action.setValue(ns + delimiter + interfaceName + delimiter + operationName + delimiter + CxfJbiConstants.JBI_SUFFIX);
             maps.setAction(action);
             //associate MAPs with request context
             Map<String, Object> requestContext =
@@ -231,7 +231,7 @@ public class CxfBcAddressingTest extends SpringTestSupport implements Verificati
             checkVerification();
             operationName = "sayHi";
             action.setValue(ns + delimiter + interfaceName + delimiter + operationName 
-                    + delimiter + JbiConstants.JBI_SUFFIX);
+                    + delimiter + CxfJbiConstants.JBI_SUFFIX);
             greeting = greeter.greetMe("explicitly set to invoke sayHi");
             assertEquals(greeting, "sayHi:Bonjour");
             checkVerification();

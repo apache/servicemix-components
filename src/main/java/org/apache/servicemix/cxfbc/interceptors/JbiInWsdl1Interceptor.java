@@ -31,8 +31,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.apache.cxf.binding.jbi.JBIConstants;
-import org.apache.cxf.binding.jbi.JBIFault;
 import org.apache.cxf.binding.soap.Soap11;
 import org.apache.cxf.binding.soap.SoapHeader;
 import org.apache.cxf.binding.soap.SoapMessage;
@@ -102,7 +100,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
 
             document = DomUtil.createDocument();
             Element root = DomUtil.createElement(document,
-                    JbiConstants.WSDL11_WRAPPER_MESSAGE);
+                    CxfJbiConstants.WSDL11_WRAPPER_MESSAGE);
             String typeNamespace = wsdlMessage.getMessageInfo().getName()
                     .getNamespaceURI();
             if (typeNamespace == null || typeNamespace.length() == 0) {
@@ -110,15 +108,15 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                         "messageType namespace is null or empty");
             }
             root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
-                            + JbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX,
+                            + CxfJbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX,
                             typeNamespace);
             
             root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
-                    + JbiConstants.WSDL11_WRAPPER_XSD_PREFIX,
+                    + CxfJbiConstants.WSDL11_WRAPPER_XSD_PREFIX,
                     XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
             root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":"
-                    + JbiConstants.WSDL11_WRAPPER_XSI_PREFIX,
+                    + CxfJbiConstants.WSDL11_WRAPPER_XSI_PREFIX,
                     XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
             
             String typeLocalName = wsdlMessage.getMessageInfo().getName()
@@ -127,13 +125,13 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 throw new IllegalArgumentException(
                         "messageType local name is null or empty");
             }
-            root.setAttribute(JbiConstants.WSDL11_WRAPPER_TYPE,
-                    JbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX + ":"
+            root.setAttribute(CxfJbiConstants.WSDL11_WRAPPER_TYPE,
+                    CxfJbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX + ":"
                             + typeLocalName);
             String messageName = wsdlMessage.getMessageInfo().getName()
                     .getLocalPart();
-            root.setAttribute(JbiConstants.WSDL11_WRAPPER_NAME, messageName);
-            root.setAttribute(JbiConstants.WSDL11_WRAPPER_VERSION, "1.0");
+            root.setAttribute(CxfJbiConstants.WSDL11_WRAPPER_NAME, messageName);
+            root.setAttribute(CxfJbiConstants.WSDL11_WRAPPER_VERSION, "1.0");
 
             SoapBindingInfo binding = (SoapBindingInfo) message.getExchange()
                     .get(Endpoint.class).getEndpointInfo().getBinding();
@@ -224,7 +222,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
     private void handleJBIFault(SoapMessage message, Element soapFault) {
         Document doc = DomUtil.createDocument();
         Element jbiFault = DomUtil.createElement(doc, new QName(
-                JBIConstants.NS_JBI_BINDING, JBIFault.JBI_FAULT_ROOT));
+                CxfJbiConstants.WSDL11_WRAPPER_NAMESPACE, JbiFault.JBI_FAULT_ROOT));
         Node jbiFaultDetail = null;
         if (message.getVersion() instanceof Soap11) {
             jbiFaultDetail = doc.importNode(soapFault.getElementsByTagName(
@@ -331,7 +329,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
      */
     private static void addPart(Element parent, Node partValue) {
         Element element = DomUtil.createElement(parent,
-                JbiConstants.WSDL11_WRAPPER_PART);
+                CxfJbiConstants.WSDL11_WRAPPER_PART);
         element.appendChild(element.getOwnerDocument().importNode(partValue,
                 true));
     }
@@ -341,7 +339,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
      */
     private static void addPart(Element parent, NodeList nodes) {
         Element element = DomUtil.createElement(parent,
-                JbiConstants.WSDL11_WRAPPER_PART);
+                CxfJbiConstants.WSDL11_WRAPPER_PART);
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             element.appendChild(element.getOwnerDocument().importNode(node,
@@ -379,4 +377,5 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
     protected boolean isRequestor(Message message) {
         return Boolean.TRUE.equals(message.get(Message.REQUESTOR_ROLE));
     }
+
 }

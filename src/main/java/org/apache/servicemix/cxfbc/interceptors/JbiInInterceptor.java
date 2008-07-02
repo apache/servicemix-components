@@ -40,7 +40,6 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.servicemix.cxfbc.WSAUtils;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.soap.util.QNameUtil;
 
 /**
@@ -107,12 +106,12 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
         if (operation != null) {
             if (operation.getOutput() == null) {
                 if (operation.getFaults().size() == 0) {
-                    mep = MessageExchangeSupport.IN_ONLY;
+                    mep = CxfJbiConstants.IN_ONLY;
                 } else {
-                    mep = MessageExchangeSupport.ROBUST_IN_ONLY;
+                    mep = CxfJbiConstants.ROBUST_IN_ONLY;
                 }
             } else {
-                mep = MessageExchangeSupport.IN_OUT;
+                mep = CxfJbiConstants.IN_OUT;
             }
         } else {
             mep = (URI) message.get(OPERATION_MEP);
@@ -171,11 +170,10 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
         Map<String, Object> headers = new HashMap<String, Object>();
         for (Header header : message.getHeaders()) {
-            headers.put(QNameUtil.toString(header.getName()), header
-                    .getObject());
+            headers.put(QNameUtil.toString(header.getName()), header.getObject());
         }
 
-        normalizedMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, headers);
+        normalizedMessage.setProperty(CxfJbiConstants.PROTOCOL_HEADERS, headers);
 
     }
 

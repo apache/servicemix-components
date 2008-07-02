@@ -48,7 +48,6 @@ import com.ibm.wsdl.extensions.soap.SOAPBindingImpl;
 import org.apache.cxf.Bus;
 import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.AbstractBindingFactory;
-import org.apache.cxf.binding.jbi.JBIFault;
 import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
@@ -91,12 +90,14 @@ import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl.WSDLManager;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
+import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.cxfbc.interceptors.JbiInInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiJAASInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOperationInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
+import org.apache.servicemix.cxfbc.interceptors.JbiFault;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.mortbay.jetty.Handler;
@@ -288,8 +289,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     new JbiInWsdl1Interceptor(isUseJBIWrapper()));
             cxfService.getInInterceptors().add(new JbiInInterceptor());
             cxfService.getInInterceptors().add(new JbiJAASInterceptor(
-                    ((CxfBcComponent)this.getServiceUnit().getComponent()).
-                    getConfiguration().getAuthenticationService()));
+                    AuthenticationService.Proxy.create(
+                        ((CxfBcComponent)this.getServiceUnit().getComponent()).
+                            getConfiguration().getAuthenticationService())));
             cxfService.getInInterceptors().add(new JbiInvokerInterceptor());
             cxfService.getInInterceptors().add(new JbiPostInvokerInterceptor());
 
@@ -551,7 +553,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 if (exchange.getFault() != null) {
                     Fault f = null;
                     if (isUseJBIWrapper()) {
-                        f = new JBIFault(
+                        f = new JbiFault(
                                 new org.apache.cxf.common.i18n.Message(
                                         "Fault occured", (ResourceBundle) null));
                         Element details = toElement(exchange.getFault()

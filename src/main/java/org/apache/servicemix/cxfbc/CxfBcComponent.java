@@ -22,8 +22,6 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
-import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
 
 /**
  * 
@@ -77,9 +75,14 @@ public class CxfBcComponent extends DefaultComponent {
             try {
                 String name = getConfiguration().getAuthenticationServiceName();
                 Object as = context.getNamingContext().lookup(name);
-                getConfiguration().setAuthenticationService((AuthenticationService) as);
+                getConfiguration().setAuthenticationService(as);
             } catch (Throwable e) {
-                getConfiguration().setAuthenticationService(new JAASAuthenticationService());
+                try {
+                    Class cl = Class.forName("org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService");
+                    getConfiguration().setAuthenticationService(cl.newInstance());
+                } catch (Throwable t) {
+                    logger.warn("Unable to retrieve or create the authentication service");
+                }
             }
         }
         super.doInit();

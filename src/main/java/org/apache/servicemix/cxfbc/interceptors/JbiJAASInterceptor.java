@@ -28,7 +28,7 @@ import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.ws.security.wss4j.AbstractWSS4JInterceptor;
 import org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor;
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
+import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSUsernameTokenPrincipal;
 import org.apache.ws.security.handler.WSHandlerConstants;

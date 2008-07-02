@@ -16,11 +16,9 @@
  */
 package org.apache.servicemix.cxfbc;
 
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
-
 public class CxfBcConfiguration {
 
-    private transient AuthenticationService authenticationService;
+    private transient Object authenticationService;
     
     /**
      * The JNDI name of the AuthenticationService object
@@ -31,14 +29,14 @@ public class CxfBcConfiguration {
     /**
      * @return the authenticationService
      */
-    public AuthenticationService getAuthenticationService() {
+    public Object getAuthenticationService() {
         return authenticationService;
     }
 
     /**
      * @param authenticationService the authenticationService to set
      */
-    public void setAuthenticationService(AuthenticationService authenticationService) {
+    public void setAuthenticationService(Object authenticationService) {
         this.authenticationService = authenticationService;
     }
 
