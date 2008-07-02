@@ -51,8 +51,14 @@
         org.apache.servicemix.components*;resolution:=optional,
         org.apache.servicemix.expression*;resolution:=optional,
         org.apache.servicemix.jbi*;resolution:=optional,
+        org.apache.xbean.spring.context.v2,
+        org.springframework.beans.factory.xml,
         *
     </servicemix.osgi.import>
+    <servicemix.osgi.export>
+        org.apache.servicemix*;version=${project.version},
+        META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.eip
+    </servicemix.osgi.export>
   </properties>
   
   <dependencies>
