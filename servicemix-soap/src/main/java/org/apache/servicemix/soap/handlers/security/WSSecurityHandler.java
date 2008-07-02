@@ -32,8 +32,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.jbi.security.auth.AuthenticationService;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
+import org.apache.servicemix.common.security.AuthenticationService;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.Handler;
 import org.apache.servicemix.soap.SoapFault;

@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.servicemix.jbi.security.keystore.KeystoreInstance;
-import org.apache.servicemix.jbi.security.keystore.KeystoreManager;
+import org.apache.servicemix.common.security.KeystoreInstance;
+import org.apache.servicemix.common.security.KeystoreManager;
 
 public class KeystoreInstanceCrypto extends BaseCrypto {
 

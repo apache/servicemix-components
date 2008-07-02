@@ -39,6 +39,7 @@
         org.apache.servicemix;resolution:=optional,
         org.apache.servicemix.jbi*;resolution:=optional,
         org.apache.servicemix.components*;resolution:=optional,
+        org.apache.woden*;resolution:=optional,
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export.pkg>

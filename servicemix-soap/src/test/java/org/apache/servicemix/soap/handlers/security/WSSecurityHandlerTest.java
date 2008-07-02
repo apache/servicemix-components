@@ -37,6 +37,7 @@ import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
+import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSUsernameTokenPrincipal;
 import org.apache.ws.security.handler.WSHandlerConstants;
@@ -68,7 +69,7 @@ public class WSSecurityHandlerTest extends TestCase {
         ctx.setInMessage(msg);
         
         WSSecurityHandler handler = new WSSecurityHandler();
-        handler.setAuthenticationService(new JAASAuthenticationService());
+        handler.setAuthenticationService(AuthenticationService.Proxy.create(new JAASAuthenticationService()));
         handler.setReceiveAction(WSHandlerConstants.USERNAME_TOKEN);
         handler.onReceive(ctx);
         List l = (List) ctx.getProperty(WSHandlerConstants.RECV_RESULTS);
@@ -105,7 +106,7 @@ public class WSSecurityHandlerTest extends TestCase {
         crypto.setKeyStoreUrl(new ClassPathResource("privatestore.jks"));
         crypto.setKeyStorePassword("keyStorePassword");
         WSSecurityHandler handler = new WSSecurityHandler();
-        handler.setAuthenticationService(new JAASAuthenticationService());
+        handler.setAuthenticationService(AuthenticationService.Proxy.create(new JAASAuthenticationService()));
         handler.setCrypto(crypto);
         handler.setUsername("myalias");
         crypto.setKeyPassword("myAliasPassword");
@@ -146,7 +147,7 @@ public class WSSecurityHandlerTest extends TestCase {
         crypto.setKeyStoreUrl(new ClassPathResource("privatestore.jks"));
         crypto.setKeyStorePassword("keyStorePassword");
         WSSecurityHandler handler = new WSSecurityHandler();
-        handler.setAuthenticationService(new JAASAuthenticationService());
+        handler.setAuthenticationService(AuthenticationService.Proxy.create(new JAASAuthenticationService()));
         handler.setCrypto(crypto);
         handler.setUsername("myalias");
         crypto.setKeyPassword("myAliasPassword");
