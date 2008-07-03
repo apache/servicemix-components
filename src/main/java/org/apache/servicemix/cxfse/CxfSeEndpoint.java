@@ -183,46 +183,49 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
-        
-        QName opeName = exchange.getOperation();
-        EndpointInfo ei = endpoint.getServer().getEndpoint().getEndpointInfo();
-        if (opeName == null) {
-            // if interface only have one operation, may not specify the opeName in MessageExchange
-            if (ei.getBinding().getOperations().size() == 1) {
-                opeName = ei.getBinding().getOperations().iterator().next().getName();
-                exchange.setOperation(opeName);
-            } else {
-                throw new Fault(
-                            new Exception("Operation not bound on this MessageExchange"));
-                
+        JBIContext.setMessageExchange(exchange);
+        try {
+            QName opeName = exchange.getOperation();
+            EndpointInfo ei = endpoint.getServer().getEndpoint().getEndpointInfo();
+            if (opeName == null) {
+                // if interface only have one operation, may not specify the opeName in MessageExchange
+                if (ei.getBinding().getOperations().size() == 1) {
+                    opeName = ei.getBinding().getOperations().iterator().next().getName();
+                    exchange.setOperation(opeName);
+                } else {
+                    throw new Fault(
+                                new Exception("Operation not bound on this MessageExchange"));
+
+                }
             }
-        } 
-        
-        JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
-                .getExtension(ConduitInitiatorManager.class)
-                .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
-        
-        QName serviceName = exchange.getService();
-        if (serviceName == null) {
-            serviceName = getService();
-            exchange.setService(serviceName);
+
+            JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
+                    .getExtension(ConduitInitiatorManager.class)
+                    .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+
+            QName serviceName = exchange.getService();
+            if (serviceName == null) {
+                serviceName = getService();
+                exchange.setService(serviceName);
+            }
+            QName interfaceName = exchange.getInterfaceName();
+            if (interfaceName == null) {
+                interfaceName = getInterfaceName();
+                exchange.setInterfaceName(interfaceName);
+            }
+            JBIDestination jbiDestination = jbiTransportFactory
+                    .getDestination(serviceName.toString()
+                            + interfaceName.toString());
+            DeliveryChannel dc = getContext().getDeliveryChannel();
+            jbiTransportFactory.setDeliveryChannel(dc);
+
+            jbiDestination.setDeliveryChannel(dc);
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
+            }
+        } finally {
+            JBIContext.setMessageExchange(null);
         }
-        QName interfaceName = exchange.getInterfaceName();
-        if (interfaceName == null) {
-            interfaceName = getInterfaceName();
-            exchange.setInterfaceName(interfaceName);
-        }
-        JBIDestination jbiDestination = jbiTransportFactory
-                .getDestination(serviceName.toString()
-                        + interfaceName.toString());
-        DeliveryChannel dc = getContext().getDeliveryChannel();
-        jbiTransportFactory.setDeliveryChannel(dc);
-        
-        jbiDestination.setDeliveryChannel(dc);
-        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-            jbiDestination.getJBIDispatcherUtil().dispatch(exchange);
-        }
-        
     }
 
     /*
