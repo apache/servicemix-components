@@ -43,7 +43,7 @@
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
 
-    <cxf-version>2.1.1-SNAPSHOT</cxf-version>
+    <cxf-version>2.1.2-SNAPSHOT</cxf-version>
   </properties>
   
   <dependencies>
