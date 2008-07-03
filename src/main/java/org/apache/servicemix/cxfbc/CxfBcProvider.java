@@ -351,9 +351,6 @@ public class CxfBcProvider extends ProviderEndpoint implements
 
                     }
                 }
-                // transform import xsd to inline xsd
-                ServiceWSDLBuilder swBuilder = new ServiceWSDLBuilder(getBus(),
-                        cxfService.getServiceInfos());
                 ServiceInfo serInfo = new ServiceInfo();
 
                 Map<String, Element> schemaList = new HashMap<String, Element>();
@@ -361,6 +358,11 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 schemaUtil.getSchemas(definition, serInfo);
 
                 serInfo = ei.getService();
+                List<ServiceInfo> serviceInfos = new ArrayList<ServiceInfo>();
+                serviceInfos.add(serInfo);
+                //transform import xsd to inline xsd
+                ServiceWSDLBuilder swBuilder = new ServiceWSDLBuilder(getBus(),
+                        serviceInfos);
                 for (String key : schemaList.keySet()) {
                     Element ele = schemaList.get(key);
                     for (SchemaInfo sInfo : serInfo.getSchemas()) {
