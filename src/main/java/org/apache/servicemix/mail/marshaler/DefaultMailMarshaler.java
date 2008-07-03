@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -36,6 +37,7 @@ import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Part;
+import javax.mail.util.ByteArrayDataSource;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -45,8 +47,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.util.ByteArrayDataSource;
-import org.apache.servicemix.jbi.util.FileUtil;
 
 /**
  * this is the default marshaler for conversion between the normalized message
@@ -137,7 +137,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     DataHandler dh = nmsg.getAttachment(oneAttachmentName);
                     File f = File.createTempFile("" + System.currentTimeMillis() + "-", dh.getDataSource().getName());
                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(f));
-                    FileUtil.copyInputStream(dh.getInputStream(), bos);
+                    copyInputStream(dh.getInputStream(), bos);
                     bos.close();
                     
                     log.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
@@ -605,4 +605,23 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             nmsg.addAttachment(bads.getName(), new DataHandler(bads));
         }
     }
+
+    /**
+     * Copy in stream to an out stream
+     *
+     * @param in
+     * @param out
+     * @throws IOException
+     */
+    public static void copyInputStream(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[8192];
+        int len = in.read(buffer);
+        while (len >= 0) {
+            out.write(buffer, 0, len);
+            len = in.read(buffer);
+        }
+        in.close();
+        out.close();
+    }
+
 }
