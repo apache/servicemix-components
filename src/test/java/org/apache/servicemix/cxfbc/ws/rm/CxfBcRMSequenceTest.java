@@ -994,7 +994,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyAcknowledgements(new boolean[] {false, false, false}, false);
     }
 
-    public void testConcurrency() throws Exception {
+    public void xtestConcurrency() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         if (!doTestConcurrency) {
             return;
@@ -1103,7 +1103,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
     }
 
-    public void testMultiClientTwoway() throws Exception {
+    public void xtestMultiClientTwoway() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         if (!doTestMultiClientTwoway) {
             return;
@@ -1196,7 +1196,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         }
     }
 
-    public void testServerSideMessageLoss() throws Exception {
+    public void xtestServerSideMessageLoss() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/message-loss-server.xml");
         if (!doTestServerSideMessageLoss) {
             return;
@@ -1252,7 +1252,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         mf.verifyAcknowledgements(new boolean[] {false, true, true}, false);
     }
 
-    public void testTerminateOnShutdown() throws Exception {
+    public void xtestTerminateOnShutdown() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/ws/rm/terminate-on-shutdown.xml");
         if (!doTestTerminateOnShutdown) {
             return;
