@@ -39,7 +39,6 @@ import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
-import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.locks.LockManager;
 import org.apache.servicemix.locks.impl.SimpleLockManager;
 
@@ -254,7 +253,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                 unlock = false;
                 if (isDeleteFile()) {
                     if (archive != null) {
-                        FileUtil.moveFile(aFile, archive);
+                        moveFile(aFile, archive);
                     } else {
                         if (!aFile.delete()) {
                             throw new IOException("Could not delete file " + aFile);
@@ -302,4 +301,18 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         // Do nothing. In our case, this method should never be called
         // as we only send synchronous InOnly exchange
     }
+
+    /**
+     * Move a File
+     * 
+     * @param src
+     * @param targetDirectory
+     * @throws IOException 
+     */
+    public static void moveFile(File src, File targetDirectory) throws IOException {
+        if (!src.renameTo(new File(targetDirectory, src.getName()))) {
+            throw new IOException("Failed to move " + src + " to " + targetDirectory);
+        }
+    }
+
 }

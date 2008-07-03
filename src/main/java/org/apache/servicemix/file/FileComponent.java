@@ -25,8 +25,8 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.jbi.util.IntrospectionSupport;
-import org.apache.servicemix.jbi.util.URISupport;
+import org.apache.servicemix.common.util.IntrospectionSupport;
+import org.apache.servicemix.common.util.URISupport;
 
 /**
  * A file based component
