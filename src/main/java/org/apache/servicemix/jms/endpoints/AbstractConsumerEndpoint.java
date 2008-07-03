@@ -439,11 +439,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                         ((QueueSender) producer).send(msg);
                     }
                 }
-            }
-            if (replyExplicitQosEnabled) {
-                producer.send(msg, replyDeliveryMode, replyPriority, replyTimeToLive);
             } else {
-                producer.send(msg);
+                if (replyExplicitQosEnabled) {
+                    producer.send(msg, replyDeliveryMode, replyPriority, replyTimeToLive);
+                } else {
+                    producer.send(msg);
+                }
             }
         } finally {
             JmsUtils.closeMessageProducer(producer);
