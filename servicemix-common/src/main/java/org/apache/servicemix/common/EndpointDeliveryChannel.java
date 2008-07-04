@@ -107,7 +107,7 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
     }
 
     private void resumeTx(MessageExchange exchange) throws MessagingException {
-        if (!endpoint.getServiceUnit().getComponent().getContainer().handleTransactions()) {
+        if (!getEndpoint().getServiceUnit().getComponent().getContainer().handleTransactions()) {
             Transaction tx = (Transaction) exchange.getProperty(MessageExchange.JTA_TRANSACTION_PROPERTY_NAME);
             if (tx != null) {
                 TransactionManager txmgr = (TransactionManager) endpoint.getServiceUnit().getComponent().getComponentContext().getTransactionManager();
