@@ -62,6 +62,7 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
         // the injected context belong to servicemix-cxfse component 
         assertTrue(new SourceTransformer().contentToString(
               io.getOutMessage()).indexOf("Hello ffang servicemix-cxfse") > 0);
+        client.done(io);
         
     }
 

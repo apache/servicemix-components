@@ -62,6 +62,8 @@ public class CxfSeSpringTest extends SpringTestSupport {
                 io.getOutMessage()).indexOf("type=\"msg:addResponse\"") >= 0);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("xmlns:msg=\"http://apache.org/cxf/calculator\"") >= 0);
+
+        client.done(io);
     }
 
     public void testCalculatorWithoutInterfaceName() throws Exception {
@@ -84,6 +86,8 @@ public class CxfSeSpringTest extends SpringTestSupport {
                 io.getOutMessage()).indexOf("type=\"msg:addResponse\"") >= 0);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("xmlns:msg=\"http://apache.org/cxf/calculator\"") >= 0);
+
+        client.done(io);
     }
 
     

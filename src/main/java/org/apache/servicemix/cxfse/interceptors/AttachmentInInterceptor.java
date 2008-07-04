@@ -42,8 +42,7 @@ public class AttachmentInInterceptor extends AbstractPhaseInterceptor<Message> {
     public void handleMessage(Message message) {
         List<Attachment> attachmentList = new ArrayList<Attachment>();
         MessageExchange exchange = message.get(MessageExchange.class);
-        NormalizedMessage norMessage = 
-            (NormalizedMessage) exchange.getMessage("in");
+        NormalizedMessage norMessage = exchange.getMessage("in");
         Set names = norMessage.getAttachmentNames();
         for (Object obj : names) {
             String id = (String)obj;

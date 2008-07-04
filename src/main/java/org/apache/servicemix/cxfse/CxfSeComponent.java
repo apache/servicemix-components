@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.servicemix.common.DefaultComponent;
 
 /**
@@ -29,8 +30,13 @@ import org.apache.servicemix.common.DefaultComponent;
  */
 public class CxfSeComponent extends DefaultComponent {
 
-    public static final String JBI_TRANSPORT_ID = "http://cxf.apache.org/transports/jbi";
-    
+    private static final String[] CXF_CONFIG = new String[] {
+        "classpath:META-INF/cxf/cxf.xml",
+        "classpath:META-INF/cxf/cxf-extension-soap.xml",
+        "classpath:META-INF/cxf/transport/jbi/cxf-transport-jbi.xml",
+        "classpath:META-INF/cxf/binding/jbi/cxf-binding-jbi.xml"
+    };
+
     private CxfSeEndpoint[] endpoints;
     private Bus bus;
     
@@ -64,7 +70,9 @@ public class CxfSeComponent extends DefaultComponent {
     
     @Override
     protected void doInit() throws Exception {
-        bus = BusFactory.getDefaultBus();
+        if (bus == null) {
+            bus = new SpringBusFactory().createBus(CXF_CONFIG);
+        }
         super.doInit();
     }
     
@@ -72,4 +80,7 @@ public class CxfSeComponent extends DefaultComponent {
         return bus;
     }
 
+    public void setBus(Bus bus) {
+        this.bus = bus;
+    }
 }

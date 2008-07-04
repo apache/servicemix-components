@@ -89,7 +89,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         Bus bus = BusFactory.getDefaultBus();
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) bus
                 .getExtension(ConduitInitiatorManager.class)
-                .getConduitInitiator(CxfSeComponent.JBI_TRANSPORT_ID);
+                .getConduitInitiator(JBITransportFactory.TRANSPORT_ID);
         if (getInternalContext() != null) { 
             DeliveryChannel dc = getInternalContext().getDeliveryChannel();
             if (dc != null) {

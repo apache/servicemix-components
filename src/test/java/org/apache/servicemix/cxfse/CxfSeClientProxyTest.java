@@ -124,6 +124,7 @@ public class CxfSeClientProxyTest extends TestCase {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello ffang 3") > 0);
+        client.done(io);
         
     }
     
