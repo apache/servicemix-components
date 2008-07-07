@@ -45,6 +45,8 @@
     <cxf-version>2.1.2-SNAPSHOT</cxf-version>
 
     <servicemix.osgi.import>
+        javax.jws,
+        javax.xml.bind.annotation,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.client*;resolution:=optional,
         org.apache.servicemix.jbi.container*;resolution:=optional,
