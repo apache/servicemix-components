@@ -129,7 +129,6 @@
         <configuration>
           <type>binding-component</type>
           <component>org.apache.servicemix.mail.MailComponent</component>
-          <bootstrap>org.apache.servicemix.mail.MailBootstrap</bootstrap>
         </configuration>
       </plugin>
       <plugin>
