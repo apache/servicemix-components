@@ -435,23 +435,28 @@ public abstract class SoapEndpoint extends Endpoint {
                 ExtensibilityElement ee = (ExtensibilityElement) it.next();
                 if (ee instanceof Schema) {
                     Schema schema = (Schema) ee;
-                    Map schemaImports = schema.getImports();
-                    for (Iterator iter = schemaImports.values().iterator(); iter.hasNext();) {
-                        List imps = (List) iter.next();
-                        for (Iterator iterator = imps.iterator(); iterator.hasNext();) {
-                            SchemaImport schemaImport = (SchemaImport) iterator.next();
-                            Schema schemaImp = schemaImport.getReferencedSchema();
-                            String schemaLoc = schemaImport.getSchemaLocationURI();
-                            if (schemaLoc != null && schemaImp != null && schemaImp.getElement() != null && !URI.create(schemaLoc).isAbsolute()) {
-                                wsdls.put(schemaLoc, schemaImp.getElement());
-                            }
-                        }
-                    }
+                    mapSchemaImport(schema);                
                 }
             }
         }
     }
 
+    private void mapSchemaImport(Schema schema) {
+        Map schemaImports = schema.getImports();
+        for (Iterator iter = schemaImports.values().iterator(); iter.hasNext();) {
+            List imps = (List) iter.next();
+            for (Iterator iterator = imps.iterator(); iterator.hasNext();) {
+                SchemaImport schemaImport = (SchemaImport) iterator.next();
+                Schema schemaImp = schemaImport.getReferencedSchema();
+                String schemaLoc = schemaImport.getSchemaLocationURI();
+                if (schemaLoc != null && schemaImp != null && schemaImp.getElement() != null && !URI.create(schemaLoc).isAbsolute()) {
+                    wsdls.put(schemaLoc, schemaImp.getElement());
+                    mapSchemaImport(schemaImp);
+                }
+            }
+        }
+    }
+    
     /**
      * @return Returns the wsdls.
      */
