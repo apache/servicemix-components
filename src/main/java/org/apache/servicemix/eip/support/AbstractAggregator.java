@@ -33,6 +33,7 @@ import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
+import org.apache.servicemix.JbiConstants;
 
 /**
  * Aggregator can be used to wait and combine several messages.
@@ -58,6 +59,10 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     private boolean synchronous;
 
     private ConcurrentMap<String, Boolean> closedAggregates = new ConcurrentHashMap<String, Boolean>();
+
+    private boolean copyProperties = true;
+
+    private boolean copyAttachments = true;
     
     /**
      * @return the synchronous
@@ -100,8 +105,22 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     public void setTarget(ExchangeTarget target) {
         this.target = target;
     }
-    
-    /* (non-Javadoc)
+
+    public boolean isCopyProperties() {
+        return copyProperties;
+    }
+
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+    }
+
+    public boolean isCopyAttachments() {
+        return copyAttachments;
+    }
+
+    public void setCopyAttachments(boolean copyAttachments) {
+        this.copyAttachments = copyAttachments;
+    }/* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
     protected void processSync(MessageExchange exchange) throws Exception {
@@ -165,7 +184,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             // If the aggregation is not closed
             if (aggregation != null) {
                 if (addMessage(aggregation, in, exchange)) {
-                    sendAggregate(correlationId, aggregation, false);
+                    sendAggregate(correlationId, aggregation, false, isSynchronous(exchange));
                 } else {
                     store.store(correlationId, aggregation);
                     if (timeout != null) {
@@ -188,14 +207,15 @@ public abstract class AbstractAggregator extends EIPEndpoint {
 
     protected void sendAggregate(String correlationId,
                                  Object aggregation,
-                                 boolean timeout) throws Exception {
+                                 boolean timeout,
+                                 boolean sync) throws Exception {
         InOnly me = getExchangeFactory().createInOnlyExchange();
         target.configureTarget(me, getContext());
         NormalizedMessage nm = me.createMessage();
         me.setInMessage(nm);
         buildAggregate(aggregation, nm, me, timeout);
         closeAggregation(correlationId);
-        if (isSynchronous()) {
+        if (sync) {
             sendSync(me);
         } else {
             send(me);
@@ -211,7 +231,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         try {
             Object aggregation = store.load(correlationId);
             if (aggregation != null) {
-                sendAggregate(correlationId, aggregation, true);
+                sendAggregate(correlationId, aggregation, true, isSynchronous());
             } else if (!isAggregationClosed(correlationId)) {
                 throw new IllegalStateException("Aggregation is not closed, but can not be retrieved from the store");
             } else {
@@ -245,6 +265,11 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     protected void closeAggregation(String correlationId) {
         // TODO: implement this using a persistent / cached behavior
         closedAggregates.put(correlationId, Boolean.TRUE);
+    }
+
+    private boolean isSynchronous(MessageExchange exchange) {
+        return isSynchronous()
+                || (exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC)));
     }
     
     /**

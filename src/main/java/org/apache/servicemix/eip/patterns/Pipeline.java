@@ -17,6 +17,7 @@
 package org.apache.servicemix.eip.patterns;
 
 import java.net.URI;
+import java.util.Set;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -25,11 +26,15 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.RobustInOnly;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.MessagingException;
 import javax.wsdl.Definition;
+import javax.activation.DataHandler;
 
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.jbi.messaging.PojoMarshaler;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.util.MessageUtil;
 
@@ -91,6 +96,16 @@ public class Pipeline extends EIPEndpoint {
     private String correlationTarget;
 
     /**
+     * Should message properties be copied ?
+     */
+    private boolean copyProperties;
+
+    /**
+     * Should message attachments be copied ?
+     */
+    private boolean copyAttachments;
+
+    /**
      * @return Returns the target.
      */
     public ExchangeTarget getTarget() {
@@ -146,6 +161,22 @@ public class Pipeline extends EIPEndpoint {
         this.transformer = transformer;
     }
 
+    public boolean isCopyProperties() {
+        return copyProperties;
+    }
+
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+    }
+
+    public boolean isCopyAttachments() {
+        return copyAttachments;
+    }
+
+    public void setCopyAttachments(boolean copyAttachments) {
+        this.copyAttachments = copyAttachments;
+    }
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#validate()
      */
@@ -197,6 +228,7 @@ public class Pipeline extends EIPEndpoint {
             MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
             target.configureTarget(me, getContext());
             MessageUtil.transferOutToIn(tme, me);
+            copyPropertiesAndAttachments(exchange.getMessage("in"), me.getMessage("in"));
             sendSync(me);
             done(tme);
             if (me.getStatus() == ExchangeStatus.DONE) {
@@ -380,6 +412,15 @@ public class Pipeline extends EIPEndpoint {
             }
         // This is the answer from the transformer
         } else if (exchange.getMessage("out") != null) {
+            if (copyProperties || copyAttachments) {
+                MessageExchange cme = (MessageExchange) store.load(consumerId);
+                NormalizedMessage cmeInMsg = cme.getMessage("in");
+                if (cmeInMsg != null) {
+                    NormalizedMessage tmeOutMsg = exchange.getMessage("out");
+                    copyPropertiesAndAttachments(cmeInMsg, tmeOutMsg);
+                    store.store(consumerId, cme);
+                }
+            }
             // Retrieve the consumer MEP
             URI mep = (URI) exchange.getProperty(CONSUMER_MEP);
             if (mep == null) {
@@ -451,6 +492,22 @@ public class Pipeline extends EIPEndpoint {
             // need to massage the result wsdl so that it described an in only exchange
         }
         return rc;
+    }
+
+    /**
+     * Copies properties and attachments from one message to another
+     * depending on the endpoint configuration
+     *
+     * @param from the message containing the properties and attachments
+     * @param to the destination message where the properties and attachments are set
+     */
+    private void copyPropertiesAndAttachments(NormalizedMessage from, NormalizedMessage to) throws MessagingException {
+        if (copyProperties) {
+            copyProperties(from, to);
+        }
+        if (copyAttachments) {
+            copyAttachments(from, to);
+        }
     }
 
 }

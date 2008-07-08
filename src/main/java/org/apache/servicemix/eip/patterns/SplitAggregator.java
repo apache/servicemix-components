@@ -252,6 +252,12 @@ public class SplitAggregator extends AbstractAggregator {
                 } else {
                     root.appendChild(doc.importNode(elem, true));
                 }
+                if (isCopyProperties()) {
+                    copyProperties(messages[i], message);
+                }
+                if (isCopyAttachments()) {
+                    copyAttachments(messages[i], message);
+                }
             }
         }
         message.setContent(new DOMSource(doc));

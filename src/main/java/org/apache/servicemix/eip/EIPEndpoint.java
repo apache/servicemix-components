@@ -17,22 +17,27 @@
 package org.apache.servicemix.eip;
 
 import java.net.URL;
+import java.util.Set;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
 import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
+import javax.activation.DataHandler;
 
 import org.w3c.dom.Document;
 
 import com.ibm.wsdl.Constants;
 
 import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.jbi.messaging.PojoMarshaler;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.locks.LockManager;
@@ -307,5 +312,37 @@ public abstract class EIPEndpoint extends ProviderEndpoint {
     public void setWsdlExchangeTarget(ExchangeTarget wsdlExchangeTarget) {
         this.wsdlExchangeTarget = wsdlExchangeTarget;
     }
-    
+
+    /**
+     * Copies properties from one message to another that do not already exist
+     *
+     * @param from the message containing the properties
+     * @param to the destination message where the properties are set
+     */
+    protected void copyProperties(NormalizedMessage from, NormalizedMessage to) {
+        for (String propertyName : (Set<String>) from.getPropertyNames()) {
+            // Do not copy existing properties or transient properties
+            if (to.getProperty(propertyName) == null && !PojoMarshaler.BODY.equals(propertyName)) {
+                Object value = from.getProperty(propertyName);
+                to.setProperty(propertyName, value);
+            }
+        }
+    }
+
+    /**
+     * Copies attachments from one message to another that do not already exist
+     *
+     * @param from the message with the attachments
+     * @param to the destination message where the attachments are to be added
+     * @throws javax.jbi.messaging.MessagingException if an attachment could not be added
+     */
+    protected void copyAttachments(NormalizedMessage from, NormalizedMessage to) throws MessagingException {
+        for (String attachmentName : (Set<String>) from.getAttachmentNames()) {
+            // Do not copy existing attachments
+            if (to.getAttachment(attachmentName) == null) {
+                DataHandler value = from.getAttachment(attachmentName);
+                to.addAttachment(attachmentName, value);
+            }
+        }
+    }
 }

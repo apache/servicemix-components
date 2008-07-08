@@ -19,6 +19,8 @@ package org.apache.servicemix.eip;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.eip.patterns.XPathSplitter;
@@ -52,6 +54,30 @@ public class XPathSplitterTest extends AbstractEIPTest {
 
     public void testInOut() throws Exception {
         InOut me = client.createInOutExchange();
+        me.setService(new QName("splitter"));
+        me.getInMessage().setContent(createSource("<hello><one/><two/><three/></hello>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+    }
+
+    public void testInOnlyWithoutErrors() throws Exception {
+        ReceiverComponent rec = activateReceiver("target");
+
+        splitter.setReportErrors(true);
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("splitter"));
+        me.getInMessage().setContent(createSource("<hello><one/><two/><three/></hello>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+
+        rec.getMessageList().assertMessagesReceived(3);
+    }
+
+    public void testInOnlyWithErrors() throws Exception {
+        activateComponent(new ReturnErrorComponent(), "target");
+
+        splitter.setReportErrors(true);
+        InOnly me = client.createInOnlyExchange();
         me.setService(new QName("splitter"));
         me.getInMessage().setContent(createSource("<hello><one/><two/><three/></hello>"));
         client.sendSync(me);

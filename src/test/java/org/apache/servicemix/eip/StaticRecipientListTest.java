@@ -93,4 +93,39 @@ public class StaticRecipientListTest extends AbstractEIPTest {
         r3.getMessageList().assertMessagesReceived(1);
     }
     
+    public void testInOnlyWithErrors() throws Exception {
+        recipientList.setReportErrors(true);
+
+        ReceiverComponent r1 = activateReceiver("recipient1");
+        ReceiverComponent r2 = activateReceiver("recipient2");
+        activateComponent(new ReturnErrorComponent(), "recipient3");
+
+        RobustInOnly me = client.createRobustInOnlyExchange();
+        me.setService(new QName("recipientList"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+
+        r1.getMessageList().assertMessagesReceived(1);
+        r2.getMessageList().assertMessagesReceived(1);
+    }
+
+    public void testInOnlyWithoutErrors() throws Exception {
+        recipientList.setReportErrors(true);
+
+        ReceiverComponent r1 = activateReceiver("recipient1");
+        ReceiverComponent r2 = activateReceiver("recipient2");
+        ReceiverComponent r3 = activateReceiver("recipient3");
+
+        RobustInOnly me = client.createRobustInOnlyExchange();
+        me.setService(new QName("recipientList"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+
+        r1.getMessageList().assertMessagesReceived(1);
+        r2.getMessageList().assertMessagesReceived(1);
+        r3.getMessageList().assertMessagesReceived(1);
+    }
+
 }

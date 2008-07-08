@@ -21,6 +21,7 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.RobustInOnly;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.eip.patterns.Pipeline;
@@ -57,16 +58,20 @@ public class PipelineTest extends AbstractEIPTest {
     }
     
     public void testInOnly() throws Exception {
+        pipeline.setCopyProperties(true);
+        
         activateComponent(new ReturnOutComponent(), "transformer");
         ReceiverComponent target = activateReceiver("target");
 
         InOnly me = client.createInOnlyExchange();
         me.setService(new QName("pipeline"));
         me.getInMessage().setContent(createSource("<hello/>"));
+        me.getInMessage().setProperty("prop", "value");
         client.sendSync(me);
         assertEquals(ExchangeStatus.DONE, me.getStatus());
         
         target.getMessageList().assertMessagesReceived(1);
+        assertEquals(((NormalizedMessage) target.getMessageList().getMessages().get(0)).getProperty("prop"), "value");
         
         listener.assertExchangeCompleted();
     }

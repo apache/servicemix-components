@@ -33,6 +33,7 @@ public class SplitAggregatorTest extends AbstractEIPTest {
 
         aggregator = new SplitAggregator();
         aggregator.setTarget(createServiceExchangeTarget(new QName("target")));
+        aggregator.setCopyProperties(true);
         configurePattern(aggregator);
         activateComponent(aggregator, "aggregator");
     }
@@ -50,12 +51,15 @@ public class SplitAggregatorTest extends AbstractEIPTest {
                 me.getInMessage().setProperty(AbstractSplitter.SPLITTER_COUNT, new Integer(nbMessages));
                 me.getInMessage().setProperty(AbstractSplitter.SPLITTER_INDEX, new Integer(i));
                 me.getInMessage().setProperty(AbstractSplitter.SPLITTER_CORRID, corrId);
+                me.getInMessage().setProperty("prop", "value");
                 client.send(me);
             }
         }        
         
         rec.getMessageList().assertMessagesReceived(1);
-        return (NormalizedMessage) rec.getMessageList().flushMessages().get(0);
+        NormalizedMessage msg = (NormalizedMessage) rec.getMessageList().flushMessages().get(0);
+        assertEquals("value", msg.getProperty("prop"));
+        return msg;
     }
     
     public void testSimple() throws Exception {

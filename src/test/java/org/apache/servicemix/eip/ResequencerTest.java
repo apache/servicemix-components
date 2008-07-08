@@ -78,7 +78,7 @@ public class ResequencerTest extends AbstractEIPTest {
     }
     
     private static void assertSequenceProperties(NormalizedMessage m, long num) {
-        Long l = (Long)m.getProperty(SEQNUM_KEY);
+        Long l = (Long) m.getProperty(SEQNUM_KEY);
         assertEquals("wrong sequence number", num, l.longValue());
     }
     

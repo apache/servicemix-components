@@ -19,6 +19,7 @@ package org.apache.servicemix.eip.support;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -202,7 +203,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                             + " but has no Fault message");
                 }
             } else {
-                send(parts[i]);
+                sendSync(parts[i]);
             }
         }
         done(exchange);
@@ -212,31 +213,68 @@ public abstract class AbstractSplitter extends EIPEndpoint {
      * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
      */
     protected void processAsync(MessageExchange exchange) throws Exception {
-        // If we need to report errors, the behavior is really different,
-        // as we need to keep the incoming exchange in the store until
-        // all acks have been received
-        if (reportErrors) {
-            // TODO: implement this
-            throw new UnsupportedOperationException("Not implemented");
-        // We are in a simple fire-and-forget behaviour.
-        // This implementation is really efficient as we do not use
-        // the store at all.
+        if (exchange.getRole() == MessageExchange.Role.CONSUMER) {
+            String corrId = (String) exchange.getMessage("in").getProperty(SPLITTER_CORRID);
+            int count = (Integer) exchange.getMessage("in").getProperty(SPLITTER_COUNT);
+            Lock lock = lockManager.getLock(corrId);
+            lock.lock();
+            try {
+                Integer acks = (Integer) store.load(corrId + ".acks");
+                if (exchange.getStatus() == ExchangeStatus.DONE) {
+                    // If the acks integer is not here anymore, the message response has been sent already
+                    if (acks != null) {
+                        if (acks + 1 >= count) {
+                            MessageExchange me = (MessageExchange) store.load(corrId);
+                            done(me);
+                        } else {
+                            store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                        }
+                    }
+                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                    // If the acks integer is not here anymore, the message response has been sent already
+                    if (acks != null) {
+                        if (reportErrors) {
+                            MessageExchange me = (MessageExchange) store.load(corrId);
+                            fail(me, exchange.getError());
+                        } else  if (acks + 1 >= count) {
+                            MessageExchange me = (MessageExchange) store.load(corrId);
+                            done(me);
+                        } else {
+                            store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                        }
+                    }
+                } else if (exchange.getFault() != null) {
+                    // If the acks integer is not here anymore, the message response has been sent already
+                    if (acks != null) {
+                        if (reportErrors) {
+                            MessageExchange me = (MessageExchange) store.load(corrId);
+                            MessageUtil.transferToFault(MessageUtil.copyFault(exchange), me);
+                            send(me);
+                            done(exchange);
+                        } else  if (acks + 1 >= count) {
+                            MessageExchange me = (MessageExchange) store.load(corrId);
+                            done(me);
+                        } else {
+                            store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                        }
+                    } else {
+                        done(exchange);
+                    }
+                }
+            } finally {
+                lock.unlock();
+            }
         } else {
-            if (exchange.getStatus() == ExchangeStatus.DONE) {
-                return;
-            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                return;
-            } else if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {
+            if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
-            } else if (exchange.getFault() != null) {
-                done(exchange);
             } else {
+                store.store(exchange.getExchangeId(), exchange);
                 MessageExchange[] parts = createParts(exchange);
+                store.store(exchange.getExchangeId() + ".acks", Integer.valueOf(0));
                 for (int i = 0; i < parts.length; i++) {
                     target.configureTarget(parts[i], getContext());
                     send(parts[i]);
                 }
-                done(exchange);
             }
         }
     }

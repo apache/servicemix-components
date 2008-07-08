@@ -96,7 +96,7 @@ public abstract class AbstractEIPTest extends TestCase {
         activateComponent(receiver, name);
         return receiver;
     }
-    
+
     protected void activateComponent(EIPEndpoint endpoint, String name) throws Exception {
         EIPComponent eip = new EIPComponent();
         endpoint.setService(new QName(name));

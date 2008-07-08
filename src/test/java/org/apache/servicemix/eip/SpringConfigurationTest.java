@@ -18,6 +18,7 @@ package org.apache.servicemix.eip;
 
 import javax.jbi.messaging.InOnly;
 import javax.xml.namespace.QName;
+import javax.transaction.TransactionManager;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
@@ -41,8 +42,10 @@ public class SpringConfigurationTest extends SpringTestSupport {
             me.setService(new QName("http://test", "entryPoint"));
             me.getInMessage().setContent(new StringSource(
                     "<test xmlns=\"http://test\"><echo/><world/><earth/></test>"));
+            ((TransactionManager) jbi.getTransactionManager()).begin();
             client.sendSync(me);
-        }        
+            ((TransactionManager) jbi.getTransactionManager()).commit();
+        }
         ((Receiver) getBean("trace1")).getMessageList().assertMessagesReceived(1 * nbMsgs);
         ((Receiver) getBean("trace2")).getMessageList().assertMessagesReceived(1 * nbMsgs);
         ((Receiver) getBean("trace3")).getMessageList().assertMessagesReceived(1 * nbMsgs);
@@ -58,7 +61,7 @@ public class SpringConfigurationTest extends SpringTestSupport {
         as.setComponentName("client");
         ServiceMixClient client = new DefaultServiceMixClient(jbi, as);
         
-        int nbMsgs = 100;
+        int nbMsgs = 10;
         for (int i = 0; i < nbMsgs; i++) {
             InOnly me = client.createInOnlyExchange();
             me.setService(new QName("http://test", "entryPoint"));
