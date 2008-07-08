@@ -16,9 +16,18 @@
  */
 package org.apache.servicemix.http;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Definition;
 import javax.wsdl.Input;
@@ -46,11 +55,42 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.mortbay.jetty.Handler;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.handler.AbstractHandler;
 import org.springframework.core.io.UrlResource;
 
 public class HttpWsdlTest extends TestCase {
     private static transient Log log = LogFactory.getLog(HttpWsdlTest.class);
+    private static int usedPortNumber = 8192;
+
     protected JBIContainer container;
+
+    /**
+     * determines a free port number
+     * @return a free port number
+     */
+    private static int getFreePortNumber() {
+
+        int portNumber = usedPortNumber + 1;
+        boolean inUse = true;
+
+        while (inUse) {
+            try {
+                ServerSocket serverSocket = new ServerSocket();
+                SocketAddress endpoint = new InetSocketAddress(portNumber);
+                serverSocket.bind(endpoint);
+                serverSocket.close();
+                inUse = false;
+                usedPortNumber = portNumber;
+            } catch (IOException e) {
+                inUse = true;
+            }
+        }
+
+        return portNumber;
+
+    }
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -168,50 +208,87 @@ public class HttpWsdlTest extends TestCase {
     }
 
     public void testWithNonStandaloneWsdlDoc() throws Exception {
-        testWSDL(createDefinition(false), 8192);
+        testWSDL(createDefinition(false), getFreePortNumber());
     }
 
     public void testWithNonStandaloneWsdlRpc() throws Exception {
-        testWSDL(createDefinition(true), 8193);
+        testWSDL(createDefinition(true), getFreePortNumber());
     }
 
     public void testWithExistingBinding() throws Exception {
         String uri = getClass().getResource("bound-wsdl.wsdl").toString();
         Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL(uri);
-        testWSDL(def, 8194);
+        testWSDL(def, getFreePortNumber());
     }
 
     public void testExternalNonStandaloneWsdl() throws Exception {
-        // HTTP Component
-        HttpEndpoint ep = new HttpEndpoint();
-        ep.setService(new QName("http://test", "MyConsumerService"));
-        ep.setEndpoint("myConsumer");
-        ep.setRoleAsString("consumer");
-        ep.setLocationURI("http://localhost:8196/Service/");
-        ep.setDefaultMep(MessageExchangeSupport.IN_OUT);
-        ep.setWsdlResource(new UrlResource(
-                        "http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl"));
-        HttpComponent http = new HttpComponent();
-        http.setEndpoints(new HttpEndpoint[] {ep});
-        container.activateComponent(http, "HttpWsdlTest");
 
-        // Start container
-        container.start();
+        //startup-jetty as mirror for 
+        //http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl
+        int remoteHttpServerPort = getFreePortNumber();
+        Server remoteServer = new Server(remoteHttpServerPort);
+        Handler handler = new AbstractHandler() {
 
-        GetMethod get = new GetMethod("http://localhost:8196/Service/?wsdl");
-        int state = new HttpClient().executeMethod(get);
-        assertEquals(HttpServletResponse.SC_OK, state);
-        Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
-        get.releaseConnection();
+            public void handle(String arg0, HttpServletRequest req,
+                    HttpServletResponse res, int arg3) throws IOException,
+                    ServletException {
 
-        // Test WSDL
-        WSDLFactory factory = WSDLFactory.newInstance();
-        WSDLReader reader = factory.newWSDLReader();
-        Definition def;
-        def = reader.readWSDL("http://localhost:8196/Service/?wsdl", doc);
-        assertNotNull(def);
-        assertNotNull(def.getImports());
-        assertEquals(1, def.getImports().size());
+                res.setContentType("text/xml");
+                PrintWriter writer = res.getWriter();
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        this.getClass().getClassLoader().getResourceAsStream("wsdls" + req.getPathInfo())));
+                String line = br.readLine();
+                while (line != null)  {
+                    writer.write(line);
+                    line = br.readLine();
+                }
+                br.close();
+                writer.close();
+            }
+
+        };
+        
+        remoteServer.addHandler(handler);
+        remoteServer.start();
+        
+        try {
+            int localHttpServerPort = getFreePortNumber();  
+
+            // HTTP Component
+            HttpEndpoint ep = new HttpEndpoint();
+            ep.setService(new QName("http://servicemix.apache.org/wsn/jaxws", "PullPointService"));
+            ep.setEndpoint("JBI");
+            ep.setRoleAsString("consumer");
+            ep.setLocationURI("http://localhost:" + localHttpServerPort + "/Service/");
+            ep.setDefaultMep(MessageExchangeSupport.IN_OUT);
+            ep.setWsdlResource(new UrlResource("http://localhost:" + remoteHttpServerPort + "/wsn.wsdl"));
+            HttpComponent http = new HttpComponent();
+            http.setEndpoints(new HttpEndpoint[] {ep});
+            container.activateComponent(http, "PullPointService");
+
+            // Start container
+            container.start();
+
+            GetMethod get = new GetMethod("http://localhost:" + localHttpServerPort + "/Service/?wsdl");
+            int state = new HttpClient().executeMethod(get);
+            assertEquals(HttpServletResponse.SC_OK, state);
+            Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
+            get.releaseConnection();
+
+            // Test WSDL
+            WSDLFactory factory = WSDLFactory.newInstance();
+            WSDLReader reader = factory.newWSDLReader();
+            Definition def;
+
+            def = reader.readWSDL("http://localhost:" + localHttpServerPort + "/Service/?wsdl", doc);
+            assertNotNull(def);
+            assertNotNull(def.getImports());
+            assertEquals(1, def.getImports().size());
+        
+        } finally {
+            remoteServer.stop();
+        }
+        
     }
-
+    
 }
