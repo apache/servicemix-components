@@ -35,6 +35,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.JmsTemplate102;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.jms.core.SessionCallback;
+import org.springframework.jms.listener.AbstractPollingMessageListenerContainer;
 import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
 
@@ -62,7 +63,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private boolean messageIdEnabled = true;
     private boolean messageTimestampEnabled = true;
     private boolean pubSubNoLocal;
-    private long receiveTimeout = JmsTemplate.DEFAULT_RECEIVE_TIMEOUT;
+    private long receiveTimeout = AbstractPollingMessageListenerContainer.DEFAULT_RECEIVE_TIMEOUT;
     private boolean explicitQosEnabled;
     private int deliveryMode = Message.DEFAULT_DELIVERY_MODE;
     private int priority = Message.DEFAULT_PRIORITY;
