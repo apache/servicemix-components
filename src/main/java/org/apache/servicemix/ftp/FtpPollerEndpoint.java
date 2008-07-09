@@ -134,11 +134,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     private String getWorkingPath() {
-        String p = (uri != null && uri.getPath() != null) ? uri.getPath() : ".";
-        if (p.startsWith("/")) {
-            p = p.substring(1);
-        }
-        return p;
+        return (uri != null && uri.getPath() != null) ? uri.getPath() : ".";
     }
 
     // Properties

@@ -162,11 +162,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
             client = borrowClient();
             // Change to the directory specified by the URI path if any
             if (uri != null && uri.getPath() != null) {
-                String p = uri.getPath();
-                if (p.startsWith("/")) {
-                    p = p.substring(1);
-                }
-                if (!client.changeWorkingDirectory(p)) {
+                if (!client.changeWorkingDirectory(uri.getPath())) {
                     logger.warn("Unable to change ftp directory to '" + p + "'");
                 }
             }
