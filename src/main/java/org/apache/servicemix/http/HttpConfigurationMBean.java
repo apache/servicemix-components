@@ -30,6 +30,10 @@ public interface HttpConfigurationMBean {
 
     void setJettyThreadPoolSize(int jettyThreadPoolSize);
 
+    int getJettyClientThreadPoolSize();
+
+    void setJettyClientThreadPoolSize(int jettyClientThreadPoolSize);
+
     int getMaxConnectionsPerHost();
 
     void setMaxConnectionsPerHost(int maxConnectionsPerHost);

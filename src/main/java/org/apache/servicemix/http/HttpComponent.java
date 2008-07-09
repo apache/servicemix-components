@@ -40,6 +40,7 @@ import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
+import org.mortbay.thread.BoundedThreadPool;
 
 /**
  * 
@@ -228,6 +229,9 @@ public class HttpComponent extends DefaultComponent {
         // Create connectionPool
         if (connectionPool == null) {
             connectionPool = new org.mortbay.jetty.client.HttpClient();
+            BoundedThreadPool btp = new BoundedThreadPool();
+            btp.setMaxThreads(this.configuration.getJettyClientThreadPoolSize());
+            connectionPool.setThreadPool(btp);
             connectionPool.start();
         }
         // Create serverManager
