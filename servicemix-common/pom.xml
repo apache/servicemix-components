@@ -53,28 +53,40 @@
       <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-services</artifactId>
-      <version>${servicemix-version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
+    	<dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
       <optional>true</optional>
+      <exclusions>
+        <exclusion>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jencks</groupId>
+      <artifactId>jencks</artifactId>
+      <version>2.1</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-spring</artifactId>
-      <version>3.4.1</version>
+      <version>3.4.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-classloader</artifactId>
-      <version>3.4.1</version>
+      <version>3.4.3</version>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>

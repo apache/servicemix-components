@@ -57,6 +57,16 @@
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+         <groupId>org.jencks</groupId>
+         <artifactId>jencks</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
