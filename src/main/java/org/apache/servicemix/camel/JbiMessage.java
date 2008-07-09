@@ -19,6 +19,7 @@ package org.apache.servicemix.camel;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.activation.DataHandler;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.Source;
@@ -90,6 +91,31 @@ public class JbiMessage extends DefaultMessage {
     }
 
     @Override
+    public DataHandler getAttachment(String id) {
+        DataHandler answer = null;
+        if (normalizedMessage != null) {
+            answer = normalizedMessage.getAttachment(id);
+        }
+        if (answer == null) {
+            answer = super.getAttachment(id);
+        }
+        return answer;
+    }
+
+    @Override
+    public void addAttachment(String id, DataHandler content) {
+        if (normalizedMessage != null) {
+            try {
+                normalizedMessage.addAttachment(id, content);
+            } catch (MessagingException e) {
+                throw new JbiException(e);
+            }
+        } else {
+            super.addAttachment(id, content);
+        }
+    }
+
+    @Override
     public JbiMessage newInstance() {
         return new JbiMessage();
     }
@@ -110,6 +136,18 @@ public class JbiMessage extends DefaultMessage {
                 String name = iter.next().toString();
                 Object value = normalizedMessage.getProperty(name);
                 map.put(name, value);
+            }
+        }
+    }
+
+    @Override
+    protected void populateInitialAttachments(Map<String, DataHandler> map) {
+        if (normalizedMessage != null) {
+            Iterator iter = normalizedMessage.getAttachmentNames().iterator();
+            while (iter.hasNext()) {
+                String id = iter.next().toString();
+                DataHandler content = normalizedMessage.getAttachment(id);
+                map.put(id, content);
             }
         }
     }

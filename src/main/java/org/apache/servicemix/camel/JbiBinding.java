@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
+import javax.activation.DataHandler;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
@@ -70,6 +71,7 @@ public class JbiBinding {
         }
         normalizedMessage.setContent(getJbiInContent(camelExchange));
         addJbiHeaders(jbiExchange, normalizedMessage, camelExchange);
+        addJbiAttachments(jbiExchange, normalizedMessage, camelExchange);
         return jbiExchange;
     }
 
@@ -155,6 +157,16 @@ public class JbiBinding {
         Set<Map.Entry<String, Object>> entries = camelExchange.getIn().getHeaders().entrySet();
         for (Map.Entry<String, Object> entry : entries) {
             normalizedMessage.setProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
+    protected void addJbiAttachments(MessageExchange jbiExchange, NormalizedMessage normalizedMessage,
+                                     Exchange camelExchange)
+        throws MessagingException {
+
+        Set<Map.Entry<String, DataHandler>> entries = camelExchange.getIn().getAttachments().entrySet();
+        for (Map.Entry<String, DataHandler> entry : entries) {
+            normalizedMessage.addAttachment(entry.getKey(), entry.getValue());
         }
     }
 

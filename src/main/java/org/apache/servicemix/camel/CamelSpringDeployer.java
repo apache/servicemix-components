@@ -32,7 +32,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 /**
  * A deployer of the spring XML file
- * 
+ *
  * @version $Revision: 1.1 $
  */
 public class CamelSpringDeployer extends AbstractXBeanDeployer {
@@ -55,7 +55,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.servicemix.common.Deployer#deploy(java.lang.String,
      *      java.lang.String)
      */
@@ -69,7 +69,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
 
         // lets install the context class loader
         ServiceUnit serviceUnit = super.deploy(suName, serviceUnitRootPath);
-        Thread.currentThread().setContextClassLoader(serviceUnit.getConfigurationClassLoader());
+//        Thread.currentThread().setContextClassLoader(serviceUnit.getConfigurationClassLoader());
         return serviceUnit;
     }
 

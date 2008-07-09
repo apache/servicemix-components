@@ -48,10 +48,6 @@ public class JbiInOnlyTest extends JbiTestSupport {
         done.assertIsSatisfied();
     }
 
-    private MockEndpoint getMockEndpoint(String uri) {
-        return (MockEndpoint)camelContext.getEndpoint(uri);
-    }
-
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
         // no additional activation specs required

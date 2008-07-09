@@ -32,7 +32,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 
 /**
  * A JBI endpoint which when invoked will delegate to a Camel endpoint
- * 
+ *
  * @version $Revision: 426415 $
  */
 public class CamelJbiEndpoint extends ProviderEndpoint {

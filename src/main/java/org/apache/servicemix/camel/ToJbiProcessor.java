@@ -69,6 +69,14 @@ public class ToJbiProcessor implements Processor {
         }
     }
 
+    private void addAttachments(NormalizedMessage normalizedMessage, Message camelMessage) {
+        Set entries = normalizedMessage.getAttachmentNames();
+        for (Object o : entries) {
+            String id = o.toString();
+            camelMessage.addAttachment(id, normalizedMessage.getAttachment(id));
+        }
+    }
+
     public void process(Exchange exchange) {
         try {
             DeliveryChannel deliveryChannel = componentContext.getDeliveryChannel();
@@ -89,9 +97,11 @@ public class ToJbiProcessor implements Processor {
                 if (messageExchange.getFault() != null) {
                     exchange.getFault().setBody(messageExchange.getFault().getContent());
                     addHeaders(messageExchange.getFault(), exchange.getFault());
+                    addAttachments(messageExchange.getFault(), exchange.getFault());
                 } else {
                     exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
                     addHeaders(messageExchange.getMessage("out"), exchange.getOut());
+                    addAttachments(messageExchange.getMessage("out"), exchange.getOut());
                 }
                 messageExchange.setStatus(ExchangeStatus.DONE);
                 deliveryChannel.send(messageExchange);

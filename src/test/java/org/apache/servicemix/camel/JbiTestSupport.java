@@ -31,6 +31,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.TestSupport;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
@@ -120,6 +121,11 @@ public abstract class JbiTestSupport extends TestSupport {
         camelContext.stop();
         super.tearDown();
     }
+    
+    protected MockEndpoint getMockEndpoint(String uri) {
+        return (MockEndpoint)camelContext.getEndpoint(uri);
+    }
+
 
     protected abstract void appendJbiActivationSpecs(
             List<ActivationSpec> activationSpecList);
