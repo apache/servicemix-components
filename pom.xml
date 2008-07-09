@@ -52,13 +52,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-services</artifactId>
-      <version>${servicemix-version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
+      <artifactId>servicemix-jbi</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
@@ -79,10 +73,6 @@
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-support</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
     </dependency>
     <dependency>
@@ -92,6 +82,11 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>${spring-version}</version>
     </dependency>
     <dependency>
       <groupId>stax</groupId>
