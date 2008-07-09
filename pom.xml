@@ -45,7 +45,7 @@
     
     <activemq-version>5.1.0</activemq-version>
     <xbean-version>3.4.1</xbean-version>
-    <cxf-version>2.1.1-SNAPSHOT</cxf-version>
+    <cxf-version>2.1.1</cxf-version>
 
     <servicemix.osgi.import>
         org.apache.servicemix.client*;resolution:=optional,
@@ -71,6 +71,12 @@
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
@@ -109,10 +115,6 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jmx</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
