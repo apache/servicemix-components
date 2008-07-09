@@ -270,8 +270,8 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         NormalizedMessage message = exchange.createMessage();
         exchange.setInMessage(message);
         marshaler.readMessage(exchange, message, in, name);
-        send(exchange);
         this.openExchanges.put(exchange.getExchangeId(), aFile);
+        send(exchange);
     }
 
     public String getLocationURI() {
