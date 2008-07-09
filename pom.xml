@@ -57,7 +57,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
+      <artifactId>servicemix-jbi</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
