@@ -40,7 +40,7 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
-    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-version>3.3-SNAPSHOT</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
 
     <servicemix.osgi.import>
@@ -63,7 +63,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
+      <artifactId>servicemix-jbi</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-services</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
     </dependency>
@@ -71,6 +77,11 @@
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
       <version>1.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>oro</groupId>
