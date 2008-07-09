@@ -21,6 +21,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 
 import javax.jbi.JBIException;
@@ -59,8 +61,20 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     private boolean recursive = true;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
+    private ConcurrentMap<String, FtpData> openExchanges = new ConcurrentHashMap<String, FtpData>();
     private QName targetOperation;
     private URI uri;
+
+    protected class FtpData {
+        final String file;
+        final FTPClient ftp;
+        final InputStream in;
+        public FtpData(String file, FTPClient ftp, InputStream in) {
+            this.file = file;
+            this.ftp = ftp;
+            this.in = in;
+        }
+    }
 
     public FtpPollerEndpoint() {
     }
@@ -120,7 +134,11 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     private String getWorkingPath() {
-        return (uri != null && uri.getPath() != null) ? uri.getPath() : ".";
+        String p = (uri != null && uri.getPath() != null) ? uri.getPath() : ".";
+        if (p.startsWith("/")) {
+            p = p.substring(1);
+        }
+        return p;
     }
 
     // Properties
@@ -244,22 +262,14 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             public void run() {
                 final Lock lock = lockManager.getLock(file);
                 if (lock.tryLock()) {
-                    boolean unlock = true;
-                    try {
-                        unlock = processFileAndDelete(file);
-                    } finally {
-                        if (unlock) {
-                            lock.unlock();
-                        }
-                    }
+                    processFileNow(file);
                 }
             }
         });
     }
 
-    protected boolean processFileAndDelete(String file) {
+    protected void processFileNow(String file) {
         FTPClient ftp = null;
-        boolean unlock = true;
         try {
             ftp = borrowClient();
             if (logger.isDebugEnabled()) {
@@ -268,15 +278,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             if (ftp.listFiles(file).length > 0) {
                 // Process the file. If processing fails, an exception should be thrown.
                 processFile(ftp, file);
-                // Processing is successful
-                // We should not unlock until the file has been deleted
-                unlock = false;
-                if (isDeleteFile()) {
-                    if (!ftp.deleteFile(file)) {
-                        throw new IOException("Could not delete file " + file);
-                    }
-                    unlock = true;
-                }
+                ftp = null;
             } else {
                 //avoid processing files that have been deleted on the server
                 logger.debug("Skipping " + file + ": the file no longer exists on the server");
@@ -284,9 +286,10 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         } catch (Exception e) {
             logger.error("Failed to process file: " + file + ". Reason: " + e, e);
         } finally {
-            returnClient(ftp);
+            if (ftp != null) {
+                returnClient(ftp);
+            }
         }
-        return unlock;
     }
 
     protected void processFile(FTPClient ftp, String file) throws Exception {
@@ -301,16 +304,8 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         }
 
         marshaler.readMessage(exchange, message, in, file);
-        sendSync(exchange);
-        in.close();
-        ftp.completePendingCommand();
-        if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            Exception e = exchange.getError();
-            if (e == null) {
-                e = new JBIException("Unkown error");
-            }
-            throw e;
-        }
+        this.openExchanges.put(exchange.getExchangeId(), new FtpData(file, ftp, in));
+        send(exchange);
     }
 
     public String getLocationURI() {
@@ -318,8 +313,58 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        // Do nothing. In our case, this method should never be called
-        // as we only send synchronous InOnly exchange
+        // check for done or error
+        if (this.openExchanges.containsKey(exchange.getExchangeId())) {
+            FtpData data = this.openExchanges.get(exchange.getExchangeId());
+            logger.debug("Releasing " + data.file);
+            try {
+                // Close ftp related stuff
+		        data.in.close();
+		        data.ftp.completePendingCommand();
+                // check for state
+                if (exchange.getStatus() == ExchangeStatus.DONE) {
+			        if (isDeleteFile()) {
+			            if (!data.ftp.deleteFile(data.file)) {
+			                throw new IOException("Could not delete file " + data.file);
+			            }
+			        }
+                } else {
+		            Exception e = exchange.getError();
+		            if (e == null) {
+		                e = new JBIException("Unkown error");
+		            }
+		            throw e;
+                }
+            } finally {
+                // remove the open exchange
+                openExchanges.remove(exchange.getExchangeId());
+                // unlock the file
+                unlockAsyncFile(data.file);
+                // release ftp client
+                returnClient(data.ftp);
+            }
+        } else {
+            // strange, we don't know this exchange
+            logger.debug("Received unknown exchange. Will be ignored...");
+        }
+    }
+
+    /**
+     * unlock the file
+     *
+     * @param file      the file to unlock
+     */
+    private void unlockAsyncFile(String file) {
+        // finally remove the file from the open exchanges list
+        Lock lock = lockManager.getLock(file);
+        if (lock != null) {
+            try {
+                lock.unlock();
+            } catch (Exception ex) {
+                // can't release the lock
+                logger.error(ex);
+            }
+        }
     }
 
     protected FTPClientPool createClientPool() throws Exception {
