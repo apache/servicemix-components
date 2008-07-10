@@ -101,6 +101,11 @@
       <artifactId>wsdl4j</artifactId>
       <scope>compile</scope>
     </dependency>
+    <!-- spring-aop is provided by SMX3, but needs to be included for SMX4 -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aop</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
