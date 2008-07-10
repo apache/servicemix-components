@@ -455,9 +455,13 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         if (logger.isTraceEnabled()) {
             logger.trace("Received: " + jmsMessage);
         }
+
+        JmsContext context = null;
+        MessageExchange exchange = null;
+
         try {
-            JmsContext context = marshaler.createContext(jmsMessage);
-            MessageExchange exchange = marshaler.createExchange(context, getContext());
+            context = marshaler.createContext(jmsMessage);
+            exchange = marshaler.createExchange(context, getContext());
             configureExchangeTarget(exchange);
             if (synchronous) {
                 try {
@@ -486,10 +490,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                     }
                 }
             }
-        } catch (JMSException e) {
-            throw e;
         } catch (Exception e) {
-            throw (JMSException) new JMSException("Error sending JBI exchange").initCause(e);
+            try {
+                handleException(exchange, e, session, context);
+            } catch (Exception e1) {
+                throw (JMSException) new JMSException("Error sending JBI exchange").initCause(e);
+            }
         }
     }
 
