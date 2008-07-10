@@ -112,6 +112,15 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
     </dependency>
+    <!-- explicitly including JAXB to make sure it's added to the installer even when building this with JDK 1.6 -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+    </dependency>
     <!-- testing -->
     <dependency>
       <groupId>org.apache.camel</groupId>
