@@ -26,7 +26,7 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.soap.SoapFault;
 import org.w3c.dom.DocumentFragment;
 

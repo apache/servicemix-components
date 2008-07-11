@@ -34,11 +34,7 @@
   
   <properties>
     <servicemix.osgi.import>
-        com.ibm.wsdl*;resolution:=optional,
-        javax.resource.spi.work;resolution:=optional,
-        org.apache.servicemix;resolution:=optional,
-        org.apache.servicemix.jbi*;resolution:=optional,
-        org.apache.servicemix.components*;resolution:=optional,
+        org.apache.ws.security*;resolution:=optional,
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export.pkg>

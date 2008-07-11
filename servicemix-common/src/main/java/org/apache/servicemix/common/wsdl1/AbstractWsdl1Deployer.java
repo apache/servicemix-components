@@ -22,8 +22,6 @@ import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.ServiceUnit;
 import org.w3c.dom.Document;
 
-import com.ibm.wsdl.Constants;
-
 import javax.jbi.management.DeploymentException;
 import javax.wsdl.Binding;
 import javax.wsdl.Definition;
@@ -151,7 +149,7 @@ public abstract class AbstractWsdl1Deployer extends AbstractDeployer {
         ExtensionRegistry registry = factory.newPopulatedExtensionRegistry();
         registerExtensions(registry);
         WSDLReader reader = factory.newWSDLReader();
-        reader.setFeature(Constants.FEATURE_VERBOSE, false);
+        reader.setFeature("javax.wsdl.verbose", false);
         reader.setExtensionRegistry(registry);
         return reader;
     }

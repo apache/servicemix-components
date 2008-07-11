@@ -22,10 +22,10 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.id.IdGenerator;
+import org.apache.servicemix.common.util.DOMUtil;
+import org.apache.servicemix.common.util.URIResolver;
+import org.apache.servicemix.common.util.WSAddressingConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.util.DOMUtil;
-import org.apache.servicemix.jbi.util.WSAddressingConstants;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.handlers.AbstractHandler;

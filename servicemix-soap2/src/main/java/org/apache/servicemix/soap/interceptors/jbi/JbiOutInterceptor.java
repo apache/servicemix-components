@@ -26,7 +26,6 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
-import org.apache.servicemix.jbi.FaultException;
 import org.apache.servicemix.soap.api.Fault;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.model.Binding;

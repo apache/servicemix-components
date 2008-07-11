@@ -29,10 +29,6 @@ import org.w3c.dom.Text;
 
 public class URIResolver {
 
-    private static final String WSA_NAMESPACE = "http://www.w3.org/2005/08/addressing";
-    private static final String WSA_PREFIX = "wsa";
-    private static final String WSA_EL_ADDRESS = "Address";
-
     /**
      * The uri to resolve
      */
@@ -105,7 +101,8 @@ public class URIResolver {
         }
         DocumentFragment epr = doc.createDocumentFragment();
         Element root = doc.createElement("epr");
-        Element address = doc.createElementNS(WSA_NAMESPACE, WSA_PREFIX + ":" + WSA_EL_ADDRESS);
+        Element address = doc.createElementNS(WSAddressingConstants.WSA_NAMESPACE_200508,
+                                              WSAddressingConstants.WSA_PREFIX + ":" + WSAddressingConstants.EL_ADDRESS);
         Text txt = doc.createTextNode(uri);
         address.appendChild(txt);
         root.appendChild(address);

@@ -36,12 +36,12 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.servicemix.jbi.jaxp.ExtendedXMLStreamReader;
 import org.apache.servicemix.jbi.jaxp.FragmentStreamReader;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StaxSource;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.soap.SoapFault;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;

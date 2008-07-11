@@ -31,11 +31,11 @@ import javax.activation.DataHandler;
 import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.Session;
+import javax.mail.util.ByteArrayDataSource;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import org.apache.servicemix.jbi.util.ByteArrayDataSource;
 import org.apache.servicemix.soap.api.Fault;
 import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.Message;

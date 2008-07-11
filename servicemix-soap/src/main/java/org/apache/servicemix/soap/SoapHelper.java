@@ -45,12 +45,12 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.W3CDOMStreamWriter;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
-import org.apache.servicemix.common.JbiConstants;
 
 import org.w3c.dom.Document;
 
