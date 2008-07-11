@@ -40,11 +40,6 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
-    <!-- Have to use the 3.3-SNAPSHOT instead of 3.2.1 due to: 
-      [INFO] Compilation failure src/main/java/org/apache/servicemix/http/endpoints/RestProviderMarshaler.java:[118,48] 
-        evaluate(javax.jbi.messaging.MessageExchange,javax.jbi.messaging.NormalizedMessage) in org.apache.servicemix.expression.JAXPXPathExpression cannot be applied to       
-        (javax.jbi.messaging.MessageExchange,javax.jbi.messaging.NormalizedMessage,javax.xml.namespace.QName)
-    -->
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
     <jetty-version>6.1.11</jetty-version>
