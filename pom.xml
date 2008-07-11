@@ -45,7 +45,7 @@
         evaluate(javax.jbi.messaging.MessageExchange,javax.jbi.messaging.NormalizedMessage) in org.apache.servicemix.expression.JAXPXPathExpression cannot be applied to       
         (javax.jbi.messaging.MessageExchange,javax.jbi.messaging.NormalizedMessage,javax.xml.namespace.QName)
     -->
-    <servicemix-version>3.3-SNAPSHOT</servicemix-version>
+    <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
     <jetty-version>6.1.11</jetty-version>
     <activemq-version>5.1.0</activemq-version>
