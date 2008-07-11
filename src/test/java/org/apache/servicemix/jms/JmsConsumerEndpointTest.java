@@ -37,7 +37,10 @@ import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsSoapConsumerEndpoint;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
@@ -128,6 +131,34 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         container.start();
         
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
+        receiver.getMessageList().assertMessagesReceived(1);
+    }
+
+    public void testDurableConsumerDefault() throws Exception {
+        JmsComponent component = new JmsComponent();
+        JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
+        endpoint.setService(new QName("jms"));
+        endpoint.setEndpoint("endpoint");
+        endpoint.setTargetService(new QName("receiver"));
+        endpoint.setListenerType("default");
+        endpoint.setConnectionFactory(connectionFactory);
+        endpoint.setPubSubDomain(true);
+        endpoint.setSubscriptionDurable(true);
+        endpoint.setClientId("clientId");
+        endpoint.setDestinationName("destinationTopic");
+        endpoint.setCacheLevel(DefaultMessageListenerContainer.CACHE_CONNECTION);
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
+        container.activateComponent(component, "servicemix-jms");
+
+        container.start();
+
+        Thread.sleep(500);
+
+        JmsTemplate jmsTemplate = new JmsTemplate();
+        jmsTemplate.setConnectionFactory(new PooledConnectionFactory(connectionFactory));
+        jmsTemplate.setPubSubDomain(true);
+        jmsTemplate.afterPropertiesSet();
+        jmsTemplate.convertAndSend("destinationTopic", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
     }
 
