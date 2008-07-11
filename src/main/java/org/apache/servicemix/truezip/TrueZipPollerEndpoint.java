@@ -29,16 +29,16 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileInputStream;
-
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
+import org.apache.servicemix.common.locks.LockManager;
+import org.apache.servicemix.common.locks.impl.SimpleLockManager;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
-import org.apache.servicemix.locks.LockManager;
-import org.apache.servicemix.locks.impl.SimpleLockManager;
+
+import de.schlichtherle.io.File;
+import de.schlichtherle.io.FileInputStream;
 
 /**
  * A polling endpoint which looks for a file or files in a directory and sends
