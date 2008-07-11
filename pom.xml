@@ -46,7 +46,8 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
-    <servicemix-components-version>4.0-SNAPSHOT</servicemix-components-version>
+    <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+    <servicemix-cxf-se-version>4.0-SNAPSHOT</servicemix-cxf-se-version>
     <cxf-version>2.1.2-SNAPSHOT</cxf-version>
     <jetty-version>6.1.6</jetty-version>
     <spring-version>2.0.6</spring-version>
@@ -87,7 +88,7 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
-      <version>${servicemix-components-version}</version>
+      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
@@ -163,7 +164,7 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-cxf-se</artifactId>
-      <version>${servicemix-components-version}</version>
+      <version>${servicemix-cxf-se-version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -474,12 +475,6 @@
   </build>
   
   <repositories>
-    <repository>
-        <!-- Contains: wss4j-1.5.1, opensaml-1.1, woden-1.0.0M6, jaxb-xjc-2.1.4 -->
-        <id>servicemix-m2-repo</id>
-        <name>Servicemix Maven2 Repository</name>
-        <url>http://svn.apache.org/repos/asf/servicemix/m2-repo/</url>
-    </repository>
     <repository>
         <!-- Contains: jaxb-impl-2.1.4, FastInfoset-1.2.2, saaj-impl-1.3 -->
         <id>java.net</id>
