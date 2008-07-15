@@ -327,6 +327,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
     public void removeEndpoint(Endpoint endpoint) throws Exception {
         ServiceUnit su = endpoint.getServiceUnit();
         su.removeEndpoint(endpoint);
+        registry.unregisterEndpoint(endpoint);
     }
 
 
