@@ -61,6 +61,9 @@ public class StaxUtil {
     }
     
     public static XMLStreamReader createReader(Source source) {
+        if (source instanceof StaxSource) {
+            return ((StaxSource) source).getStreamReader();
+        }
         if (source instanceof DOMSource) {
             Node node = ((DOMSource) source).getNode();
             if (node instanceof Element) {

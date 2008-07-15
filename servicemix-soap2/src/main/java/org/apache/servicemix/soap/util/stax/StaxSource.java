@@ -50,6 +50,10 @@ public class StaxSource extends SAXSource implements XMLReader {
         return this;
     }
 
+    public XMLStreamReader getStreamReader() {
+        return streamReader;
+    }
+
     protected void parse() throws SAXException {
         try {
             contentHandler.startDocument();
