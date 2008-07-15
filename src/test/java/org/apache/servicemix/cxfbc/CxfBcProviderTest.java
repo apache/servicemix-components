@@ -89,7 +89,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("server is stop") >= 0);
-        
+        client.done(io);
     }
     
     public void testProvider() throws Exception {
@@ -126,6 +126,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello ffang 3") >= 0);
+        client.done(io);
 
         //test exception handle
         io = client.createInOutExchange();
@@ -143,7 +144,8 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello exception test Negative number cant be added!") >= 0);
-        
+        client.done(io);
+
         
         //test onway
         factory = new JaxWsServerFactoryBean();
@@ -173,7 +175,8 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello oneway test oneway") >= 0);
-        
+        client.done(io);
+
         factory = new JaxWsServerFactoryBean();
         factory.setServiceClass(HelloPortType.class);
         factory.setServiceBean(new HelloPortTypeImpl());
@@ -201,10 +204,10 @@ public class CxfBcProviderTest extends SpringTestSupport {
             + "</requestType></greetMe>"
             + "</part> "
             + "</message>"));
-        client.send(io);
-        Thread.sleep(3000);
+        client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
             io.getOutMessage()).indexOf("Hello header test 12345") >= 0);
+        client.done(io);
         
         //test concurrency
         io = client.createInOutExchange();
@@ -219,10 +222,10 @@ public class CxfBcProviderTest extends SpringTestSupport {
               + "</requestType></greetMe>"
               + "</part> "
               + "</message>"));
-        client.send(io);
-        Thread.sleep(3000);
+        client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("Hello concurrency test 0 2 4 6 8 10 12 14 16 18") >= 0);
+        client.done(io);
         // Shutdown CXF Service/Endpoint so that next test doesn't fail.
         factory.getBus().shutdown(true);
     }
