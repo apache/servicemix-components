@@ -173,12 +173,14 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
         }
         SOAPAddress sa11 = WSDLUtils.getExtension(port, SOAPAddress.class);
         SOAP12Address sa12 = WSDLUtils.getExtension(port, SOAP12Address.class);
-        if (sa11 != null) {
+        if (getLocationURI() != null) {
+            marshaler.setBaseUrl(getLocationURI());
+        } else if (sa11 != null) {
             marshaler.setBaseUrl(sa11.getLocationURI());
         } else if (sa12 != null) {
             marshaler.setBaseUrl(sa12.getLocationURI());
         } else {
-            throw new DeploymentException("No SOAP address defined on port '" + port.getName() + "'");
+            throw new DeploymentException("No locationURI set and no SOAP address defined on port '" + port.getName() + "'");
         }
         description = WSDLUtils.getWSDL11Factory().newWSDLWriter().getDocument(def);
         marshaler.setBinding(BindingFactory.createBinding(port));
