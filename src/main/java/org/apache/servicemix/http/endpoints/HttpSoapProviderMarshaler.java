@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -95,6 +96,9 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
         httpExchange.setMethod(HttpMethods.POST);
         httpExchange.setURL(baseUrl);
         httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));
+        for (Map.Entry<String,String> entry : msg.getTransportHeaders().entrySet()) {
+            httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
+        }
         /*
         httpExchange.setRequestEntity(new Entity() {
             public void write(OutputStream os, Writer w) throws IOException {
