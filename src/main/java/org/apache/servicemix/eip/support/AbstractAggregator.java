@@ -37,14 +37,14 @@ import org.apache.servicemix.JbiConstants;
 
 /**
  * Aggregator can be used to wait and combine several messages.
- * This component implements the  
- * <a href="http://www.enterpriseintegrationpatterns.com/Aggregator.html">Aggregator</a> 
+ * This component implements the
+ * <a href="http://www.enterpriseintegrationpatterns.com/Aggregator.html">Aggregator</a>
  * pattern.
- * 
+ *
  * TODO: keep list of closed aggregations for a certain time
  * TODO: distributed lock manager
  * TODO: persistent / transactional timer
- * 
+ *
  * @author gnodet
  * @version $Revision: 376451 $
  */
@@ -63,6 +63,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     private boolean copyProperties = true;
 
     private boolean copyAttachments = true;
+    
+    private ConcurrentMap<String, Timer> timers = new ConcurrentHashMap<String, Timer>();
     
     /**
      * @return the synchronous
@@ -133,7 +135,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     protected void processAsync(MessageExchange exchange) throws Exception {
         throw new IllegalStateException();
     }
-    
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging.MessageExchange)
      */
@@ -157,7 +159,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             done(exchange);
         }
     }
-    
+
     private void processProvider(MessageExchange exchange) throws Exception {
         NormalizedMessage in = MessageUtil.copyIn(exchange);
         final String correlationId = getCorrelationID(exchange, in);
@@ -191,11 +193,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
                         }
-                        getTimerManager().schedule(new TimerListener() {
+                        Timer t = getTimerManager().schedule(new TimerListener() {
                             public void timerExpired(Timer timer) {
-                                AbstractAggregator.this.onTimeout(correlationId);
+                                AbstractAggregator.this.onTimeout(correlationId, timer);
                             }
                         }, timeout);
+                        timers.put(correlationId, t);
                     }
                 }
             }
@@ -222,13 +225,19 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         }
     }
 
-    protected void onTimeout(String correlationId) {
+    protected void onTimeout(String correlationId, Timer timer) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Timeout expired for aggregate " + correlationId);
         }
         Lock lock = getLockManager().getLock(correlationId);
         lock.lock();
         try {
+            // the timeout event could have been fired before timer was canceled
+            Timer t = timers.get(correlationId);
+            if (t == null || !t.equals(timer)) {
+		return;
+            }
+            timers.remove(correlationId);
             Object aggregation = store.load(correlationId);
             if (aggregation != null) {
                 sendAggregate(correlationId, aggregation, true, isSynchronous());
@@ -245,11 +254,11 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             lock.unlock();
         }
     }
-    
+
     /**
      * Check if the aggregation with the given correlation id is closed or not.
      * Called when the aggregation has not been found in the store.
-     * 
+     *
      * @param correlationId
      * @return
      */
@@ -257,7 +266,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         // TODO: implement this using a persistent / cached behavior
         return closedAggregates.containsKey(correlationId);
     }
-    
+
     /**
      * Mark an aggregation as closed
      * @param correlationId
@@ -271,16 +280,16 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         return isSynchronous()
                 || (exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC)));
     }
-    
+
     /**
      * Retrieve the correlation ID of the given exchange
      * @param exchange
      * @param message
      * @return the correlationID
-     * @throws Exception 
+     * @throws Exception
      */
     protected abstract String getCorrelationID(MessageExchange exchange, NormalizedMessage message) throws Exception;
-    
+
     /**
      * Creates a new empty aggregation.
      * @param correlationID
@@ -299,27 +308,27 @@ public abstract class AbstractAggregator extends EIPEndpoint {
 
     /**
      * Add a newly received message to this aggregation
-     * 
+     *
      * @param aggregate
      * @param message
      * @param exchange
      * @return <code>true</code> if the aggregate id complete
      */
     protected abstract boolean addMessage(Object aggregate,
-                                          NormalizedMessage message, 
+                                          NormalizedMessage message,
                                           MessageExchange exchange) throws Exception;
-    
+
     /**
      * Fill the given JBI message with the aggregation result.
-     * 
+     *
      * @param aggregate
      * @param message
      * @param exchange
-     * @param timeout <code>false</code> if the aggregation has completed or <code>true</code> 
+     * @param timeout <code>false</code> if the aggregation has completed or <code>true</code>
      *                  if this aggregation has timed out
      */
     protected abstract void buildAggregate(Object aggregate,
-                                           NormalizedMessage message, 
+                                           NormalizedMessage message,
                                            MessageExchange exchange,
                                            boolean timeout) throws Exception;
 }
