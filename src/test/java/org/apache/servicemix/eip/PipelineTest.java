@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.eip;
 
+import java.util.List;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOptionalOut;
@@ -69,10 +71,10 @@ public class PipelineTest extends AbstractEIPTest {
         me.getInMessage().setProperty("prop", "value");
         client.sendSync(me);
         assertEquals(ExchangeStatus.DONE, me.getStatus());
-        
+
         target.getMessageList().assertMessagesReceived(1);
-        assertEquals(((NormalizedMessage) target.getMessageList().getMessages().get(0)).getProperty("prop"), "value");
-        
+        assertEquals("value", ((NormalizedMessage) target.getMessageList().flushMessages().get(0)).getProperty("prop"));
+
         listener.assertExchangeCompleted();
     }
     

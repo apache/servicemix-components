@@ -412,15 +412,6 @@ public class Pipeline extends EIPEndpoint {
             }
         // This is the answer from the transformer
         } else if (exchange.getMessage("out") != null) {
-            if (copyProperties || copyAttachments) {
-                MessageExchange cme = (MessageExchange) store.load(consumerId);
-                NormalizedMessage cmeInMsg = cme.getMessage("in");
-                if (cmeInMsg != null) {
-                    NormalizedMessage tmeOutMsg = exchange.getMessage("out");
-                    copyPropertiesAndAttachments(cmeInMsg, tmeOutMsg);
-                    store.store(consumerId, cme);
-                }
-            }
             // Retrieve the consumer MEP
             URI mep = (URI) exchange.getProperty(CONSUMER_MEP);
             if (mep == null) {
@@ -432,6 +423,15 @@ public class Pipeline extends EIPEndpoint {
             me.setProperty(correlationTransformer, exchange.getExchangeId());
             store.store(exchange.getExchangeId(), exchange);
             MessageUtil.transferOutToIn(exchange, me);
+            if (copyProperties || copyAttachments) {
+                MessageExchange cme = (MessageExchange) store.load(consumerId);
+                if (cme != null) {
+                    NormalizedMessage cmeInMsg = cme.getMessage("in");
+                    NormalizedMessage meInMsg = me.getMessage("in");
+                    copyPropertiesAndAttachments(cmeInMsg, meInMsg);
+                    store.store(consumerId, cme);
+                }
+            }
             send(me);
         // This should not happen
         } else {
