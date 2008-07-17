@@ -94,8 +94,27 @@ public class HelloWorldSoapTest extends TestCase {
         assertEquals("message", root.getLocalName());
         assertEquals("Hello", root.getAttribute("name"));
 
+        // check header part
+        Element part2 = DomUtil.getFirstChildElement(root);
+        assertNotNull(part2);
+        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, part2.getNamespaceURI());
+        assertEquals("part", part2.getLocalName());
+
+        // check header element
+        Element header = DomUtil.getFirstChildElement(part2);
+        assertNotNull(header);
+        assertEquals("uri:HelloWorld", header.getNamespaceURI());
+        assertEquals("HelloHeader", header.getLocalName());
+
+        // check header content
+        Element e = DomUtil.getFirstChildElement(header);
+        assertNotNull(e);
+        assertEquals("uri:HelloWorld", e.getNamespaceURI());
+        assertEquals("id", e.getLocalName());
+        assertEquals("1234567890", e.getTextContent());
+
         // check body part
-        Element part = DomUtil.getFirstChildElement(root);
+        Element part = DomUtil.getNextSiblingElement(part2);
         assertNotNull(part);
         assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, part.getNamespaceURI()); 
         assertEquals("part", part.getLocalName());
@@ -107,31 +126,12 @@ public class HelloWorldSoapTest extends TestCase {
         assertEquals("HelloRequest", hello.getLocalName());
         
         // check body content
-        Element e = DomUtil.getFirstChildElement(hello);
+        e = DomUtil.getFirstChildElement(hello);
         assertNotNull(e);
         assertEquals("uri:HelloWorld", e.getNamespaceURI()); 
         assertEquals("text", e.getLocalName());
         assertEquals("hello", e.getTextContent());
 
-        // check header part
-        Element part2 = DomUtil.getNextSiblingElement(part);
-        assertNotNull(part2);
-        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, part2.getNamespaceURI()); 
-        assertEquals("part", part2.getLocalName());
-
-        // check header element
-        Element header = DomUtil.getFirstChildElement(part2);
-        assertNotNull(header);
-        assertEquals("uri:HelloWorld", header.getNamespaceURI()); 
-        assertEquals("HelloHeader", header.getLocalName());
-        
-        // check header content
-        e = DomUtil.getFirstChildElement(header);
-        assertNotNull(e);
-        assertEquals("uri:HelloWorld", e.getNamespaceURI()); 
-        assertEquals("id", e.getLocalName());
-        assertEquals("1234567890", e.getTextContent());
-       
         PhaseInterceptorChain phaseOut = new PhaseInterceptorChain();
         phaseOut.add(binding.getInterceptors(Phase.ClientOut));
         baos = new ByteArrayOutputStream();

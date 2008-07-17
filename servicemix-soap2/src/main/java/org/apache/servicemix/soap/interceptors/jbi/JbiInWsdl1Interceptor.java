@@ -44,6 +44,7 @@ import org.apache.servicemix.soap.util.stax.StaxUtil;
 import org.apache.servicemix.soap.util.stax.StaxSource;
 import org.apache.servicemix.soap.util.stax.DOMStreamReader;
 import org.apache.servicemix.soap.util.stax.FragmentStreamReader;
+import org.apache.servicemix.soap.util.stax.ExtendedXMLStreamReader;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -187,6 +188,7 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         public static final int STATE_END_DOC = 6;
 
         private Message message;
+        private Wsdl1SoapMessage wsdlMessage;
         private int state = STATE_START_DOC;
         private int part = -1;
         private int reader = -1;
@@ -196,7 +198,7 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         public StaxJbiWrapper(Message message) {
             this.message = message;
             Wsdl1SoapOperation wsdlOperation = getOperation(message);
-            Wsdl1SoapMessage wsdlMessage = server ? wsdlOperation.getInput() : wsdlOperation.getOutput();
+            wsdlMessage = server ? wsdlOperation.getInput() : wsdlOperation.getOutput();
             XMLStreamReader xmlReader = message.getContent(XMLStreamReader.class);
             int nbBodyParts = 0;
             for (Wsdl1SoapPart part : wsdlMessage.getParts()) {
@@ -276,6 +278,9 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
                             event = END_ELEMENT;
                         } else {
                             event = parts.get(part).get(reader).next();
+                            if (event == START_DOCUMENT) {
+                                event = parts.get(part).get(reader).next();
+                            }
                         }
                     }
                     break;
@@ -326,7 +331,7 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public boolean hasName() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return state == STATE_RUN_PART ? parts.get(part).get(reader).isStartElement() : (event == START_ELEMENT || event == END_ELEMENT);
         }
 
         public Object getProperty(String s) throws IllegalArgumentException {
@@ -342,11 +347,16 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public int nextTag() throws XMLStreamException {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            while (hasNext()) {
+                int e = next();
+                if (e == START_ELEMENT || e == END_ELEMENT)
+                    return e;
+            }
+            return event;
         }
 
         public boolean hasNext() throws XMLStreamException {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return event != END_DOCUMENT;
         }
 
         public void close() throws XMLStreamException {
@@ -358,19 +368,19 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public boolean isStartElement() {
-            return event == START_ELEMENT;
+            return state == STATE_RUN_PART ? parts.get(part).get(reader).isStartElement() : event == START_ELEMENT;
         }
 
         public boolean isEndElement() {
-            return event == END_ELEMENT;
+            return state == STATE_RUN_PART ? parts.get(part).get(reader).isEndElement() : event == END_ELEMENT;
         }
 
         public boolean isCharacters() {
-            return event == CHARACTERS;
+            return state == STATE_RUN_PART ? parts.get(part).get(reader).isCharacters() : event == CHARACTERS;
         }
 
         public boolean isWhiteSpace() {
-            return event == SPACE;
+            return state == STATE_RUN_PART ? parts.get(part).get(reader).isWhiteSpace() : event == SPACE;
         }
 
         public String getAttributeValue(String s, String s1) {
@@ -431,8 +441,6 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
                     switch (i) {
                         case 0:
                         {
-                            Wsdl1SoapOperation wsdlOperation = getOperation(message);
-                            Wsdl1SoapMessage wsdlMessage = server ? wsdlOperation.getInput() : wsdlOperation.getOutput();
                             String typeNamespace = wsdlMessage.getName().getNamespaceURI();
                             if (typeNamespace == null || typeNamespace.length() == 0) {
                                 throw new IllegalArgumentException("messageType namespace is null or empty");
@@ -441,8 +449,6 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
                         }
                         case 1:
                         {
-                            Wsdl1SoapOperation wsdlOperation = getOperation(message);
-                            Wsdl1SoapMessage wsdlMessage = server ? wsdlOperation.getInput() : wsdlOperation.getOutput();
                             //root.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + JbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX,
                             //                  typeNamespace);
                             String typeLocalName = wsdlMessage.getName().getLocalPart();
@@ -453,8 +459,6 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
                         }
                         case 2:
                         {
-                            Wsdl1SoapOperation wsdlOperation = getOperation(message);
-                            Wsdl1SoapMessage wsdlMessage = server ? wsdlOperation.getInput() : wsdlOperation.getOutput();
                             return wsdlMessage.getMessageName();
                         }
                         case 3:
@@ -485,7 +489,11 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public NamespaceContext getNamespaceContext() {
-            throw new UnsupportedOperationException("Not implemented");
+            if (state == STATE_RUN_PART) {
+                return parts.get(part).get(reader).getNamespaceContext();
+            } else {
+                return new ExtendedXMLStreamReader.SimpleNamespaceContext();
+            }
         }
 
         public String getText() {
@@ -541,7 +549,23 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public Location getLocation() {
-            throw new UnsupportedOperationException("Not implemented");
+            return new Location() {
+                public int getCharacterOffset() {
+                    return 0;
+                }
+                public int getColumnNumber() {
+                    return 0;
+                }
+                public int getLineNumber() {
+                    return 0;
+                }
+                public String getPublicId() {
+                    return null;
+                }
+                public String getSystemId() {
+                    return null;
+                }
+            };
         }
 
         public String getVersion() {

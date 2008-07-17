@@ -19,10 +19,14 @@ package org.apache.servicemix.soap.interceptors.jbi;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Collections;
+import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.servicemix.soap.api.Fault;
 import org.apache.servicemix.soap.api.Message;
@@ -30,10 +34,15 @@ import org.apache.servicemix.soap.api.model.Operation;
 import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapMessage;
 import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapOperation;
 import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapPart;
+import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapBinding;
 import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapBinding.Style;
 import org.apache.servicemix.soap.core.AbstractInterceptor;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.soap.util.QNameUtil;
+import org.apache.servicemix.soap.util.stax.StaxUtil;
+import org.apache.servicemix.soap.util.stax.FragmentStreamReader;
+import org.apache.servicemix.soap.util.stax.StaxSource;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -60,8 +69,64 @@ public class JbiOutWsdl1Interceptor extends AbstractInterceptor {
         if (message.get(JbiConstants.USE_JBI_WRAPPER) instanceof Boolean && ((Boolean) message.get(JbiConstants.USE_JBI_WRAPPER)) == false) {
             return;
         }
+        // Check if we can bypass DOM
+        Wsdl1SoapOperation wsdlOperation = getOperation(message);
+        Wsdl1SoapMessage wsdlMessage = server ? wsdlOperation.getOutput() : wsdlOperation.getInput();
+        if (wsdlOperation.getStyle() == Style.DOCUMENT
+                && tail(wsdlMessage.getParts()).isBody()
+                /*&& !(message.getContent(Source.class) instanceof DOMSource)*/) {
+            XMLStreamReader r = StaxUtil.createReader(message.getContent(Source.class));
+            try {
+                r.nextTag();
+                if (!JbiConstants.WSDL11_WRAPPER_MESSAGE.equals(r.getName())) {
+                    throw new Fault("Message wrapper element is '" + QNameUtil.toString(r.getName())
+                            + "' but expected '{" + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}message'");
+                }
+                for (Wsdl1SoapPart p : wsdlMessage.getParts()) {
+                    r.nextTag();
+                    if (!JbiConstants.WSDL11_WRAPPER_PART.equals(r.getName())) {
+                        throw new Fault("Unexpected part wrapper element '" + QNameUtil.toString(r.getName())
+                                + "' expected '{" + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}part'");
+                    }
+                    r.nextTag();
+                    if (p.isBody()) {
+                        message.setContent(Source.class, StaxUtil.createSource(r));
+                    } else {
+                        Element e = StaxUtil.createElement(r);
+                        DocumentFragment frag = e.getOwnerDocument().createDocumentFragment();
+                        frag.appendChild(e.getOwnerDocument().importNode(e, true));
+                        message.getSoapHeaders().put(p.getElement(), frag);
+                    }
+                    r.nextTag();
+                }
+                /*
+                r.nextTag();
+                if (!JbiConstants.WSDL11_WRAPPER_PART.equals(r.getName())) {
+                    throw new Fault("Unexpected part wrapper element '" + QNameUtil.toString(r.getName())
+                            + "' expected '{" + JbiConstants.WSDL11_WRAPPER_NAMESPACE + "}part'");
+                }
+                r.nextTag();
+                message.setContent(Source.class, new StaxSource(new FragmentStreamReader(r)));
+                */
+                return;
+            } catch (XMLStreamException e) {
+                throw new Fault("Error parsing message: " + e, e);
+            }
+        }
+        // Use DOM for other requests
+        Document document = createDomMessage(message);
+        message.setContent(Source.class, new DOMSource(document));
+    }
+
+    private <T> T tail(Collection<T> parts) {
+        T last = null;
+        for (Iterator<T> it = parts.iterator(); it.hasNext(); last = it.next());
+        return last;
+    }
+
+    protected Document createDomMessage(Message message) {
         Source source = message.getContent(Source.class);
-        Element element = DomUtil.parse(source).getDocumentElement();
+        Element element = StaxUtil.createElement(StaxUtil.createReader(source));
         if (!JbiConstants.WSDL11_WRAPPER_NAMESPACE.equals(element.getNamespaceURI()) ||
             !JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME.equals(element.getLocalName())) {
             throw new Fault("Message wrapper element is '" + QNameUtil.toString(element)
@@ -79,7 +144,7 @@ public class JbiOutWsdl1Interceptor extends AbstractInterceptor {
             partsContent.add(nodes);
             partWrapper = DomUtil.getNextSiblingElement(partWrapper);
         }
-        
+
         Wsdl1SoapOperation wsdlOperation = getOperation(message);
         Wsdl1SoapMessage wsdlMessage = server ? wsdlOperation.getOutput() : wsdlOperation.getInput();
         Collection orderedParts = wsdlMessage.getParts();
@@ -87,7 +152,7 @@ public class JbiOutWsdl1Interceptor extends AbstractInterceptor {
             throw new Fault("Message contains " + partsContent.size() + " part(s) but expected "
                     + orderedParts.size() + " parts");
         }
-        
+
         Document document = DomUtil.createDocument();
         Node body = null;
         if (wsdlOperation.getStyle() == Style.RPC) {
@@ -151,7 +216,7 @@ public class JbiOutWsdl1Interceptor extends AbstractInterceptor {
                 message.getSoapHeaders().put(headerName, frag);
             }
         }
-        message.setContent(Source.class, new DOMSource(document));
+        return document;
     }
 
     protected Wsdl1SoapOperation getOperation(Message message) {

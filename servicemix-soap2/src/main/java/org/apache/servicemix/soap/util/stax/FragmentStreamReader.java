@@ -27,25 +27,25 @@ import javax.xml.stream.util.StreamReaderDelegate;
 
 public class FragmentStreamReader extends StreamReaderDelegate implements XMLStreamReader {
 
-	private static final int STATE_START_DOC = 0;
-	private static final int STATE_FIRST_ELEM = 1;
-	private static final int STATE_FIRST_RUN = 2;
-	private static final int STATE_RUN = 3;
-	private static final int STATE_END_DOC = 4;
+	protected static final int STATE_START_DOC = 0;
+	protected static final int STATE_FIRST_ELEM = 1;
+	protected static final int STATE_FIRST_RUN = 2;
+	protected static final int STATE_RUN = 3;
+	protected static final int STATE_END_DOC = 4;
 	
-	private int depth;
-	private int state = STATE_START_DOC;
-	private int event = START_DOCUMENT;
-    private List<String> rootPrefixes;
+	protected int depth;
+	protected int state = STATE_START_DOC;
+	protected int event = START_DOCUMENT;
+    protected List<String> rootPrefixes;
 	
-	public FragmentStreamReader(XMLStreamReader parent) {
-		super(parent);
+    public FragmentStreamReader(XMLStreamReader parent) {
+        super(parent);
         NamespaceContext ctx = getParent().getNamespaceContext();
         if (ctx instanceof ExtendedNamespaceContext) {
             rootPrefixes = new ArrayList<String>(((ExtendedNamespaceContext) ctx).getPrefixes());
         }
-	}
-	
+    }
+
 	public int getEventType() {
 		return event;
 	}
@@ -116,7 +116,7 @@ public class FragmentStreamReader extends StreamReaderDelegate implements XMLStr
     }
     
     public String getNamespaceURI(int i) {
-        if (state == STATE_FIRST_RUN) {
+        if (state == STATE_FIRST_RUN && rootPrefixes != null) {
             return getParent().getNamespaceContext().getNamespaceURI(rootPrefixes.get(i));
         } else {
             return getParent().getNamespaceURI(i);
@@ -130,5 +130,30 @@ public class FragmentStreamReader extends StreamReaderDelegate implements XMLStr
             return getParent().getNamespaceURI(prefix);
         }
     }
-    
+
+    public boolean isStartElement() {
+        return event == START_ELEMENT;
+    }
+
+    public boolean isEndElement() {
+        return event == END_ELEMENT;
+    }
+
+    public boolean isCharacters() {
+        return event == CHARACTERS;
+    }
+
+    public boolean isWhiteSpace() {
+        return event == SPACE;
+    }
+
+    public boolean hasName() {
+        return (event == START_ELEMENT || event == END_ELEMENT);
+    }
+
+    public boolean hasText() {
+        return (event == CHARACTERS || event == DTD || event == ENTITY_REFERENCE
+                        || event == COMMENT || event == SPACE);
+    }
+
 }

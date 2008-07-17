@@ -58,8 +58,8 @@
     </types>
 
     <message name="HelloRequest">
-        <part name="body" element="tns:HelloRequest"/>
         <part name="header1" element="tns:HelloHeader"/>
+        <part name="body" element="tns:HelloRequest"/>
     </message>
 
     <message name="HelloResponse">
