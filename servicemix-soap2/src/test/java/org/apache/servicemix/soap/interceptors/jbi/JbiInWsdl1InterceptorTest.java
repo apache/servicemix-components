@@ -36,6 +36,9 @@ import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.model.Operation;
 import org.apache.servicemix.soap.bindings.soap.impl.Wsdl1SoapMessageImpl;
 import org.apache.servicemix.soap.bindings.soap.impl.Wsdl1SoapOperationImpl;
+import org.apache.servicemix.soap.bindings.soap.impl.Wsdl1SoapPartImpl;
+import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapPart;
+import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapBinding;
 import org.apache.servicemix.soap.core.MessageImpl;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.soap.util.stax.StaxUtil;
@@ -47,9 +50,14 @@ public class JbiInWsdl1InterceptorTest extends TestCase {
         Wsdl1SoapOperationImpl wsdlOperation = new Wsdl1SoapOperationImpl();
         Wsdl1SoapMessageImpl wsdlMessage = new Wsdl1SoapMessageImpl();
         wsdlMessage.setName(new QName("urn:test", "message"));
+        Wsdl1SoapPartImpl part = new Wsdl1SoapPartImpl();
+        part.setBody(true);
+        wsdlMessage.addPart(part);
+        wsdlMessage.setMessageName("message");
         wsdlOperation.setInput(wsdlMessage);
+        wsdlOperation.setStyle(Wsdl1SoapBinding.Style.DOCUMENT);
 
-        String input = "<hello />";
+        String input = "<hello xmlns='uri:test' attr='value'>  toto  </hello>";
         
         Message message = new MessageImpl();
         message.put(Operation.class, wsdlOperation);

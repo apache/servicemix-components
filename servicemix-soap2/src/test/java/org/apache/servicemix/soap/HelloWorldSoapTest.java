@@ -30,6 +30,7 @@ import javax.wsdl.Service;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.dom.DOMSource;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,8 +83,9 @@ public class HelloWorldSoapTest extends TestCase {
         NormalizedMessage nm = msg.getContent(NormalizedMessage.class);
         Document doc = DomUtil.parse(nm.getContent());
         baos = new ByteArrayOutputStream();
-        DomUtil.getTransformerFactory().newTransformer().transform(nm.getContent(), new StreamResult(baos));
+        DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
         log.info(baos.toString());
+        nm.setContent(new DOMSource(doc));
         
         // check jbi message element
         Element root = DomUtil.getFirstChildElement(doc);
@@ -195,8 +197,9 @@ public class HelloWorldSoapTest extends TestCase {
         NormalizedMessage nm = msg.getContent(NormalizedMessage.class);
         Document doc = DomUtil.parse(nm.getContent());
         baos = new ByteArrayOutputStream();
-        DomUtil.getTransformerFactory().newTransformer().transform(nm.getContent(), new StreamResult(baos));
+        DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
         log.info(baos.toString());
+        nm.setContent(new DOMSource(doc));
         
         // check jbi message element
         Element root = DomUtil.getFirstChildElement(doc);
