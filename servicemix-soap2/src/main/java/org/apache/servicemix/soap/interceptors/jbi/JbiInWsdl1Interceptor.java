@@ -319,15 +319,46 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public String getLocalName() {
-            return getName().getLocalPart();
+            switch (state) {
+                case STATE_START_ELEMENT_WRAPPER:
+                case STATE_END_ELEMENT_WRAPPER:
+                    return JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME;
+                case STATE_START_ELEMENT_PART:
+                case STATE_END_ELEMENT_PART:
+                    return JbiConstants.WSDL11_WRAPPER_PART_LOCALNAME;
+                case STATE_RUN_PART:
+                    return parts.get(part).get(reader).getLocalName();
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         public String getNamespaceURI() {
-            return getName().getNamespaceURI();
+            switch (state) {
+                case STATE_START_ELEMENT_WRAPPER:
+                case STATE_END_ELEMENT_WRAPPER:
+                case STATE_START_ELEMENT_PART:
+                case STATE_END_ELEMENT_PART:
+                    return JbiConstants.WSDL11_WRAPPER_NAMESPACE;
+                case STATE_RUN_PART:
+                    return parts.get(part).get(reader).getNamespaceURI();
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         public String getPrefix() {
-            return getName().getPrefix();
+            switch (state) {
+                case STATE_START_ELEMENT_WRAPPER:
+                case STATE_END_ELEMENT_WRAPPER:
+                case STATE_START_ELEMENT_PART:
+                case STATE_END_ELEMENT_PART:
+                    return JbiConstants.WSDL11_WRAPPER_PREFIX;
+                case STATE_RUN_PART:
+                    return parts.get(part).get(reader).getPrefix();
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         public boolean hasName() {
@@ -420,15 +451,54 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public String getAttributeNamespace(int i) {
-            return getAttributeName(i).getNamespaceURI();
+            switch (state) {
+                case STATE_START_ELEMENT_WRAPPER:
+                    switch (i) {
+                        case 0: return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+                        case 1:
+                        case 2:
+                        case 3: return XMLConstants.NULL_NS_URI;
+                        default: throw new IllegalStateException();
+                    }
+                case STATE_RUN_PART:
+                    return parts.get(part).get(reader).getAttributeNamespace(i);
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         public String getAttributeLocalName(int i) {
-            return getAttributeName(i).getLocalPart();
+            switch (state) {
+                case STATE_START_ELEMENT_WRAPPER:
+                    switch (i) {
+                        case 0: return JbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX;
+                        case 1: return JbiConstants.WSDL11_WRAPPER_TYPE;
+                        case 2: return JbiConstants.WSDL11_WRAPPER_NAME;
+                        case 3: return JbiConstants.WSDL11_WRAPPER_VERSION;
+                        default: throw new IllegalStateException();
+                    }
+                case STATE_RUN_PART:
+                    return parts.get(part).get(reader).getAttributeLocalName(i);
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         public String getAttributePrefix(int i) {
-            return getAttributeName(i).getPrefix();
+            switch (state) {
+                case STATE_START_ELEMENT_WRAPPER:
+                    switch (i) {
+                        case 0: return XMLConstants.XMLNS_ATTRIBUTE;
+                        case 1:
+                        case 2:
+                        case 3: return XMLConstants.DEFAULT_NS_PREFIX;
+                        default: throw new IllegalStateException();
+                    }
+                case STATE_RUN_PART:
+                    return parts.get(part).get(reader).getAttributePrefix(i);
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         public String getAttributeType(int i) {
@@ -458,9 +528,7 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
                             return JbiConstants.WSDL11_WRAPPER_MESSAGE_PREFIX + ":" + typeLocalName;
                         }
                         case 2:
-                        {
                             return wsdlMessage.getMessageName();
-                        }
                         case 3:
                             return "1.0";
                         default: throw new IllegalStateException();
