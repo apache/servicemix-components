@@ -216,6 +216,27 @@ public class SaxonComponentTest extends SpringTestSupport {
         client.done(me);
     }
 
+    public void testProxy() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "proxy"));
+        me.getInMessage().setContent(new StreamSource(getClass().getResourceAsStream("/order.xml")));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        log.info(transformer.toString(me.getOutMessage().getContent()));
+        Element el = transformer.toDOMElement(me.getOutMessage());
+        assertEquals("skcotSyub", el.getLocalName());
+        client.done(me);
+    }
+
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("spring.xml");
     }
