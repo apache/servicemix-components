@@ -68,7 +68,7 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
                     throw new IllegalStateException("An IN-ONLY TransformBean has no Target specified");
                 }
                 outExchange = getExchangeFactory().createInOnlyExchange();
-                target.configureTarget(exchange, getContext());
+                target.configureTarget(outExchange, getContext());
                 outExchange.setProperty(JbiConstants.SENDER_ENDPOINT, getService() + ":" + getEndpoint());
                 String processCorrelationId = (String)exchange.getProperty(JbiConstants.CORRELATION_ID);
                 if (processCorrelationId != null) {
