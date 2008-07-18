@@ -29,13 +29,13 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.bean.BeanEndpoint;
 import org.apache.servicemix.components.util.CopyTransformer;
 import org.apache.servicemix.components.util.MessageHelper;
 import org.apache.servicemix.components.util.MessageTransformer;
@@ -58,7 +58,7 @@ public abstract class BeanSupport {
     private DeliveryChannel channel;
     
     @Resource
-    private BeanEndpoint beanEndpoint;
+    private ServiceEndpoint serviceEndpoint;
     
     private ObjectName extensionMBeanName;
     private MessageExchangeFactory exchangeFactory;
@@ -112,12 +112,12 @@ public abstract class BeanSupport {
         this.context = context;
     }
 
-    public BeanEndpoint getBeanEndpoint() {
-        return beanEndpoint;
+    public ServiceEndpoint getServiceEndpoint() {
+        return serviceEndpoint;
     }
     
-    public void setBeanEndpoint(BeanEndpoint beanEndpoint) {
-        this.beanEndpoint = beanEndpoint;
+    public void setServiceEndpoint(ServiceEndpoint serviceEndpoint) {
+        this.serviceEndpoint = serviceEndpoint;
     }
     
     /**
@@ -409,16 +409,16 @@ public abstract class BeanSupport {
     
     protected QName getService() {
         QName service = null;
-        if (beanEndpoint != null) {
-            service = beanEndpoint.getService();
+        if (serviceEndpoint != null) {
+            service = serviceEndpoint.getServiceName();
         }
         return service;
     }
 
     protected String getEndpoint() {
         String endpoint = null;
-        if (beanEndpoint != null) {
-            endpoint = beanEndpoint.getEndpoint();
+        if (serviceEndpoint != null) {
+            endpoint = serviceEndpoint.getEndpointName();
         }
         return endpoint;
     }

@@ -92,19 +92,24 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     private ThreadLocal<Request> currentRequest = new ThreadLocal<Request>();
     private ComponentContext context;
     private DeliveryChannel channel;
-
+    private ServiceEndpoint serviceEndpoint;
+    
     public BeanEndpoint() {
     }
 
     public BeanEndpoint(BeanComponent component, ServiceEndpoint serviceEndpoint) {
         super(component, serviceEndpoint);
         this.applicationContext = component.getApplicationContext();
+        this.serviceEndpoint = serviceEndpoint;
     }
 
     public void start() throws Exception {
         super.start();
         context = new EndpointComponentContext(this);
         channel = context.getDeliveryChannel();
+        if (serviceEndpoint == null) {
+        	serviceEndpoint = context.getEndpoint(getService(), getEndpoint());
+        }
         Object pojo = getBean();
         if (pojo != null) {
             injectBean(pojo);
@@ -346,6 +351,8 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                         ReflectionUtils.setField(f, target, ctx);
                     } else if (DeliveryChannel.class.isAssignableFrom(f.getType())) {
                         ReflectionUtils.setField(f, target, ch);
+                    } else if (ServiceEndpoint.class.isAssignableFrom(f.getType())) {
+                        ReflectionUtils.setField(f, target, BeanEndpoint.this.serviceEndpoint);
                     }
                 }
             }
