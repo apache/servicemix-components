@@ -401,6 +401,18 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         return executor;
     }
 
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    public ExecutorFactory getExecutorFactory() {
+        return executorFactory;
+    }
+
+    public void setExecutorFactory(ExecutorFactory executorFactory) {
+        this.executorFactory = executorFactory;
+    }
+
     protected ExecutorFactory createExecutorFactory() {
         // Create a very simple one
         return new ExecutorFactoryImpl();
