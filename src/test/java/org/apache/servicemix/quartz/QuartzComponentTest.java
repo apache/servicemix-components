@@ -21,7 +21,6 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
 
 public class QuartzComponentTest extends TestCase {
@@ -35,7 +34,7 @@ public class QuartzComponentTest extends TestCase {
         QuartzEndpoint endpoint = new QuartzEndpoint();
         endpoint.setService(new QName("quartz"));
         endpoint.setEndpoint("endpoint");
-        endpoint.setTargetService(new QName("receiver"));
+        endpoint.setTargetService(new QName("countDownReceiver"));
         SimpleTriggerBean trigger = new SimpleTriggerBean();
         trigger.setRepeatInterval(100);
         trigger.setName("trigger");
@@ -44,12 +43,11 @@ public class QuartzComponentTest extends TestCase {
         quartz.setEndpoints(new QuartzEndpoint[] {endpoint });
         jbi.activateComponent(quartz, "servicemix-quartz");
         
-        ReceiverComponent receiver = new ReceiverComponent(new QName("receiver"), "endpoint");
-        jbi.activateComponent(receiver, "receiver");
+        CountDownReceiverComponent receiver = new CountDownReceiverComponent(new QName("countDownReceiver"), "endpoint", 1, 3000);
+        jbi.activateComponent(receiver, "countDownReceiver");
         
         jbi.start();
 
-        Thread.sleep(1000);
         assertTrue(receiver.getMessageList().flushMessages().size() > 0);
         
         quartz.stop();
@@ -58,7 +56,8 @@ public class QuartzComponentTest extends TestCase {
         assertEquals(0, receiver.getMessageList().flushMessages().size());
         
         quartz.start();
-        Thread.sleep(1000);
+        receiver.reset();
+        
         assertTrue(receiver.getMessageList().flushMessages().size() > 0);
 
         jbi.shutDown();
