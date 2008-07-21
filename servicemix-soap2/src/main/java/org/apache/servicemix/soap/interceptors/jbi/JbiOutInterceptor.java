@@ -19,6 +19,7 @@ package org.apache.servicemix.soap.interceptors.jbi;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.net.URI;
 
 import javax.activation.DataHandler;
 import javax.jbi.messaging.MessageExchange;
@@ -58,7 +59,7 @@ public class JbiOutInterceptor extends AbstractInterceptor {
             Binding binding = message.get(Binding.class);
             Operation operation = binding.getOperation(me.getOperation());
             if (operation != null) {
-                if (!me.getPattern().equals(operation.getMep())) {
+                if (!areMepsEquals(me.getPattern(), operation.getMep())) {
                     throw new Fault("Received incorrect exchange mep.  Received " + me.getPattern()
                                     + " but expected " + operation.getMep() + " for operation "
                                     + operation.getName());
@@ -70,6 +71,17 @@ public class JbiOutInterceptor extends AbstractInterceptor {
                 }
             }
         }
+    }
+
+    private boolean areMepsEquals(URI mep1, URI mep2) {
+        String s1 = mep1 != null ? mep1.toString() : "";
+        String s2 = mep2 != null ? mep2.toString() : "";
+        int i1 = s1.lastIndexOf('/');
+        int i2 = s2.lastIndexOf('/');
+        if (i1 >= 0 && i2 >= 0) {
+            return s1.substring(i1).equals(s2.substring(i2));
+        }
+        return false;
     }
 
     /**
