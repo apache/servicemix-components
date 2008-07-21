@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -33,6 +35,7 @@ import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.Policy;
+import org.apache.servicemix.soap.api.Interceptor;
 import org.apache.servicemix.soap.api.model.Binding;
 import org.apache.servicemix.soap.bindings.http.HttpConstants;
 import org.apache.servicemix.soap.bindings.soap.SoapFault;
@@ -49,6 +52,7 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
     private Binding<?> binding;
     private boolean useJbiWrapper = true;
     private Policy[] policies;
+    private Map<Phase, InterceptorChain> chains = new HashMap<Phase, InterceptorChain>();
 
     public Binding<?> getBinding() {
         return binding;
@@ -157,11 +161,15 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
     }
 
     protected InterceptorChain getChain(Phase phase) {
-        InterceptorChain chain = binding.getInterceptorChain(phase);
-        if (policies != null) {
-            for (int i = 0; i < policies.length; i++) {
-                chain.add(policies[i].getInterceptors(phase));
+        InterceptorChain chain = chains.get(phase);
+        if (chain == null) {
+            chain = binding.getInterceptorChain(phase);
+            if (policies != null) {
+                for (int i = 0; i < policies.length; i++) {
+                    chain.add(policies[i].getInterceptors(phase));
+                }
             }
+            chains.put(phase, chain);
         }
         return chain;
     }

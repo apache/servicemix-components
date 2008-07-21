@@ -16,14 +16,13 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.wsdl.Service;
-import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap12.SOAP12Address;
 import javax.xml.namespace.QName;
@@ -44,6 +43,7 @@ import org.apache.woden.wsdl20.Description;
 import org.apache.woden.wsdl20.Endpoint;
 import org.apache.woden.wsdl20.xml.DescriptionElement;
 import org.springframework.core.io.Resource;
+import org.xml.sax.InputSource;
 
 /**
  * 
@@ -137,86 +137,101 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
         super.validate();
     }
 
-    protected void validateWsdl1(HttpSoapProviderMarshaler marshaler) throws WSDLException, IOException, DeploymentException {
-        Definition def = WSDLUtils.createWSDL11Reader().readWSDL(wsdl.getURL().toString());
-        if (validateWsdl) {
-            WSIBPValidator validator = new WSIBPValidator(def);
-            if (!validator.isValid()) {
-                throw new DeploymentException("WSDL is not WS-I BP compliant: " + validator.getErrors());
+    protected void validateWsdl1(HttpSoapProviderMarshaler marshaler) throws Exception {
+        InputStream is = wsdl.getInputStream();
+        try {
+            InputSource inputSource = new InputSource(is);
+            inputSource.setSystemId(wsdl.getURL().toString());
+            Definition def = WSDLUtils.createWSDL11Reader().readWSDL(wsdl.getURL().toString(), inputSource);
+            if (validateWsdl) {
+                WSIBPValidator validator = new WSIBPValidator(def);
+                if (!validator.isValid()) {
+                    throw new DeploymentException("WSDL is not WS-I BP compliant: " + validator.getErrors());
+                }
             }
-        }
-        Service svc;
-        if (getService() != null) {
-            svc = def.getService(getService());
-            if (svc == null) {
-                throw new DeploymentException("Could not find service '" + getService() + "' in wsdl"); 
+            Service svc;
+            if (getService() != null) {
+                svc = def.getService(getService());
+                if (svc == null) {
+                    throw new DeploymentException("Could not find service '" + getService() + "' in wsdl");
+                }
+            } else if (def.getServices().size() == 1) {
+                svc = (Service) def.getServices().values().iterator().next();
+                setService(svc.getQName());
+            } else {
+                throw new DeploymentException("If service is not set, the WSDL must contain a single service definition");
             }
-        } else if (def.getServices().size() == 1) {
-            svc = (Service) def.getServices().values().iterator().next();
-            setService(svc.getQName());
-        } else {
-            throw new DeploymentException("If service is not set, the WSDL must contain a single service definition");
-        }
-        Port port;
-        if (getEndpoint() != null) {
-            port = svc.getPort(getEndpoint());
-            if (port == null) {
-                throw new DeploymentException("Cound not find port '" + getEndpoint() + "' "
-                        + "in wsdl for service '" + getService() + "'");
+            Port port;
+            if (getEndpoint() != null) {
+                port = svc.getPort(getEndpoint());
+                if (port == null) {
+                    throw new DeploymentException("Cound not find port '" + getEndpoint() + "' "
+                            + "in wsdl for service '" + getService() + "'");
+                }
+            } else if (svc.getPorts().size() == 1) {
+                port = (Port) svc.getPorts().values().iterator().next();
+                setEndpoint(port.getName());
+            } else {
+                throw new DeploymentException("If endpoint is not set, the WSDL service '" + getService() + "' "
+                                                 + "must contain a single port definition");
             }
-        } else if (svc.getPorts().size() == 1) {
-            port = (Port) svc.getPorts().values().iterator().next();
-            setEndpoint(port.getName());
-        } else {
-            throw new DeploymentException("If endpoint is not set, the WSDL service '" + getService() + "' "
-                                             + "must contain a single port definition");
-        }
-        SOAPAddress sa11 = WSDLUtils.getExtension(port, SOAPAddress.class);
-        SOAP12Address sa12 = WSDLUtils.getExtension(port, SOAP12Address.class);
-        if (getLocationURI() != null) {
-            marshaler.setBaseUrl(getLocationURI());
-        } else if (sa11 != null) {
-            marshaler.setBaseUrl(sa11.getLocationURI());
-        } else if (sa12 != null) {
-            marshaler.setBaseUrl(sa12.getLocationURI());
-        } else {
-            throw new DeploymentException("No locationURI set and no SOAP address defined on port '" + port.getName() + "'");
-        }
-        description = WSDLUtils.getWSDL11Factory().newWSDLWriter().getDocument(def);
-        marshaler.setBinding(BindingFactory.createBinding(port));
-    }
-    
-    protected void validateWsdl2(HttpSoapProviderMarshaler marshaler) throws
-                                  org.apache.woden.WSDLException, IOException, DeploymentException {
-        WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
-        DescriptionElement descElement = reader.readWSDL(wsdl.getURL().toString());
-        Description desc = descElement.toComponent();
-        org.apache.woden.wsdl20.Service svc;
-        if (getService() != null) {
-            svc = desc.getService(getService());
-            if (svc == null) {
-                throw new DeploymentException("Could not find service '" + getService() + "' in wsdl"); 
+            SOAPAddress sa11 = WSDLUtils.getExtension(port, SOAPAddress.class);
+            SOAP12Address sa12 = WSDLUtils.getExtension(port, SOAP12Address.class);
+            if (getLocationURI() != null) {
+                marshaler.setBaseUrl(getLocationURI());
+            } else if (sa11 != null) {
+                marshaler.setBaseUrl(sa11.getLocationURI());
+            } else if (sa12 != null) {
+                marshaler.setBaseUrl(sa12.getLocationURI());
+            } else {
+                throw new DeploymentException("No locationURI set and no SOAP address defined on port '" + port.getName() + "'");
             }
-        } else if (desc.getServices().length == 1) {
-            svc = desc.getServices()[0];
-            setService(svc.getName());
-        } else {
-            throw new DeploymentException("If service is not set, the WSDL must contain a single service definition");
+            description = WSDLUtils.getWSDL11Factory().newWSDLWriter().getDocument(def);
+            marshaler.setBinding(BindingFactory.createBinding(port));
+        } finally {
+            is.close();
         }
-        Endpoint endpoint;
-        if (getEndpoint() != null) {
-            endpoint = svc.getEndpoint(new NCName(getEndpoint()));
-            if (endpoint == null) {
-                throw new DeploymentException("Cound not find endpoint '" + getEndpoint() + "' in wsdl for service '" + getService() + "'");
-            }
-        } else if (svc.getEndpoints().length == 1) {
-            endpoint = svc.getEndpoints()[0];
-            setEndpoint(endpoint.getName().toString());
-        } else {
-            throw new DeploymentException("If endpoint is not set, the WSDL service '" + getService() + "' "
-                                             + "must contain a single port definition");
-        }
-        marshaler.setBinding(BindingFactory.createBinding(endpoint));
     }
 
+    protected void validateWsdl2(HttpSoapProviderMarshaler marshaler) throws Exception {
+        new Wsdl2Validator().validate(marshaler);
+    }
+
+    /**
+     * Use an inner class to avoid having a strong dependency on Woden if not needed
+     */
+    protected class Wsdl2Validator {
+        public void validate(HttpSoapProviderMarshaler marshaler) throws Exception {
+            WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+            DescriptionElement descElement = reader.readWSDL(wsdl.getURL().toString());
+            Description desc = descElement.toComponent();
+            org.apache.woden.wsdl20.Service svc;
+            if (getService() != null) {
+                svc = desc.getService(getService());
+                if (svc == null) {
+                    throw new DeploymentException("Could not find service '" + getService() + "' in wsdl");
+                }
+            } else if (desc.getServices().length == 1) {
+                svc = desc.getServices()[0];
+                setService(svc.getName());
+            } else {
+                throw new DeploymentException("If service is not set, the WSDL must contain a single service definition");
+            }
+            Endpoint endpoint;
+            if (getEndpoint() != null) {
+                endpoint = svc.getEndpoint(new NCName(getEndpoint()));
+                if (endpoint == null) {
+                    throw new DeploymentException("Cound not find endpoint '" + getEndpoint() + "' in wsdl for service '" + getService() + "'");
+                }
+            } else if (svc.getEndpoints().length == 1) {
+                endpoint = svc.getEndpoints()[0];
+                setEndpoint(endpoint.getName().toString());
+            } else {
+                throw new DeploymentException("If endpoint is not set, the WSDL service '" + getService() + "' "
+                                                 + "must contain a single port definition");
+            }
+            marshaler.setBinding(BindingFactory.createBinding(endpoint));
+        }
+    }
+    
 }

@@ -232,6 +232,7 @@ public class HttpComponent extends DefaultComponent {
             BoundedThreadPool btp = new BoundedThreadPool();
             btp.setMaxThreads(this.configuration.getJettyClientThreadPoolSize());
             connectionPool.setThreadPool(btp);
+            connectionPool.setConnectorType(org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
             connectionPool.start();
         }
         // Create serverManager

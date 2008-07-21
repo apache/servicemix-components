@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.HashMap;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -47,6 +48,7 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
     private boolean useJbiWrapper = true;
     private Policy[] policies;
     private String baseUrl;
+    private Map<Phase, InterceptorChain> chains = new HashMap<Phase, InterceptorChain>();
 
     public Binding<?> getBinding() {
         return binding;
@@ -124,11 +126,15 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
     }
 
     protected InterceptorChain getChain(Phase phase) {
-        InterceptorChain chain = binding.getInterceptorChain(phase);
-        if (policies != null) {
-            for (int i = 0; i < policies.length; i++) {
-                chain.add(policies[i].getInterceptors(phase));
+        InterceptorChain chain = chains.get(phase);
+        if (chain == null) {
+            chain = binding.getInterceptorChain(phase);
+            if (policies != null) {
+                for (int i = 0; i < policies.length; i++) {
+                    chain.add(policies[i].getInterceptors(phase));
+                }
             }
+            chains.put(phase, chain);
         }
         return chain;
     }

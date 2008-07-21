@@ -139,7 +139,7 @@ public class ProviderEndpointTest extends TestCase {
         client.sendSync(me);
     }
 
-    public void testSendProblem() throws Exception {
+    public void testSendProblemWithoutServer() throws Exception {
         HttpComponent http = new HttpComponent();
 
         HttpSoapProviderEndpoint ep1 = new HttpSoapProviderEndpoint();
@@ -149,6 +149,47 @@ public class ProviderEndpointTest extends TestCase {
         ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep1.setUseJbiWrapper(true);
 
+        http.addEndpoint(ep1);
+        container.activateComponent(http, "http");
+
+        container.start();
+
+        ServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        me.setOperation(new QName("http://servicemix.apache.org/samples/wsdl-first", "GetPerson"));
+        me.getInMessage().setContent(new StringSource(
+                                "<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\""
+                             +  "             xmlns:msg=\"http://servicemix.apache.org/samples/wsdl-first/types\" "
+                             +  "             name=\"Hello\" "
+                             +  "             type=\"msg:HelloRequest\" "
+                             +  "             version=\"1.0\">"
+                             +  "  <jbi:part>"
+                             +  "    <msg:GetPerson><msg:personId>id</msg:personId></msg:GetPerson>"
+                             +  "  </jbi:part>"
+                             +  "</jbi:message>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ERROR, me.getStatus());
+    }
+
+    public void testSendProblemWith404Html() throws Exception {
+        HttpComponent http = new HttpComponent();
+
+        HttpConsumerEndpoint ep0 = new HttpConsumerEndpoint();
+        ep0.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep0.setEndpoint("consumer");
+        ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep0.setTargetEndpoint("service");
+        ep0.setLocationURI("http://localhost:8192/ps/");
+
+        HttpSoapProviderEndpoint ep1 = new HttpSoapProviderEndpoint();
+        ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep1.setEndpoint("soap");
+        ep1.setWsdl(new ClassPathResource("person.wsdl"));
+        ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
+        ep1.setUseJbiWrapper(true);
+
+        http.addEndpoint(ep0);
         http.addEndpoint(ep1);
         container.activateComponent(http, "http");
 

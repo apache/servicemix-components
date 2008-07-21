@@ -47,9 +47,12 @@
 
     <servicemix.osgi.import>
         com.thoughtworks.xstream*;resolution:=optional,
+        org.apache.servicemix.common.osgi,
+        org.apache.servicemix.executors.impl,
         org.apache.servicemix.jbi.container*;resolution:=optional,
         org.apache.servicemix.jbi.framework*;resolution:=optional,
-        org.apache.servicemix.common.osgi,
+        org.apache.servicemix.kernel.jaas.config,
+        org.apache.servicemix.nmr.api.security,
         org.apache.woden*;resolution:=optional,
         org.apache.xbean.spring.context.v2,
         org.mortbay.jetty.client*;resolution:=optional,
