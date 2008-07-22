@@ -20,8 +20,12 @@ import java.util.Map;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class EndpointTracker {
+
+    private static final Log LOGGER = LogFactory.getLog(EndpointTracker.class);
 
     protected DefaultComponent component;
 
@@ -34,19 +38,27 @@ public class EndpointTracker {
     }
 
     public void register(EndpointWrapper wrapper, Map properties) throws Exception {
-        System.out.println("Endpoint registered with properties: " + properties);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[" + component.getComponentName() + "] Endpoint registered with properties: " + properties);
+        }
         Endpoint endpoint = wrapper.getEndpoint();
         if (component.isKnownEndpoint(endpoint)) {
-	        System.out.println("Endpoint recognized");
+            if (LOGGER.isDebugEnabled()) {
+    	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
+            }
             component.addEndpoint(endpoint);
         }
     }
 
     public void unregister(EndpointWrapper wrapper, Map properties) throws Exception {
-        System.out.println("Endpoint unregistered with properties: " + properties);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("[" + component.getComponentName() + "] Endpoint unregistered with properties: " + properties);
+        }
         Endpoint endpoint = wrapper.getEndpoint();
         if (component.isKnownEndpoint(endpoint)) {
-	        System.out.println("Endpoint recognized");
+            if (LOGGER.isDebugEnabled()) {
+    	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
+            }
             component.removeEndpoint(endpoint);
         }
     }
