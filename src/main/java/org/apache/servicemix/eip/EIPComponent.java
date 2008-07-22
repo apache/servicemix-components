@@ -29,26 +29,10 @@ import org.apache.servicemix.common.DefaultComponent;
 public class EIPComponent extends DefaultComponent {
 
     private EIPEndpoint[] endpoints;
-    private EIPConfiguration configuration;
 
     public EIPComponent() {
-        configuration = new EIPConfiguration();
     }
     
-    /**
-     * @return the configuration
-     */
-    protected EIPConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    /**
-     * @param configuration the configuration to set
-     */
-    protected void setConfiguration(EIPConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
     /**
      * @return Returns the endpoints.
      */
@@ -63,19 +47,6 @@ public class EIPComponent extends DefaultComponent {
         this.endpoints = endpoints;
     }
     
-    /* (non-Javadoc)
-     * @see org.servicemix.common.BaseComponentLifeCycle#getExtensionMBean()
-     */
-    protected Object getExtensionMBean() throws Exception {
-        return configuration;
-    }
-
-    protected void doInit() throws Exception {
-        super.doInit();
-        configuration.setRootDir(context.getWorkspaceRoot());
-        configuration.load();
-    }
-
     protected List getConfiguredEndpoints() {
         return asList(endpoints);
     }

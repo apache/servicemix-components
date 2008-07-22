@@ -24,10 +24,10 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.eip.support.Predicate;
-import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * MessageFilter allows filtering incoming JBI exchanges.

@@ -30,7 +30,7 @@ import javax.jbi.messaging.RobustInOnly;
 import javax.xml.transform.Source;
 
 import org.apache.servicemix.eip.EIPEndpoint;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.common.util.MessageUtil;
 
 /**
  * The AbstractSplitter is an abstract base class for Splitters.

@@ -25,10 +25,10 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.jbi.util.MessageCopier;
-import org.apache.servicemix.jbi.util.MessageUtil;
 
 public abstract class ResequencerBase extends EIPEndpoint {
 

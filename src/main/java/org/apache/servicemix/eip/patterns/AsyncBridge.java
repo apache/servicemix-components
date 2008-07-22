@@ -29,11 +29,11 @@ import javax.jbi.messaging.RobustInOnly;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.expression.PropertyExpression;
-import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
 

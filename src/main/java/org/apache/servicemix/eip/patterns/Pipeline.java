@@ -29,14 +29,12 @@ import javax.jbi.messaging.RobustInOnly;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessagingException;
 import javax.wsdl.Definition;
-import javax.activation.DataHandler;
 
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.jbi.FaultException;
-import org.apache.servicemix.jbi.messaging.PojoMarshaler;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.util.MessageUtil;
 
 /**
  * The Pipeline component is a bridge between an In-Only (or Robust-In-Only) MEP and
