@@ -32,7 +32,7 @@ import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-public class CxfBcProviderSecurityTest extends SpringTestSupport {
+public class CxfBcProviderHttpsTest extends SpringTestSupport {
     
     private DefaultServiceMixClient client;
     private InOut io;
@@ -52,7 +52,7 @@ public class CxfBcProviderSecurityTest extends SpringTestSupport {
             "Server failed to launch",
             // run the server in another process
             // set this to false to fork
-            launchServer(SecurityServer.class, false));
+            launchServer(HttpsServer.class, false));
     }
     
     protected void tearDown() throws Exception {
@@ -94,19 +94,19 @@ public class CxfBcProviderSecurityTest extends SpringTestSupport {
                 "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
               + "<part> "
               + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
-              + "provider security test"
+              + "https test"
               + "</requestType></greetMe>"
               + "</part> "
               + "</message>"));
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
-                io.getOutMessage()).indexOf("provider security test Hello ffang") >= 0);
+                io.getOutMessage()).indexOf("Hello https test Hello ffang") >= 0);
 
     }
 
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
-        return new ClassPathXmlApplicationContext("org/apache/servicemix/cxfbc/ws/security/security_provider.xml");
+        return new ClassPathXmlApplicationContext("org/apache/servicemix/cxfbc/ws/security/provider.xml");
     }
 
     protected String getServiceUnitPath(String name) {

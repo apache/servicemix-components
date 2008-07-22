@@ -31,9 +31,12 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
+import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.interceptor.AttachmentInInterceptor;
 import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.interceptor.StaxInInterceptor;
 import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
@@ -44,9 +47,9 @@ import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.MessageObserver;
-import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
-import org.apache.servicemix.cxfbc.interceptors.RetrievePayLoadInterceptor;
+
 
 public class CxfBcProviderMessageObserver implements MessageObserver {
     ByteArrayOutputStream response = new ByteArrayOutputStream();
@@ -121,8 +124,9 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             PhaseManager pm = providerEndpoint.getBus().getExtension(
                     PhaseManager.class);
             List<Interceptor> inList = new ArrayList<Interceptor>();
-            
-            inList.add(new RetrievePayLoadInterceptor());
+            inList.add(new ReadHeadersInterceptor(this.providerEndpoint.getBus()));
+            inList.add(new MustUnderstandInterceptor());
+            inList.add(new StaxInInterceptor());
             inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper()));
             if (providerEndpoint.isMtomEnabled()) {
                 inList.add(new AttachmentInInterceptor());

@@ -69,7 +69,7 @@ public class GreeterImplForProvider implements Greeter {
                 header.setId("345");
                 ret = ret + hello.hello(req, header).getText();
             
-            } else if ("https test".equals(me)) {
+            } else if ("https test".equals(me) || "provider security test".equals(me)) {
                 ret = ret + securityGreeter.greetMe("ffang");
             } else if ("concurrency test".equals(me)) {
                 MultiClientThread[] clients = new MultiClientThread[10];
