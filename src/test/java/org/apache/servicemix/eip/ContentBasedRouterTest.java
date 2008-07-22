@@ -19,6 +19,7 @@ package org.apache.servicemix.eip;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Node;
@@ -27,6 +28,7 @@ import org.apache.servicemix.eip.patterns.ContentBasedRouter;
 import org.apache.servicemix.eip.support.RoutingRule;
 import org.apache.servicemix.eip.support.XPathPredicate;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.messaging.NormalizedMessageImpl;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class ContentBasedRouterTest extends AbstractEIPTest {
@@ -127,6 +129,24 @@ public class ContentBasedRouterTest extends AbstractEIPTest {
         node = new SourceTransformer().toDOMNode(me.getOutMessage());
         assertEquals("from3", node.getFirstChild().getNodeName());
         client.done(me);
+    }
+
+    public void testForwardOperation() throws Exception {
+        router.setForwardOperation(true);
+        ReceiverComponent rec = activateReceiver("target1");
+
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("router"));
+        me.setOperation(new QName("operation"));
+        me.getInMessage().setContent(createSource("<hello id='1' />"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+
+        rec.getMessageList().assertMessagesReceived(1);
+
+        NormalizedMessageImpl msg = (NormalizedMessageImpl) rec.getMessageList().flushMessages().get(0);
+        assertEquals(new QName("operation"), msg.getExchange().getOperation());
+
     }
 
 }

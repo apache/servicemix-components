@@ -22,9 +22,9 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
-import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.store.Store;
 
 /**
@@ -42,7 +42,20 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
      * The correlation property used by this component
      */
     private String correlation;
-    
+
+    /**
+     * Forward the operation qname when sending the exchange to the target
+     */
+    private boolean forwardOperation;
+
+    public boolean isForwardOperation() {
+        return forwardOperation;
+    }
+
+    public void setForwardOperation(boolean forwardOperation) {
+        this.forwardOperation = forwardOperation;
+    }
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#validate()
      */
@@ -66,6 +79,9 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
         // Retrieve target
         ExchangeTarget target = getDestination(tme);
         target.configureTarget(tme, getContext());
+        if (isForwardOperation() && tme.getOperation() == null) {
+            tme.setOperation(exchange.getOperation());
+        }
         // Send in to target
         sendSync(tme);
         // Send back the result
@@ -115,6 +131,9 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
             // Retrieve target
             ExchangeTarget target = getDestination(tme);
             target.configureTarget(tme, getContext());
+            if (isForwardOperation() && tme.getOperation() == null) {
+                tme.setOperation(exchange.getOperation());
+            }
             // Send in to target
             send(tme);
         // Mimic the exchange on the other side and send to needed listener
