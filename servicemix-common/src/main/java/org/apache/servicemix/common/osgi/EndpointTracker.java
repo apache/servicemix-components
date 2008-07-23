@@ -17,6 +17,7 @@
 package org.apache.servicemix.common.osgi;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.DefaultComponent;
@@ -28,6 +29,7 @@ public class EndpointTracker {
     private static final Log LOGGER = LogFactory.getLog(EndpointTracker.class);
 
     protected DefaultComponent component;
+    protected Map<EndpointWrapper, Endpoint> endpoints = new ConcurrentHashMap<EndpointWrapper, Endpoint>();
 
     public DefaultComponent getComponent() {
         return component;
@@ -46,6 +48,7 @@ public class EndpointTracker {
             if (LOGGER.isDebugEnabled()) {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
+            endpoints.put(wrapper, endpoint);
             component.addEndpoint(endpoint);
         }
     }
@@ -54,8 +57,9 @@ public class EndpointTracker {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[" + component.getComponentName() + "] Endpoint unregistered with properties: " + properties);
         }
-        Endpoint endpoint = wrapper.getEndpoint();
-        if (component.isKnownEndpoint(endpoint)) {
+        // Do not access the wrapper using wrapper.getEndpoint(), has the osgi context may already be shut down
+        Endpoint endpoint = endpoints.remove(wrapper);
+        if (endpoint != null && component.isKnownEndpoint(endpoint)) {
             if (LOGGER.isDebugEnabled()) {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
