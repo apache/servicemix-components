@@ -56,6 +56,10 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
         setComponent(this);
         registry = createRegistry();
         serviceUnitManager = createServiceUnitManager();
+        serviceUnit = new XBeanServiceUnit();
+        serviceUnit.setName("#default#");
+        serviceUnit.setComponent(this);
+        registry.registerServiceUnit(serviceUnit);
     }
 
     /* (non-Javadoc)
@@ -328,10 +332,6 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
     @Override
     protected void doInit() throws Exception {
         super.doInit();
-        serviceUnit = new XBeanServiceUnit();
-        serviceUnit.setName("#default#");
-        serviceUnit.setComponent(this);
-        registry.registerServiceUnit(serviceUnit);
         List endpoints = getConfiguredEndpoints();
         if (endpoints != null && !endpoints.isEmpty()) {
             Iterator iter = endpoints.iterator();

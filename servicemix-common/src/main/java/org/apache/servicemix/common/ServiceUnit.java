@@ -45,7 +45,7 @@ public class ServiceUnit {
         this.component = component;
     }
 
-    public void start() throws Exception {
+    public synchronized void start() throws Exception {
         // Activate endpoints
         List<Endpoint> activated = new ArrayList<Endpoint>();
         try {
@@ -67,7 +67,7 @@ public class ServiceUnit {
         }
     }
 
-    public void stop() throws Exception {
+    public synchronized void stop() throws Exception {
         this.status = LifeCycleMBean.STOPPED;
         // Deactivate endpoints
         Exception exception = null;
@@ -83,7 +83,7 @@ public class ServiceUnit {
         }
     }
 
-    public void shutDown() throws JBIException {
+    public synchronized void shutDown() throws JBIException {
         this.status = LifeCycleMBean.SHUTDOWN;
     }
 
@@ -126,7 +126,7 @@ public class ServiceUnit {
         return this.endpoints.values();
     }
 
-    public void addEndpoint(Endpoint endpoint) throws DeploymentException {
+    public synchronized void addEndpoint(Endpoint endpoint) throws DeploymentException {
         String key = EndpointSupport.getKey(endpoint);
         if (this.endpoints.put(key, endpoint) != null) {
             throw new DeploymentException(
@@ -141,7 +141,7 @@ public class ServiceUnit {
         }
     }
 
-    public void removeEndpoint(Endpoint endpoint) throws DeploymentException {
+    public synchronized void removeEndpoint(Endpoint endpoint) throws DeploymentException {
         String key = EndpointSupport.getKey(endpoint);
         if (this.endpoints.remove(key) == null) {
             throw new DeploymentException("Endpoint not found in the SU for key: " + EndpointSupport.getKey(endpoint));
