@@ -42,7 +42,7 @@
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export.pkg>
-        org.apache.servicemix
+        org.apache.servicemix.common
     </servicemix.osgi.export.pkg>
   </properties>
 

@@ -38,7 +38,7 @@
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export.pkg>
-        org.apache.servicemix
+        org.apache.servicemix.soap
     </servicemix.osgi.export.pkg>
   </properties>
 
