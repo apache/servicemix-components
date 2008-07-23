@@ -249,7 +249,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
      *
      * @return the service unit if one is being used.
      */
-    public ServiceUnit getServiceUnit() {
+    public synchronized ServiceUnit getServiceUnit() {
         if (serviceUnit == null) {
             serviceUnit = new XBeanServiceUnit();
             serviceUnit.setName("#default#");
@@ -308,7 +308,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
     /**
      * Dynamically adds a new endpoint
      */
-    public void addEndpoint(Endpoint endpoint) throws Exception {
+    public synchronized void addEndpoint(Endpoint endpoint) throws Exception {
         ServiceUnit su = getServiceUnit();
         endpoint.setServiceUnit(su);
         validateEndpoint(endpoint);
@@ -324,7 +324,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
         }
     }
 
-    public void removeEndpoint(Endpoint endpoint) throws Exception {
+    public synchronized void removeEndpoint(Endpoint endpoint) throws Exception {
         ServiceUnit su = endpoint.getServiceUnit();
         su.removeEndpoint(endpoint);
         registry.unregisterEndpoint(endpoint);
