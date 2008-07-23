@@ -47,6 +47,7 @@
         org.apache.commons.jexl*;resolution:=optional,
         org.apache.servicemix;resolution:=optional,
         org.apache.servicemix.client*;resolution:=optional,
+        org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.components*;resolution:=optional,
         org.apache.servicemix.expression*;resolution:=optional,
@@ -56,7 +57,7 @@
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export>
-        org.apache.servicemix*;version=${project.version},
+        org.apache.servicemix.eip*;version=${project.version},
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.eip
     </servicemix.osgi.export>
   </properties>
