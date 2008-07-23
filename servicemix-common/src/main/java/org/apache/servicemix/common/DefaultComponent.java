@@ -249,12 +249,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
      *
      * @return the service unit if one is being used.
      */
-    public synchronized ServiceUnit getServiceUnit() {
-        if (serviceUnit == null) {
-            serviceUnit = new XBeanServiceUnit();
-            serviceUnit.setName("#default#");
-            serviceUnit.setComponent(this);
-        }
+    public ServiceUnit getServiceUnit() {
         return serviceUnit;
     }
 
@@ -285,49 +280,20 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
         return Arrays.asList(endpoints);
     }
 
-    /* (non-Javadoc)
-    * @see org.apache.servicemix.common.AsyncBaseLifeCycle#doInit()
-    */
-    @Override
-    protected void doInit() throws Exception {
-        super.doInit();
-        List endpoints = getConfiguredEndpoints();
-        if (endpoints != null && !endpoints.isEmpty()) {
-            Iterator iter = endpoints.iterator();
-            while (iter.hasNext()) {
-                Endpoint endpoint = (Endpoint) iter.next();
-                if (endpoint == null) {
-                    logger.warn("Ignoring null endpoint in list: " + endpoints);
-                    continue;
-                }
-                addEndpoint(endpoint);
-            }
-        }
-    }
-
     /**
      * Dynamically adds a new endpoint
      */
     public synchronized void addEndpoint(Endpoint endpoint) throws Exception {
-        ServiceUnit su = getServiceUnit();
-        endpoint.setServiceUnit(su);
+        endpoint.setServiceUnit(serviceUnit);
         validateEndpoint(endpoint);
         endpoint.validate();
-        su.addEndpoint(endpoint);
-        if (registry.isRegistered(su)) {
-            registry.registerEndpoint(endpoint);
-        } else {
-            registry.registerServiceUnit(su);
-            if (isStarted()) {
-                su.start();
-            }
-        }
+        registry.registerEndpoint(endpoint);
+        serviceUnit.addEndpoint(endpoint);
     }
 
     public synchronized void removeEndpoint(Endpoint endpoint) throws Exception {
-        ServiceUnit su = endpoint.getServiceUnit();
-        su.removeEndpoint(endpoint);
         registry.unregisterEndpoint(endpoint);
+        endpoint.getServiceUnit().removeEndpoint(endpoint);
     }
 
 
@@ -357,27 +323,44 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
 
 
     /* (non-Javadoc)
-    * @see org.apache.servicemix.common.AsyncBaseLifeCycle#doStart()
-    */
+     * @see org.apache.servicemix.common.AsyncBaseLifeCycle#doInit()
+     */
     @Override
-    protected void doStart() throws Exception {
-        super.doStart();
-        if (serviceUnit != null) {
-            if (!registry.isRegistered(serviceUnit)) {
-                registry.registerServiceUnit(serviceUnit);
+    protected void doInit() throws Exception {
+        super.doInit();
+        serviceUnit = new XBeanServiceUnit();
+        serviceUnit.setName("#default#");
+        serviceUnit.setComponent(this);
+        registry.registerServiceUnit(serviceUnit);
+        List endpoints = getConfiguredEndpoints();
+        if (endpoints != null && !endpoints.isEmpty()) {
+            Iterator iter = endpoints.iterator();
+            while (iter.hasNext()) {
+                Endpoint endpoint = (Endpoint) iter.next();
+                if (endpoint == null) {
+                    logger.warn("Ignoring null endpoint in list: " + endpoints);
+                    continue;
+                }
+                addEndpoint(endpoint);
             }
-            serviceUnit.start();
         }
     }
 
     /* (non-Javadoc)
-    * @see org.apache.servicemix.common.AsyncBaseLifeCycle#doStop()
-    */
+     * @see org.apache.servicemix.common.AsyncBaseLifeCycle#doStart()
+     */
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
+        serviceUnit.start();
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.common.AsyncBaseLifeCycle#doStop()
+     */
     @Override
     protected void doStop() throws Exception {
-        if (serviceUnit != null) {
-            serviceUnit.stop();
-        }
+        serviceUnit.stop();
         super.doStop();
     }
 
@@ -386,9 +369,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
     */
     @Override
     protected void doShutDown() throws Exception {
-        if (serviceUnit != null) {
-            serviceUnit.shutDown();
-        }
+        serviceUnit.shutDown();
         super.doShutDown();
     }
 
