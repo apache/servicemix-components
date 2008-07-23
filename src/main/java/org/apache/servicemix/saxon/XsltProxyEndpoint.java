@@ -35,14 +35,14 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
+import org.apache.servicemix.common.util.MessageUtil;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.BytesSource;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.saxon.support.ExchangeTarget;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
-import org.apache.servicemix.JbiConstants;
 import org.springframework.core.io.Resource;
 import net.sf.saxon.TransformerFactoryImpl;
 

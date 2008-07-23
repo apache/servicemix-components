@@ -35,7 +35,6 @@ import net.sf.saxon.om.DocumentInfo;
 import net.sf.saxon.query.DynamicQueryContext;
 import net.sf.saxon.query.StaticQueryContext;
 import net.sf.saxon.query.XQueryExpression;
-import net.sf.saxon.query.QueryModule;
 
 import org.apache.servicemix.jbi.jaxp.BytesSource;
 import org.apache.servicemix.jbi.jaxp.StringSource;

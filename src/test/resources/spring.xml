@@ -95,7 +95,7 @@
       <saxon:proxy service="test:proxy" endpoint="endpoint"
                    useDomSourceForXslt="true"
                    useDomSourceForContent="false"
-                   result="bytes"
+                   result="dom"
                    resource="classpath:transform-in.xsl"
                    outResource="classpath:transform-out.xsl">
         <saxon:target>
