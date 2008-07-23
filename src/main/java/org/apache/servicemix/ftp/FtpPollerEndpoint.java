@@ -59,6 +59,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     private FileFilter filter;  
     private boolean deleteFile = true;
     private boolean recursive = true;
+    private boolean changeWorkingDirectory;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
     private ConcurrentMap<String, FtpData> openExchanges = new ConcurrentHashMap<String, FtpData>();
@@ -99,8 +100,11 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         if (uri != null && getClientPool() != null && getClientPool().getHost() != null) {
             throw new DeploymentException("Properties uri and clientPool.host can not be configured at the same time");
         }
+        if (changeWorkingDirectory && recursive) {
+            throw new DeploymentException("changeWorkingDirectory='true' can not be set when recursive='true'");
+        }
     }
-    
+
     public void start() throws Exception {
         if (lockManager == null) {
             lockManager = createLockManager();
@@ -128,7 +132,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         }
         super.start();
     }
-    
+
     protected LockManager createLockManager() {
         return new SimpleLockManager();
     }
@@ -209,9 +213,12 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
 
     public void setTargetOperation(QName targetOperation) { this.targetOperation = targetOperation; }
 
+    public void setChangeWorkingDirectory(boolean changeWorkingDirectory) {
+        this.changeWorkingDirectory = changeWorkingDirectory;
+    }
+
     // Implementation methods
     //-------------------------------------------------------------------------
-
 
     protected void pollFileOrDirectory(String fileOrDirectory) throws Exception {
         FTPClient ftp = borrowClient();
@@ -224,7 +231,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     protected void pollFileOrDirectory(FTPClient ftp, String fileOrDirectory, boolean processDir) throws Exception {
-        FTPFile[] files = ftp.listFiles(fileOrDirectory);
+        FTPFile[] files = listFiles(ftp, fileOrDirectory);
         for (int i = 0; i < files.length; i++) {
             String name = files[i].getName();
             if (".".equals(name) || "..".equals(name)) {
@@ -236,7 +243,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                 if (getFilter() == null || getFilter().accept(new File(file))) {
                     pollFile(file); // process the file
                 }
-            // Only process directories if processDir is true
+                // Only process directories if processDir is true
             } else if (processDir) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Polling directory " + file);
@@ -247,6 +254,15 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                     logger.debug("Skipping directory " + file);
                 }
             }
+        }
+    }
+
+    private FTPFile[] listFiles(FTPClient ftp, String directory) throws IOException {
+        if (changeWorkingDirectory) {
+            ftp.changeWorkingDirectory(directory);
+            return ftp.listFiles();
+        } else {
+            return ftp.listFiles(directory);
         }
     }
 
@@ -271,7 +287,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing file " + file);
             }
-            if (ftp.listFiles(file).length > 0) {
+            if (listFiles(ftp, file).length > 0) {
                 // Process the file. If processing fails, an exception should be thrown.
                 processFile(ftp, file);
                 ftp = null;
@@ -315,21 +331,21 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             logger.debug("Releasing " + data.file);
             try {
                 // Close ftp related stuff
-		        data.in.close();
-		        data.ftp.completePendingCommand();
+                data.in.close();
+                data.ftp.completePendingCommand();
                 // check for state
                 if (exchange.getStatus() == ExchangeStatus.DONE) {
-			        if (isDeleteFile()) {
-			            if (!data.ftp.deleteFile(data.file)) {
-			                throw new IOException("Could not delete file " + data.file);
-			            }
-			        }
+                    if (isDeleteFile()) {
+                        if (!data.ftp.deleteFile(data.file)) {
+                            throw new IOException("Could not delete file " + data.file);
+                        }
+                    }
                 } else {
-		            Exception e = exchange.getError();
-		            if (e == null) {
-		                e = new JBIException("Unkown error");
-		            }
-		            throw e;
+                    Exception e = exchange.getError();
+                    if (e == null) {
+                        e = new JBIException("Unkown error");
+                    }
+                    throw e;
                 }
             } finally {
                 // remove the open exchange
@@ -386,5 +402,5 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             }
         }
     }
-    
+
 }
