@@ -47,6 +47,7 @@
 
     <servicemix.osgi.import>
         com.thoughtworks.xstream*;resolution:=optional,
+        org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.executors.impl,
         org.apache.servicemix.jbi.container*;resolution:=optional,
@@ -61,7 +62,7 @@
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export>
-        org.apache.servicemix*;version=${project.version},
+        org.apache.servicemix.http*;version=${project.version},
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.http
     </servicemix.osgi.export>
   </properties>
