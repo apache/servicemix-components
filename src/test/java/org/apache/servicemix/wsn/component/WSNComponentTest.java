@@ -49,6 +49,8 @@ import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.PullPoint;
 import org.apache.servicemix.wsn.client.Subscription;
 import org.apache.servicemix.wsn.spring.PublisherComponent;
+import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 
@@ -58,6 +60,7 @@ public class WSNComponentTest extends TestCase {
         new QName("http://servicemix.org/wsnotification", "NotificationBroker");
 
     private JBIContainer jbi;
+    private ServiceMixClient client;
     private BrokerService jmsBroker;
     private NotificationBroker wsnBroker;
     private CreatePullPoint wsnCreatePullPoint;
@@ -66,23 +69,26 @@ public class WSNComponentTest extends TestCase {
     protected void setUp() throws Exception {
         jmsBroker = new BrokerService();
         jmsBroker.setPersistent(false);
-        jmsBroker.addConnector("vm://localhost");
+        jmsBroker.addConnector("tcp://localhost:61616");
         jmsBroker.start();
 
         jbi = new JBIContainer();
         jbi.setEmbedded(true);
+        jbi.setCreateJmxConnector(false);
         jbi.init();
         jbi.start();
 
+        client = new DefaultServiceMixClient(jbi);
+
         wsnComponent = new WSNComponent();
-        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory("vm://localhost"));
+        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory("tcp://localhost:61616"));
         ActivationSpec as = new ActivationSpec();
         as.setComponentName("servicemix-wsn2005");
         as.setComponent(wsnComponent);
         jbi.activateComponent(as);
 
-        wsnBroker = new NotificationBroker(jbi);
-        wsnCreatePullPoint = new CreatePullPoint(jbi);
+        wsnBroker = new NotificationBroker(client.getContext());
+        wsnCreatePullPoint = new CreatePullPoint(client.getContext());
     }
 
     protected void tearDown() throws Exception {
@@ -287,8 +293,8 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         PullPoint pullPoint = new PullPoint(
-                        AbstractWSAClient.createWSA("http://www.consumer.org/service/endpoint"),
-                        jbi);
+                        client.getContext(),
+                        AbstractWSAClient.createWSA("http://www.consumer.org/service/endpoint"));
         Thread.sleep(500);
         assertEquals(1, pullPoint.getMessages(0).size());
     }

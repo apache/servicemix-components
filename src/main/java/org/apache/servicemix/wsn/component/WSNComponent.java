@@ -31,6 +31,7 @@ import javax.naming.NamingException;
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
+import javax.wsdl.xml.WSDLLocator;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Document;
@@ -49,6 +50,7 @@ import org.apache.servicemix.wsn.EndpointRegistrationException;
 import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
 import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
 import org.springframework.core.io.Resource;
+import org.xml.sax.InputSource;
 
 public class WSNComponent extends DefaultComponent {
 
@@ -111,9 +113,7 @@ public class WSNComponent extends DefaultComponent {
     protected Class[] getEndpointClasses() {
         return new Class[] {
             WSNEndpoint.class,
-            WSNDeployer.WSNPublisherEndpoint.class,
-            WSNDeployer.WSNPullPointEndpoint.class,
-            WSNDeployer.WSNSubscriptionEndpoint.class,
+            WSNDeployableEndpoint.class,
         };
     }
 
@@ -226,10 +226,30 @@ public class WSNComponent extends DefaultComponent {
             Document doc = descriptions.get(interfaceName);
             if (doc == null) {
                 if (flattener == null) {
-                    URL resource = getClass().getClassLoader().getResource("org/apache/servicemix/wsn/wsn.wsdl");
+                    final URL resource = getClass().getClassLoader().getResource("org/apache/servicemix/wsn/wsn.wsdl");
                     WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
                     reader.setFeature(Constants.FEATURE_VERBOSE, false);
-                    Definition definition = reader.readWSDL(null, resource.toString());
+                    // Do not let wsdl4j read imports, as it uses the URL getContent() which fails because wsdl
+                    // is not a known extension in OSGi
+                    Definition definition = reader.readWSDL(new WSDLLocator() {
+                        private String last = null;
+                        public InputSource getBaseInputSource() {
+                            return new InputSource(resource.toString());
+                        }
+                        public InputSource getImportInputSource(String parentLocation, String importLocation) {
+                            int idx = parentLocation.lastIndexOf('/');
+                            last = parentLocation.substring(0, idx + 1) + importLocation;
+                            return new InputSource(last);
+                        }
+                        public String getBaseURI() {
+                            return resource.toString();
+                        }
+                        public String getLatestImportURI() {
+                            return last;
+                        }
+                        public void close() {
+                        }
+                    });
                     flattener = new WSDLFlattener(definition);
                 }
                 Definition flatDef = flattener.getDefinition(interfaceName);

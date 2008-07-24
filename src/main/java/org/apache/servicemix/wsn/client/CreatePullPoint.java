@@ -18,17 +18,9 @@ package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClientFacade;
-import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jbi.resolver.ServiceNameEndpointResolver;
 import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
-import org.oasis_open.docs.wsn.b_2.Subscribe;
-import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 
 public class CreatePullPoint extends AbstractWSAClient {
 
@@ -38,45 +30,18 @@ public class CreatePullPoint extends AbstractWSAClient {
 
     public static final QName NOTIFICATION_BROKER = new QName(WSN_URI, WSN_SERVICE);
 
-    public CreatePullPoint(ComponentContext context) throws JAXBException {
-        ServiceMixClientFacade client = new ServiceMixClientFacade(context);
-        client.setMarshaler(new JAXBMarshaler(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
-        setClient(client);
-        setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
+    public CreatePullPoint(ComponentContext context) {
+        this(context, "Broker");
     }
 
-    public CreatePullPoint(ComponentContext context, String brokerName) throws JAXBException {
-        setClient(createJaxbClient(context));
-        setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
-        setResolver(resolveWSA(getEndpoint()));
-    }
-
-    public CreatePullPoint(JBIContainer container) throws JBIException, JAXBException {
-        setClient(createJaxbClient(container));
-        setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
-    }
-
-    public CreatePullPoint(JBIContainer container, String brokerName) throws JBIException, JAXBException {
-        setClient(createJaxbClient(container));
-        setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
-        setResolver(resolveWSA(getEndpoint()));
-    }
-
-    public CreatePullPoint(ServiceMixClient client) {
-        setClient(client);
-        setResolver(new ServiceNameEndpointResolver(NOTIFICATION_BROKER));
-    }
-
-    public CreatePullPoint(ServiceMixClient client, String brokerName) {
-        setClient(client);
-        setEndpoint(createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
-        setResolver(resolveWSA(getEndpoint()));
+    public CreatePullPoint(ComponentContext context, String brokerName) {
+        super(context, createWSA(WSN_URI + "/" + WSN_SERVICE + "/" + brokerName));
     }
 
     public PullPoint createPullPoint() throws JBIException {
         CreatePullPointResponse response = (CreatePullPointResponse) request(
                 new org.oasis_open.docs.wsn.b_2.CreatePullPoint());
-        return new PullPoint(response.getPullPoint(), getClient());
+        return new PullPoint(getContext(), response.getPullPoint());
     }
 
 }

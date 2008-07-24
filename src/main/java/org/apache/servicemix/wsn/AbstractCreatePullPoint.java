@@ -27,10 +27,10 @@ import javax.jws.WebService;
 
 import org.w3c.dom.Element;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.jbi.util.DOMUtil;
+import org.apache.servicemix.id.IdGenerator;
+import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_2.UnableToCreatePullPointFaultType;

@@ -20,11 +20,9 @@ import java.math.BigInteger;
 import java.util.List;
 
 import javax.jbi.JBIException;
-import javax.xml.bind.JAXBException;
+import javax.jbi.component.ComponentContext;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.oasis_open.docs.wsn.b_2.DestroyPullPoint;
 import org.oasis_open.docs.wsn.b_2.GetMessages;
 import org.oasis_open.docs.wsn.b_2.GetMessagesResponse;
@@ -32,12 +30,8 @@ import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 
 public class PullPoint extends AbstractWSAClient {
 
-    public PullPoint(W3CEndpointReference pullPoint, ServiceMixClient client) {
-        super(pullPoint, client);
-    }
-
-    public PullPoint(W3CEndpointReference pullPoint, JBIContainer container) throws JBIException, JAXBException {
-        super(pullPoint, createJaxbClient(container));
+    public PullPoint(ComponentContext context, W3CEndpointReference pullPoint) {
+        super(context, pullPoint);
     }
 
     public List<NotificationMessageHolderType> getMessages(int max) throws JBIException {

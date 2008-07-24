@@ -19,7 +19,6 @@ package org.apache.servicemix.wsn.jbi;
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.wsn.ComponentContextAware;
@@ -59,13 +58,9 @@ public class JbiPublisher extends JmsPublisher implements ComponentContextAware 
     protected Object startSubscription() {
         Subscription subscription = null;
         try {
-            NotificationBroker broker = new NotificationBroker(getContext());
-            broker.setResolver(AbstractWSAClient.resolveWSA(publisherReference));
+            NotificationBroker broker = new NotificationBroker(getContext(), publisherReference);
             subscription = broker.subscribe(AbstractWSAClient.createWSA(notificationBrokerAddress), "noTopic", null);
         } catch (JBIException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JAXBException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

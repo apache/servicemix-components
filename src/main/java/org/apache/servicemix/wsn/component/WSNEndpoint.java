@@ -39,8 +39,8 @@ import javax.xml.ws.WebFault;
 
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.wsn.ComponentContextAware;
 import org.oasis_open.docs.wsrf.bf_2.BaseFaultType;
 
@@ -121,8 +121,7 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
             if (e.getCause() instanceof Exception) {
                 WebFault fa = (WebFault) e.getCause().getClass().getAnnotation(WebFault.class);
                 if (!(exchange instanceof InOnly) && fa != null) {
-                    BaseFaultType info = (BaseFaultType) e.getCause().getClass().getMethod("getFaultInfo").invoke(
-                            e.getCause());
+                    BaseFaultType info = (BaseFaultType) e.getCause().getClass().getMethod("getFaultInfo").invoke(e.getCause());
                     Fault fault = exchange.createFault();
                     exchange.setFault(fault);
                     exchange.setError((Exception) e.getCause());
@@ -149,7 +148,7 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
             StringWriter writer = new StringWriter();
             jaxbContext.createMarshaller().marshal(output, writer);
             msg.setContent(new StringSource(writer.toString()));
-            send(exchange);
+            sendSync(exchange);
         }
     }
 

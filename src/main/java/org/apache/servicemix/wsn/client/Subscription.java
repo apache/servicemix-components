@@ -17,17 +17,17 @@
 package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
+import javax.jbi.component.ComponentContext;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
-import org.apache.servicemix.client.ServiceMixClient;
 import org.oasis_open.docs.wsn.b_2.PauseSubscription;
 import org.oasis_open.docs.wsn.b_2.ResumeSubscription;
 import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 
 public class Subscription extends AbstractWSAClient {
 
-    public Subscription(W3CEndpointReference subscriptionReference, ServiceMixClient client) {
-        super(subscriptionReference, client);
+    public Subscription(ComponentContext context, W3CEndpointReference subscriptionReference) {
+        super(context, subscriptionReference);
     }
 
     public void pause() throws JBIException {

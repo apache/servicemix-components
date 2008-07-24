@@ -20,6 +20,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="
   http://www.springframework.org/schema/beans
@@ -27,10 +28,23 @@
   http://www.springframework.org/schema/util
   http://www.springframework.org/schema/util/spring-util.xsd
   http://www.springframework.org/schema/osgi
-  http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+  http://www.springframework.org/schema/osgi/spring-osgi.xsd
+  http://www.springframework.org/schema/osgi-compendium
+  http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
 
     <bean id="servicemix-wsn2005" class="org.apache.servicemix.wsn.component.WSNComponent">
         <property name="connectionFactory" ref="connectionFactory" />
+        <property name="executorFactory" ref="executorFactory" />
+    </bean>
+
+    <bean id="executorFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
+        <property name="defaultConfig">
+            <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
+                <property name="corePoolSize" value="${threadPoolCorePoolSize}"/>
+                <property name="maximumPoolSize" value="${threadPoolMaximumPoolSize}"/>
+                <property name="queueSize" value="${threadPoolQueueSize}"/>
+            </bean>
+        </property>
     </bean>
 
     <bean id="endpoint-tracker" class="org.apache.servicemix.common.osgi.EndpointTracker">
@@ -51,5 +65,13 @@
     </osgi:service>
 
     <osgi:reference id="connectionFactory" interface="javax.jms.ConnectionFactory" />
+
+    <osgix:property-placeholder persistent-id="servicemix-wsn2005">
+        <osgix:default-properties>
+            <prop key="threadPoolCorePoolSize">8</prop>
+            <prop key="threadPoolMaximumPoolSize">32</prop>
+            <prop key="threadPoolQueueSize">256</prop>
+        </osgix:default-properties>
+    </osgix:property-placeholder>
 
 </beans>

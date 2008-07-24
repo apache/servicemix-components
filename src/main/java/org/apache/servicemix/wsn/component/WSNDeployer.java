@@ -20,35 +20,19 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.jbi.management.DeploymentException;
-import javax.jbi.management.LifeCycleMBean;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.AbstractDeployer;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.id.IdGenerator;
-import org.apache.servicemix.wsn.EndpointManager;
-import org.apache.servicemix.wsn.EndpointRegistrationException;
-import org.apache.servicemix.wsn.client.AbstractWSAClient;
-import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
-import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
 import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
-import org.oasis_open.docs.wsn.b_2.CreatePullPointResponse;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
-import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
-import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
 import org.oasis_open.docs.wsn.brw_2.NotificationBroker;
 
 public class WSNDeployer extends AbstractDeployer implements Deployer {
@@ -75,7 +59,7 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
     public ServiceUnit deploy(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
         File[] xmls = new File(serviceUnitRootPath).listFiles(filter);
         if (xmls == null || xmls.length == 0) {
-            throw failure("deploy", "No wsdl found", null);
+            throw failure("deploy", "No xml files found", null);
         }
         WSNServiceUnit su = new WSNServiceUnit();
         su.setComponent(component);
@@ -120,174 +104,6 @@ public class WSNDeployer extends AbstractDeployer implements Deployer {
             return new WSNPublisherEndpoint((RegisterPublisher) request);
         } else {
             throw failure("deploy", "Unsupported request " + request.getClass().getName(), null);
-        }
-    }
-
-    public class WSNSubscriptionEndpoint extends Endpoint implements EndpointManager {
-
-        private Subscribe request;
-
-        private SubscribeResponse response;
-
-        public WSNSubscriptionEndpoint(Subscribe request) throws DeploymentException {
-            this.service = new QName("http://servicemix.org/wsnotification", "Subscription");
-            this.endpoint = new IdGenerator().generateSanitizedId();
-            this.request = request;
-        }
-
-        @Override
-        public Role getRole() {
-            return Role.CONSUMER;
-        }
-
-        @Override
-        public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
-                    .getNotificationBroker();
-            response = broker.handleSubscribe(request, this);
-        }
-
-        @Override
-        public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
-                    .getNotificationBroker();
-            broker.unsubscribe(AbstractWSAClient.getWSAAddress(response.getSubscriptionReference()));
-        }
-
-        @Override
-        public ExchangeProcessor getProcessor() {
-            return null;
-        }
-
-        public Object register(String address, Object service) throws EndpointRegistrationException {
-            return null;
-        }
-
-        public void unregister(Object endpoint) throws EndpointRegistrationException {
-        }
-
-    }
-
-    public class WSNPullPointEndpoint extends Endpoint implements EndpointManager {
-
-        private CreatePullPoint request;
-
-        private CreatePullPointResponse response;
-
-        public WSNPullPointEndpoint(CreatePullPoint request) throws DeploymentException {
-            this.service = new QName("http://servicemix.org/wsnotification", "Subscription");
-            this.endpoint = new IdGenerator().generateSanitizedId();
-            this.request = request;
-        }
-
-        @Override
-        public Role getRole() {
-            return Role.PROVIDER;
-        }
-
-        @Override
-        public void activate() throws Exception {
-            JmsCreatePullPoint createPullPoint = ((WSNComponent) serviceUnit.getComponent())
-                    .getCreatePullPoint();
-            response = createPullPoint.createPullPoint(request);
-        }
-
-        @Override
-        public void deactivate() throws Exception {
-            JmsCreatePullPoint createPullPoint = ((WSNComponent) serviceUnit.getComponent())
-                    .getCreatePullPoint();
-            createPullPoint.destroyPullPoint(AbstractWSAClient.getWSAAddress(response.getPullPoint()));
-        }
-
-        @Override
-        public ExchangeProcessor getProcessor() {
-            return null;
-        }
-
-        public Object register(String address, Object service) throws EndpointRegistrationException {
-            return null;
-        }
-
-        public void unregister(Object endpoint) throws EndpointRegistrationException {
-        }
-
-    }
-
-    public static class WSNPublisherEndpoint extends Endpoint implements EndpointManager {
-
-        private RegisterPublisher request;
-
-        private RegisterPublisherResponse response;
-
-        public WSNPublisherEndpoint(RegisterPublisher request) {
-            this.service = new QName("http://servicemix.org/wsnotification", "Publisher");
-            this.endpoint = new IdGenerator().generateSanitizedId();
-            this.request = request;
-        }
-
-        @Override
-        public Role getRole() {
-            return Role.CONSUMER;
-        }
-
-        @Override
-        public void activate() throws Exception {
-            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
-                    .getNotificationBroker();
-            response = broker.handleRegisterPublisher(request, this);
-        }
-
-        @Override
-        public void deactivate() throws Exception {
-            JbiNotificationBroker broker = ((WSNComponent) serviceUnit.getComponent())
-                    .getNotificationBroker();
-            broker.unsubscribe(AbstractWSAClient.getWSAAddress(response.getPublisherRegistrationReference()));
-        }
-
-        @Override
-        public ExchangeProcessor getProcessor() {
-            return null;
-        }
-
-        public Object register(String address, Object service) throws EndpointRegistrationException {
-            return null;
-        }
-
-        public void unregister(Object endpoint) throws EndpointRegistrationException {
-        }
-
-    }
-
-    public static class WSNServiceUnit extends ServiceUnit {
-        public void start() throws Exception {
-            List<Endpoint> activated = new ArrayList<Endpoint>();
-            try {
-                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                    Endpoint endpoint = (Endpoint) iter.next();
-                    if (endpoint instanceof WSNPullPointEndpoint) {
-                        endpoint.activate();
-                        activated.add(endpoint);
-                    }
-                }
-                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                    Endpoint endpoint = (Endpoint) iter.next();
-                    if (endpoint instanceof WSNSubscriptionEndpoint) {
-                        endpoint.activate();
-                        activated.add(endpoint);
-                    }
-                }
-                this.status = LifeCycleMBean.STARTED;
-            } catch (Exception e) {
-                // Deactivate activated endpoints
-                for (Endpoint endpoint : activated) {
-                    try {
-                        endpoint.deactivate();
-                    } catch (Exception e2) {
-                        // do nothing
-                    }
-                }
-                throw e;
-            }
         }
     }
 

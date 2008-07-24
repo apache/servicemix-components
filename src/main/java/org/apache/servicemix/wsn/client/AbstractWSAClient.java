@@ -17,9 +17,15 @@
 package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.component.ComponentContext;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.util.JAXBSource;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
@@ -29,34 +35,29 @@ import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClientFacade;
-import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.common.util.DOMUtil;
+import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.resolver.EndpointResolver;
-import org.apache.servicemix.jbi.resolver.ServiceAndEndpointNameResolver;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.util.DOMUtil;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 
 public abstract class AbstractWSAClient {
 
+    private static JAXBContext jaxbContext;
+
     private W3CEndpointReference endpoint;
 
-    private EndpointResolver resolver;
+    private ComponentContext context;
 
-    private ServiceMixClient client;
+    private ServiceEndpoint serviceEndpoint;
 
     public AbstractWSAClient() {
     }
 
-    public AbstractWSAClient(W3CEndpointReference endpoint, ServiceMixClient client) {
+    public AbstractWSAClient(ComponentContext context, W3CEndpointReference endpoint) {
+        this.context = context;
         this.endpoint = endpoint;
-        this.resolver = resolveWSA(endpoint);
-        this.client = client;
     }
 
     public static W3CEndpointReference createWSA(String address) {
@@ -80,21 +81,9 @@ public abstract class AbstractWSAClient {
         return null;
     }
 
-    public static ServiceMixClient createJaxbClient(JBIContainer container) throws JBIException, JAXBException {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-        client.setMarshaler(new JAXBMarshaler(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
-        return client;
-    }
-
-    public static ServiceMixClient createJaxbClient(ComponentContext context) throws JAXBException {
-        ServiceMixClientFacade client = new ServiceMixClientFacade(context);
-        client.setMarshaler(new JAXBMarshaler(JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class)));
-        return client;
-    }
-
-    public static EndpointResolver resolveWSA(W3CEndpointReference ref) {
+    public static ServiceEndpoint resolveWSA(W3CEndpointReference ref, ComponentContext context) {
         String[] parts = URIResolver.split3(getWSAAddress(ref));
-        return new ServiceAndEndpointNameResolver(new QName(parts[0], parts[1]), parts[2]);
+        return context.getEndpoint(new QName(parts[0], parts[1]), parts[2]);
     }
 
     public W3CEndpointReference getEndpoint() {
@@ -105,28 +94,80 @@ public abstract class AbstractWSAClient {
         this.endpoint = endpoint;
     }
 
-    public EndpointResolver getResolver() {
-        return resolver;
+    public ServiceEndpoint getServiceEndpoint() {
+        if (serviceEndpoint == null && endpoint != null) {
+            serviceEndpoint = resolveWSA(endpoint, context);
+        }
+        return serviceEndpoint;
     }
 
-    public void setResolver(EndpointResolver resolver) {
-        this.resolver = resolver;
+    public void setServiceEndpoint(ServiceEndpoint serviceEndpoint) {
+        this.serviceEndpoint = serviceEndpoint;
     }
 
-    public ServiceMixClient getClient() {
-        return client;
+    public ComponentContext getContext() {
+        return context;
     }
 
-    public void setClient(ServiceMixClient client) {
-        this.client = client;
+    public void setContext(ComponentContext context) {
+        this.context = context;
     }
 
     protected Object request(Object request) throws JBIException {
-        return client.request(resolver, null, null, request);
+        return request(null, request);
+    }
+
+    protected Object request(QName operation, Object request) throws JBIException {
+        try {
+            InOut exchange = getContext().getDeliveryChannel().createExchangeFactory().createInOutExchange();
+            exchange.setEndpoint(getServiceEndpoint());
+            exchange.setOperation(operation);
+            NormalizedMessage in = exchange.createMessage();
+            exchange.setInMessage(in);
+            in.setContent(new JAXBSource(getJAXBContext(), request));
+            getContext().getDeliveryChannel().sendSync(exchange);
+            if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                throw new JBIException(exchange.getError());
+            } else if (exchange.getFault() != null) {
+                throw new JBIException(exchange.getFault().toString());
+            } else {
+                NormalizedMessage out = exchange.getOutMessage();
+                Object result = getJAXBContext().createUnmarshaller().unmarshal(out.getContent());
+                exchange.setStatus(ExchangeStatus.DONE);
+                getContext().getDeliveryChannel().send(exchange);
+                return result;
+            }
+        } catch (JAXBException e) {
+            throw new JBIException(e);
+        }
     }
 
     protected void send(Object request) throws JBIException {
-        client.sendSync(resolver, null, null, request);
+        send(null, request);
+    }
+
+    protected void send(QName operation, Object request) throws JBIException {
+        try {
+            InOnly exchange = getContext().getDeliveryChannel().createExchangeFactory().createInOnlyExchange();
+            exchange.setEndpoint(getServiceEndpoint());
+            exchange.setOperation(operation);
+            NormalizedMessage in = exchange.createMessage();
+            exchange.setInMessage(in);
+            in.setContent(new JAXBSource(getJAXBContext(), request));
+            getContext().getDeliveryChannel().sendSync(exchange);
+            if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                throw new JBIException(exchange.getError());
+            }
+        } catch (JAXBException e) {
+            throw new JBIException(e);
+        }
+    }
+
+    private synchronized JAXBContext getJAXBContext() throws JAXBException {
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class);
+        }
+        return jaxbContext;
     }
 
 }

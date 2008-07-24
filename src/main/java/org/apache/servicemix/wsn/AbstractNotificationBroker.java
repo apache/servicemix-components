@@ -26,9 +26,9 @@ import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
-import org.apache.activemq.util.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.oasis_open.docs.wsn.b_2.GetCurrentMessage;
 import org.oasis_open.docs.wsn.b_2.GetCurrentMessageResponse;

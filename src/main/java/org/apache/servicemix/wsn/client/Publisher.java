@@ -17,15 +17,15 @@
 package org.apache.servicemix.wsn.client;
 
 import javax.jbi.JBIException;
+import javax.jbi.component.ComponentContext;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
-import org.apache.servicemix.client.ServiceMixClient;
 import org.oasis_open.docs.wsn.br_2.DestroyRegistration;
 
 public class Publisher extends AbstractWSAClient {
 
-    public Publisher(W3CEndpointReference publisherRegistrationReference, ServiceMixClient client) {
-        super(publisherRegistrationReference, client);
+    public Publisher(ComponentContext context, W3CEndpointReference publisherRegistrationReference) {
+        super(context, publisherRegistrationReference);
     }
 
     public void destroy() throws JBIException {
