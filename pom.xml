@@ -46,6 +46,7 @@
     <servicemix.osgi.import>
       org.apache.servicemix.common,
       org.apache.servicemix.common.osgi,
+      org.apache.servicemix.executors.impl,
       org.apache.xbean.spring.context.v2,
       org.springframework.beans.factory.xml,
       *
