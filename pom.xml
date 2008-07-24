@@ -47,8 +47,10 @@
     <servicemix.osgi.import>
         javax.jws,
         javax.xml.bind.annotation,
+        org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.client*;resolution:=optional,
+        org.apache.servicemix.executors.impl,
         org.apache.servicemix.jbi.container*;resolution:=optional,
         org.apache.servicemix.jbi.framework*;resolution:=optional,
         org.apache.xbean.spring.context.v2,
@@ -60,7 +62,7 @@
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export>
-        org.apache.servicemix*;version=${project.version},
+        org.apache.servicemix.cxfse*;version=${project.version},
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.cxfse
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
