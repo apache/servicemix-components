@@ -86,7 +86,7 @@
         </osgi:service-properties>
     </osgi:service>
 
-    <osgix:property-placeholder persistent-id="org.apache.servicemix.shell">
+    <osgix:property-placeholder persistent-id="servicemix-http">
         <osgix:default-properties>
             <prop key="connectorMaxIdleTime">30000</prop>
             <prop key="consumerProcessorSuspendTime">60000</prop>
