@@ -46,7 +46,9 @@
     <activemq-version>5.1.0</activemq-version>
 
     <servicemix.osgi.import>
+        org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
+        org.apache.servicemix.executors.impl,
         org.apache.woden*;resolution:=optional,
         org.apache.xbean.spring.context.v2,
         org.jencks*;resolution:=optional,
@@ -54,7 +56,7 @@
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export>
-        org.apache.servicemix*;version=${project.version},
+        org.apache.servicemix.jms*;version=${project.version},
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.jms
     </servicemix.osgi.export>
   </properties>
