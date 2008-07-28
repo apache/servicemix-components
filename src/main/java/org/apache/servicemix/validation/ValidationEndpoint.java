@@ -36,10 +36,9 @@ import javax.xml.validation.Validator;
 import org.xml.sax.SAXException;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.util.MessageUtil;
 import org.apache.servicemix.validation.handler.CountingErrorHandlerFactory;
 import org.apache.servicemix.validation.handler.MessageAwareErrorHandler;
 import org.apache.servicemix.validation.handler.MessageAwareErrorHandlerFactory;
@@ -259,9 +258,8 @@ public class ValidationEndpoint extends ProviderEndpoint implements
 
                 if (!handlingErrorMethod.equalsIgnoreCase(FAULT_FLOW)) {
                     // HANDLE AS JBI FAULT
-                    throw new FaultException(
-                            "Failed to validate against schema: " + schema,
-                            exchange, fault);
+                    throw new JBIException(
+                            "Failed to validate against schema: " + schema + "\n" + new SourceTransformer().toString(fault.getContent()));
                 } else {
                     MessageUtil.transfer(fault, out);
                 }
