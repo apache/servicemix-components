@@ -46,9 +46,12 @@
     <activemq-version>5.1.0</activemq-version>
 
     <servicemix.osgi.import>
+        javax.security.auth,
         org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.executors.impl,
+        org.apache.servicemix.kernel.jaas.config,
+        org.apache.servicemix.nmr.api.security,
         org.apache.woden*;resolution:=optional,
         org.apache.xbean.spring.context.v2,
         org.jencks*;resolution:=optional,
