@@ -36,10 +36,10 @@ import org.apache.camel.Processor;
 import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
+import org.apache.servicemix.common.util.IntrospectionSupport;
+import org.apache.servicemix.common.util.URIResolver;
+import org.apache.servicemix.common.util.URISupport;
 import org.apache.servicemix.id.IdGenerator;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.util.IntrospectionSupport;
-import org.apache.servicemix.jbi.util.URISupport;
 
 /**
  * Deploys the camel endpoints within JBI

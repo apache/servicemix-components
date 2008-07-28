@@ -26,7 +26,7 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 

@@ -32,7 +32,11 @@
     <bean id="servicemix-camel" class="org.apache.servicemix.camel.CamelJbiComponent">
     </bean>
 
-    <osgi:service ref="servicemix-camel" interface="javax.jbi.component.Component">
+    <osgi:service ref="servicemix-camel">
+        <osgi:interfaces>
+            <value>javax.jbi.component.Component</value>
+            <value>org.apache.camel.Component</value>
+        </osgi:interfaces>
         <osgi:service-properties>
             <entry key="NAME" value="servicemix-camel" />
             <entry key="TYPE" value="service-engine" />

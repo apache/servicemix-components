@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.common.util.URIResolver;
 
 /**
  * A
