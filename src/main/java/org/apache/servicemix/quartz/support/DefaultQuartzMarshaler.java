@@ -27,8 +27,8 @@ import javax.xml.transform.dom.DOMSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.apache.servicemix.components.util.MarshalerSupport;
-import org.apache.servicemix.jbi.util.DOMUtil;
+import org.apache.servicemix.common.util.DOMUtil;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -39,9 +39,34 @@ import org.quartz.JobExecutionException;
  *
  * @version $Revision$
  */
-public class DefaultQuartzMarshaler extends MarshalerSupport implements QuartzMarshaler {
+public class DefaultQuartzMarshaler implements QuartzMarshaler {
 
-    public void populateNormalizedMessage(NormalizedMessage message, JobExecutionContext context) 
+    private SourceTransformer transformer;
+
+    /**
+     * Converts the value to a String
+     *
+     * @param value the value to be coerced into a string
+     * @return the value as a string or null if it cannot be converted
+     */
+    protected String asString(Object value) {
+        return value != null ? value.toString() : null;
+    }
+
+    // Properties
+    //-------------------------------------------------------------------------
+    public SourceTransformer getTransformer() {
+        if (transformer == null) {
+            transformer = new SourceTransformer();
+        }
+        return transformer;
+    }
+
+    public void setTransformer(SourceTransformer transformer) {
+        this.transformer = transformer;
+    }
+
+    public void populateNormalizedMessage(NormalizedMessage message, JobExecutionContext context)
         throws JobExecutionException, MessagingException {
 
         JobDetail detail = context.getJobDetail();
