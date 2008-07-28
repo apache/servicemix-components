@@ -66,6 +66,13 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      */
     private int jettyClientThreadPoolSize = 16;
     
+    /** 
+     * Configuration to switch from shared jetty client for all HttpProviderEndpoints to
+     * jetty client per HttpProviderEndpoint. It's default value is false.
+     */
+    
+    private boolean jettyClientPerProvider;
+    
     /**
      * Maximum number of concurrent requests to the same host.
      */
@@ -300,6 +307,15 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         this.jettyClientThreadPoolSize = jettyClientThreadPoolSize;
         save();
     }
+    
+    public boolean isJettyClientPerProvider() {
+        return jettyClientPerProvider;
+     }
+  
+     public void setJettyClientPerProvider(boolean jettyClientPerProvider) {
+        this.jettyClientPerProvider = jettyClientPerProvider;
+        save();
+     }
 
     public int getMaxConnectionsPerHost() {
         return maxConnectionsPerHost;
@@ -401,6 +417,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     public void save() {
         setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         setProperty(componentName + ".jettyClientThreadPoolSize", Integer.toString(jettyClientThreadPoolSize));
+        setProperty(componentName + ".jettyClientPerProvider", Boolean.toString(jettyClientPerProvider));        
         setProperty(componentName + ".jettyConnectorClassName", jettyConnectorClassName);
         setProperty(componentName + ".streamingEnabled", Boolean.toString(streamingEnabled));
         setProperty(componentName + ".maxConnectionsPerHost", Integer.toString(maxConnectionsPerHost));
@@ -464,6 +481,9 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         }
         if (properties.getProperty(componentName + ".jettyClientThreadPoolSize") != null) {
             jettyClientThreadPoolSize = Integer.parseInt(properties.getProperty(componentName + ".jettyClientThreadPoolSize"));
+        }
+        if (properties.getProperty(componentName + ".jettyClientPerProvider") != null) {
+            jettyClientPerProvider = Boolean.valueOf(properties.getProperty(componentName + ".jettyClientPerProvider")).booleanValue();
         }
         if (properties.getProperty(componentName + ".jettyConnectorClassName") != null) {
             jettyConnectorClassName = properties.getProperty(componentName + ".jettyConnectorClassName");

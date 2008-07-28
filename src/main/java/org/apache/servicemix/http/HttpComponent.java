@@ -162,6 +162,17 @@ public class HttpComponent extends DefaultComponent {
         return connectionPool;
     }
     
+    public org.mortbay.jetty.client.HttpClient getNewJettyClient(HttpComponent comp) throws Exception {
+        org.mortbay.jetty.client.HttpClient tempClient = new org.mortbay.jetty.client.HttpClient();
+        BoundedThreadPool btp = new BoundedThreadPool();
+        btp.setMaxThreads(comp.getConfiguration().getJettyClientThreadPoolSize());
+        tempClient.setThreadPool(btp);
+        tempClient.setConnectorType                
+            (org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
+        tempClient.start();
+        return tempClient;
+    }
+    
     public void setConnectionPool(org.mortbay.jetty.client.HttpClient connectionPool) {
         this.connectionPool = connectionPool;
     }
@@ -228,12 +239,7 @@ public class HttpComponent extends DefaultComponent {
         }
         // Create connectionPool
         if (connectionPool == null) {
-            connectionPool = new org.mortbay.jetty.client.HttpClient();
-            BoundedThreadPool btp = new BoundedThreadPool();
-            btp.setMaxThreads(this.configuration.getJettyClientThreadPoolSize());
-            connectionPool.setThreadPool(btp);
-            connectionPool.setConnectorType(org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
-            connectionPool.start();
+            connectionPool = getNewJettyClient(this);
         }
         // Create serverManager
         if (configuration.isManaged()) {
@@ -246,6 +252,7 @@ public class HttpComponent extends DefaultComponent {
         server.setConfiguration(configuration);
         server.init();
     }
+    
 
     protected void doShutDown() throws Exception {
         super.doShutDown();

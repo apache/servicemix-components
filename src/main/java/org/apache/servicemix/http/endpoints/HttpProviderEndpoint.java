@@ -32,6 +32,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
+import org.mortbay.jetty.client.HttpClient;
 
 /**
  * 
@@ -46,6 +47,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
     private HttpProviderMarshaler marshaler;
     private String locationURI;
     private int clientSoTimeout = 60000;
+    private HttpClient jettyClient;
     
     public HttpProviderEndpoint() {
         super();
@@ -146,11 +148,18 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         }
     }
 
-    protected org.mortbay.jetty.client.HttpClient getConnectionPool() {
-        HttpComponent comp =  (HttpComponent) getServiceUnit().getComponent();
-        org.mortbay.jetty.client.HttpClient client = comp.getConnectionPool();
-        client.setSoTimeout(getClientSoTimeout());  
-        return client;
+    protected org.mortbay.jetty.client.HttpClient getConnectionPool() throws Exception {
+        if (jettyClient == null) {
+            HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+            if (comp.getConfiguration().isJettyClientPerProvider()) {
+                jettyClient = comp.getNewJettyClient(comp);
+            } else {
+                //return shared client
+                jettyClient = comp.getConnectionPool();
+            }
+            jettyClient.setSoTimeout(getClientSoTimeout());
+        }
+        return jettyClient;
     }
     
     protected class Exchange extends SmxHttpExchange {
@@ -169,14 +178,13 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         }
     }
 
-    public int getClientSoTimeout() { 
-        return clientSoTimeout; 
-    } 
+    public int getClientSoTimeout() {
+        return clientSoTimeout;
+    }
 
-    public void setClientSoTimeout(int clientTimeout) { 
-        this.clientSoTimeout = clientTimeout; 
-    } 
-
+    public void setClientSoTimeout(int clientTimeout) {
+        this.clientSoTimeout = clientTimeout;
+    }
     public void validate() throws DeploymentException {
         super.validate();
         if (marshaler == null) {
