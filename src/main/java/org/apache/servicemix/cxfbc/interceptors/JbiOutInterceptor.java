@@ -33,6 +33,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
 import org.apache.cxf.endpoint.Endpoint;
@@ -163,7 +164,12 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
             attachmentList.add(attachment);
         }
         message.setAttachments(attachmentList);
-        message.put(Message.CONTENT_TYPE, "application/soap+xml");
+        if (message instanceof SoapMessage) {
+            SoapMessage soapMessage = (SoapMessage)message;
+            SoapVersion soapVersion = soapMessage.getVersion();
+            message.put(Message.CONTENT_TYPE, soapVersion.getContentType());
+        }
+        
     }
 
     /**
