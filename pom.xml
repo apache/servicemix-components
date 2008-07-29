@@ -42,6 +42,19 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+
+    <servicemix.osgi.import>
+      org.apache.servicemix.common,
+      org.apache.servicemix.common.osgi,
+      org.apache.servicemix.executors.impl,
+      org.apache.xbean.spring.context.v2,
+      org.springframework.beans.factory.xml,
+      *
+    </servicemix.osgi.import>
+    <servicemix.osgi.export>
+      org.apache.servicemix.osworkflow*;version=${project.version},
+      META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.osworkflow
+    </servicemix.osgi.export>
   </properties>
 
   <dependencies>
@@ -104,7 +117,6 @@
         <extensions>true</extensions>
         <configuration>
           <type>service-engine</type>
-          <bootstrap>org.apache.servicemix.osworkflow.OSWorkflowBootstrap</bootstrap>
           <component>org.apache.servicemix.osworkflow.OSWorkflowComponent</component>
         </configuration>
       </plugin>

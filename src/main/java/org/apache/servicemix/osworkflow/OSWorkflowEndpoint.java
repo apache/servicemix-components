@@ -18,39 +18,30 @@ package org.apache.servicemix.osworkflow;
 
 import java.util.HashMap;
 
-import javax.jbi.component.ComponentContext;
-import javax.jbi.management.DeploymentException;
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchange.Role;
-import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.executors.Executor;
 
 /**
  * @org.apache.xbean.XBean element="endpoint"
  * 
  * @author lhe
  */
-public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
+public class OSWorkflowEndpoint extends ProviderEndpoint {
+
     private static final long TIME_OUT = 30000;
-
-    private ServiceEndpoint activated;
-
-    private DeliveryChannel channel;
-
-    private MessageExchangeFactory exchangeFactory;
 
     private String workflowName;
 
@@ -58,79 +49,19 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
 
     private int action;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.Endpoint#getRole()
-     */
-    public Role getRole() {
-        return Role.PROVIDER;
-    }
+    private Executor executor;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.Endpoint#activate()
-     */
-    public void activate() throws Exception {
-        logger = this.serviceUnit.getComponent().getLogger();
-        ComponentContext ctx = getServiceUnit().getComponent()
-                .getComponentContext();
-        channel = ctx.getDeliveryChannel();
-        exchangeFactory = channel.createExchangeFactory();
-        activated = ctx.activateEndpoint(service, endpoint);
-        start();
-    }
+    private SourceTransformer sourceTransformer = new SourceTransformer();
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.Endpoint#deactivate()
-     */
-    public void deactivate() throws Exception {
-        stop();
-        ServiceEndpoint ep = activated;
-        activated = null;
-        ComponentContext ctx = getServiceUnit().getComponent()
-                .getComponentContext();
-        ctx.deactivateEndpoint(ep);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.Endpoint#getProcessor()
-     */
-    public ExchangeProcessor getProcessor() {
-        return this;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.Endpoint#validate()
-     */
-    public void validate() throws DeploymentException {
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.ExchangeProcessor#start()
-     */
     public void start() throws Exception {
-        // initialize the workflow manager
-        WorkflowManager.getInstance();
+        super.start();
+        OSWorkflowComponent component = (OSWorkflowComponent) getServiceUnit().getComponent();
+        executor = component.getExecutorFactory().createExecutor("component." + component.getComponentName() + "." + EndpointSupport.getKey(this));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.ExchangeProcessor#stop()
-     */
-    public void stop() {
-        // shut down first finishing running threads
-        WorkflowManager.getInstance().prepareShutdown(true);
+    public void stop() throws Exception {
+        executor.shutdown();
+        super.stop();
     }
 
     /*
@@ -162,8 +93,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
             onProviderExchange(exchange);
         } else {
             // Unknown role
-            throw new MessagingException(
-                    "OSWorkflowEndpoint.onMessageExchange(): Unknown role: "
+            throw new MessagingException("OSWorkflowEndpoint.onMessageExchange(): Unknown role: "
                             + exchange.getRole());
         }
     }
@@ -178,12 +108,10 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
         throws MessagingException {
         // Out message
         if (exchange.getMessage("out") != null) {
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
+            done(exchange);
         } else if (exchange.getFault() != null) {
             //Fault message
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
+            done(exchange);
         } else {
             //This is not compliant with the default MEPs
             throw new MessagingException(
@@ -208,8 +136,7 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
             return;
         } else if (exchange.getFault() != null) {
             //Fault message
-            exchange.setStatus(ExchangeStatus.DONE);
-            channel.send(exchange);
+            done(exchange);
         } else {
             NormalizedMessage in = exchange.getMessage("in");
 
@@ -222,46 +149,9 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
                 OSWorkflow osWorkflow = new OSWorkflow(this, this.workflowName,
                         this.action, new HashMap(), this.caller, exchange);
 
-                if (exchange instanceof InOnly
-                        || exchange instanceof RobustInOnly) {
-                    // do start the workflow in separate thread
-                    try {
-                        WorkflowManager.getInstance().executeWorkflow(
-                                osWorkflow);
-                    } catch (Exception ex) {
-                        logger.error(ex);
-                    }
-                } else {
-                    // synchronous processing, keep state ACTIVE
-                    // do start the workflow and join the thread
-                    try {
-                        osWorkflow.start();
-                        osWorkflow.join();
-                    } catch (Exception ex) {
-                        logger.error(ex);
-                    }
-                }
+                executor.execute(osWorkflow);
             }
         }
-    }
-
-    /**
-     * returns the delivery channel for the endpoint
-     * 
-     * @return the delivery channel
-     */
-    public DeliveryChannel getChannel() {
-
-        return this.channel;
-    }
-
-    /**
-     * returns the message exchange factory
-     * 
-     * @return the message exchange factory
-     */
-    public MessageExchangeFactory getMessageExchangeFactory() {
-        return this.exchangeFactory;
     }
 
     /**
@@ -277,12 +167,11 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      */
     public boolean sendMessage(QName service, Source source)
         throws MessagingException {
-        InOnly inOnly = channel.createExchangeFactoryForService(service)
-                .createInOnlyExchange();
+        InOnly inOnly = getChannel().createExchangeFactoryForService(service).createInOnlyExchange();
         NormalizedMessage msg = inOnly.createMessage();
         msg.setContent(source);
         inOnly.setInMessage(msg);
-        if (channel.sendSync(inOnly)) {
+        if (getChannel().sendSync(inOnly)) {
             return inOnly.getStatus() == ExchangeStatus.DONE;
         } else {
             return false;
@@ -302,22 +191,15 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      */
     public Source sendRequest(QName service, Source source)
         throws MessagingException {
-        InOut inOut = channel.createExchangeFactoryForService(service)
-                .createInOutExchange();
+        InOut inOut = getChannel().createExchangeFactoryForService(service).createInOutExchange();
         NormalizedMessage msg = inOut.createMessage();
         msg.setContent(source);
         inOut.setInMessage(msg);
 
-        if (channel.sendSync(inOut)) {
-            SourceTransformer sourceTransformer = new SourceTransformer();
-
+        if (getChannel().sendSync(inOut)) {
             try {
-                Source result = sourceTransformer.toDOMSource(inOut
-                        .getOutMessage().getContent());
-
-                inOut.setStatus(ExchangeStatus.DONE);
-                channel.send(inOut);
-
+                Source result = sourceTransformer.toDOMSource(inOut.getOutMessage().getContent());
+                done(inOut);
                 return result;
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -341,12 +223,11 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
      */
     public MessageExchange sendRawInOutRequest(QName service, Source source)
         throws MessagingException {
-        InOut inOut = channel.createExchangeFactoryForService(service)
-                .createInOutExchange();
+        InOut inOut = getChannel().createExchangeFactoryForService(service).createInOutExchange();
         NormalizedMessage msg = inOut.createMessage();
         msg.setContent(source);
         inOut.setInMessage(msg);
-        if (channel.sendSync(inOut)) {
+        if (getChannel().sendSync(inOut)) {
             return inOut;
         } else {
             return null;
@@ -368,11 +249,9 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
         MessageExchange exchange = null;
 
         if (inOut) {
-            exchange = channel.createExchangeFactoryForService(qname)
-                    .createInOutExchange();
+            exchange = getChannel().createExchangeFactoryForService(qname).createInOutExchange();
         } else {
-            exchange = channel.createExchangeFactoryForService(qname)
-                    .createInOnlyExchange();
+            exchange = getChannel().createExchangeFactoryForService(qname).createInOnlyExchange();
         }
 
         return exchange;
@@ -380,18 +259,17 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
 
     /**
      * sends a done to the channel
-     * 
+     *
      * @param ex
      * @throws MessagingException
      */
     public void done(MessageExchange ex) throws MessagingException {
-        ex.setStatus(ExchangeStatus.DONE);
-        channel.send(ex);
+        super.done(ex);
     }
 
     /**
      * sends a msg to the channel
-     * 
+     *
      * @param ex
      * @param sync
      * @throws MessagingException
@@ -399,21 +277,20 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
     public void send(MessageExchange ex, boolean sync)
         throws MessagingException {
         if (sync) {
-            channel.sendSync(ex, TIME_OUT);
+            getChannel().sendSync(ex, TIME_OUT);
         } else {
-            channel.send(ex);
+            getChannel().send(ex);
         }
     }
 
     /**
      * sends a error to the channel
-     * 
+     *
      * @param ex
      * @throws MessagingException
      */
     public void fail(MessageExchange ex) throws MessagingException {
-        ex.setStatus(ExchangeStatus.ERROR);
-        channel.send(ex);
+        super.fail(ex, new Exception("Failure"));
     }
 
     /**
@@ -474,4 +351,5 @@ public class OSWorkflowEndpoint extends Endpoint implements ExchangeProcessor {
     public void postWorkflow() {
         // nothing for now
     }
+
 }

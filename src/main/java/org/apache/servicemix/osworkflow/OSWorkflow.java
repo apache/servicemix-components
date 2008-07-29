@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author lhe
  */
-public class OSWorkflow extends Thread {
+public class OSWorkflow implements Runnable {
     
 
     public static final String KEY_EXCHANGE = "exchange";
@@ -89,8 +89,6 @@ public class OSWorkflow extends Thread {
      */
     public OSWorkflow(OSWorkflowEndpoint ep, String workflowName, int action,
             Map map, String caller, MessageExchange exchange) {
-        super(workflowName);
-        setDaemon(true);
 
         this.endpoint = ep; // remember the endpoint which called the osworkflow
         this.osWorkflowName = workflowName;
@@ -105,10 +103,7 @@ public class OSWorkflow extends Thread {
         this.map.put(KEY_CALLER, this.caller);
         this.map.put(KEY_IN_MESSAGE, this.exchange.getMessage("in"));
         this.map.put(KEY_EXCHANGE, this.exchange);
-        this.map
-                .put(
-                        KEY_ASYNC_PROCESSING,
-                        this.exchange instanceof InOnly || this.exchange instanceof RobustInOnly);
+        this.map.put(KEY_ASYNC_PROCESSING, this.exchange instanceof InOnly || this.exchange instanceof RobustInOnly);
     }
 
     /**
@@ -121,26 +116,26 @@ public class OSWorkflow extends Thread {
         this.osWorkflowInstance = new BasicWorkflow(this.caller);
         DefaultConfiguration config = new DefaultConfiguration();
         this.osWorkflowInstance.setConfiguration(config);
-        long wfId = this.osWorkflowInstance.initialize(
-                this.osWorkflowName, this.action, this.map);
+        long wfId = this.osWorkflowInstance.initialize(this.osWorkflowName, this.action, this.map);
         return wfId;
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see java.lang.Thread#run()
+     * @see java.lang.Runnable#run()
      */
-    @Override
     public void run() {
         // call the endpoint method for init actions
         this.endpoint.preWorkflow();
 
-        log.debug("Starting workflow...");
-        log.debug("Name:       " + this.osWorkflowName);
-        log.debug("Action:     " + this.action);
-        log.debug("Caller:     " + this.caller);
-        log.debug("Map:        " + this.map);
+        if (log.isDebugEnabled()) {
+            log.debug("Starting workflow...");
+            log.debug("Name:       " + this.osWorkflowName);
+            log.debug("Action:     " + this.action);
+            log.debug("Caller:     " + this.caller);
+            log.debug("Map:        " + this.map);
+        }
 
         // loop as long as there are more actions to do and the workflow is not
         // finished or aborted
@@ -157,8 +152,7 @@ public class OSWorkflow extends Thread {
             }
 
             // determine the available actions
-            int[] availableActions = this.osWorkflowInstance
-                    .getAvailableActions(this.workflowId, this.map);
+            int[] availableActions = this.osWorkflowInstance.getAvailableActions(this.workflowId, this.map);
 
             // check if there are more actions available
             if (availableActions.length == 0) {
@@ -172,8 +166,7 @@ public class OSWorkflow extends Thread {
                 log.debug("call action " + nextAction);
                 try {
                     // call the action
-                    this.osWorkflowInstance.doAction(this.workflowId,
-                            nextAction, this.map);
+                    this.osWorkflowInstance.doAction(this.workflowId,nextAction, this.map);
                 } catch (InvalidInputException iiex) {
                     log.error(iiex);
                     aborted = true;
@@ -184,13 +177,15 @@ public class OSWorkflow extends Thread {
             }
         }
 
-        log.debug("Stopping workflow...");
-        log.debug("Name:       " + this.osWorkflowName);
-        log.debug("Action:     " + this.action);
-        log.debug("Caller:     " + this.caller);
-        log.debug("Map:        " + this.map);
-        log.debug("WorkflowId: " + this.workflowId);
-        log.debug("End state:  " + (finished ? "Finished" : "Aborted"));
+        if (log.isDebugEnabled()) {
+            log.debug("Stopping workflow...");
+            log.debug("Name:       " + this.osWorkflowName);
+            log.debug("Action:     " + this.action);
+            log.debug("Caller:     " + this.caller);
+            log.debug("Map:        " + this.map);
+            log.debug("WorkflowId: " + this.workflowId);
+            log.debug("End state:  " + (finished ? "Finished" : "Aborted"));
+        }
 
         // call the endpoint method for cleanup actions or message exchange
         this.endpoint.postWorkflow();
