@@ -20,6 +20,7 @@ import java.net.URL;
 
 import javax.xml.namespace.QName;
 
+import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorImpl;
 import org.apache.cxf.calculator.CalculatorPortType;
 import org.apache.cxf.calculator.CalculatorService;
@@ -63,6 +64,12 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
         CalculatorPortType port = service1.getCalculatorPort();
         int ret = port.add(1, 2);
         assertEquals(ret, 3);
+        try {
+            port.add(1, -2);
+            fail("should get exception");
+        } catch (AddNumbersFault e) {
+            assertEquals(e.getMessage(), "Negative number cant be added!");
+        }
 
     }
 
