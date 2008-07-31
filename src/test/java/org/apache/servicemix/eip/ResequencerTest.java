@@ -22,6 +22,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.components.util.CopyTransformer;
 import org.apache.servicemix.eip.patterns.Resequencer;
 import org.apache.servicemix.eip.support.resequence.DefaultComparator;
 import org.apache.servicemix.tck.MessageList;
@@ -53,6 +54,19 @@ public class ResequencerTest extends AbstractEIPTest {
     public void testAsync() throws Exception {
         int numMessages = 5;
         ReceiverComponent receiver = activateReceiver(TARGET_NAME);
+        //
+        // This test depends on copyProperties of the CopyTransformer
+        // singleton being set to true (the default).  However, if the
+        // SpringConfigurationTest runs before this test (as it does on
+        // the ibm jdk) copyProperties will be configured to false.  So,
+        // explicitly ensure it is set to the default value of true here.
+        //
+        if (receiver.getMessageTransformer() instanceof CopyTransformer) {
+            CopyTransformer copyTransformer = (CopyTransformer)receiver.getMessageTransformer();
+            if (!copyTransformer.isCopyProperties()) {
+                copyTransformer.setCopyProperties(true);
+            }
+        }
         client.send(createTestMessageExchange(4));
         client.send(createTestMessageExchange(1));
         client.send(createTestMessageExchange(3));

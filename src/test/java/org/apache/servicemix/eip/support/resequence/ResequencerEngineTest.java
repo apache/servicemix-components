@@ -32,9 +32,6 @@ public class ResequencerEngineTest extends TestCase {
     
     private LinkedBlockingQueue<Integer> queue;
     
-    public void setUp() throws Exception {
-    }
-
     public void tearDown() throws Exception {
         if (resequencer != null) {
             resequencer.stop();
