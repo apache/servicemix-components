@@ -29,4 +29,6 @@ public interface EndpointWrapper {
 
     Endpoint getEndpoint();
 
+    ClassLoader getClassLoader();
+
 }

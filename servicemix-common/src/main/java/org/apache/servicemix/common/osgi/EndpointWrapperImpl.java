@@ -21,12 +21,19 @@ import org.apache.servicemix.common.Endpoint;
 public class EndpointWrapperImpl implements EndpointWrapper {
 
     private final Endpoint endpoint;
+    private final ClassLoader classLoader;
 
-    public EndpointWrapperImpl(Endpoint endpoint) {
+    public EndpointWrapperImpl(Endpoint endpoint, ClassLoader classLoader) {
         this.endpoint = endpoint;
+        this.classLoader = classLoader;
     }
 
     public Endpoint getEndpoint() {
         return endpoint;
     }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
 }

@@ -19,8 +19,12 @@ package org.apache.servicemix.common.osgi;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.jbi.management.DeploymentException;
+
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.id.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,7 +33,7 @@ public class EndpointTracker {
     private static final Log LOGGER = LogFactory.getLog(EndpointTracker.class);
 
     protected DefaultComponent component;
-    protected Map<EndpointWrapper, Endpoint> endpoints = new ConcurrentHashMap<EndpointWrapper, Endpoint>();
+    protected Map<EndpointWrapper, OsgiServiceUnit> endpoints = new ConcurrentHashMap<EndpointWrapper, OsgiServiceUnit>();
 
     public DefaultComponent getComponent() {
         return component;
@@ -48,8 +52,19 @@ public class EndpointTracker {
             if (LOGGER.isDebugEnabled()) {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
-            endpoints.put(wrapper, endpoint);
-            component.addEndpoint(endpoint);
+            OsgiServiceUnit su = new OsgiServiceUnit(component, endpoint, wrapper.getClassLoader());
+            endpoints.put(wrapper, su);
+            component.getRegistry().registerServiceUnit(su);
+            if (component.isStarted()) {
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
+                    su.start();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(cl);
+                }
+            }
+
         }
     }
 
@@ -58,12 +73,47 @@ public class EndpointTracker {
             LOGGER.debug("[" + component.getComponentName() + "] Endpoint unregistered with properties: " + properties);
         }
         // Do not access the wrapper using wrapper.getEndpoint(), has the osgi context may already be shut down
-        Endpoint endpoint = endpoints.remove(wrapper);
-        if (endpoint != null && component.isKnownEndpoint(endpoint)) {
+        OsgiServiceUnit su = endpoints.remove(wrapper);
+        if (su != null && component.isKnownEndpoint(su.getEndpoint())) {
             if (LOGGER.isDebugEnabled()) {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
-            component.removeEndpoint(endpoint);
+            try {
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
+                    su.stop();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(cl);
+                }
+            } finally {
+                component.getRegistry().unregisterServiceUnit(su);
+            }
+        }
+    }
+
+    public static class OsgiServiceUnit extends ServiceUnit {
+        private static final IdGenerator idGenerator = new IdGenerator();
+        private final Endpoint endpoint;
+        private final ClassLoader classLoader;
+        public OsgiServiceUnit(DefaultComponent component, Endpoint endpoint, ClassLoader classLoader) throws DeploymentException {
+            this.component = component;
+            this.name = idGenerator.generateSanitizedId();
+            this.endpoint = endpoint;
+            this.classLoader = classLoader;
+            this.endpoint.setServiceUnit(this);
+            this.endpoint.validate();
+            addEndpoint(this.endpoint);
+        }
+        public Endpoint getEndpoint() {
+            return endpoint;
+        }
+        public ClassLoader  getConfigurationClassLoader() {
+            if (classLoader != null) {
+                return classLoader;
+            } else {
+                return super.getConfigurationClassLoader();
+            }
         }
     }
 

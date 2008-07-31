@@ -51,7 +51,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
             eps = this.applicationContext.getBeansOfType(Endpoint.class).values();
         }
         for (Endpoint ep : eps) {
-            EndpointWrapper wrapper = new EndpointWrapperImpl(ep);
+            EndpointWrapper wrapper = new EndpointWrapperImpl(ep, applicationContext.getClassLoader());
             Dictionary props = new Properties();
             bundleContext.registerService(EndpointWrapper.class.getName(), wrapper, props);
         }
