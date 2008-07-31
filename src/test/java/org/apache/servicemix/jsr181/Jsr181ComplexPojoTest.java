@@ -38,7 +38,6 @@ import org.w3c.dom.traversal.NodeIterator;
 
 import junit.framework.TestCase;
 
-import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -50,6 +49,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.view.DotViewEndpointListener;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.xpath.CachedXPathAPI;
 
 public class Jsr181ComplexPojoTest extends TestCase {
 
