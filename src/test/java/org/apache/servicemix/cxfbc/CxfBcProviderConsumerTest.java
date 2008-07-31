@@ -68,7 +68,7 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
             port.add(1, -2);
             fail("should get exception");
         } catch (AddNumbersFault e) {
-            assertEquals(e.getMessage(), "Negative number cant be added!");
+            assertEquals(e.getFaultInfo().getMessage(), "Negative number cant be added!");
         }
 
     }
