@@ -61,6 +61,6 @@ public class DefaultScriptingMarshaler implements ScriptingMarshalerSupport {
      *      javax.jbi.messaging.MessageExchange)
      */
     public InputStream getScriptCode(ScriptingEndpoint endpoint, MessageExchange exchange) throws IOException {
-        return endpoint.getScript().getInputStream();
+        return null;
     }
 }

@@ -33,8 +33,9 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.CompiledScript;
+import javax.script.Compilable;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
@@ -71,6 +72,7 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     private ScriptingMarshalerSupport marshaler = new DefaultScriptingMarshaler();
     private Resource script;
     private Logger scriptLogger;
+    private CompiledScript compiledScript;
 
     /**
      * @return
@@ -205,10 +207,6 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 done(exchange);
             } else {
                 Bindings scriptBindings = engine.createBindings();
-
-                scriptBindings.put(KEY_IN_EXCHANGE, exchange);
-
-                // exec script engine code to do its thing for this
                 scriptBindings.put(KEY_CONTEXT, getContext());
                 scriptBindings.put(KEY_IN_EXCHANGE, exchange);
                 scriptBindings.put(KEY_IN_MSG, exchange.getMessage("in"));
@@ -228,55 +226,58 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 scriptBindings.put(KEY_USER_BINDINGS, bindings);
                 scriptBindings.put(KEY_COMPONENT_NAMESPACE, scriptBindings);
 
-                // call back method for custom marshaler to inject it's own
-                // beans
+                // call back method for custom marshaler to inject it's own beans
                 this.marshaler.registerUserBeans(this, exchange, scriptBindings);
 
-                // get the input stream to the script code
+                // get the input stream to the script code from the marshaler
                 InputStream is = null;
                 try {
-                    // gets the input stream to the script code
                     is = this.marshaler.getScriptCode(this, exchange);
                 } catch (IOException ioex) {
-                    logger
-                        .error("Unable to load script in marshaler: " + this.marshaler.getClass().getName(),
-                               ioex);
-                    // io error getting the script code
+                    logger.error("Unable to load script in marshaler: "
+                                    + this.marshaler.getClass().getName(), ioex);
+                }
+                // if the marshaler does not return a valid input stream, use the script property to load it
+                if (is != null) {
                     try {
-                        is = this.script.getInputStream();
-                    } catch (IOException i2) {
-                        logger.error("Unable to load the script " + script.getFilename(), i2);
+                        // execute the script
+                        this.engine.eval(new InputStreamReader(is), scriptBindings);
+                    } catch (ScriptException ex) {
+                        logger.error("Error executing the script: " + ex.getFileName() + " at line: "
+                                     + ex.getLineNumber() + " and column: " + ex.getColumnNumber(), ex);
+                        throw ex;
+                    }
+                } else {
+                    try {
+                        // use the compiled script interfaces if possible
+                        if (compiledScript == null && engine instanceof Compilable) {
+                            compiledScript = ((Compilable) engine).compile(new InputStreamReader(this.script.getInputStream()));
+                        }
+                        if (compiledScript != null) {
+                            // execute the script
+                            compiledScript.eval(scriptBindings);
+                        } else {
+                            // execute the script
+                            engine.eval(new InputStreamReader(this.script.getInputStream()), scriptBindings);
+                        }
+                    } catch (IOException ioex) {
+                        logger.error("Unable to load the script " + script.getFilename(), ioex);
                         throw new MessagingException("Unable to load the script " + script.getFilename());
+                    } catch (ScriptException ex) {
+                        logger.error("Error executing the script: " + ex.getFileName() + " at line: "
+                                     + ex.getLineNumber() + " and column: " + ex.getColumnNumber(), ex);
+                        throw ex;
                     }
                 }
 
-                // create a reader for the stream
-                Reader reader = new InputStreamReader(is);
-
-                try {
-                    // execute the script
-                    this.engine.eval(reader, scriptBindings);
-
-                    exchange = (MessageExchange)scriptBindings.get(KEY_IN_EXCHANGE);
-
-                    // on InOut exchanges we always do answer
-                    if (exchange instanceof InOut) {
-                        if (!isDisableOutput()) {
-                            send(exchange);
-                        }
-                    } else {
-                        // if InOnly exchange then we only answer if user wants
-                        // to
-                        done(exchange);
+                // on InOut exchanges we always do answer
+                if (exchange instanceof InOut) {
+                    if (!isDisableOutput()) {
+                        send(exchange);
                     }
-                } catch (ScriptException ex) {
-                    logger.error("Error executing the script: " + ex.getFileName() + " at line: "
-                                 + ex.getLineNumber() + " and column: " + ex.getColumnNumber(), ex);
-                    fail(exchange, ex);
-                } catch (NullPointerException ex) {
-                    logger.error("Error executing the script: " + script.getFilename()
-                                 + ". A unexpected NullPointerException occured.", ex);
-                    fail(exchange, ex);
+                } else {
+                    // if InOnly exchange then we only answer if user wants to
+                    done(exchange);
                 }
             }
         } else { 
@@ -363,7 +364,7 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
         super.start();
         try {
             // lazy instatiation
-            this.manager = new ScriptEngineManager();
+            this.manager = new ScriptEngineManager(serviceUnit.getConfigurationClassLoader());
 
             if (script == null) {
                 throw new IllegalArgumentException("Property script must be set");
@@ -371,11 +372,10 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 // initialize the script engine
                 if (this.language.equalsIgnoreCase(LANGUAGE_AUTODETECT)) {
                     // detect language by file extension
-                    this.engine = this.manager.getEngineByExtension(FilenameUtils.getExtension(script
-                        .getFilename()));
+                    this.engine = this.manager.getEngineByExtension(getExtension(script.getFilename()));
                     if (this.engine == null) {
                         throw new RuntimeException("There is no script engine registered for extension "
-                                                   + FilenameUtils.getExtension(script.getFilename()));
+                                                   + getExtension(script.getFilename()));
                     }
                 } else {
                     // use predefined language from xbean
@@ -409,4 +409,43 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
 
         super.stop();
     }
+
+    //
+    // utility
+    //
+
+    private static final char UNIX_SEPARATOR = '/';
+    private static final char WINDOWS_SEPARATOR = '\\';
+    public static final char EXTENSION_SEPARATOR = '.';
+
+    public static String getExtension(String filename) {
+        if (filename == null) {
+            return null;
+        }
+        int index = indexOfExtension(filename);
+        if (index == -1) {
+            return "";
+        } else {
+            return filename.substring(index + 1);
+        }
+    }
+
+    public static int indexOfExtension(String filename) {
+        if (filename == null) {
+            return -1;
+        }
+        int extensionPos = filename.lastIndexOf(EXTENSION_SEPARATOR);
+        int lastSeparator = indexOfLastSeparator(filename);
+        return (lastSeparator > extensionPos ? -1 : extensionPos);
+    }
+
+    public static int indexOfLastSeparator(String filename) {
+        if (filename == null) {
+            return -1;
+        }
+        int lastUnixPos = filename.lastIndexOf(UNIX_SEPARATOR);
+        int lastWindowsPos = filename.lastIndexOf(WINDOWS_SEPARATOR);
+        return Math.max(lastUnixPos, lastWindowsPos);
+    }
+
 }

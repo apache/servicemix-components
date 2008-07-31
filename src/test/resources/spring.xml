@@ -18,7 +18,7 @@
 	
 -->
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
-	xmlns:scripting="http://org.apache.servicemix/scripting/1.0"
+	xmlns:scripting="http://servicemix.apache.org/scripting/1.0"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:test="urn:test">
 
