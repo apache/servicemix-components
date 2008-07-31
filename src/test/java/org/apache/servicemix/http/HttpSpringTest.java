@@ -95,7 +95,7 @@ public class HttpSpringTest extends SpringTestSupport {
 
     public void testMimeWithHttpClient() throws Exception {
         File f = new File(getClass().getResource("servicemix.jpg").getFile());
-        PostMethod filePost = new PostMethod("http://localhost:8192/Service/");
+        PostMethod filePost = new PostMethod("http://localhost:18192/Service/");
         Part[] parts = {new StringPart("request", "<dummy/>"), new FilePart(f.getName(), f)};
         RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

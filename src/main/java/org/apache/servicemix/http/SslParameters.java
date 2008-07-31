@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.http;
 
+import java.security.Security;
+
 /**
  * This class contains all parameters needed to create an SSL server or client socket.
  * 
@@ -34,11 +36,31 @@ public class SslParameters {
     private String trustStorePassword;
     private String trustStoreType = "JKS";
     private String protocol = "TLS";
-    private String keyManagerFactoryAlgorithm = "SunX509"; // cert algorithm
-    private String trustManagerFactoryAlgorithm = "SunX509"; // cert algorithm
+    private String keyManagerFactoryAlgorithm; // cert algorithm
+    private String trustManagerFactoryAlgorithm; // cert algorithm
     private String provider;
     private boolean wantClientAuth;
     private boolean needClientAuth;
+
+    public SslParameters() {
+        keyManagerFactoryAlgorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
+        if (keyManagerFactoryAlgorithm == null) {
+            // Default to SunX509 only if we aren't using an ibm jdk
+            if ("IBM Corporation".equals(System.getProperty("java.vendor"))) {
+                keyManagerFactoryAlgorithm = "IbmX509";
+            } else {
+                keyManagerFactoryAlgorithm = "SunX509";
+            }
+        }
+        trustManagerFactoryAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
+        if (trustManagerFactoryAlgorithm == null) {
+            if ("IBM Corporation".equals(System.getProperty("java.vendor"))) {
+                trustManagerFactoryAlgorithm = "PKIX";
+            } else {
+                trustManagerFactoryAlgorithm = "SunX509";
+            }
+        }
+    }
 
     /**
      * @return the provider
