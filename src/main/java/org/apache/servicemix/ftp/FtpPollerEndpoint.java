@@ -65,6 +65,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     private ConcurrentMap<String, FtpData> openExchanges = new ConcurrentHashMap<String, FtpData>();
     private QName targetOperation;
     private URI uri;
+    private boolean stateless = true;
 
     protected class FtpData {
         final String file;
@@ -209,12 +210,24 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         this.marshaler = marshaler;
     }
 
-    public QName getTargetOperation() { return targetOperation; }
+    public QName getTargetOperation() {
+        return targetOperation;
+    }
 
-    public void setTargetOperation(QName targetOperation) { this.targetOperation = targetOperation; }
+    public void setTargetOperation(QName targetOperation) {
+        this.targetOperation = targetOperation;
+    }
 
     public void setChangeWorkingDirectory(boolean changeWorkingDirectory) {
         this.changeWorkingDirectory = changeWorkingDirectory;
+    }
+
+    public boolean isStateless() {
+        return stateless;
+    }
+
+    public void setStateless(boolean stateless) {
+        this.stateless = stateless;
     }
 
     // Implementation methods
@@ -316,7 +329,11 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         }
 
         marshaler.readMessage(exchange, message, in, file);
-        this.openExchanges.put(exchange.getExchangeId(), new FtpData(file, ftp, in));
+        if (stateless) {
+            exchange.setProperty(FtpData.class.getName(), new FtpData(file, ftp, in));
+        } else {
+            this.openExchanges.put(exchange.getExchangeId(), new FtpData(file, ftp, in));
+        }
         send(exchange);
     }
 
@@ -325,9 +342,14 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     public void process(MessageExchange exchange) throws Exception {
+        FtpData data;
+        if (stateless) {
+            data = (FtpData) exchange.getProperty(FtpData.class.getName());
+        } else {
+            data = this.openExchanges.remove(exchange.getExchangeId());
+        }
         // check for done or error
-        if (this.openExchanges.containsKey(exchange.getExchangeId())) {
-            FtpData data = this.openExchanges.get(exchange.getExchangeId());
+        if (data != null) {
             logger.debug("Releasing " + data.file);
             try {
                 // Close ftp related stuff
@@ -348,8 +370,6 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                     throw e;
                 }
             } finally {
-                // remove the open exchange
-                openExchanges.remove(exchange.getExchangeId());
                 // unlock the file
                 unlockAsyncFile(data.file);
                 // release ftp client
