@@ -144,11 +144,7 @@ public class SoapMessageMarshalerTest extends TestCase {
 		assertNotNull(msg.getSource());
 		
 		Iterator headers = msg.getHeaders().values().iterator();
-		assertTrue(headers.hasNext());
-		assertNotNull(headers.next());
-		assertTrue(headers.hasNext());
-        checkServiceNameNamespace((DocumentFragment) headers.next());
-		assertFalse(headers.hasNext());
+        checkHeadersForServiceName(headers);
 
         Node node2 = sourceTransformer.toDOMNode(msg.getSource()); 
         checkUserIdNamespace(node2);
@@ -197,12 +193,8 @@ public class SoapMessageMarshalerTest extends TestCase {
         checkUserIdNamespace(sourceTransformer.toDOMNode(msg2.getSource()));
 		assertTrue(msg2.hasHeaders());
 		Iterator headers = msg2.getHeaders().values().iterator();
-		assertTrue(headers.hasNext());
-		assertNotNull(headers.next());
-		assertTrue(headers.hasNext());
-        checkServiceNameNamespace((DocumentFragment) headers.next());
-		assertFalse(headers.hasNext());
-	}
+        checkHeadersForServiceName(headers);
+    }
 
     public void testReadNonSoapMessageWithAttachmentsAndNoSource()  throws Exception {
         Session session = Session.getDefaultInstance(new Properties(), null);
@@ -231,8 +223,25 @@ public class SoapMessageMarshalerTest extends TestCase {
         writer.write(baos);
         log.info(baos.toString());
     }
-  
-	protected void checkUserIdNamespace(Node node) throws Exception {
+
+    private void checkHeadersForServiceName(Iterator headers) throws Exception {
+        CachedXPathAPI cachedXPathAPI = new CachedXPathAPI();
+        boolean foundServiceNameNode = false;
+        int headerCount = 0;
+        while (headers.hasNext()) {
+            headerCount++;
+            DocumentFragment df = (DocumentFragment)headers.next();
+            Element root = (Element)(cachedXPathAPI.selectNodeIterator(df, "//*[local-name() = 'ServiceName']").nextNode());
+            if (root != null) {
+                foundServiceNameNode = true;
+                checkServiceNameNamespace(df);
+            }
+        }
+        assertTrue(foundServiceNameNode);
+        assertEquals(headerCount, 2);
+    }
+
+    protected void checkUserIdNamespace(Node node) throws Exception {
         CachedXPathAPI cachedXPathAPI = new CachedXPathAPI(); 
         NodeIterator iterator = cachedXPathAPI.selectNodeIterator(node, "//*[local-name() = 'userId']"); 
         Element root = (Element) iterator.nextNode(); 

@@ -43,7 +43,6 @@ import org.apache.ws.security.WSUsernameTokenPrincipal;
 import org.apache.ws.security.handler.WSHandlerConstants;
 import org.apache.ws.security.handler.WSHandlerResult;
 import org.springframework.core.io.ClassPathResource;
-import sun.security.x509.X500Name;
 
 public class WSSecurityHandlerTest extends TestCase {
 
@@ -129,8 +128,7 @@ public class WSSecurityHandlerTest extends TestCase {
         assertNotNull(engResult);
         Principal principal = engResult.getPrincipal();
         assertNotNull(principal);
-        assertTrue(principal instanceof X500Name);
-        assertEquals("CN=myAlias", ((X500Name) principal).getName());
+        assertEquals("CN=myAlias", principal.getName());
         assertNotNull(ctx.getInMessage().getSubject());
         assertNotNull(ctx.getInMessage().getSubject().getPrincipals());
         assertTrue(ctx.getInMessage().getSubject().getPrincipals().size() > 0);
@@ -164,8 +162,7 @@ public class WSSecurityHandlerTest extends TestCase {
         assertNotNull(engResult);
         Principal principal = engResult.getPrincipal();
         assertNotNull(principal);
-        assertTrue(principal instanceof X500Name);
-        assertEquals("CN=myAlias", ((X500Name) principal).getName());
+        assertEquals("CN=myAlias", principal.getName());
         assertNotNull(ctx.getInMessage().getSubject());
         assertNotNull(ctx.getInMessage().getSubject().getPrincipals());
         assertTrue(ctx.getInMessage().getSubject().getPrincipals().size() > 0);
