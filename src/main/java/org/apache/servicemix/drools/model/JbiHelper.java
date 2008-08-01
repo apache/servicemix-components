@@ -28,15 +28,13 @@ import javax.xml.transform.Source;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.common.EndpointSupport;
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.common.util.MessageUtil;
+import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.drools.DroolsEndpoint;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.util.MessageUtil;
 import org.drools.FactHandle;
 import org.drools.WorkingMemory;
 
@@ -58,7 +56,6 @@ public class JbiHelper {
         this.endpoint = endpoint;
         this.exchange = new Exchange(exchange, endpoint.getNamespaceContext());
         this.memory = memory;
-        //this.exchangeFactHandle = this.memory.assertObject(this.exchange);
         this.exchangeFactHandle = this.memory.insert(this.exchange);
     }
 
@@ -74,10 +71,6 @@ public class JbiHelper {
         return getContext().getDeliveryChannel();
     }
 
-    public ServiceMixClient getClient() {
-        return new ServiceMixClientFacade(getContext());
-    }
-
     public Exchange getExchange() {
         return exchange;
     }
@@ -87,23 +80,10 @@ public class JbiHelper {
     }
 
     /**
-     * Forwards the inbound message to the given
+     * Forwards the inbound message to the given target
      *
      * @param uri
-     * @param localPart
      */
-    /*
-    public void forward(String uri) throws MessagingException {
-        if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
-            MessageExchange me = getChannel().createExchangeFactory().createExchange(exchange.getPattern());
-            URIResolver.configureExchange(me, getContext(), uri);
-            MessageUtil.transferToIn(in, me);
-            getChannel().sendSync(me);
-        } else {
-            throw new MessagingException("Only InOnly and RobustInOnly exchanges can be forwarded");
-        }
-    }
-    */
     public void route(String uri) throws MessagingException {
         Source src = null;
         routeTo(src, uri);
@@ -204,7 +184,6 @@ public class JbiHelper {
     }
 
     protected void update() {
-        // this.memory.modifyObject(this.exchangeFactHandle, this.exchange);
         this.memory.update(this.exchangeFactHandle, this.exchange);
     }
 

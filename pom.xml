@@ -44,6 +44,19 @@
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
 
     <drools-version>4.0.7</drools-version>
+
+    <servicemix.osgi.import>
+      org.apache.servicemix.common,
+      org.apache.servicemix.common.osgi,
+      org.apache.servicemix.executors.impl,
+      org.apache.xbean.spring.context.v2,
+      org.springframework.beans.factory.xml,
+      *
+    </servicemix.osgi.import>
+    <servicemix.osgi.export>
+      org.apache.servicemix.drools*;version=${project.version},
+      META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.drools
+    </servicemix.osgi.export>
   </properties>
 
   <dependencies>

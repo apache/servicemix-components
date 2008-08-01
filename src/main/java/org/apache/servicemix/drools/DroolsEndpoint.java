@@ -199,7 +199,6 @@ public class DroolsEndpoint extends ProviderEndpoint {
     
     protected WorkingMemory createWorkingMemory(MessageExchange exchange) throws Exception {
         return ruleBase.newStatefulSession();
-        //return ruleBase.newWorkingMemory();
     }
 
     protected void populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
