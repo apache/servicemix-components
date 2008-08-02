@@ -16,28 +16,18 @@
  */
 package org.apache.servicemix.camel;
 
-import java.io.IOException;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Processor;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
 /**
  * A JBI endpoint which when invoked will delegate to a Camel endpoint
@@ -70,9 +60,6 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
         // The component acts as a provider, this means that another component has requested our service
         // As this exchange is active, this is either an in or a fault (out are sent by this component)
         
-        //firstly need transform the content in NormalizedMessage from StreamSource to DomSource
-        //which is supposed to be consumed multiple times
-        transformContent(exchange.getMessage("in"));
         if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
             // Exchange is finished
             if (exchange.getStatus() == ExchangeStatus.DONE) {
@@ -91,14 +78,6 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
         }
     }
 
-    private void transformContent(NormalizedMessage message) throws MessagingException, 
-        TransformerException, ParserConfigurationException, IOException, SAXException {
-        if (message.getContent() instanceof StreamSource) {
-            SourceTransformer st = new SourceTransformer();
-            Node node = st.toDOMNode(message.getContent());
-            message.setContent(new DOMSource(node));
-        }
-    }
 
     protected void handleActiveProviderExchange(MessageExchange exchange) throws Exception {
         // Fault message
