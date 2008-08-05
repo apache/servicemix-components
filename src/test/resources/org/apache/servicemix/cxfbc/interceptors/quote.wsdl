@@ -65,7 +65,7 @@
     <wsdl:operation name="getStockQuote">
       <soap:operation style="rpc"/>
       <wsdl:input name="getStockQuote">
-	      <soap:body use="literal" namespace="http://servicemix.:apache.org/cxfbc/interceptors"/>
+	      <soap:body use="literal" namespace="http://servicemix.apache.org/cxfbc/interceptors"/>
       </wsdl:input>
       <wsdl:output name="getStockQuoteResponse">
 	      <soap:body use="literal"  namespace="http://servicemix.apache.org/cxfbc/interceptors"/>
