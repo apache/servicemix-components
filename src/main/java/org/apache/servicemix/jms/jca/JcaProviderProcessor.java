@@ -20,7 +20,6 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -94,8 +93,7 @@ public class JcaProviderProcessor extends AbstractJmsProcessor {
             }
             MessageProducer producer = session.createProducer(destination);
 
-            NormalizedMessage nm = exchange.getMessage("in");
-            Message msg = fromNMS(nm, session);
+            Message msg = createMessageFromExchange(session, exchange);
             producer.send(msg);
         } finally {
             if (session != null) {

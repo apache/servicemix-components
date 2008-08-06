@@ -16,20 +16,17 @@
  */
 package org.apache.servicemix.jms.multiplexing;
 
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.apache.servicemix.jms.AbstractJmsProcessor;
@@ -38,43 +35,20 @@ import org.apache.servicemix.soap.marshalers.SoapMessage;
 
 public class MultiplexingProviderProcessor extends AbstractJmsProcessor implements MessageListener {
 
-    protected Session session;
-    protected Destination destination;
-    protected Destination replyToDestination;
+    
     protected MessageConsumer consumer;
     protected MessageProducer producer;
-    protected DeliveryChannel channel;
+//    protected DeliveryChannel channel;
 
     public MultiplexingProviderProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
-
+   
     protected void doStart(InitialContext ctx) throws Exception {
-        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
-        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        destination = endpoint.getDestination();
-        if (destination == null) {
-            if (endpoint.getJndiDestinationName() != null) {
-                destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
-            } else if (endpoint.getJmsProviderDestinationName() != null) {
-                if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
-                    destination = session.createQueue(endpoint.getJmsProviderDestinationName());
-                } else {
-                    destination = session.createTopic(endpoint.getJmsProviderDestinationName());
-                }
-            } else {
-                throw new IllegalStateException("No destination provided");
-            }
-        }
-        if (endpoint.getJndiReplyToName() != null) {
-            replyToDestination = (Destination) ctx.lookup(endpoint.getJndiReplyToName());
-        } else if (endpoint.getJmsProviderReplyToName() != null) {
-            if (destination instanceof Queue) {
-                replyToDestination = session.createQueue(endpoint.getJmsProviderReplyToName());
-            } else {
-                replyToDestination = session.createTopic(endpoint.getJmsProviderReplyToName());
-            }
-        } else {
+//        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
+        commonDoStartTasks(ctx);
+        //Create temp destination of no reply destination found.
+        if (endpoint.getJndiReplyToName() == null && endpoint.getJmsProviderReplyToName() == null) {
             if (destination instanceof Queue) {
                 replyToDestination = session.createTemporaryQueue();
             } else {    
@@ -132,8 +106,8 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
-        NormalizedMessage nm = exchange.getMessage("in");
-        Message msg = fromNMS(nm, session);
+        
+        Message msg = createMessageFromExchange(session, exchange);
 
         if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
             synchronized (producer) {

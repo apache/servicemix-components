@@ -19,7 +19,6 @@ package org.apache.servicemix.jms.standard;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
@@ -42,45 +41,14 @@ import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 
 public class StandardProviderProcessor extends AbstractJmsProcessor {
-
-    protected Destination destination;
-    protected Destination permanentReplyToDestination;
-    protected DeliveryChannel channel;
     
     public StandardProviderProcessor(JmsEndpoint endpoint) throws Exception {
         super(endpoint);
     }
 
     protected void doStart(InitialContext ctx) throws Exception {
-        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
-        Session session = null;
-        destination = endpoint.getDestination();
         try {
-            if (destination == null) {
-                session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-                if (endpoint.getJndiDestinationName() != null) {
-                    destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
-                } else if (endpoint.getJmsProviderDestinationName() != null) {
-                    if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
-                        destination = session.createQueue(endpoint.getJmsProviderDestinationName());
-                    } else {
-                        destination = session.createTopic(endpoint.getJmsProviderDestinationName());
-                    }
-                } else {
-                    throw new IllegalStateException("No destination provided");
-                }
-
-                if (endpoint.getJndiReplyToName() != null) {
-                    permanentReplyToDestination = (Destination) ctx.lookup(endpoint.getJndiReplyToName());
-                } else if (endpoint.getJmsProviderReplyToName() != null) {
-                    if (destination instanceof Queue) {
-                        permanentReplyToDestination = session.createQueue(endpoint.getJmsProviderReplyToName());
-                    } else {
-                        permanentReplyToDestination = session.createTopic(endpoint.getJmsProviderReplyToName());
-                    }
-                }
-            }
+            commonDoStartTasks(ctx);
         } finally {
             if (session != null) {
                 session.close();
@@ -104,27 +72,26 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
 
             MessageProducer producer = session.createProducer(destination);
             
-            NormalizedMessage nm = exchange.getMessage("in");
-            Message msg = fromNMS(nm, session);
+            Message msg = createMessageFromExchange(session, exchange);
     
             if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
                 producer.send(msg);
                 exchange.setStatus(ExchangeStatus.DONE);
                 channel.send(exchange);
             } else if (exchange instanceof InOut) {
-                Destination replyToDestination;
-                if (permanentReplyToDestination != null) {
-                    replyToDestination = permanentReplyToDestination;
+                Destination replyDestination;
+                if (replyToDestination != null) {
+                    replyDestination = replyToDestination;
                 } else {
                     if (destination instanceof Queue) {
-                        replyToDestination = session.createTemporaryQueue();
+                        replyDestination = session.createTemporaryQueue();
                     } else {
-                        replyToDestination = session.createTemporaryTopic();
+                        replyDestination = session.createTemporaryTopic();
                     }
                 }
-                MessageConsumer consumer = session.createConsumer(replyToDestination);
+                MessageConsumer consumer = session.createConsumer(replyDestination);
                 msg.setJMSCorrelationID(exchange.getExchangeId());
-                msg.setJMSReplyTo(replyToDestination);
+                msg.setJMSReplyTo(replyDestination);
                 producer.send(msg);
                 Message message = consumer.receive();
                 if (message instanceof ObjectMessage) {

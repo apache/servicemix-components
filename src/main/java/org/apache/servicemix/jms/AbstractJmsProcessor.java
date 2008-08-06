@@ -27,7 +27,9 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.Message;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -58,6 +60,9 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
     protected SoapHelper soapHelper;
     protected ComponentContext context;
     protected DeliveryChannel channel;
+    protected Session session;
+    protected Destination destination;
+    protected Destination replyToDestination;
 
     protected Store store;
 
@@ -94,6 +99,34 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             }
             throw e;
         }
+    }
+    
+    protected void commonDoStartTasks(InitialContext ctx) throws Exception {
+        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
+        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        destination = endpoint.getDestination();
+        if (destination == null) {
+            if (endpoint.getJndiDestinationName() != null) {
+                destination = (Destination) ctx.lookup(endpoint.getJndiDestinationName());
+            } else if (endpoint.getJmsProviderDestinationName() != null) {
+                if (STYLE_QUEUE.equals(endpoint.getDestinationStyle())) {
+                    destination = session.createQueue(endpoint.getJmsProviderDestinationName());
+                } else {
+                    destination = session.createTopic(endpoint.getJmsProviderDestinationName());
+                }
+            } else {
+                throw new IllegalStateException("No destination provided");
+            }
+        }
+        if (endpoint.getJndiReplyToName() != null) {
+            replyToDestination = (Destination) ctx.lookup(endpoint.getJndiReplyToName());
+        } else if (endpoint.getJmsProviderReplyToName() != null) {
+            if (destination instanceof Queue) {
+                replyToDestination = session.createQueue(endpoint.getJmsProviderReplyToName());
+            } else {
+                replyToDestination = session.createTopic(endpoint.getJmsProviderReplyToName());
+            }
+        }        
     }
     
     protected ConnectionFactory getConnectionFactory(InitialContext ctx) throws NamingException {
@@ -200,6 +233,26 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
             }
         }
         return response;
+    }
+    
+    protected Message createMessageFromExchange(Session session,
+            MessageExchange exchange) throws Exception {
+//        TextMessage msg = session.createTextMessage();
+        NormalizedMessage nm = exchange.getMessage("in");
+        Message msg = fromNMS(nm, session);
+
+        // Build the SoapAction from <interface namespace>/<interface
+        // name>/<operation name>
+        String soapAction = "";
+        if (exchange.getOperation() != null) {
+            String interFaceName = exchange.getInterfaceName() == null ? ""
+                    : exchange.getInterfaceName().getNamespaceURI() + "/"
+                            + exchange.getInterfaceName().getLocalPart();
+            soapAction = interFaceName + "/" + exchange.getOperation();
+        }
+        msg.setStringProperty("SoapAction", soapAction);
+        msg.setStringProperty("SOAPJMS_soapAction", soapAction);
+        return msg;
     }
 
 }
