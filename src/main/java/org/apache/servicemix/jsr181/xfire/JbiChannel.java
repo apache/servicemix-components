@@ -119,6 +119,7 @@ public class JbiChannel extends AbstractChannel {
                         msg.setSecuritySubject(oldMsg.getSecuritySubject());
                     }
                 }
+                me.setOperation(context.getExchange().getOperation().getQName());
                 msg.setContent(getContent(context, message));
                 if (!channel.sendSync(me)) {
                     throw new XFireException("Unable to send jbi exchange: sendSync returned false");
