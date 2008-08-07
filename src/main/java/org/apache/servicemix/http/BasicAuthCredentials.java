@@ -28,8 +28,8 @@ import org.apache.servicemix.expression.Expression;
 
 /**
  * @author roehl.sioson
- * @org.apache.xbean.XBean element="basicAuthCredentials"
- * description="This class contains parameters needed to send basic authentication credentials"
+ * @org.apache.xbean.XBean element="basicAuthCredentials" description=
+ *                         "This class contains parameters needed to send basic authentication credentials"
  */
 public class BasicAuthCredentials {
 
@@ -40,63 +40,76 @@ public class BasicAuthCredentials {
     }
 
     /**
-     * @return Returns the username.
+     * Returns the username for authentication.
+     * 
+     * @return an <code>Expression</code> containing the username
      */
     public Expression getUsername() {
         return username;
     }
 
     /**
-     * @param ssl The username to set.
+     * Sets the username to use for authentocation.
+     * 
+     * @param username am <code>Expression</code> containing the username.
+     * @org.apache.xbean.Property description="the username to use for authentication"
      */
     public void setUsername(Expression username) {
         this.username = username;
     }
 
     /**
-     * @return Returns the password.
+     * Returns the password for authentication.
+     * 
+     * @return an <code>Expression</code> containing the password
      */
     public Expression getPassword() {
         return password;
     }
 
     /**
-     * @param ssl The password to set.
+     * Sets the password to use for authentocation.
+     * 
+     * @param password am <code>Expression</code> containing the password.
+     * @org.apache.xbean.Property description="the password to use for authentication"
      */
     public void setPassword(Expression password) {
         this.password = password;
     }
 
-
     /**
      * Applies this authentication to the given method.
-     *
+     * 
      * @param client the client on which to set the authentication information
      * @param exchange the message exchange to be used for evaluating the expression
      * @param message the normalized message to be used for evaluating the expression
      * @throws MessagingException if the correct value for username/password cannot be determined when using an expression
      */
-    public void applyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message) throws MessagingException {
+    public void applyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message)
+        throws MessagingException {
         AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
-        Credentials credentials = 
-            new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
-                    (String) this.password.evaluate(exchange, message));
+        Credentials credentials = new UsernamePasswordCredentials((String)this.username.evaluate(exchange,
+                                                                                                 message),
+                                                                  (String)this.password.evaluate(exchange,
+                                                                                                 message));
         client.getState().setCredentials(scope, credentials);
     }
 
     /**
      * Applies this authentication to the given method.
-     *
+     * 
      * @param client the client on which to set the authentication information
      * @param exchange the message exchange to be used for evaluating the expression
      * @param message the normalized message to be used for evaluating the expression
      * @throws MessagingException if the correct value for user name/password cannot be determined when using an expression
      */
-    public void applyProxyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message) throws MessagingException {
+    public void applyProxyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message)
+        throws MessagingException {
         AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
-        Credentials credentials = 
-            new UsernamePasswordCredentials((String) this.username.evaluate(exchange, message), 
-                    (String) this.password.evaluate(exchange, message));
+        Credentials credentials = new UsernamePasswordCredentials((String)this.username.evaluate(exchange,
+                                                                                                 message),
+                                                                  (String)this.password.evaluate(exchange,
+                                                                                                 message));
         client.getState().setProxyCredentials(scope, credentials);
     }
 

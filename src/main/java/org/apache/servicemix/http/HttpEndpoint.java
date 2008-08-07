@@ -43,12 +43,11 @@ import org.apache.servicemix.soap.SoapEndpoint;
 import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 
 /**
+ * an HTTP endpoint. This is the base for all HTTP endpoints.
  * 
  * @author gnodet
  * @version $Revision$
- * @org.apache.xbean.XBean element="endpoint"
- *                  description="An http endpoint"
- * 
+ * @org.apache.xbean.XBean element="endpoint" description="the base element for all HTTP endpoints"
  */
 public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
 
@@ -63,11 +62,26 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected boolean wantContentTypeHeaderFromExchangeIntoHttpRequest;
     protected int timeout;
 
+    /**
+     * Determines if the HTTP provider processor copies the HTTP headers from the HTTP response into the JBI exchange.
+     * 
+     * @return <code>true</code> if the HTTP headers will be copied into the exchange
+     */
     public boolean isWantContentTypeHeaderFromExchangeIntoHttpRequest() {
         return wantContentTypeHeaderFromExchangeIntoHttpRequest;
     }
 
-    public void setWantContentTypeHeaderFromExchangeIntoHttpRequest(boolean wantContentTypeHeaderFromExchangeIntoHttpRequest) {
+    /**
+     * Specifies if the HTTP provider processor copies the HTTP headers from the HTTP response into the JBI exchange. If the headers
+     * will be used for a new HTTP reuquest, setting this to <code>true</code> leads to an error.
+     * 
+     * @param wantHeadersFromHttpIntoExchange <code>true</code> if the HTTP headers will be copied into the exchange
+     * @org.apache.xbean.Property description="Specifies if the HTTP provider will copy the HTTP request headers into the JBI
+     *                            exchange. The default is <code>false</code>. This value overrides the value set for the component
+     *                            using the <code>configuration</code> element."
+     */
+    public void setWantContentTypeHeaderFromExchangeIntoHttpRequest(
+                                                                    boolean wantContentTypeHeaderFromExchangeIntoHttpRequest) {
         this.wantContentTypeHeaderFromExchangeIntoHttpRequest = wantContentTypeHeaderFromExchangeIntoHttpRequest;
     }
 
@@ -93,23 +107,27 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param soapAction
-     *            the soapAction to set
+     * @param soapAction the soapAction to set
      */
     public void setSoapAction(String soapAction) {
         this.soapAction = soapAction;
     }
 
     /**
-     * @return the authMethod
+     * Returns a string describing the authentication scheme being used by an endpoint.
+     * 
+     * @return a string representing the authentication method used by an endpoint
      */
     public String getAuthMethod() {
         return authMethod;
     }
 
     /**
-     * @param authMethod
-     *            the authMethod to set
+     * Specifies the authentication method used by a secure endpoint. The authentication method is a string naming the scheme used
+     * for authenticating users.
+     * 
+     * @param authMethod a string naming the authentication scheme a secure endpoint should use
+     * @org.apache.xbean.Property description="a string naming the scheme used for authenticating users"
      */
     public void setAuthMethod(String authMethod) {
         this.authMethod = authMethod;
@@ -123,8 +141,10 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param ssl
-     *            The ssl to set.
+     * Sets the properties used to configure SSL for the endpoint.
+     * 
+     * @param ssl an <code>SslParameters</code> object containing the SSL properties
+     * @org.apache.xbean.Property description="a bean containing the SSL configuration properties"
      */
     public void setSsl(SslParameters ssl) {
         this.ssl = ssl;
@@ -138,29 +158,42 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
         this.binding = binding;
     }
 
+    /**
+     * Returns the URI to which the endpoint sends requests.
+     * 
+     * @return a string representing the URI to which requests are sent
+     */
     public String getLocationURI() {
         return locationURI;
     }
 
+    /**
+     * Sets the URI to which an endpoint sends requests.
+     * 
+     * @param locationURI a string representing the URI
+     * @org.apache.xbean.Property description="the URI to which a provider endpoint sends requests"
+     */
     public void setLocationURI(String locationUri) {
         this.locationURI = locationUri;
     }
 
     /**
-     * Authentication parameters used for provider endpoints using BASIC authentication.
+     * Sets the authentication data used for provider endpoints using basic authentication.
      * 
-     * @return Returns the basicAuthentication.
-     */
-    public BasicAuthCredentials getBasicAuthentication() {
-        return basicAuthentication;
-    }
-
-    /**
-     * @param basicAuthCredentials
-     *            The basicAuthCredentials to set.
+     * @param basicAuthCredentials the <code>BasicAuthCredentials</code> that will be used for authentication
+     * @org.apache.xbean.Property description="authentication data for using basic HTTP authentication."
      */
     public void setBasicAuthentication(BasicAuthCredentials basicAuthCredentials) {
         this.basicAuthentication = basicAuthCredentials;
+    }
+
+    /**
+     * Gets the authentication data used for provider endpoints using basic authentication.
+     * 
+     * @return the <code>BasicAuthCredentials</code> to use for authentication
+     */
+    public BasicAuthCredentials getBasicAuthentication() {
+        return basicAuthentication;
     }
 
     /**
@@ -171,27 +204,50 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     /**
-     * @param proxy
-     *            The proxy to set.
+     * Sets the configuration information for the proxy used by a HTTP consumer endpoint. This configuration overrides the proxy
+     * configuraiton specified at the component level.
+     * 
+     * @param proxy The proxy to set.
+     * @org.apache.xbean.Property description="configuration used to establish a proxy for sending HTTP requests. This configuration overrides that which is set at the component level."
      */
     public void setProxy(ProxyParameters proxy) {
         this.proxy = proxy;
     }
 
     /**
-     * @org.apache.xbean.Property alias="role"
-     * @param role
+     * Sets the endpoint's role. HTTP endpoints can be either consumers or providers. Specifying <code>consumer</code> for the role
+     * defines the endpoint as a consumer which exposes an endpoint at a URL. Specifying <code>provider</code> for the role defines
+     * the endpoint as a provider that sends HTTP requests to a URL.
+     * 
+     * @param role a string specifying the role of the endpoint
+     * @org.apache.xbean.Property alias="role" description= "HTTP endpoints can be either consumers or providers. Specifying
+     *                            <code>consumer</code> for the role defines the endpoint as a consumer which exposes an endpoint at
+     *                            a URL. Specifying <code>provider</code> for the role defines the endpoint as a provider that sends
+     *                            HTTP requests to a URL."
      */
     public void setRoleAsString(String role) {
         super.setRoleAsString(role);
     }
 
-    public int getTimeout() {
-        return timeout;
-    }
-
+    /**
+     * Specifies the timeout value for an HTTP endpoint. The timeout is specified in milliseconds. The default value is 0 which
+     * means that the endpoint will never timeout.
+     * 
+     * @org.apache.xbean.Property description=
+     *                            "the number of milliseconds before the endpoint times out. The default value is 0 which means that the endpoint will never timeout."
+     * @param timeout the length time, in milliseconds, to wait before timing out
+     */
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * Returns the timeout value for an HTTP endpoint.
+     * 
+     * @return the timeout specified in milliseconds
+     */
+    public int getTimeout() {
+        return timeout;
     }
 
     public void reloadWsdl() {
@@ -207,7 +263,7 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
             if (logger.isDebugEnabled()) {
                 logger.debug("WSDL only defines a PortType, using this one");
             }
-            portType = (PortType) def.getPortTypes().values().iterator().next();
+            portType = (PortType)def.getPortTypes().values().iterator().next();
         } else if (targetInterfaceName != null) {
             portType = def.getPortType(targetInterfaceName);
             if (portType == null && logger.isDebugEnabled()) {
@@ -223,7 +279,7 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
         } else if (targetService != null) {
             Service svc = def.getService(targetService);
             if (svc != null && svc.getPorts().size() == 1) {
-                Port port = (Port) svc.getPorts().values().iterator().next();
+                Port port = (Port)svc.getPorts().values().iterator().next();
                 portType = (port != null) ? port.getBinding().getPortType() : null;
             }
             if (portType == null && logger.isDebugEnabled()) {
@@ -248,17 +304,17 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected void overrideDefinition(Definition def) throws Exception {
         PortType portType = getTargetPortType(def);
         if (portType != null) {
-            QName[] names = (QName[]) def.getPortTypes().keySet().toArray(new QName[0]);
+            QName[] names = (QName[])def.getPortTypes().keySet().toArray(new QName[0]);
             for (int i = 0; i < names.length; i++) {
                 if (!names[i].equals(portType.getQName())) {
                     def.removePortType(names[i]);
                 }
             }
-            names = (QName[]) def.getServices().keySet().toArray(new QName[0]);
+            names = (QName[])def.getServices().keySet().toArray(new QName[0]);
             for (int i = 0; i < names.length; i++) {
                 def.removeService(names[i]);
             }
-            names = (QName[]) def.getBindings().keySet().toArray(new QName[0]);
+            names = (QName[])def.getBindings().keySet().toArray(new QName[0]);
             for (int i = 0; i < names.length; i++) {
                 def.removeBinding(names[i]);
             }
@@ -266,7 +322,7 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
             if (!location.endsWith("/")) {
                 location += "/";
             }
-            HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+            HttpComponent comp = (HttpComponent)getServiceUnit().getComponent();
             if (comp.getConfiguration().isManaged()) {
                 // Save the path
                 String path = new URI(location).getPath();
@@ -289,14 +345,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
             }
             if (portType.getQName().getNamespaceURI().equals(service.getNamespaceURI())) {
                 if (isSoap()) {
-                    PortTypeDecorator.decorate(
-                            def, 
-                            portType, 
-                            location, 
-                            endpoint + "Binding",
-                            service.getLocalPart(),
-                            endpoint,
-                            soapVersion);       
+                    PortTypeDecorator.decorate(def, portType, location, endpoint + "Binding", service
+                        .getLocalPart(), endpoint, soapVersion);
                     definition = def;
                 } else {
                     Binding bnd = def.createBinding();
@@ -318,15 +368,10 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
                     definition = def;
                 }
             } else {
-                definition = PortTypeDecorator.createImportDef(def, service.getNamespaceURI(), "porttypedef.wsdl");
-                PortTypeDecorator.decorate(
-                        definition, 
-                        portType, 
-                        location, 
-                        endpoint + "Binding",
-                        service.getLocalPart(),
-                        endpoint,
-                        soapVersion);       
+                definition = PortTypeDecorator.createImportDef(def, service.getNamespaceURI(),
+                                                               "porttypedef.wsdl");
+                PortTypeDecorator.decorate(definition, portType, location, endpoint + "Binding", service
+                    .getLocalPart(), endpoint, soapVersion);
             }
         }
     }
@@ -341,16 +386,16 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
 
     protected ServiceEndpoint createExternalEndpoint() {
         return new ExternalEndpoint(getServiceUnit().getComponent().getEPRElementName(), getLocationURI(),
-                        getService(), getEndpoint(), getInterfaceName());
+                                    getService(), getEndpoint(), getInterfaceName());
     }
 
     public AuthenticationService getAuthenticationService() {
-        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+        HttpComponent comp = (HttpComponent)getServiceUnit().getComponent();
         return AuthenticationService.Proxy.create(comp.getAuthenticationService());
     }
 
     public KeystoreManager getKeystoreManager() {
-        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+        HttpComponent comp = (HttpComponent)getServiceUnit().getComponent();
         return KeystoreManager.Proxy.create(comp.getKeystoreManager());
     }
 

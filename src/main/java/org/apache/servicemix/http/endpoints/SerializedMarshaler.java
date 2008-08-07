@@ -55,7 +55,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  * it into some custom XML. The servicemix-saxon component can handle this very easily via XLST.
  * 
  * @author bsnyder, aco
- * @org.apache.xbean.XBean element="serializedMarshaler"
+ * @org.apache.xbean.XBean element="serializedMarshaler" description="a consumer-side marshaler for handling Java serialized content"
  */
 public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
 

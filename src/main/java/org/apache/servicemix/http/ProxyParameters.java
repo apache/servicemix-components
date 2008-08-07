@@ -20,7 +20,7 @@ package org.apache.servicemix.http;
  * This class contains all parameters needed to send http requests through a proxy
  * 
  * @author Fabrice Dewasmes
- * @org.apache.xbean.XBean
+ * @org.apache.xbean.XBean description="parameters needed to send HTTP requests through a proxy"
  */
 public class ProxyParameters {
 
@@ -36,9 +36,12 @@ public class ProxyParameters {
     }
 
     /**
-     * @param proxyCredentials
-     *            The proxyCredentials to set.
-     */
+	* Sets the authentication data used for the proxy using basic authentication.
+	*
+	* @param	proxyCredentials	the <code>BasicAuthCredentials</code> that 
+	*					will be used for authentication
+	 * @org.apache.xbean.Property description="authentication data for using basic HTTP authentication."
+	 */
     public void setProxyCredentials(BasicAuthCredentials proxyCredentials) {
         this.proxyCredentials = proxyCredentials;
     }
@@ -55,6 +58,7 @@ public class ProxyParameters {
     /**
      * @param proxyHost
      *            The proxy host name to set.
+	 * @org.apache.xbean.Property description="the proxy's host name"
      */
     public void setProxyHost(String proxyHost) {
         this.proxyHost = proxyHost;
@@ -72,6 +76,7 @@ public class ProxyParameters {
     /**
      * @param proxyPort
      *            The ProxyPort to set.
+	 * @org.apache.xbean.Property description="the proxy's port number"
      */
     public void setProxyPort(int proxyPort) {
         this.proxyPort = proxyPort;

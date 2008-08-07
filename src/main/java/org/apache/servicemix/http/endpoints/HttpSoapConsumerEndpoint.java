@@ -48,10 +48,10 @@ import org.springframework.core.io.Resource;
 import org.xml.sax.InputSource;
 
 /**
- * 
  * @author gnodet
  * @since 3.2
- * @org.apache.xbean.XBean element="soap-consumer"
+ * @org.apache.xbean.XBean element="soap-consumer" description=
+ *                         "an HTTP consumer endpoint that is optimized to work with SOAP messages"
  */
 public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
 
@@ -76,6 +76,12 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         return wsdl;
     }
 
+    /**
+     * Specifies the WSDL document defining the messages sent by the endpoint.
+     * 
+     * @param wsdl a <code>Resource</code> object that points to the WSDL document
+     * @org.apache.xbean.Property description="the URL of the WSDL document defining the endpoint's messages"
+     */
     public void setWsdl(Resource wsdl) {
         this.wsdl = wsdl;
     }
@@ -84,6 +90,12 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         return validateWsdl;
     }
 
+    /**
+     * Specifies in the WSDL is validated against the WS-I basic profile.
+     * 
+     * @param validateWsdl <code>true</code> if WSDL is to be validated
+     * @org.apache.xbean.Property description="Specifies if the WSDL is checked for WSI-BP compliance. Default is <code>true</code>."
+     */
     public void setValidateWsdl(boolean validateWsdl) {
         this.validateWsdl = validateWsdl;
     }
@@ -92,6 +104,13 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         return useJbiWrapper;
     }
 
+    /**
+     * Specifies if the SOAP messages are wrapped in a JBI wrapper.
+     * 
+     * @param useJbiWrapper <code>true</code> if the SOAP messages are wrapped
+     * @org.apache.xbean.Property description= "Specifies if the JBI wrapper is sent in the body of the message. Default is
+     *                            <code>true</code>."
+     */
     public void setUseJbiWrapper(boolean useJbiWrapper) {
         this.useJbiWrapper = useJbiWrapper;
     }
@@ -100,6 +119,12 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         return policies;
     }
 
+    /**
+     * Specifies a list of interceptors that will process messages for the endpoint.
+     * 
+     * @param policies an array of <code>Policy</code> objects
+     * @org.apache.xbean.Property description="a list of interceptors that will process messages"
+     */
     public void setPolicies(Policy[] policies) {
         this.policies = policies;
     }
@@ -111,7 +136,7 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         }
         HttpSoapConsumerMarshaler marshaler;
         if (getMarshaler() instanceof HttpSoapConsumerMarshaler) {
-            marshaler = (HttpSoapConsumerMarshaler) getMarshaler();
+            marshaler = (HttpSoapConsumerMarshaler)getMarshaler();
         } else if (getMarshaler() == null) {
             marshaler = new HttpSoapConsumerMarshaler();
         } else {
@@ -165,25 +190,25 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
                     throw new DeploymentException("Could not find service '" + getService() + "' in wsdl");
                 }
             } else if (def.getServices().size() == 1) {
-                svc = (Service) def.getServices().values().iterator().next();
+                svc = (Service)def.getServices().values().iterator().next();
                 setService(svc.getQName());
             } else {
                 throw new DeploymentException(
-                                "If service is not set, the WSDL must contain a single service definition");
+                                              "If service is not set, the WSDL must contain a single service definition");
             }
             Port port;
             if (getEndpoint() != null) {
                 port = svc.getPort(getEndpoint());
                 if (port == null) {
                     throw new DeploymentException("Cound not find port '" + getEndpoint()
-                                    + "' in wsdl for service '" + getService() + "'");
+                                                  + "' in wsdl for service '" + getService() + "'");
                 }
             } else if (svc.getPorts().size() == 1) {
-                port = (Port) svc.getPorts().values().iterator().next();
+                port = (Port)svc.getPorts().values().iterator().next();
                 setEndpoint(port.getName());
             } else {
                 throw new DeploymentException("If endpoint is not set, the WSDL service '" + getService()
-                                + "' must contain a single port definition");
+                                              + "' must contain a single port definition");
             }
             SOAPAddress soapAddress = WSDLUtils.getExtension(port, SOAPAddress.class);
             if (soapAddress != null) {
@@ -224,21 +249,21 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
                 setService(svc.getName());
             } else {
                 throw new DeploymentException(
-                                "If service is not set, the WSDL must contain a single service definition");
+                                              "If service is not set, the WSDL must contain a single service definition");
             }
             Endpoint endpoint;
             if (getEndpoint() != null) {
                 endpoint = svc.getEndpoint(new NCName(getEndpoint()));
                 if (endpoint == null) {
                     throw new DeploymentException("Cound not find endpoint '" + getEndpoint()
-                                    + "' in wsdl for service '" + getService() + "'");
+                                                  + "' in wsdl for service '" + getService() + "'");
                 }
             } else if (svc.getEndpoints().length == 1) {
                 endpoint = svc.getEndpoints()[0];
                 setEndpoint(endpoint.getName().toString());
             } else {
                 throw new DeploymentException("If endpoint is not set, the WSDL service '" + getService()
-                                + "' must contain a single port definition");
+                                              + "' must contain a single port definition");
             }
             marshaler.setBinding(BindingFactory.createBinding(endpoint));
         }

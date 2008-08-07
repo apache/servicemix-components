@@ -55,8 +55,8 @@ import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 
 /**
- * Plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP request (without SOAP) or to be able to
- * process the request in a non standard way. For HTTP requests, a WSDL2 HTTP binding can be used.
+ * a plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP requests or to be able to process the request in a
+ * non standard way. For HTTP requests, a WSDL2 HTTP binding can be used.
  * 
  * @author gnodet
  * @since 3.2
@@ -91,30 +91,40 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @return the locationUri
+     * Returns the URI at which the endpoint listens for new requests.
+     * 
+     * @return a string representing the endpoint's URI
      */
     public String getLocationURI() {
         return locationURI;
     }
 
     /**
-     * @param locationURI
-     *            the locationUri to set
+     * Sets the URI at which an endpoint listens for requests.
+     * 
+     * @param locationURI a string representing the URI
+     * @org.apache.xbean.Property description="the URI at which the endpoint listens for requests"
      */
     public void setLocationURI(String locationURI) {
         this.locationURI = locationURI;
     }
 
     /**
-     * @return the timeout
+     * Returns the timeout value for an HTTP endpoint.
+     * 
+     * @return the timeout specified in milliseconds
      */
     public long getTimeout() {
         return timeout;
     }
 
     /**
-     * @param timeout
-     *            the timeout to set
+     * Specifies the timeout value for an HTTP consumer endpoint. The timeout is specified in milliseconds. The default value is 0
+     * which means that the endpoint will never timeout.
+     * 
+     * @org.apache.xbean.Property description=
+     *                            "the timeout is specified in milliseconds. The default value is 0 which means that the endpoint will never timeout."
+     * @param timeout the length time, in milliseconds, to wait before timing out
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
@@ -128,23 +138,31 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param marshaler
-     *            the marshaler to set
+     * Sets the class used to marshal messages.
+     * 
+     * @param marshaler the marshaler to set
+     * @org.apache.xbean.Property description="the bean used to marshal HTTP messages. The default is a
+     *                            <code>DefaultHttpConsumerMarshaler</code>."
      */
     public void setMarshaler(HttpConsumerMarshaler marshaler) {
         this.marshaler = marshaler;
     }
 
     /**
-     * @return the authMethod
+     * Returns a string describing the authentication scheme being used by an endpoint.
+     * 
+     * @return a string representing the authentication method used by an endpoint
      */
     public String getAuthMethod() {
         return authMethod;
     }
 
     /**
-     * @param authMethod
-     *            the authMethod to set
+     * Specifies the authentication method used by a secure endpoint. The authentication method is a string naming the scheme used
+     * for authenticating users.
+     * 
+     * @param authMethod a string naming the authentication scheme a secure endpoint should use
+     * @org.apache.xbean.Property description="a string naming the scheme used for authenticating users"
      */
     public void setAuthMethod(String authMethod) {
         this.authMethod = authMethod;
@@ -158,23 +176,31 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     /**
-     * @param ssl
-     *            the sslParameters to set
+     * Sets the properties used to configure SSL for the endpoint.
+     * 
+     * @param ssl an <code>SslParameters</code> object containing the SSL properties
+     * @org.apache.xbean.Property description="a bean containing the SSL configuration properties"
      */
     public void setSsl(SslParameters ssl) {
         this.ssl = ssl;
     }
 
     /**
-     * @return defaultMep of the endpoint
+     * Returns a URI representing the default message exachange pattern(MEP) used by an endpoint.
+     * 
+     * @return a URI representing an endpoint's default MEP
      */
     public URI getDefaultMep() {
         return defaultMep;
     }
 
     /**
-     * @param defaultMep -
-     *            defaultMep of the endpoint
+     * Sets the default message exchange pattern(MEP) for an endpoint. The default MEP is specified as a URI and the default is
+     * <code>JbiConstants.IN_OUT</code>.
+     * 
+     * @param defaultMep a URI representing the default MEP of the endpoint
+     * @org.apache.xbean.Property description="a URI representing the endpoint's default MEP. The default is
+     *                            <code>JbiConstants.IN_OUT</code>."
      */
     public void setDefaultMep(URI defaultMep) {
         this.defaultMep = defaultMep;
@@ -216,7 +242,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             if (handleStaticResource(request, response)) {
                 return;
             }
-            // Not giving a specific mutex will synchronize on the continuation itself
+            // Not giving a specific mutex will synchronize on the continuation
+            // itself
             Continuation cont = ContinuationSupport.getContinuation(request, null);
             // If the continuation is not a retry
             if (!cont.isPending()) {
@@ -230,8 +257,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                     }
                     long to = this.timeout;
                     if (to == 0) {
-                        to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration()
-                                            .getConsumerProcessorSuspendTime();
+                        to = ((HttpComponent)getServiceUnit().getComponent()).getConfiguration()
+                            .getConsumerProcessorSuspendTime();
                     }
                     exchanges.put(exchange.getExchangeId(), exchange);
                     boolean result = cont.suspend(to);
@@ -243,7 +270,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                     request.removeAttribute(MessageExchange.class.getName());
                 }
             } else {
-                String id = (String) request.getAttribute(MessageExchange.class.getName());
+                String id = (String)request.getAttribute(MessageExchange.class.getName());
                 locks.remove(id);
                 exchange = exchanges.remove(id);
                 request.removeAttribute(MessageExchange.class.getName());
@@ -298,10 +325,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     /**
      * Handle static resources
      * 
-     * @param request
-     *            the http request
-     * @param response
-     *            the http response
+     * @param request the http request
+     * @param response the http response
      * @return <code>true</code> if the request has been handled
      * @throws IOException
      * @throws ServletException
@@ -333,8 +358,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             response.setStatus(200);
             response.setContentType("text/xml");
             try {
-                new SourceTransformer().toResult(new DOMSource((Node) res),
-                                new StreamResult(response.getOutputStream()));
+                new SourceTransformer().toResult(new DOMSource((Node)res), new StreamResult(response
+                    .getOutputStream()));
             } catch (TransformerException e) {
                 throw new ServletException("Error while sending xml resource", e);
             }
@@ -356,7 +381,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     protected ContextManager getServerManager() {
-        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+        HttpComponent comp = (HttpComponent)getServiceUnit().getComponent();
         return comp.getServer();
     }
 
@@ -366,29 +391,29 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         // If the user has been authenticated, put these informations on
         // the in NormalizedMessage.
         if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
-            Subject subject = ((JaasJettyPrincipal) request.getUserPrincipal()).getSubject();
+            Subject subject = ((JaasJettyPrincipal)request.getUserPrincipal()).getSubject();
             me.getMessage("in").setSecuritySubject(subject);
         }
         return me;
     }
 
-    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
+    public void sendAccepted(MessageExchange exchange, HttpServletRequest request,
+                             HttpServletResponse response) throws Exception {
         marshaler.sendAccepted(exchange, request, response);
     }
 
     public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+                          HttpServletResponse response) throws Exception {
         marshaler.sendError(exchange, error, request, response);
     }
 
     public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+                          HttpServletResponse response) throws Exception {
         marshaler.sendFault(exchange, fault, request, response);
     }
 
     public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+                        HttpServletResponse response) throws Exception {
         marshaler.sendOut(exchange, outMsg, request, response);
     }
 
@@ -398,7 +423,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             marshaler = new DefaultHttpConsumerMarshaler();
         }
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
-            ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
+            ((DefaultHttpConsumerMarshaler)marshaler).setDefaultMep(getDefaultMep());
         }
     }
 }

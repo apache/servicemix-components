@@ -35,6 +35,7 @@ import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.mortbay.jetty.client.HttpClient;
 
 /**
+ * a plain HTTP provider. This type of endpoint can be used to send non-SOAP requests to HTTP endpoints.
  * 
  * @author gnodet
  * @since 3.2
@@ -42,13 +43,13 @@ import org.mortbay.jetty.client.HttpClient;
  */
 public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpointType {
 
-    //private SslParameters ssl;
-    //private BasicAuthCredentials basicAuthentication;
+    // private SslParameters ssl;
+    // private BasicAuthCredentials basicAuthentication;
     private HttpProviderMarshaler marshaler;
     private String locationURI;
     private int clientSoTimeout = 60000;
     private HttpClient jettyClient;
-    
+
     public HttpProviderEndpoint() {
         super();
     }
@@ -61,31 +62,24 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         super(serviceUnit, service, endpoint);
     }
 
+    /**
+     * Returns the URI to which the endpoint sends requests.
+     * 
+     * @return a string representing the URI to which requests are sent
+     */
     public String getLocationURI() {
         return locationURI;
     }
 
+    /**
+     * Sets the URI to which an endpoint sends requests.
+     * 
+     * @param locationURI a string representing the URI
+     * @org.apache.xbean.Property description="the URI to which the endpoint sends requests"
+     */
     public void setLocationURI(String locationURI) {
         this.locationURI = locationURI;
     }
-
-    /*
-    public BasicAuthCredentials getBasicAuthentication() {
-        return basicAuthentication;
-    }
-
-    public void setBasicAuthentication(BasicAuthCredentials basicAuthentication) {
-        this.basicAuthentication = basicAuthentication;
-    }
-    
-    public SslParameters getSsl() {
-        return ssl;
-    }
-    
-    public void setSsl(SslParameters ssl) {
-        this.ssl = ssl;
-    }
-    */
 
     /**
      * @return the marshaler
@@ -95,7 +89,11 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
     }
 
     /**
+     * Sets the class used to marshal messages.
+     * 
      * @param marshaler the marshaler to set
+     * @org.apache.xbean.Property description="the bean used to marshal HTTP messages. The deafult is a
+     *                            <code>DefaultHttpProviderMarshaler</code>."
      */
     public void setMarshaler(HttpProviderMarshaler marshaler) {
         this.marshaler = marshaler;
@@ -107,7 +105,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
             if (nm == null) {
                 throw new IllegalStateException("Exchange has no input message");
             }
-            SmxHttpExchange httpEx = new Exchange(exchange); 
+            SmxHttpExchange httpEx = new Exchange(exchange);
             marshaler.createRequest(exchange, nm, httpEx);
             getConnectionPool().send(httpEx);
         }
@@ -120,8 +118,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
             exchange.setError(e);
         }
         try {
-            boolean txSync = exchange.getStatus() == ExchangeStatus.ACTIVE 
-                             && exchange.isTransacted() 
+            boolean txSync = exchange.getStatus() == ExchangeStatus.ACTIVE && exchange.isTransacted()
                              && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
             if (txSync) {
                 sendSync(exchange);
@@ -129,7 +126,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                 send(exchange);
             }
         } catch (Exception e) {
-            throw (IOException) new IOException(e.getMessage()).initCause(e);
+            throw (IOException)new IOException(e.getMessage()).initCause(e);
         }
     }
 
@@ -137,7 +134,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         try {
             Exception e;
             if (throwable instanceof Exception) {
-                e = (Exception) throwable;
+                e = (Exception)throwable;
             } else {
                 e = new Exception(throwable);
             }
@@ -150,29 +147,33 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
 
     protected org.mortbay.jetty.client.HttpClient getConnectionPool() throws Exception {
         if (jettyClient == null) {
-            HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
+            HttpComponent comp = (HttpComponent)getServiceUnit().getComponent();
             if (comp.getConfiguration().isJettyClientPerProvider()) {
                 jettyClient = comp.getNewJettyClient(comp);
             } else {
-                //return shared client
+                // return shared client
                 jettyClient = comp.getConnectionPool();
             }
             jettyClient.setSoTimeout(getClientSoTimeout());
         }
         return jettyClient;
     }
-    
+
     protected class Exchange extends SmxHttpExchange {
         MessageExchange jbiExchange;
+
         public Exchange(MessageExchange jbiExchange) {
             this.jbiExchange = jbiExchange;
         }
+
         protected void onResponseComplete() throws IOException {
             handle(this, jbiExchange);
         }
+
         protected void onConnectionFailed(Throwable throwable) {
             handleConnectionFailed(throwable, jbiExchange);
         }
+
         protected void onException(Throwable throwable) {
             throw new RuntimeException(throwable);
         }
@@ -182,16 +183,24 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         return clientSoTimeout;
     }
 
+    /**
+     * Sets the number of milliseconds the endpoint will block while attempting to read a request. The default value is 60000.
+     * Setting this to 0 specifies that the endpoint will never timeout.
+     * 
+     * @param clientTimeout an int specifying the number of milliseconds the socket will block while attempting to read a request
+     * @org.apache.xbean.Property description="the number of milliseconds the endpoint will block while attempting to read a request. The default value is 60000. Setting this to 0 specifies that the endpoint will never timeout."
+     */
     public void setClientSoTimeout(int clientTimeout) {
         this.clientSoTimeout = clientTimeout;
     }
+
     public void validate() throws DeploymentException {
         super.validate();
         if (marshaler == null) {
             marshaler = new DefaultHttpProviderMarshaler();
         }
         if (marshaler instanceof DefaultHttpProviderMarshaler && locationURI != null) {
-            ((DefaultHttpProviderMarshaler) marshaler).setLocationURI(locationURI);
+            ((DefaultHttpProviderMarshaler)marshaler).setLocationURI(locationURI);
         }
     }
 

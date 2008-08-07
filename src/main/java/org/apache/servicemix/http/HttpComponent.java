@@ -43,9 +43,11 @@ import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.mortbay.thread.BoundedThreadPool;
 
 /**
+ * an HTTP JBI component
  * 
  * @author gnodet
- * @org.apache.xbean.XBean element="component" description="An http component"
+ * @org.apache.xbean.XBean element="component"
+ *                         description="an HTTP JBI component. The component is responsible for hosting HTTP endpoints."
  */
 public class HttpComponent extends DefaultComponent {
 
@@ -68,15 +70,19 @@ public class HttpComponent extends DefaultComponent {
     protected String path;
 
     /**
-     * @return the host
+     * Returns the host name.
+     * 
+     * @return a string contianing the host name
      */
     public String getHost() {
         return host;
     }
 
     /**
-     * @param host
-     *            the host to set
+     * Sets the host name.
+     * 
+     * @param host a string specifying the host name
+     * @org.apache.xbean.Property description="the host name"
      */
     public void setHost(String host) {
         this.host = host;
@@ -90,8 +96,7 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param path
-     *            the path to set
+     * @param path the path to set
      */
     public void setPath(String path) {
         this.path = path;
@@ -105,8 +110,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param port
-     *            the port to set
+     * @param port the port to set
+     * @org.apache.xbean.Property description="the port number. The default is 80."
      */
     public void setPort(int port) {
         this.port = port;
@@ -120,8 +125,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param protocol
-     *            the protocol to set
+     * @param protocol the protocol to set
+     * @org.apache.xbean.Property description="the protocol being used. Valid values are <code>http:</code> and <code>https:</code>"
      */
     public void setProtocol(String protocol) {
         this.protocol = protocol;
@@ -135,8 +140,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param endpoints
-     *            the endpoints to set
+     * @param endpoints the endpoints to set
+     * @org.apache.xbean.Property description="the endpoints hosted by a component"
      */
     public void setEndpoints(HttpEndpointType[] endpoints) {
         this.endpoints = endpoints;
@@ -154,6 +159,10 @@ public class HttpComponent extends DefaultComponent {
         return client;
     }
 
+    /**
+     * @param client the HTTP client instance used by the component
+     * @org.apache.xbean.Property description="the Apache Commons HTTP client used by a component"
+     */
     public void setClient(HttpClient client) {
         this.client = client;
     }
@@ -161,18 +170,24 @@ public class HttpComponent extends DefaultComponent {
     public org.mortbay.jetty.client.HttpClient getConnectionPool() {
         return connectionPool;
     }
-    
+
     public org.mortbay.jetty.client.HttpClient getNewJettyClient(HttpComponent comp) throws Exception {
         org.mortbay.jetty.client.HttpClient tempClient = new org.mortbay.jetty.client.HttpClient();
         BoundedThreadPool btp = new BoundedThreadPool();
         btp.setMaxThreads(comp.getConfiguration().getJettyClientThreadPoolSize());
         tempClient.setThreadPool(btp);
-        tempClient.setConnectorType                
-            (org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
+        tempClient.setConnectorType(org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
         tempClient.start();
         return tempClient;
     }
-    
+
+    /**
+     * Sets the connection pool used by the component. The connection pool is a Jetty HTTP client instance with a thread pool set
+     * using the HTTP component's <code>jettyClientThreadPoolSize</code> property.
+     * 
+     * @param connectionPool a Jetty <code>HttpClient</code>
+     * @org.apache.xbean.Property description="a Jetty HTTP client instance maintaining a thread pool for client-side connections"
+     */
     public void setConnectionPool(org.mortbay.jetty.client.HttpClient connectionPool) {
         this.connectionPool = connectionPool;
     }
@@ -185,13 +200,17 @@ public class HttpComponent extends DefaultComponent {
         return configuration;
     }
 
+    /**
+     * @param configuration an <code>HttpConfiguration</code> object containing the configuration information needed to establish
+     *            HTTP connections
+     * @org.apache.xbean.Property description="the HTTP configuration information used to establish HTTP connections"
+     */
     public void setConfiguration(HttpConfiguration configuration) {
         this.configuration = configuration;
     }
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.servicemix.common.BaseComponentLifeCycle#getExtensionMBean()
      */
     protected Object getExtensionMBean() throws Exception {
@@ -221,7 +240,8 @@ public class HttpComponent extends DefaultComponent {
                 configuration.setAuthenticationService(as);
             } catch (Throwable e) {
                 try {
-                    Class cl = Class.forName("org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService");
+                    Class cl = Class
+                        .forName("org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService");
                     configuration.setAuthenticationService(cl.newInstance());
                 } catch (Throwable t) {
                     logger.warn("Unable to retrieve or create the authentication service");
@@ -252,7 +272,6 @@ public class HttpComponent extends DefaultComponent {
         server.setConfiguration(configuration);
         server.init();
     }
-    
 
     protected void doShutDown() throws Exception {
         super.doShutDown();
@@ -314,8 +333,8 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param keystoreManager
-     *            the keystoreManager to set
+     * @param keystoreManager the keystoreManager to set
+     * @org.apache.xbean.Property description="the keystore manager object used by a component"
      */
     public void setKeystoreManager(Object keystoreManager) {
         this.configuration.setKeystoreManager(keystoreManager);
@@ -329,16 +348,16 @@ public class HttpComponent extends DefaultComponent {
     }
 
     /**
-     * @param authenticationService
-     *            the authenticationService to set
+     * @param authenticationService the authenticationService to set
+     * @org.apache.xbean.Property description="the authentication service object used by a component"
      */
     public void setAuthenticationService(Object authenticationService) {
         this.configuration.setAuthenticationService(authenticationService);
     }
 
     /**
-     * When servicemix-http is embedded inside a web application and configured to reuse the existing servlet container,
-     * this method will create and return the HTTPProcessor which will handle all servlet calls
+     * When servicemix-http is embedded inside a web application and configured to reuse the existing servlet container, this method
+     * will create and return the HTTPProcessor which will handle all servlet calls
      */
     public HttpProcessor getMainProcessor() {
         return server.getMainProcessor();
@@ -346,13 +365,11 @@ public class HttpComponent extends DefaultComponent {
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.servicemix.common.BaseComponent#createServiceUnitManager()
      */
     public BaseServiceUnitManager createServiceUnitManager() {
-        Deployer[] deployers = 
-            new Deployer[] {new BaseXBeanDeployer(this, getEndpointClasses()),
-                            new HttpWsdl1Deployer(this)};
+        Deployer[] deployers = new Deployer[] {new BaseXBeanDeployer(this, getEndpointClasses()),
+                                               new HttpWsdl1Deployer(this)};
         return new BaseServiceUnitManager(this, deployers);
     }
 
