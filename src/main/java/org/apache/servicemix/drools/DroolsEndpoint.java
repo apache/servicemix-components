@@ -21,18 +21,24 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.drools.model.JbiHelper;
 import org.drools.RuleBase;
 import org.drools.WorkingMemory;
@@ -54,6 +60,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private String defaultTargetURI;
     private Map<String, Object> globals;
     private List<Object> assertedObjects;
+    private ConcurrentMap<String, JbiHelper> pending = new ConcurrentHashMap<String, JbiHelper>();
 
     public DroolsEndpoint() {
         super();
@@ -174,26 +181,69 @@ public class DroolsEndpoint extends ProviderEndpoint {
      *      javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage)
      */
     public void process(MessageExchange exchange) throws Exception {
-        drools(exchange);
+        if (exchange.getRole() == Role.PROVIDER) {
+            handleProviderExchange(exchange);
+        } else {
+            handleConsumerExchange(exchange);
+        }
     }
     
-    protected void drools(MessageExchange exchange) throws Exception {
-        WorkingMemory memory = createWorkingMemory(exchange);
-        populateWorkingMemory(memory, exchange);
-        memory.fireAllRules();
-        postProcess(exchange, memory);
+    /*
+     * Handle a consumer exchange
+     */
+    private void handleConsumerExchange(MessageExchange exchange) throws MessagingException {
+        String correlation = getCorrelationId(exchange); 
+        JbiHelper helper = pending.get(correlation);
+        if (helper != null) {
+            MessageExchange original = helper.getExchange().getInternalExchange();
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                done(original);
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                fail(original, exchange.getError());
+            } else {
+                if (exchange.getFault() != null) {
+                    MessageUtil.transferFaultToFault(exchange, original);
+                } else {
+                    MessageUtil.transferOutToOut(exchange, original);
+                }
+                send(original);
+            }
+            // update the rule engine's working memory to trigger post-done rules
+            helper.update();
+        } else {
+            logger.debug("No matching exchange found for " + exchange.getExchangeId() + ", no additional rules will be triggered");
+        }
     }
 
-    protected void postProcess(MessageExchange exchange, WorkingMemory memory) throws Exception {
+    private void handleProviderExchange(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-            String uri = getDefaultRouteURI();
-            if (uri != null) {
-                JbiHelper helper = (JbiHelper) memory.getGlobal("jbi");
-                helper.route(uri);
-            }
+            drools(exchange);
         }
-        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+    }
+
+    public static String getCorrelationId(MessageExchange exchange) {
+        Object correlation = exchange.getProperty(JbiConstants.CORRELATION_ID);
+        if (correlation == null) {
+            return exchange.getExchangeId();
+        } else {
+            return correlation.toString();
+        }
+    }
+
+    protected void drools(MessageExchange exchange) throws Exception {
+        WorkingMemory memory = createWorkingMemory(exchange);
+        JbiHelper helper = populateWorkingMemory(memory, exchange);
+        pending.put(getCorrelationId(exchange), helper);
+        memory.fireAllRules();
+        
+        //no rules were fired --> must be config problem
+        if (helper.getRulesFired() < 1) {
             fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+        } else {
+            //a rule was triggered but no message was forwarded -> message has been handled by drools
+            if (helper.getForwarded() < 1) {
+                pending.remove(exchange);
+            }
         }
     }
     
@@ -201,8 +251,9 @@ public class DroolsEndpoint extends ProviderEndpoint {
         return ruleBase.newStatefulSession();
     }
 
-    protected void populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
-        memory.setGlobal("jbi", new JbiHelper(this, exchange, memory));
+    protected JbiHelper populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
+        JbiHelper helper = new JbiHelper(this, exchange, memory);
+        memory.setGlobal("jbi", helper);
         if (assertedObjects != null) {
             for (Object o : assertedObjects) {
                 memory.insert(o);
@@ -213,6 +264,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
                 memory.setGlobal(e.getKey(), e.getValue());
             }
         }
+        return helper;
     }
 
     public QName getDefaultTargetService() {
@@ -250,4 +302,11 @@ public class DroolsEndpoint extends ProviderEndpoint {
             return null;
         }
     }
-}
+    
+    @Override
+    protected void send(MessageExchange me) throws MessagingException {
+        //remove the exchange from the list of pending exchanges
+        pending.remove(getCorrelationId(me));
+        super.send(me);
+    }
+ }

@@ -25,6 +25,7 @@ import org.apache.servicemix.common.DefaultComponent;
  * @author gnodet
  * @org.apache.xbean.XBean element="component"
  */
+@SuppressWarnings("unchecked")
 public class DroolsComponent extends DefaultComponent {
 
     private DroolsEndpoint[] endpoints;
