@@ -1,0 +1,30 @@
+package org.apache.servicemix.drools
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.apache.servicemix.drools.model.Exchange;
+
+global org.apache.servicemix.drools.model.JbiHelper jbi;
+
+rule UnknownOperation
+    agenda-group "init"
+    auto-focus true    
+    when
+        $me : Exchange( status == Exchange.ACTIVE, $in : in != null,
+                       operation != "{smx}process")
+    then
+        jbi.route("service:smx/target");
+end
+
+rule Input
+    agenda-group "input"
+    auto-focus true    
+    when
+        $me : Exchange( status == Exchange.ACTIVE, $in : in != null,
+                       operation == "{smx}process" )
+        eval ( true )
+    then
+        jbi.getLogger().debug("[Rule: Input]: Message routed to drools2...");
+        jbi.route("service:smx/drools");
+end

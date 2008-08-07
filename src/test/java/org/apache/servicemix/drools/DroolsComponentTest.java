@@ -23,18 +23,19 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
-import org.w3c.dom.Element;
-
-import junit.framework.TestCase;
-
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.core.io.ClassPathResource;
+
+import org.w3c.dom.Element;
+
+import junit.framework.TestCase;
 
 public class DroolsComponentTest extends TestCase {
 
@@ -52,6 +53,38 @@ public class DroolsComponentTest extends TestCase {
     
     protected void tearDown() throws Exception {
         jbi.shutDown();
+    }
+    
+    public void testChainedRoutingInOnly() throws Exception {
+        drools = new DroolsComponent();
+        
+        DroolsEndpoint endpoint = new DroolsEndpoint(drools.getServiceUnit(),
+                                                     new QName("smx", "drools"), "endpoint");
+        endpoint.setRuleBaseResource(new ClassPathResource("chained.drl"));
+        
+        drools.setEndpoints(new DroolsEndpoint[] {endpoint});
+        jbi.activateComponent(drools, "servicemix-drools");
+
+        ReceiverComponent target = new ReceiverComponent();
+        target.setService(new QName("smx", "target"));
+        target.setEndpoint("endpoint");
+        
+        jbi.activateComponent(target, "target");
+        
+        jbi.start();
+        
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("smx", "drools"));
+        me.setOperation(new QName("smx", "process"));
+        me.getInMessage().setContent(new StringSource("<payload />"));
+        me.setProperty(JbiConstants.CORRELATION_ID, "TEST");
+        if (client.sendSync(me, 10000)) {
+            assertEquals(ExchangeStatus.DONE, me.getStatus());
+        } else {
+            fail ("No response from drools in time...");
+        }
+        
+        Thread.sleep(50);
     }
     
     public void testRouteInOnly() throws Exception {
