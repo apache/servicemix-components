@@ -53,8 +53,12 @@ public abstract class Endpoint {
     public String getEndpoint() {
         return endpoint;
     }
+
     /**
-     * @param endpoint The endpoint to set.
+     * Sets the name of the endpoint.
+     *
+     * @param	endpoint	a string specifiying the name of the endpoint
+     * @org.apache.xbean.Property description="the name of the endpoint"
      */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
@@ -66,37 +70,53 @@ public abstract class Endpoint {
     public QName getService() {
         return service;
     }
+
     /**
-     * @param service The service to set.
+     * Sets the name of the service the endpoint exposes.
+     *
+     * @param	service	a QName specifiying the name of the service
+     * @org.apache.xbean.Property description="the QName of the service exposed by the endpoint"
      */
     public void setService(QName service) {
         this.service = service;
         this.key = null;
     }
+    
     /**
      * @return Returns the role.
      */
     public abstract Role getRole();
+    
     /**
      * @return Returns the description.
      */
     public Document getDescription() {
         return description;
     }
+
     /**
-     * @param description The description to set.
+     * Associates an XML document with the endpoint. The XML document describes 
+     * the endpoint and is typically found in the service unit packaging.
+     *
+     * @param	description	a <code>Document</code> describing the endpoint
+     * @org.apache.xbean.Property description="an XML document describing the endpoint"
      */
     public void setDescription(Document description) {
         this.description = description;
     }
+    
     /**
      * @return Returns the interfaceName.
      */
     public QName getInterfaceName() {
         return interfaceName;
     }
+
     /**
-     * @param interfaceName The interfaceName to set.
+     * Sets the QName of the interface exposed by the endpoint.
+     *
+     * @param	interfaceName	a QName specifiying the name of the interface
+     * @org.apache.xbean.Property description="the QName of the interface exposed by the endpoint"
      */
     public void setInterfaceName(QName interfaceName) {
         this.interfaceName = interfaceName;
@@ -109,7 +129,12 @@ public abstract class Endpoint {
     }
 
     /**
-     * @param serviceUnit The serviceUnit to set.
+     * Associates an endpoint with a service unit. The service unit is used by 
+     * the container to manage the endpoint's lifecycle.
+     *
+     * @param	serviceUnit	a <code>ServiceUnit</code> to which the endpoint 
+     *				will be associated
+     * @org.apache.xbean.Property description="the service unit responsible for the endpoint"
      */
     public void setServiceUnit(ServiceUnit serviceUnit) {
         this.serviceUnit = serviceUnit;

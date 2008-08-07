@@ -76,6 +76,12 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
         return delay;
     }
 
+    /**
+     * Sets the amount of time the endpoint waits before making the first poll.
+     *
+     * @param        delay   a long specifying the number of milliseconds to wait
+     * @org.apache.xbean.Property description="the number of milliseconds to wait before the first poll"
+     */
     public void setDelay(long delay) {
         this.delay = delay;
     }
@@ -84,6 +90,15 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
         return firstTime;
     }
 
+    /**
+     * Sets the date on which the first poll will be executed. If a delay is 
+     * also set using <code>setDelay</code>, the delay interval will be added 
+     * after the date specified,
+     *
+     * @param        firstTime       a <code>Date</code> specifying when to make the 
+     *                               first polling attempt
+     * @org.apache.xbean.Property description="the date of the first polling attempt. The date is specified using the <code>YYYY-MM-DD</code> format. The <code>delay</code> value is added after the date."
+     */
     public void setFirstTime(Date firstTime) {
         this.firstTime = firstTime;
     }
@@ -92,6 +107,12 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
         return period;
     }
 
+    /**
+     * Sets the number of milliseconds between polling attempts.
+     *
+     * @param        period  a long specifying the gap between polling attempts
+     * @org.apache.xbean.Property description="the number of milliseconds between polling attempts"
+     */
     public void setPeriod(long period) {
         this.period = period;
     }

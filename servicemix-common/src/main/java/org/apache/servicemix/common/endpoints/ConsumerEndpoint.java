@@ -92,7 +92,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * @param targetEndpoint the targetEndpoint to set
+     * Sets the endpoint name of the target endpoint.
+     *
+     * @param        targetEndpoint  a string specifiying the name of the target endpoint
+     * @org.apache.xbean.Property description="the name of the endpoint to which requests are sent"
      */
     public void setTargetEndpoint(String targetEndpoint) {
         this.targetEndpoint = targetEndpoint;
@@ -106,7 +109,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * @param targetInterface the targetInterface to set
+     * Sets the name of the target interface.
+     *
+     * @param        targetInterface a QName specifiying the name of the target interface
+     * @org.apache.xbean.Property description="the QName of the interface to which requests are sent"
      */
     public void setTargetInterface(QName targetInterface) {
         this.targetInterface = targetInterface;
@@ -120,7 +126,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * @param targetService the targetService to set
+     * Sets the name of the target service.
+     *
+     * @param        targetService   a QName specifiying the name of the target interface
+     * @org.apache.xbean.Property description="the QName of the service to which requests are sent"
      */
     public void setTargetService(QName targetService) {
         this.targetService = targetService;
@@ -134,7 +143,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * @param targetOperation the targetOperation to set
+     * Sets the name of the target operation.
+     *
+     * @param        targetOperation a QName specifiying the name of the target operation
+     * @org.apache.xbean.Property description="the QName of the operation to which requests are sent"
      */
     public void setTargetOperation(QName targetOperation) {
         this.targetOperation = targetOperation;
