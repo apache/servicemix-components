@@ -159,6 +159,20 @@
           </excludes>
         </configuration>
       </plugin>
+      <!-- include maven source plugin on non-release builds to get documentation generated on SNAPSHOTs -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   

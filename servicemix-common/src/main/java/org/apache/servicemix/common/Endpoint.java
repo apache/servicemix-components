@@ -36,17 +36,17 @@ public abstract class Endpoint {
     protected ServiceUnit serviceUnit;
     protected Log logger;
     private String key;
-    
+
     public Endpoint() {
     }
-    
+
     public Endpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
         this.serviceUnit = serviceUnit;
         this.logger = serviceUnit.getComponent().getLogger();
         this.service = service;
         this.endpoint = endpoint;
     }
-    
+
     /**
      * @return Returns the endpoint.
      */
@@ -56,14 +56,15 @@ public abstract class Endpoint {
 
     /**
      * Sets the name of the endpoint.
-     *
-     * @param	endpoint	a string specifiying the name of the endpoint
+     * 
+     * @param endpoint a string specifiying the name of the endpoint
      * @org.apache.xbean.Property description="the name of the endpoint"
      */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
         this.key = null;
     }
+
     /**
      * @return Returns the service.
      */
@@ -73,20 +74,20 @@ public abstract class Endpoint {
 
     /**
      * Sets the name of the service the endpoint exposes.
-     *
-     * @param	service	a QName specifiying the name of the service
+     * 
+     * @param service a QName specifiying the name of the service
      * @org.apache.xbean.Property description="the QName of the service exposed by the endpoint"
      */
     public void setService(QName service) {
         this.service = service;
         this.key = null;
     }
-    
+
     /**
      * @return Returns the role.
      */
     public abstract Role getRole();
-    
+
     /**
      * @return Returns the description.
      */
@@ -95,16 +96,16 @@ public abstract class Endpoint {
     }
 
     /**
-     * Associates an XML document with the endpoint. The XML document describes 
-     * the endpoint and is typically found in the service unit packaging.
-     *
-     * @param	description	a <code>Document</code> describing the endpoint
+     * Associates an XML document with the endpoint. The XML document describes the endpoint and is typically found in the service
+     * unit packaging.
+     * 
+     * @param description a <code>Document</code> describing the endpoint
      * @org.apache.xbean.Property description="an XML document describing the endpoint"
      */
     public void setDescription(Document description) {
         this.description = description;
     }
-    
+
     /**
      * @return Returns the interfaceName.
      */
@@ -114,13 +115,14 @@ public abstract class Endpoint {
 
     /**
      * Sets the QName of the interface exposed by the endpoint.
-     *
-     * @param	interfaceName	a QName specifiying the name of the interface
+     * 
+     * @param interfaceName a QName specifiying the name of the interface
      * @org.apache.xbean.Property description="the QName of the interface exposed by the endpoint"
      */
     public void setInterfaceName(QName interfaceName) {
         this.interfaceName = interfaceName;
     }
+
     /**
      * @return Returns the serviceUnit.
      */
@@ -129,11 +131,9 @@ public abstract class Endpoint {
     }
 
     /**
-     * Associates an endpoint with a service unit. The service unit is used by 
-     * the container to manage the endpoint's lifecycle.
-     *
-     * @param	serviceUnit	a <code>ServiceUnit</code> to which the endpoint 
-     *				will be associated
+     * Associates an endpoint with a service unit. The service unit is used by the container to manage the endpoint's lifecycle.
+     * 
+     * @param serviceUnit a <code>ServiceUnit</code> to which the endpoint will be associated
      * @org.apache.xbean.Property description="the service unit responsible for the endpoint"
      */
     public void setServiceUnit(ServiceUnit serviceUnit) {
@@ -142,7 +142,7 @@ public abstract class Endpoint {
     }
 
     public boolean isExchangeOkay(MessageExchange exchange) {
-        // TODO: We could check the MEP here 
+        // TODO: We could check the MEP here
         return true;
     }
 
@@ -151,15 +151,14 @@ public abstract class Endpoint {
     }
 
     public abstract void activate() throws Exception;
-    
+
     public abstract void deactivate() throws Exception;
 
     public abstract ExchangeProcessor getProcessor();
-    
+
     public String toString() {
-        return "Endpoint[service: " + service + ", " + 
-                        "endpoint: " + endpoint + ", " +
-                        "role: " + (getRole() == Role.PROVIDER ? "provider" : "consumer") + "]";
+        return "Endpoint[service: " + service + ", " + "endpoint: " + endpoint + ", " + "role: "
+               + (getRole() == Role.PROVIDER ? "provider" : "consumer") + "]";
     }
 
     /**
@@ -169,7 +168,7 @@ public abstract class Endpoint {
      */
     public void validate() throws DeploymentException {
     }
-    
+
     public Definition getDefinition() {
         return definition;
     }
@@ -177,7 +176,7 @@ public abstract class Endpoint {
     public void setDefinition(Definition definition) {
         this.definition = definition;
     }
-    
+
     String getKey() {
         if (key == null) {
             if (service == null) {

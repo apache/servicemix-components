@@ -37,7 +37,7 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     private String targetEndpoint;
     private QName targetOperation;
     private String targetUri;
-    
+
     public ConsumerEndpoint() {
     }
 
@@ -56,11 +56,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     public synchronized void start() throws Exception {
         ServiceMixComponent component = getServiceUnit().getComponent();
         ComponentContext ctx = component.getComponentContext();
-        activated = new ExternalEndpoint(component.getEPRElementName(),
-                                         getLocationURI(),
-                                         getService(),
-                                         getEndpoint(),
-                                         getInterfaceName());
+        activated = new ExternalEndpoint(component.getEPRElementName(), getLocationURI(), getService(),
+                                         getEndpoint(), getInterfaceName());
         ctx.registerExternalEndpoint(activated);
     }
 
@@ -75,10 +72,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * Return the URI identifying this external endpoint.
-     * This must be overriden so that endpoint resolution can work correctly.
-     *
-     * @return the URI identifying this external endpoint 
+     * Return the URI identifying this external endpoint. This must be overriden so that endpoint resolution can work correctly.
+     * 
+     * @return the URI identifying this external endpoint
      */
     public String getLocationURI() {
         return null;
@@ -93,8 +89,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
 
     /**
      * Sets the endpoint name of the target endpoint.
-     *
-     * @param        targetEndpoint  a string specifiying the name of the target endpoint
+     * 
+     * @param targetEndpoint a string specifiying the name of the target endpoint
      * @org.apache.xbean.Property description="the name of the endpoint to which requests are sent"
      */
     public void setTargetEndpoint(String targetEndpoint) {
@@ -110,8 +106,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
 
     /**
      * Sets the name of the target interface.
-     *
-     * @param        targetInterface a QName specifiying the name of the target interface
+     * 
+     * @param targetInterface a QName specifiying the name of the target interface
      * @org.apache.xbean.Property description="the QName of the interface to which requests are sent"
      */
     public void setTargetInterface(QName targetInterface) {
@@ -127,8 +123,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
 
     /**
      * Sets the name of the target service.
-     *
-     * @param        targetService   a QName specifiying the name of the target interface
+     * 
+     * @param targetService a QName specifiying the name of the target interface
      * @org.apache.xbean.Property description="the QName of the service to which requests are sent"
      */
     public void setTargetService(QName targetService) {
@@ -144,8 +140,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
 
     /**
      * Sets the name of the target operation.
-     *
-     * @param        targetOperation a QName specifiying the name of the target operation
+     * 
+     * @param targetOperation a QName specifiying the name of the target operation
      * @org.apache.xbean.Property description="the QName of the operation to which requests are sent"
      */
     public void setTargetOperation(QName targetOperation) {
@@ -165,7 +161,7 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     public void setTargetUri(String targetUri) {
         this.targetUri = targetUri;
     }
-    
+
     protected void configureExchangeTarget(MessageExchange exchange) {
         if (targetUri != null) {
             URIResolver.configureExchange(exchange, getContext(), targetUri);
@@ -183,8 +179,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
                 if (se != null) {
                     exchange.setEndpoint(se);
                 } else {
-                    logger.warn("Target service (" + targetService + ") and endpoint (" + targetEndpoint + ")" + 
-                            " specified, but no matching endpoint found.  Only the service will be used for routing.");
+                    logger.warn("Target service (" + targetService + ") and endpoint (" + targetEndpoint + ")"
+                              + " specified, but no matching endpoint found.  Only the service will be used for routing.");
                 }
             }
         }
