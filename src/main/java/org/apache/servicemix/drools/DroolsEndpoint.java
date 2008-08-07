@@ -192,7 +192,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
      * Handle a consumer exchange
      */
     private void handleConsumerExchange(MessageExchange exchange) throws MessagingException {
-        String correlation = getCorrelationId(exchange); 
+        String correlation = (String) exchange.getProperty(DroolsComponent.DROOLS_CORRELATION_ID); 
         JbiHelper helper = pending.get(correlation);
         if (helper != null) {
             MessageExchange original = helper.getExchange().getInternalExchange();
@@ -211,7 +211,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
             // update the rule engine's working memory to trigger post-done rules
             helper.update();
         } else {
-            logger.debug("No matching exchange found for " + exchange.getExchangeId() + ", no additional rules will be triggered");
+            logger.debug("No pending exchange found for " + correlation + ", no additional rules will be triggered");
         }
     }
 
@@ -233,15 +233,15 @@ public class DroolsEndpoint extends ProviderEndpoint {
     protected void drools(MessageExchange exchange) throws Exception {
         WorkingMemory memory = createWorkingMemory(exchange);
         JbiHelper helper = populateWorkingMemory(memory, exchange);
-        pending.put(getCorrelationId(exchange), helper);
+        pending.put(exchange.getExchangeId(), helper);
         memory.fireAllRules();
         
         //no rules were fired --> must be config problem
         if (helper.getRulesFired() < 1) {
             fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
         } else {
-            //a rule was triggered but no message was forwarded -> message has been handled by drools
-            if (helper.getForwarded() < 1) {
+            //a rule was triggered and the message has been answered or faulted by the drools endpoint
+            if (helper.isExchangeHandled()) {
                 pending.remove(exchange);
             }
         }
@@ -306,7 +306,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
     @Override
     protected void send(MessageExchange me) throws MessagingException {
         //remove the exchange from the list of pending exchanges
-        pending.remove(getCorrelationId(me));
+        pending.remove(me.getExchangeId());
         super.send(me);
     }
  }

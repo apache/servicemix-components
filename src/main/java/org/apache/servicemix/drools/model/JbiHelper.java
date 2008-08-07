@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.util.URIResolver;
+import org.apache.servicemix.drools.DroolsComponent;
 import org.apache.servicemix.drools.DroolsEndpoint;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -51,7 +52,7 @@ public class JbiHelper extends DefaultAgendaEventListener {
     private WorkingMemory memory;
     private FactHandle exchangeFactHandle;
     private int rulesFired;
-    private int forwarded;
+    private boolean exchangeHandled = false;
 
     public JbiHelper(DroolsEndpoint endpoint, MessageExchange exchange, WorkingMemory memory) {
         this.endpoint = endpoint;
@@ -126,8 +127,8 @@ public class JbiHelper extends DefaultAgendaEventListener {
         String key = EndpointSupport.getKey(endpoint);
         newMe.setProperty(JbiConstants.SENDER_ENDPOINT, key);
         newMe.setProperty(JbiConstants.CORRELATION_ID, DroolsEndpoint.getCorrelationId(this.exchange.getInternalExchange()));
+        newMe.setProperty(DroolsComponent.DROOLS_CORRELATION_ID, me.getExchangeId());
         getChannel().send(newMe);
-        forwarded++;
     }
 
     /**
@@ -161,6 +162,7 @@ public class JbiHelper extends DefaultAgendaEventListener {
             me.setFault(fault);
             getChannel().send(me);
         }
+        exchangeHandled = true;
     }
 
     /**
@@ -180,6 +182,7 @@ public class JbiHelper extends DefaultAgendaEventListener {
             me.setFault(fault);
             getChannel().send(me);
         }
+        exchangeHandled = true;
     }
 
     /**
@@ -201,6 +204,7 @@ public class JbiHelper extends DefaultAgendaEventListener {
         out.setContent(content);
         me.setMessage(out, "out");
         getChannel().sendSync(me);
+        exchangeHandled = true;
         update();
     }
 
@@ -221,12 +225,12 @@ public class JbiHelper extends DefaultAgendaEventListener {
     }
     
     /**
-     * Get the number of times a message has been forwarded
+     * Has the MessageExchange been handled by the drools endpoint?
      * 
-     * @return the number of forwards
+     * @return
      */
-    public int getForwarded() {
-        return forwarded;
+    public boolean isExchangeHandled() {
+        return exchangeHandled;
     }
 
     // event handler callbacks
