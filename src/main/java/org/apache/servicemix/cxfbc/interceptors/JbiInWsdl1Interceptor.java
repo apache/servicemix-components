@@ -225,12 +225,25 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                 CxfJbiConstants.WSDL11_WRAPPER_NAMESPACE, JbiFault.JBI_FAULT_ROOT));
         Node jbiFaultDetail = null;
         if (message.getVersion() instanceof Soap11) {
-            jbiFaultDetail = doc.importNode(soapFault.getElementsByTagName(
-                "detail").item(0).getFirstChild(), true);
+            NodeList nodeList = soapFault.getElementsByTagName("detail");
+            if (nodeList == null) {
+                //there is no detail in the fault, which means the fault is
+                //thrown during soap header process according to soap spec,
+                //try get the mandatory elemenet faultstring
+                nodeList = soapFault.getElementsByTagName("faultstring");
+            }
+            jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
         } else {
-            jbiFaultDetail = doc.importNode(soapFault.getElementsByTagName(
-                    "soap:Detail").item(0).getFirstChild(), true);
+            NodeList nodeList = soapFault.getElementsByTagName("soap:Detail");
+            if (nodeList == null) {
+                //there is no detail in the fault, which means the fault is
+                //thrown during soap header process according to soap spec,
+                //try get the mandatory elemenet soap:Reason
+                nodeList = soapFault.getElementsByTagName("soap:Reason");
+            }
+            jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
         }
+
         SchemaInfo schemaInfo = 
             getOperation(message).getBinding().getService().getSchema(jbiFaultDetail.getNamespaceURI());
         if (schemaInfo != null && !schemaInfo.isElementFormQualified()) {
