@@ -48,7 +48,7 @@
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
     <servicemix-cxf-se-version>4.0-SNAPSHOT</servicemix-cxf-se-version>
-    <cxf-version>2.1.2-SNAPSHOT</cxf-version>
+    <cxf-version>2.1.3-SNAPSHOT</cxf-version>
     <jetty-version>6.1.6</jetty-version>
     <spring-version>2.0.6</spring-version>
     <derby-version>10.2.2.0</derby-version>
