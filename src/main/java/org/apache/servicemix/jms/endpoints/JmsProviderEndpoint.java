@@ -400,21 +400,26 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         final Destination replyDest = getReplyDestination(exchange, out, session);
         // Create message and send it
         final Message sendJmsMsg = marshaler.createMessage(exchange, in, session);
-        //setCorrelationID(sendJmsMsg, exchange);
-        sendJmsMsg.setJMSReplyTo(replyDest);
+        sendJmsMsg.setJMSReplyTo(replyDest);  
+
         template.send(dest, new MessageCreator() {
-            public Message createMessage(Session session) throws JMSException {
+            public Message createMessage(Session session)
+                throws JMSException {
                 return sendJmsMsg;
             }
         });
+        
         // Create selector
         String jmsId = sendJmsMsg.getJMSMessageID();
         String selector = MSG_SELECTOR_START + jmsId + MSG_SELECTOR_END;
-        //Receiving JMS Message, Creating and Returning NormalizedMessage out
-        Message receiveJmsMsg = template.receiveSelected(replyDest, selector);
-        if (receiveJmsMsg == null) {
-            throw new IllegalStateException("Unable to receive response");
-        }
+        Message receiveJmsMsg;
+        synchronized (template) {
+            // Receiving JMS Message, Creating and Returning NormalizedMessage out
+            receiveJmsMsg = template.receiveSelected(replyDest, selector);
+            if (receiveJmsMsg == null) {
+                throw new IllegalStateException("Unable to receive response");
+            }
+        }    
         marshaler.populateMessage(receiveJmsMsg, exchange, out);
     }
 
