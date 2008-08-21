@@ -32,6 +32,7 @@ import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.api.model.Binding;
+import org.apache.servicemix.soap.bindings.soap.SoapConstants;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.interceptors.xml.StaxInInterceptor;
 import org.mortbay.io.ByteArrayBuffer;
@@ -49,6 +50,7 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
     private Policy[] policies;
     private String baseUrl;
     private Map<Phase, InterceptorChain> chains = new HashMap<Phase, InterceptorChain>();
+    private String soapAction;
 
     public Binding<?> getBinding() {
         return binding;
@@ -81,6 +83,14 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
     public void setPolicies(Policy[] policies) {
         this.policies = policies;
     }
+    
+    public void setSoapAction(String soapAction) {
+        this.soapAction = soapAction;
+    }
+    
+    public String getSoapAction() {
+        return soapAction;
+    }
 
     public void createRequest(final MessageExchange exchange, 
                               final NormalizedMessage inMsg, 
@@ -101,6 +111,9 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
         for (Map.Entry<String,String> entry : msg.getTransportHeaders().entrySet()) {
             httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
         }
+        if (soapAction != null) {
+            httpExchange.setRequestHeader(SoapConstants.SOAP_ACTION_HEADER, soapAction);
+        }
         /*
         httpExchange.setRequestEntity(new Entity() {
             public void write(OutputStream os, Writer w) throws IOException {
@@ -108,7 +121,6 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
             }
         });
         */
-        // TODO: add transport headers
         // TODO: use streaming when appropriate (?)
     }
 
