@@ -20,6 +20,7 @@ import java.security.GeneralSecurityException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -32,6 +33,30 @@ public interface KeystoreManager {
 
     KeystoreInstance getKeystore(String name);
 
+    /**
+     * Gets a SSLContext using one Keystore to access the private key
+     * and another to provide the list of trusted certificate authorities.
+     * @param provider
+     * @param protocol The SSL protocol to use
+     * @param algorithm The SSL algorithm to use
+     * @param keyStore The key keystore name as provided by listKeystores.  The
+     *                 KeystoreInstance for this keystore must be unlocked.
+     * @param keyAlias The name of the private key in the keystore.  The
+     *                 KeystoreInstance for this keystore must have unlocked
+     *                 this key.
+     * @param trustStore The trust keystore name as provided by listKeystores.
+     *                   The KeystoreInstance for this keystore must have
+     *                   unlocked this key.
+     *
+     * @throws KeystoreIsLocked Occurs when the requested key keystore cannot
+     *                          be used because it has not been unlocked.
+     * @throws KeyIsLocked Occurs when the requested private key in the key
+     *                     keystore cannot be used because it has not been
+     *                     unlocked.
+     */
+    SSLContext createSSLContext(String provider, String protocol,
+                                String algorithm, String keyStore,
+                                String keyAlias, String trustStore) throws GeneralSecurityException;
     /**
      * Gets a ServerSocketFactory using one Keystore to access the private key
      * and another to provide the list of trusted certificate authorities.
