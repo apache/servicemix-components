@@ -71,25 +71,27 @@
       <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-jbi</artifactId>
-      <version>${servicemix-version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-services</artifactId>
-      <version>${servicemix-version}</version>
+      <groupId>org.apache.servicemix.specs</groupId>
+      <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
          <groupId>org.springframework</groupId>
          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.apache.servicemix</groupId>
+         <artifactId>servicemix-services</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.apache.servicemix</groupId>
+         <artifactId>servicemix-jbi</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
