@@ -40,7 +40,7 @@ import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.mortbay.thread.BoundedThreadPool;
+import org.mortbay.thread.QueuedThreadPool;
 
 /**
  * an HTTP JBI component
@@ -171,10 +171,10 @@ public class HttpComponent extends DefaultComponent {
         return connectionPool;
     }
 
-    public org.mortbay.jetty.client.HttpClient getNewJettyClient(HttpComponent comp) throws Exception {
+    public org.mortbay.jetty.client.HttpClient createNewJettyClient() throws Exception {
         org.mortbay.jetty.client.HttpClient tempClient = new org.mortbay.jetty.client.HttpClient();
-        BoundedThreadPool btp = new BoundedThreadPool();
-        btp.setMaxThreads(comp.getConfiguration().getJettyClientThreadPoolSize());
+        QueuedThreadPool btp = new QueuedThreadPool();
+        btp.setMaxThreads(getConfiguration().getJettyClientThreadPoolSize());
         tempClient.setThreadPool(btp);
         tempClient.setConnectorType(org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
         tempClient.start();
@@ -259,7 +259,7 @@ public class HttpComponent extends DefaultComponent {
         }
         // Create connectionPool
         if (connectionPool == null) {
-            connectionPool = getNewJettyClient(this);
+            connectionPool = createNewJettyClient();
         }
         // Create serverManager
         if (configuration.isManaged()) {

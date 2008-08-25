@@ -75,13 +75,12 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
      * Specifies if the HTTP provider processor copies the HTTP headers from the HTTP response into the JBI exchange. If the headers
      * will be used for a new HTTP reuquest, setting this to <code>true</code> leads to an error.
      * 
-     * @param wantHeadersFromHttpIntoExchange <code>true</code> if the HTTP headers will be copied into the exchange
+     * @param wantContentTypeHeaderFromExchangeIntoHttpRequest <code>true</code> if the HTTP headers will be copied into the exchange
      * @org.apache.xbean.Property description="Specifies if the HTTP provider will copy the HTTP request headers into the JBI
      *                            exchange. The default is <code>false</code>. This value overrides the value set for the component
      *                            using the <code>configuration</code> element."
      */
-    public void setWantContentTypeHeaderFromExchangeIntoHttpRequest(
-                                                                    boolean wantContentTypeHeaderFromExchangeIntoHttpRequest) {
+    public void setWantContentTypeHeaderFromExchangeIntoHttpRequest(boolean wantContentTypeHeaderFromExchangeIntoHttpRequest) {
         this.wantContentTypeHeaderFromExchangeIntoHttpRequest = wantContentTypeHeaderFromExchangeIntoHttpRequest;
     }
 
@@ -170,7 +169,7 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     /**
      * Sets the URI to which an endpoint sends requests.
      * 
-     * @param locationURI a string representing the URI
+     * @param locationUri a string representing the URI
      * @org.apache.xbean.Property description="the URI to which a provider endpoint sends requests"
      */
     public void setLocationURI(String locationUri) {

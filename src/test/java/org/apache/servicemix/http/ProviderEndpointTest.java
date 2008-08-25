@@ -19,6 +19,9 @@ package org.apache.servicemix.http;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.namespace.QName;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletContext;
 
 import junit.framework.TestCase;
 
@@ -32,11 +35,17 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.springframework.core.io.ClassPathResource;
+import org.mortbay.proxy.AsyncProxyServlet;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.Handler;
+import org.mortbay.jetty.servlet.ServletHandler;
+import org.mortbay.jetty.nio.SelectChannelConnector;
 
 public class ProviderEndpointTest extends TestCase {
 
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
+    protected Server proxy;
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -49,6 +58,9 @@ public class ProviderEndpointTest extends TestCase {
     protected void tearDown() throws Exception {
         if (container != null) {
             container.shutDown();
+        }
+        if (proxy != null) {
+            proxy.stop();
         }
     }
 
@@ -257,5 +269,60 @@ public class ProviderEndpointTest extends TestCase {
                              +  "</jbi:message>"));
         client.sendSync(me);
         assertEquals(ExchangeStatus.ERROR, me.getStatus());
+    }
+
+    public void testProxy() throws Exception {
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        echo.setEndpoint("service");
+        container.activateComponent(echo, "echo");
+
+        HttpComponent http = new HttpComponent();
+
+        HttpConsumerEndpoint ep0 = new HttpConsumerEndpoint();
+        ep0.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep0.setEndpoint("consumer");
+        ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep0.setTargetEndpoint("service");
+        ep0.setLocationURI("http://localhost:8192/person/");
+
+        HttpProviderEndpoint ep1 = new HttpProviderEndpoint();
+        ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep1.setEndpoint("provider");
+        ep1.setLocationURI("http://localhost:8192/person/");
+        ep1.setProxyHost("localhost");
+        ep1.setProxyPort(8193);
+
+        http.setEndpoints(new HttpEndpointType[] {ep0, ep1 });
+        container.activateComponent(http, "http");
+        container.start();
+
+        proxy = new Server();
+        SelectChannelConnector connector = new SelectChannelConnector();
+        connector.setHost("localhost");
+        connector.setPort(8193);
+        proxy.addConnector(connector);
+        ServletHandler handler = new ServletHandler();
+        handler.addServletWithMapping(AsyncProxyServlet.class, "/");
+        proxy.addHandler(handler);
+        proxy.start();
+
+        ServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        me.setOperation(new QName("http://servicemix.apache.org/samples/wsdl-first", "GetPerson"));
+        me.getInMessage().setContent(new StringSource(
+                                "<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\""
+                             +  "             xmlns:msg=\"http://servicemix.apache.org/samples/wsdl-first/types\" "
+                             +  "             name=\"Hello\" "
+                             +  "             type=\"msg:HelloRequest\" "
+                             +  "             version=\"1.0\">"
+                             +  "  <jbi:part>"
+                             +  "    <msg:GetPerson><msg:personId>id</msg:personId></msg:GetPerson>"
+                             +  "  </jbi:part>"
+                             +  "</jbi:message>"));
+        client.sendSync(me);
+
+        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
     }
 }

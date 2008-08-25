@@ -46,7 +46,7 @@ import org.springframework.core.io.Resource;
 import org.xml.sax.InputSource;
 
 /**
- * an HTTP provider endpoint optimized to work with SOAP messages. This type of endpoint requires the use of WSDL.
+ * An HTTP provider endpoint optimized to work with SOAP messages. This type of endpoint requires the use of WSDL.
  * 
  * @author gnodet
  * @since 3.2

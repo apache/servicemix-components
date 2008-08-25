@@ -74,7 +74,6 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      * HttpProviderEndpoints to jetty client per HttpProviderEndpoint. It's
      * default value is false.
      */
-
     private boolean jettyClientPerProvider;
 
     /**
