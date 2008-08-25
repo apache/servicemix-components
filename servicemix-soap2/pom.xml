@@ -44,9 +44,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-jbi</artifactId>
-      <version>${servicemix-version}</version>
+      <groupId>org.apache.servicemix.specs</groupId>
+      <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>

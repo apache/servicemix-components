@@ -48,12 +48,18 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-jbi</artifactId>
-      <version>${servicemix-version}</version>
+      <groupId>org.apache.servicemix.specs</groupId>
+      <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
+      <version>${servicemix-specs-version}</version>
       <scope>provided</scope>
     </dependency>
-    	<dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-utils</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
@@ -63,6 +69,14 @@
         <exclusion>
          <groupId>org.springframework</groupId>
          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.apache.servicemix</groupId>
+         <artifactId>servicemix-jbi</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.apache.servicemix</groupId>
+         <artifactId>servicemix-services</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

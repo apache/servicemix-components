@@ -48,7 +48,12 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-soap2</artifactId>
       <version>${pom.version}</version>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-utils</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
@@ -69,6 +74,10 @@
         <exclusion>
           <groupId>org.apache.servicemix</groupId>
           <artifactId>servicemix-jbi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.servicemix</groupId>
+          <artifactId>servicemix-services</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.apache.xbean</groupId>
