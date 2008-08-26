@@ -107,7 +107,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
                     jmsTemplate.send("reply", new MessageCreator() {
                         public Message createMessage(Session session) throws JMSException {
                             TextMessage rep = session.createTextMessage(baos.toString());
-                            rep.setJMSCorrelationID(msg.getJMSMessageID());
+                            rep.setJMSCorrelationID(msg.getJMSCorrelationID() != null ? msg.getJMSCorrelationID() : msg.getJMSMessageID());
                             return rep;
                         }
                     });
