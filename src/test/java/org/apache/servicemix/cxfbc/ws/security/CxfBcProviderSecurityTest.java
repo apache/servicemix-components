@@ -19,6 +19,8 @@ package org.apache.servicemix.cxfbc.ws.security;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
@@ -70,7 +72,17 @@ public class CxfBcProviderSecurityTest extends SpringTestSupport {
     public boolean launchServer(Class<?> clz, boolean inProcess) {
         boolean ok = false;
         try { 
-            sl = new ServerLauncher(clz.getName(), inProcess);
+            // java.security.properties is set when using the ibm jdk to work
+            // around some security test issues.  Check our system properties
+            // for this key, and if it's set, then propagate the property on
+            // to the server we launch as well.
+            Map<String, String> properties = null;
+            if (System.getProperty("java.security.properties") != null) {
+                properties = new HashMap<String, String>();
+                properties.put("java.security.properties",
+                    System.getProperty("java.security.properties"));
+            }
+            sl = new ServerLauncher(clz.getName(), properties, null, inProcess);
             ok = sl.launchServer();            
             assertTrue("server failed to launch", ok);
             
