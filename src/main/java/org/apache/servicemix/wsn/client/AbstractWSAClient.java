@@ -30,15 +30,17 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Document;
 
 import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.servicemix.common.util.URIResolver;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.wsn.jbi.JbiWrapperHelper;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 
@@ -52,12 +54,22 @@ public abstract class AbstractWSAClient {
 
     private ServiceEndpoint serviceEndpoint;
 
+    private boolean jbiWrapped;
+
     public AbstractWSAClient() {
     }
 
     public AbstractWSAClient(ComponentContext context, W3CEndpointReference endpoint) {
         this.context = context;
         this.endpoint = endpoint;
+    }
+
+    public boolean isJbiWrapped() {
+        return jbiWrapped;
+    }
+
+    public void setJbiWrapped(boolean jbiWrapped) {
+        this.jbiWrapped = jbiWrapped;
     }
 
     public static W3CEndpointReference createWSA(String address) {
@@ -68,7 +80,7 @@ public abstract class AbstractWSAClient {
 
     public static String getWSAAddress(W3CEndpointReference ref) {
         try {
-            Element element = new SourceTransformer().createDocument().createElement("elem");
+            Element element = JbiWrapperHelper.createDocument().createElement("elem");
             ref.writeTo(new DOMResult(element));
             NodeList nl = element.getElementsByTagNameNS("http://www.w3.org/2005/08/addressing", "Address");
             if (nl != null && nl.getLength() > 0) {
@@ -124,7 +136,14 @@ public abstract class AbstractWSAClient {
             exchange.setOperation(operation);
             NormalizedMessage in = exchange.createMessage();
             exchange.setInMessage(in);
-            in.setContent(new JAXBSource(getJAXBContext(), request));
+            if (isJbiWrapped()) {
+                Document doc = JbiWrapperHelper.createDocument();
+                getJAXBContext().createMarshaller().marshal(request, doc);
+                JbiWrapperHelper.wrap(doc);
+                in.setContent(new DOMSource(doc));
+            } else {
+                in.setContent(new JAXBSource(getJAXBContext(), request));
+            }
             getContext().getDeliveryChannel().sendSync(exchange);
             if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 throw new JBIException(exchange.getError());
@@ -132,12 +151,16 @@ public abstract class AbstractWSAClient {
                 throw new JBIException(exchange.getFault().toString());
             } else {
                 NormalizedMessage out = exchange.getOutMessage();
-                Object result = getJAXBContext().createUnmarshaller().unmarshal(out.getContent());
+                Source source = out.getContent();
+                if (isJbiWrapped()) {
+                    source = JbiWrapperHelper.unwrap(source);
+                }
+                Object result = getJAXBContext().createUnmarshaller().unmarshal(source);
                 exchange.setStatus(ExchangeStatus.DONE);
                 getContext().getDeliveryChannel().send(exchange);
                 return result;
             }
-        } catch (JAXBException e) {
+        } catch (Exception e) {
             throw new JBIException(e);
         }
     }

@@ -48,6 +48,8 @@ import org.oasis_open.docs.wsn.bw_2.SubscribeCreationFailedFault;
 import org.oasis_open.docs.wsn.bw_2.TopicExpressionDialectUnknownFault;
 import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
 import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
+import org.oasis_open.docs.wsn.bw_2.UnsupportedPolicyRequestFault;
+import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
 
 public class JbiSubscription extends JmsSubscription implements ComponentContextAware {
 
@@ -70,7 +72,8 @@ public class JbiSubscription extends JmsSubscription implements ComponentContext
     protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault,
             InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault,
             InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
-            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault,
+            UnsupportedPolicyRequestFault, UnrecognizedPolicyRequestFault {
         super.validateSubscription(subscribeRequest);
         try {
             endpoint = resolveConsumer(subscribeRequest);

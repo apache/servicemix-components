@@ -136,6 +136,28 @@ public class WSNComponentTest extends TestCase {
         Thread.sleep(500);
     }
 
+    public void testNotifyWithJbiWrapper() throws Exception {
+        wsnBroker.setJbiWrapped(true);
+
+        ReceiverComponent receiver = new ReceiverComponent();
+        jbi.activateComponent(receiver, "receiver");
+
+        W3CEndpointReference consumer = createEPR(ReceiverComponent.SERVICE, ReceiverComponent.ENDPOINT);
+        wsnBroker.subscribe(consumer, "myTopic", null);
+
+        wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
+        // Wait for notification
+        Thread.sleep(500);
+
+        receiver.getMessageList().assertMessagesReceived(1);
+        NormalizedMessage msg = (NormalizedMessage) receiver.getMessageList().getMessages().get(0);
+        Node node = new SourceTransformer().toDOMNode(msg);
+        assertEquals("Notify", node.getLocalName());
+
+        // Wait for acks to be processed
+        Thread.sleep(500);
+    }
+
     public void testRawNotify() throws Exception {
         ReceiverComponent receiver = new ReceiverComponent();
         jbi.activateComponent(receiver, "receiver");

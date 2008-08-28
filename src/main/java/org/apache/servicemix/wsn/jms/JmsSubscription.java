@@ -60,6 +60,8 @@ import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
 import org.oasis_open.docs.wsn.bw_2.UnableToDestroySubscriptionFault;
 import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
 import org.oasis_open.docs.wsn.bw_2.UnacceptableTerminationTimeFault;
+import org.oasis_open.docs.wsn.bw_2.UnsupportedPolicyRequestFault;
+import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
 
 public abstract class JmsSubscription extends AbstractSubscription implements MessageListener {
 
@@ -93,7 +95,8 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
     protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault,
             InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault,
             InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
-            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault,
+            UnsupportedPolicyRequestFault, UnrecognizedPolicyRequestFault {
         super.validateSubscription(subscribeRequest);
         try {
             jmsTopic = topicConverter.toActiveMQTopic(topic);

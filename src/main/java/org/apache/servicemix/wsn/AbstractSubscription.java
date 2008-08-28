@@ -51,6 +51,7 @@ import org.oasis_open.docs.wsn.b_2.UnacceptableTerminationTimeFaultType;
 import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
 import org.oasis_open.docs.wsn.b_2.UseRaw;
+import org.oasis_open.docs.wsn.b_2.UnrecognizedPolicyRequestFaultType;
 import org.oasis_open.docs.wsn.bw_2.InvalidFilterFault;
 import org.oasis_open.docs.wsn.bw_2.InvalidMessageContentExpressionFault;
 import org.oasis_open.docs.wsn.bw_2.InvalidProducerPropertiesExpressionFault;
@@ -64,6 +65,8 @@ import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
 import org.oasis_open.docs.wsn.bw_2.UnableToDestroySubscriptionFault;
 import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
 import org.oasis_open.docs.wsn.bw_2.UnacceptableTerminationTimeFault;
+import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
+import org.oasis_open.docs.wsn.bw_2.UnsupportedPolicyRequestFault;
 import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
 
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.PausableSubscriptionManager")
@@ -273,7 +276,8 @@ public abstract class AbstractSubscription extends AbstractEndpoint implements P
 
     public void create(Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault,
             InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, SubscribeCreationFailedFault,
-            TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+            TopicExpressionDialectUnknownFault, TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault,
+            UnrecognizedPolicyRequestFault, UnsupportedPolicyRequestFault {
         validateSubscription(subscribeRequest);
         start();
     }
@@ -302,7 +306,8 @@ public abstract class AbstractSubscription extends AbstractEndpoint implements P
     protected void validateSubscription(Subscribe subscribeRequest) throws InvalidFilterFault,
             InvalidMessageContentExpressionFault, InvalidProducerPropertiesExpressionFault,
             InvalidTopicExpressionFault, SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
-            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault, UnrecognizedPolicyRequestFault,
+            UnsupportedPolicyRequestFault {
         // Check consumer reference
         consumerReference = subscribeRequest.getConsumerReference();
         // Check terminationTime
@@ -365,8 +370,8 @@ public abstract class AbstractSubscription extends AbstractEndpoint implements P
                 if (p instanceof UseRaw) {
                     useRaw = true;
                 } else {
-                    InvalidFilterFaultType fault = new InvalidFilterFaultType();
-                    throw new InvalidFilterFault("Unrecognized policy: " + p, fault);
+                    UnrecognizedPolicyRequestFaultType fault = new UnrecognizedPolicyRequestFaultType();
+                    throw new UnrecognizedPolicyRequestFault("Unrecognized policy: " + p, fault);
                 }
             }
         }

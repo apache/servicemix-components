@@ -17,11 +17,14 @@
 package org.apache.servicemix.wsn.component;
 
 import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collections;
+import java.util.GregorianCalendar;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -33,15 +36,25 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlMixed;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebFault;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.DatatypeFactory;
+
+import org.w3c.dom.Document;
 
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.wsn.ComponentContextAware;
+import org.apache.servicemix.wsn.jbi.JbiWrapperHelper;
 import org.oasis_open.docs.wsrf.bf_2.BaseFaultType;
 
 public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
@@ -84,6 +97,7 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
     public static JAXBContext createJAXBContext(Class interfaceClass) throws JAXBException {
         List<Class> classes = new ArrayList<Class>();
         classes.add(JbiFault.class);
+        classes.add(XmlException.class);
         for (Method mth : interfaceClass.getMethods()) {
             WebMethod wm = (WebMethod) mth.getAnnotation(WebMethod.class);
             if (wm != null) {
@@ -101,7 +115,13 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             return;
         }
-        Object input = jaxbContext.createUnmarshaller().unmarshal(exchange.getMessage("in").getContent());
+
+        boolean isJbiWrapped = false;
+        Source source = exchange.getMessage("in").getContent();
+        // Unwrap JBI message if needed
+        source = JbiWrapperHelper.unwrap(source);
+
+        Object input = jaxbContext.createUnmarshaller().unmarshal(source);
         Method webMethod = null;
         for (Method mth : endpointInterface.getMethods()) {
             Class[] params = mth.getParameterTypes();
@@ -122,12 +142,31 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
                 WebFault fa = (WebFault) e.getCause().getClass().getAnnotation(WebFault.class);
                 if (!(exchange instanceof InOnly) && fa != null) {
                     BaseFaultType info = (BaseFaultType) e.getCause().getClass().getMethod("getFaultInfo").invoke(e.getCause());
+                    // Set description if not already set
+                    if (info.getDescription().size() == 0) {
+                        BaseFaultType.Description desc = new BaseFaultType.Description();
+                        desc.setValue(e.getCause().getMessage());
+                        info.getDescription().add(desc);
+                    }
+                    // TODO: create originator field?
+                    // Set timestamp if needed
+                    if (info.getTimestamp() == null) {
+                        info.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+                    }
+                    
+                    // TODO: do we want to send the full stack trace here ?
+                    //BaseFaultType.FaultCause cause = new BaseFaultType.FaultCause();
+                    //cause.setAny(new XmlException(e.getCause()));
+                    //info.setFaultCause(cause);
                     Fault fault = exchange.createFault();
                     exchange.setFault(fault);
-                    exchange.setError((Exception) e.getCause());
-                    StringWriter writer = new StringWriter();
-                    jaxbContext.createMarshaller().marshal(new JbiFault(info), writer);
-                    fault.setContent(new StringSource(writer.toString()));
+                    Document doc = JbiWrapperHelper.createDocument();
+                    JAXBElement el = new JAXBElement(new QName(fa.targetNamespace(), fa.name()), info.getClass(), null, info);
+                    jaxbContext.createMarshaller().marshal(el, doc);
+                    if (isJbiWrapped) {
+                        JbiWrapperHelper.wrap(doc);
+                    }
+                    fault.setContent(new DOMSource(doc));
                     send(exchange);
                     return;
                 } else {
@@ -145,9 +184,12 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
         } else {
             NormalizedMessage msg = exchange.createMessage();
             exchange.setMessage(msg, "out");
-            StringWriter writer = new StringWriter();
-            jaxbContext.createMarshaller().marshal(output, writer);
-            msg.setContent(new StringSource(writer.toString()));
+            Document doc = JbiWrapperHelper.createDocument();
+            jaxbContext.createMarshaller().marshal(output, doc);
+            if (isJbiWrapped) {
+                JbiWrapperHelper.wrap(doc);
+            }
+            msg.setContent(new DOMSource(doc));
             sendSync(exchange);
         }
     }
@@ -169,6 +211,28 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
 
         public void setInfo(BaseFaultType info) {
             this.info = info;
+        }
+    }
+
+    @XmlRootElement(name = "Exception")
+    public static class XmlException {
+        private String stackTrace;
+        public XmlException() {
+        }
+        public XmlException(Throwable e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            stackTrace = sw.toString();
+        }
+        public String getStackTrace() {
+            return stackTrace;
+        }
+        public void setStackTrace(String stackTrace) {
+            this.stackTrace = stackTrace;
+        }
+        @XmlMixed
+        public List getContent() {
+            return Collections.singletonList(stackTrace);
         }
     }
 

@@ -56,6 +56,8 @@ import org.oasis_open.docs.wsn.bw_2.TopicExpressionDialectUnknownFault;
 import org.oasis_open.docs.wsn.bw_2.TopicNotSupportedFault;
 import org.oasis_open.docs.wsn.bw_2.UnableToDestroySubscriptionFault;
 import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
+import org.oasis_open.docs.wsn.bw_2.UnsupportedPolicyRequestFault;
+import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
 import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
 
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.brw_2.NotificationBroker")
@@ -157,7 +159,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
             Subscribe subscribeRequest) throws InvalidFilterFault, InvalidMessageContentExpressionFault,
             InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault, ResourceUnknownFault,
             SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault, TopicNotSupportedFault,
-            UnacceptableInitialTerminationTimeFault {
+            UnacceptableInitialTerminationTimeFault, UnsupportedPolicyRequestFault, UnrecognizedPolicyRequestFault {
 
         log.debug("Subscribe");
         return handleSubscribe(subscribeRequest, null);
@@ -168,7 +170,8 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
                 EndpointManager manager) throws InvalidFilterFault, InvalidMessageContentExpressionFault,
             InvalidProducerPropertiesExpressionFault, InvalidTopicExpressionFault,
             SubscribeCreationFailedFault, TopicExpressionDialectUnknownFault,
-                                                TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault {
+            TopicNotSupportedFault, UnacceptableInitialTerminationTimeFault,
+            UnsupportedPolicyRequestFault, UnrecognizedPolicyRequestFault {
         AbstractSubscription subscription = null;
         boolean success = false;
         try {
