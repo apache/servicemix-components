@@ -42,6 +42,7 @@ import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.drools.model.JbiHelper;
 import org.drools.RuleBase;
 import org.drools.WorkingMemory;
+import org.drools.StatefulSession;
 import org.drools.compiler.RuleBaseLoader;
 import org.springframework.core.io.Resource;
 
@@ -231,23 +232,26 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
 
     protected void drools(MessageExchange exchange) throws Exception {
-        WorkingMemory memory = createWorkingMemory(exchange);
-        JbiHelper helper = populateWorkingMemory(memory, exchange);
-        pending.put(exchange.getExchangeId(), helper);
-        memory.fireAllRules();
-        
-        //no rules were fired --> must be config problem
-        if (helper.getRulesFired() < 1) {
-            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
-        } else {
-            //a rule was triggered and the message has been answered or faulted by the drools endpoint
-            if (helper.isExchangeHandled()) {
-                pending.remove(exchange);
+        StatefulSession memory = createWorkingMemory(exchange);
+        try {
+            JbiHelper helper = populateWorkingMemory(memory, exchange);
+            pending.put(exchange.getExchangeId(), helper);
+            memory.fireAllRules();
+            //no rules were fired --> must be config problem
+            if (helper.getRulesFired() < 1) {
+                fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+            } else {
+                //a rule was triggered and the message has been answered or faulted by the drools endpoint
+                if (helper.isExchangeHandled()) {
+                    pending.remove(exchange);
+                }
             }
+        } finally {
+            memory.dispose();
         }
     }
     
-    protected WorkingMemory createWorkingMemory(MessageExchange exchange) throws Exception {
+    protected StatefulSession createWorkingMemory(MessageExchange exchange) throws Exception {
         return ruleBase.newStatefulSession();
     }
 
