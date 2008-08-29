@@ -16,11 +16,17 @@
  */
 package org.apache.servicemix.http;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,6 +49,7 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.jbi.messaging.MessageExchangeImpl;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.soap.bindings.soap.Soap11;
 import org.apache.servicemix.soap.bindings.soap.Soap12;
@@ -50,6 +57,7 @@ import org.apache.servicemix.soap.bindings.soap.SoapConstants;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.xpath.CachedXPathAPI;
 import org.springframework.core.io.ClassPathResource;
 
@@ -58,6 +66,10 @@ public class ConsumerEndpointTest extends TestCase {
 
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
+
+    static {
+        System.setProperty("org.apache.servicemix.preserveContent", "true");
+    }
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -118,6 +130,48 @@ public class ConsumerEndpointTest extends TestCase {
         }
 
         recv.getMessageList().assertMessagesReceived(1);
+    }
+
+    public void testHttpInOutWithTimeout() throws Exception {
+        HttpComponent http = new HttpComponent();
+        HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
+        ep.setService(new QName("urn:test", "svc"));
+        ep.setEndpoint("ep");
+        ep.setTargetService(new QName("urn:test", "echo"));
+        ep.setLocationURI("http://localhost:8192/ep1/");
+        ep.setDefaultMep(MessageExchangeSupport.IN_OUT);
+        ep.setTimeout(1000);
+        http.setEndpoints(new HttpEndpointType[] {ep});
+        container.activateComponent(http, "http");
+
+        EchoComponent echo = new EchoComponent() {
+            public void onMessageExchange(MessageExchange exchange) {
+                super.onMessageExchange(exchange);
+            }
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+                try {
+                    Thread.sleep(1500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                return super.transform(exchange, in, out);
+            }
+        };
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("endpoint");
+        container.activateComponent(echo, "echo");
+
+        container.start();
+
+        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
+        new HttpClient().executeMethod(post);
+        String res = post.getResponseBodyAsString();
+        log.info(res);
+        if (post.getStatusCode() != 500) {
+            throw new InvalidStatusResponseException(post.getStatusCode());
+        }
+        Thread.sleep(1000);
     }
 
     public void testHttpInOut() throws Exception {
@@ -379,6 +433,65 @@ public class ConsumerEndpointTest extends TestCase {
         elem = DomUtil.getFirstChildElement(elem);
         assertEquals(new QName("uri:HelloWorld", "HelloResponse"), DomUtil.getQName(elem));
         assertEquals(200, post.getStatusCode());
+    }
+
+    /*
+     * Load testing test
+     */
+    public void testHttpInOutUnderLoad() throws Exception {
+        HttpComponent http = new HttpComponent();
+        HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
+        ep.setService(new QName("urn:test", "svc"));
+        ep.setEndpoint("ep");
+        ep.setTargetService(new QName("urn:test", "echo"));
+        ep.setLocationURI("http://localhost:8192/ep1/");
+        //ep.setTimeout(500);
+        http.setEndpoints(new HttpEndpointType[] {ep});
+        container.activateComponent(http, "http");
+
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("endpoint");
+        container.activateComponent(echo, "echo");
+
+        ((ExecutorFactoryImpl) container.getExecutorFactory()).getDefaultConfig().setMaximumPoolSize(16);
+
+        container.start();
+
+        final int nbThreads = 32;
+        final int nbRequests = 64;
+        final List<Throwable> throwables = new CopyOnWriteArrayList<Throwable>();
+        final CountDownLatch latch = new CountDownLatch(nbThreads * nbRequests);
+        for (int t = 0; t < nbThreads; t++) {
+            new Thread() {
+                public void run() {
+                    final HttpClient client = new HttpClient();
+                    //client.getParams().setSoTimeout(60000);
+                    for (int i = 0; i < nbRequests; i++) {
+                        try {
+                            PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+                            post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
+                            client.executeMethod(post);
+                            Node node = transformer.toDOMNode(new StreamSource(post.getResponseBodyAsStream()));
+                            log.info(transformer.toString(node));
+                            assertEquals("world", textValueOfXPath(node, "/hello/text()"));
+                            if (post.getStatusCode() != 200) {
+                                throw new InvalidStatusResponseException(post.getStatusCode());
+                            }
+                        } catch (Throwable t) {
+                            throwables.add(t);
+                        } finally {
+                            latch.countDown();
+                            //System.out.println("[" + System.currentTimeMillis() + "] Request " + latch.getCount() + " processed");
+                        }
+                    }
+                }
+            }.start();
+        }
+        latch.await();
+        for (Throwable t : throwables) {
+            t.printStackTrace();
+        }
     }
 
 }

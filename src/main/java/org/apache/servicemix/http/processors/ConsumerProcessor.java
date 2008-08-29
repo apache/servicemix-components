@@ -90,17 +90,19 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
     }
     
     public void process(MessageExchange exchange) throws Exception {
-        Continuation cont = locks.remove(exchange.getExchangeId());
-        if (cont != null) {
-            synchronized (cont) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
-                }
-                exchanges.put(exchange.getExchangeId(), exchange);
-                cont.resume();
+        Continuation cont = locks.get(exchange.getExchangeId());
+        if (cont == null) {
+            throw new Exception("HTTP request has timed out");
+        }
+        synchronized (cont) {
+            if (locks.remove(exchange.getExchangeId()) == null) {
+                throw new Exception("HTTP request has timed out");
             }
-        } else {
-            throw new IllegalStateException("Exchange not found");
+            if (log.isDebugEnabled()) {
+                log.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
+            }
+            exchanges.put(exchange.getExchangeId(), exchange);
+            cont.resume();
         }
     }
 
@@ -147,6 +149,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                 }
                 request.setAttribute(Context.class.getName(), ctx);
                 exchange = soapHelper.onReceive(ctx);
+                exchanges.put(exchange.getExchangeId(), exchange);
                 NormalizedMessage inMessage = exchange.getMessage("in");
                 if (getConfiguration().isWantHeadersFromHttpIntoExchange()) {
                     inMessage.setProperty(JbiConstants.PROTOCOL_HEADERS, getHeaders(request));
@@ -160,11 +163,11 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                     }
                     boolean result = cont.suspend(suspentionTime);
                     exchange = exchanges.remove(exchange.getExchangeId());
+                    request.removeAttribute(MessageExchange.class.getName());
                     if (!result) {
                         locks.remove(exchange.getExchangeId());
-                        throw new Exception("Error sending exchange: aborted");
+                        throw new Exception("Exchange timed out");
                     }
-                    request.removeAttribute(MessageExchange.class.getName());
                 }
             } catch (RetryRequest retry) {
                 throw retry;
@@ -177,16 +180,18 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
                 return;
             }
         } else {
-            String id = (String) request.getAttribute(MessageExchange.class.getName());
-            exchange = exchanges.remove(id);
-            request.removeAttribute(MessageExchange.class.getName());
-            boolean result = cont.suspend(0); 
-            // Check if this is a timeout
-            if (exchange == null) {
-                throw new IllegalStateException("Exchange not found");
-            }
-            if (!result) {
-                throw new Exception("Timeout");
+            synchronized (cont) {
+                String id = (String) request.getAttribute(MessageExchange.class.getName());
+                locks.remove(id);
+                exchange = exchanges.remove(id);
+                request.removeAttribute(MessageExchange.class.getName());
+                // Check if this is a timeout
+                if (!cont.isResumed()) {
+                    throw new Exception("Exchange timed out");
+                }
+                if (exchange == null) {
+                    throw new IllegalStateException("Exchange not found");
+                }
             }
         }
         if (exchange.getStatus() == ExchangeStatus.ERROR) {

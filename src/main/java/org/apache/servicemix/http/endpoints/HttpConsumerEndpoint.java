@@ -219,15 +219,25 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        Continuation cont = locks.remove(exchange.getExchangeId());
+        // Receive the exchange response
+        // First, check if the continuation has not been removed from the map,
+        // which would mean it has timed out.  If this is the case, throw an exception
+        // that will set the exchange status to ERROR.
+        Continuation cont = locks.get(exchange.getExchangeId());
         if (cont == null) {
             throw new Exception("HTTP request has timed out");
         }
+        // synchronized block
         synchronized (cont) {
+            if (locks.remove(exchange.getExchangeId()) == null) {
+                throw new Exception("HTTP request has timed out");
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
             }
+            // Put the new exchange
             exchanges.put(exchange.getExchangeId(), exchange);
+            // Resume continuation
             cont.resume();
         }
     }
@@ -247,42 +257,71 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             Continuation cont = ContinuationSupport.getContinuation(request, null);
             // If the continuation is not a retry
             if (!cont.isPending()) {
+                // Create the exchange
                 exchange = createExchange(request);
-                locks.put(exchange.getExchangeId(), cont);
+                // Put the exchange in a map so that we can later retrieve it
+                // We don't put the exchange on the request directly in case the JMS flow is involved
+                // because the exchange coming back may not be the same object as the one send.
+                exchanges.put(exchange.getExchangeId(), exchange);
+                // Put the exchange id on the request to be able to retrieve the exchange later
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
+                // Put the continuation in a map under the exchange id key
+                locks.put(exchange.getExchangeId(), cont);
                 synchronized (cont) {
+                    // Send the exchange
                     send(exchange);
                     if (logger.isDebugEnabled()) {
                         logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
                     }
+                    // Suspend the continuation for the configured timeout
+                    // If a SelectConnector is used, the call to suspend will throw a RetryRequest exception
+                    // else, the call will block until the continuation is resumed
                     long to = this.timeout;
                     if (to == 0) {
-                        to = ((HttpComponent)getServiceUnit().getComponent()).getConfiguration()
-                            .getConsumerProcessorSuspendTime();
+                        to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration().getConsumerProcessorSuspendTime();
                     }
-                    exchanges.put(exchange.getExchangeId(), exchange);
                     boolean result = cont.suspend(to);
+                    // The call has not thrown a RetryRequest, which means we don't use a SelectConnector
+                    // and we must handle the exchange in this very method call.
+                    // If result is false, the continuation has timed out.
+                    // So get the exchange (in case the object has changed) and remove it from the map
                     exchange = exchanges.remove(exchange.getExchangeId());
+                    // remove the exchange id from the request as we don't need it anymore
+                    request.removeAttribute(MessageExchange.class.getName());
+                    // If a timeout occurred, throw an exception that will be sent back to the HTTP client
+                    // Whenever the exchange comes back, the process(MessageExchange) method will thrown an
+                    // exception and the exchange will be set in an ERROR status
                     if (!result) {
+                        // Remove the continuation from the map.
+                        // This indicates the continuation has been fully processed
                         locks.remove(exchange.getExchangeId());
                         throw new Exception("Exchange timed out");
                     }
-                    request.removeAttribute(MessageExchange.class.getName());
                 }
+            // The continuation is a retry.
+            // This happens when the SelectConnector is used and in two cases:
+            //  * the continuation has been resumed because the exchange has been received
+            //  * the continuation has timed out
             } else {
-                String id = (String)request.getAttribute(MessageExchange.class.getName());
-                locks.remove(id);
-                exchange = exchanges.remove(id);
-                request.removeAttribute(MessageExchange.class.getName());
-                boolean result = cont.suspend(0);
-                // Check if this is a timeout
-                if (exchange == null) {
-                    throw new IllegalStateException("Exchange not found");
-                }
-                if (!result) {
-                    throw new Exception("Timeout");
+                synchronized (cont) {
+                    // Get the exchange id from the request
+                    String id = (String) request.getAttribute(MessageExchange.class.getName());
+                    // Remove the continuation from the map, indicating it has been processed or timed out
+                    locks.remove(id);
+                    exchange = exchanges.remove(id);
+                    request.removeAttribute(MessageExchange.class.getName());
+                    // Check if this is a timeout
+                    if (!cont.isResumed()) {
+                        throw new Exception("Exchange timed out");
+                    }
+                    // This should never happen, but we never knows
+                    if (exchange == null) {
+                        throw new IllegalStateException("Exchange not found");
+                    }
                 }
             }
+            // At this point, we have received the exchange response,
+            // so process it and send back the HTTP response
             if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 Exception e = exchange.getError();
                 if (e == null) {
@@ -300,11 +339,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                             sendOut(exchange, outMsg, request, response);
                         }
                     }
-                    exchange.setStatus(ExchangeStatus.DONE);
-                    send(exchange);
+                    done(exchange);
                 } catch (Exception e) {
-                    exchange.setError(e);
-                    send(exchange);
+                    fail(exchange, e);
                     throw e;
                 }
             } else if (exchange.getStatus() == ExchangeStatus.DONE) {
