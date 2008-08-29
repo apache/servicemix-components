@@ -26,10 +26,10 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
-import org.apache.servicemix.client.ClientFactory;
-import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.id.IdGenerator;
-import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.api.ClientFactory;
+import org.apache.servicemix.jbi.api.Container;
+import org.apache.servicemix.jbi.api.ServiceMixClient;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -46,7 +46,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
 
     private String name = ClientFactory.DEFAULT_JNDI_NAME;
 
-    private JBIContainer container;
+    private Container container;
 
     private ClientFactory factory;
 
@@ -172,7 +172,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     /**
      * @return the container
      */
-    public JBIContainer getContainer() {
+    public Container getContainer() {
         return container;
     }
 
@@ -180,7 +180,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
      * @param container
      *            the container to set
      */
-    public void setContainer(JBIContainer container) {
+    public void setContainer(Container container) {
         this.container = container;
     }
 
