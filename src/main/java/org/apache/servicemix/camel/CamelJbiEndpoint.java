@@ -25,7 +25,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Processor;
-import org.apache.servicemix.JbiConstants;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 
