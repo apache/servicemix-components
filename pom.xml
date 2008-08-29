@@ -244,6 +244,23 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jta_1.1_spec</artifactId>
+    </dependency>
+    <!-- for unit/integration testing -->
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
       <version>${spring-version}</version>
