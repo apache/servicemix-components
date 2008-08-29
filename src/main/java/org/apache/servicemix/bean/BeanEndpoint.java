@@ -34,24 +34,20 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.management.MBeanServer;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.jexl.Expression;
 import org.apache.commons.jexl.ExpressionFactory;
 import org.apache.commons.jexl.JexlContext;
 import org.apache.commons.jexl.JexlHelper;
-import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.bean.support.BeanInfo;
 import org.apache.servicemix.bean.support.DefaultMethodInvocationStrategy;
 import org.apache.servicemix.bean.support.DestinationImpl;
@@ -61,13 +57,16 @@ import org.apache.servicemix.bean.support.ReflectionUtils;
 import org.apache.servicemix.bean.support.Request;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.common.util.MessageUtil;
+import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.expression.JAXPStringXPathExpression;
 import org.apache.servicemix.expression.PropertyExpression;
-import org.apache.servicemix.jbi.resolver.URIResolver;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 /**
  * Represents a bean endpoint which consists of a together with a {@link MethodInvocationStrategy}

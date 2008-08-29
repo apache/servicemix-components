@@ -34,12 +34,12 @@ import org.apache.servicemix.bean.Content;
 import org.apache.servicemix.bean.Operation;
 import org.apache.servicemix.bean.Property;
 import org.apache.servicemix.bean.XPath;
-import org.apache.servicemix.client.DefaultNamespaceContext;
-import org.apache.servicemix.components.util.MessageHelper;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.expression.JAXPStringXPathExpression;
 import org.apache.servicemix.expression.PropertyExpression;
-import org.apache.servicemix.jbi.messaging.PojoMarshaler;
+import org.apache.servicemix.jbi.helper.MessageHelper;
+import org.apache.servicemix.jbi.jaxp.DefaultNamespaceContext;
+import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
 
 /**
  * Represents the metadata about a bean type created via a combination of

@@ -22,7 +22,7 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.jbi.resolver.URIResolver;
+import org.apache.servicemix.common.util.URIResolver;
 import org.springframework.beans.factory.InitializingBean;
 
 /**

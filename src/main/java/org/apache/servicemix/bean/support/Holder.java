@@ -24,7 +24,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.jbi.exception.FaultException;
 
 public class Holder implements Future<NormalizedMessage> {
     

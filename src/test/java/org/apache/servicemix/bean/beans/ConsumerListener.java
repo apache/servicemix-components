@@ -25,8 +25,8 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.MessageExchangeListener;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.common.util.MessageUtil;
+import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 
 public class ConsumerListener implements MessageExchangeListener {
 

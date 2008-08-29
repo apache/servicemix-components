@@ -22,9 +22,9 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.MessageExchangeListener;
-import org.apache.servicemix.components.util.CopyTransformer;
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.jbi.listener.MessageExchangeListener;
+import org.apache.servicemix.jbi.transformer.CopyTransformer;
 
 /**
  * A useful base class for a transform component.

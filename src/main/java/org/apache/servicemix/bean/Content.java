@@ -21,8 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.apache.servicemix.jbi.messaging.DefaultMarshaler;
-import org.apache.servicemix.jbi.messaging.PojoMarshaler;
+import org.apache.servicemix.jbi.marshaler.DefaultMarshaler;
+import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
 
 /**
  * Binds a method parameter to the payload of a message exchange

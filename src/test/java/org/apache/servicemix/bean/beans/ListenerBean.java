@@ -25,8 +25,8 @@ import javax.jbi.messaging.MessagingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.MessageExchangeListener;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.common.util.MessageUtil;
+import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 
 /**
  * A simple POJO which implements the {@link MessageExchangeListener} interface

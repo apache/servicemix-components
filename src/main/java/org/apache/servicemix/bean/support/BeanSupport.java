@@ -35,12 +35,12 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.components.util.CopyTransformer;
-import org.apache.servicemix.components.util.MessageHelper;
-import org.apache.servicemix.components.util.MessageTransformer;
-import org.apache.servicemix.jbi.FaultException;
-import org.apache.servicemix.jbi.NoInMessageAvailableException;
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.jbi.exception.FaultException;
+import org.apache.servicemix.jbi.exception.NoInMessageAvailableException;
+import org.apache.servicemix.jbi.helper.MessageHelper;
+import org.apache.servicemix.jbi.transformer.CopyTransformer;
+import org.apache.servicemix.jbi.transformer.MessageTransformer;
 
 /**
  * A useful base class for servicemix-bean POJOs

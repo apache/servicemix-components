@@ -22,7 +22,7 @@ import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.servicemix.bean.BeanEndpoint;
 import org.apache.servicemix.bean.Destination;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.common.util.MessageUtil;
 
 public class DestinationImpl implements Destination {
 

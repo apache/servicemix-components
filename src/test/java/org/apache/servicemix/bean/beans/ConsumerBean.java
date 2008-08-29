@@ -30,7 +30,7 @@ import org.apache.servicemix.bean.Callback;
 import org.apache.servicemix.bean.Destination;
 import org.apache.servicemix.bean.ExchangeTarget;
 import org.apache.servicemix.bean.Operation;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.common.util.MessageUtil;
 
 public class ConsumerBean {
 
