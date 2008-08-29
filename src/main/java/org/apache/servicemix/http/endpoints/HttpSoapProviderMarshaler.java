@@ -50,7 +50,6 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
     private Policy[] policies;
     private String baseUrl;
     private Map<Phase, InterceptorChain> chains = new HashMap<Phase, InterceptorChain>();
-    private String soapAction;
 
     public Binding<?> getBinding() {
         return binding;
@@ -84,15 +83,7 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
         this.policies = policies;
     }
     
-    public void setSoapAction(String soapAction) {
-        this.soapAction = soapAction;
-    }
-    
-    public String getSoapAction() {
-        return soapAction;
-    }
-
-    public void createRequest(final MessageExchange exchange, 
+    public void createRequest(final MessageExchange exchange,
                               final NormalizedMessage inMsg, 
                               final SmxHttpExchange httpExchange) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -110,9 +101,6 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
         httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));
         for (Map.Entry<String,String> entry : msg.getTransportHeaders().entrySet()) {
             httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
-        }
-        if (soapAction != null) {
-            httpExchange.setRequestHeader(SoapConstants.SOAP_ACTION_HEADER, soapAction);
         }
         /*
         httpExchange.setRequestEntity(new Entity() {

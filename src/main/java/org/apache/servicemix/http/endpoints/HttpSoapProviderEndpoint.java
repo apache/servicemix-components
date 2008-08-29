@@ -59,7 +59,6 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
     private boolean useJbiWrapper = true;
     private boolean validateWsdl = true;
     private Policy[] policies;
-    private String soapAction;
 
     public HttpSoapProviderEndpoint() {
         super();
@@ -133,22 +132,6 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
         this.useJbiWrapper = useJbiWrapper;
     }
     
-    /**
-     * Override the value of the SOAPAction header that is being sent
-     * 
-     * @param soapAction the new value of the SOAPAction header
-     */
-    public void setSoapAction(String soapAction) {
-        this.soapAction = soapAction;
-    }
-    
-    /** 
-     * @return the override value for the SOAPAction header
-     */
-    public String getSoapAction() {
-        return soapAction;
-    }
-
     public Policy[] getPolicies() {
         return policies;
     }
@@ -188,7 +171,6 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
             }
             marshaler.setUseJbiWrapper(useJbiWrapper);
             marshaler.setPolicies(policies);
-            marshaler.setSoapAction(soapAction);
             setMarshaler(marshaler);
         } catch (DeploymentException e) {
             throw e;

@@ -77,7 +77,8 @@
     <wsdl:binding name="PersonSOAPBinding" type="tns:Person">
     	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
 		<wsdl:operation name="GetPerson">
-			<wsdl:input>
+            <soap:operation soapAction="urn:myaction" />
+            <wsdl:input>
 				<soap:body use="literal" />
 			</wsdl:input>
 			<wsdl:output>
