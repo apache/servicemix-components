@@ -27,7 +27,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.jbi.util.MessageUtil;
+import org.apache.servicemix.jbi.helper.MessageUtil;
 import org.apache.servicemix.store.Store;
 
 /**

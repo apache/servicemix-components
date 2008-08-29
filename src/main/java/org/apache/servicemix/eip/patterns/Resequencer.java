@@ -122,7 +122,7 @@ public class Resequencer extends ResequencerBase implements SequenceSender {
 
     private void processMessage(MessageExchange sourceExchange) throws MessagingException, InterruptedException {
         NormalizedMessage source = sourceExchange.getMessage("in");
-        NormalizedMessage copy = getMessageCopier().copy(source);
+        NormalizedMessage copy = getMessageCopier().transform(sourceExchange, source);
         MessageExchange targetExchange = createTargetExchange(copy, sourceExchange.getPattern());
         // add target exchange to resequencer (blocking if capacity is reached)
         reseq.put(targetExchange);

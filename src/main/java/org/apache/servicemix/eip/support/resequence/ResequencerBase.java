@@ -28,15 +28,16 @@ import javax.jbi.messaging.RobustInOnly;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.jbi.util.MessageCopier;
+import org.apache.servicemix.jbi.transformer.CopyTransformer;
+import org.apache.servicemix.jbi.transformer.MessageTransformer;
 
 public abstract class ResequencerBase extends EIPEndpoint {
 
-    private MessageCopier messageCopier = new MessageCopier();
+    private MessageTransformer messageCopier = new CopyTransformer();
 
     private ExchangeTarget target;
     
-    public MessageCopier getMessageCopier() {
+    public MessageTransformer getMessageCopier() {
         return messageCopier;
     }
 

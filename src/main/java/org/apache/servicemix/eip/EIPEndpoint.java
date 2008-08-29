@@ -19,35 +19,34 @@ package org.apache.servicemix.eip;
 import java.net.URL;
 import java.util.Set;
 
+import javax.activation.DataHandler;
 import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
 import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
-import javax.activation.DataHandler;
 
-import org.w3c.dom.Document;
-
-import com.ibm.wsdl.Constants;
-
-import org.apache.servicemix.JbiConstants;
-import org.apache.servicemix.jbi.messaging.PojoMarshaler;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.locks.LockManager;
 import org.apache.servicemix.common.locks.impl.SimpleLockManager;
 import org.apache.servicemix.eip.support.ExchangeTarget;
+import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
 import org.apache.servicemix.timers.TimerManager;
 import org.apache.servicemix.timers.impl.TimerManagerImpl;
 import org.springframework.core.io.Resource;
+import org.w3c.dom.Document;
+
+import com.ibm.wsdl.Constants;
 
 /**
  * @author gnodet

@@ -17,7 +17,6 @@
 package org.apache.servicemix.eip.patterns;
 
 import java.net.URI;
-import java.util.Set;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -25,15 +24,15 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.RobustInOnly;
 import javax.wsdl.Definition;
 
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
-import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.jbi.exception.FaultException;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
 /**

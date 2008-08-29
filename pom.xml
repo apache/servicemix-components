@@ -115,6 +115,25 @@
       <version>${spring-version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jta_1.1_spec</artifactId>
+      <version>1.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- for unit/integration testing -->
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   
   <build>
