@@ -96,8 +96,8 @@ public class JbiOutWsdl1Interceptor extends AbstractInterceptor {
                         DocumentFragment frag = e.getOwnerDocument().createDocumentFragment();
                         frag.appendChild(e.getOwnerDocument().importNode(e, true));
                         message.getSoapHeaders().put(p.getElement(), frag);
+                        r.nextTag();
                     }
-                    r.nextTag();
                 }
                 /*
                 r.nextTag();

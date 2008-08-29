@@ -30,6 +30,7 @@ import javax.wsdl.Service;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.dom.DOMSource;
 
 import org.w3c.dom.Document;
@@ -67,13 +68,21 @@ public class HelloWorldSoapTest extends TestCase {
 //        }
 //    }
     
-    public void testDocLitInput() throws Exception {
+    public void testDocLitInputWithDOMSource() throws Exception {
+        testDocLitInput(true);
+    }
+
+    public void testDocLitInputWithStreamSource() throws Exception {
+        testDocLitInput(false);
+    }
+
+    protected void testDocLitInput(boolean useDom) throws Exception {
         ByteArrayOutputStream baos;
 
         Binding<?> binding = getBinding("HelloWorld-DOC.wsdl");
         PhaseInterceptorChain phaseIn = new PhaseInterceptorChain();
         phaseIn.add(binding.getInterceptors(Phase.ServerIn));
-        
+
         Message msg = new MessageImpl();
         msg.put(Binding.class, binding);
         msg.setContent(InputStream.class, getClass().getResourceAsStream("HelloWorld-DOC-Input.xml"));
@@ -85,12 +94,16 @@ public class HelloWorldSoapTest extends TestCase {
         baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
         log.info(baos.toString());
-        nm.setContent(new DOMSource(doc));
-        
+        if (useDom) {
+            nm.setContent(new DOMSource(doc));
+        } else {
+            nm.setContent(new StreamSource(new ByteArrayInputStream(baos.toByteArray())));
+        }
+
         // check jbi message element
         Element root = DomUtil.getFirstChildElement(doc);
         assertNotNull(root);
-        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, root.getNamespaceURI()); 
+        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, root.getNamespaceURI());
         assertEquals("message", root.getLocalName());
         assertEquals("Hello", root.getAttribute("name"));
 
@@ -116,19 +129,19 @@ public class HelloWorldSoapTest extends TestCase {
         // check body part
         Element part = DomUtil.getNextSiblingElement(part2);
         assertNotNull(part);
-        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, part.getNamespaceURI()); 
+        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, part.getNamespaceURI());
         assertEquals("part", part.getLocalName());
 
         // check body element
         Element hello = DomUtil.getFirstChildElement(part);
         assertNotNull(hello);
-        assertEquals("uri:HelloWorld", hello.getNamespaceURI()); 
+        assertEquals("uri:HelloWorld", hello.getNamespaceURI());
         assertEquals("HelloRequest", hello.getLocalName());
-        
+
         // check body content
         e = DomUtil.getFirstChildElement(hello);
         assertNotNull(e);
-        assertEquals("uri:HelloWorld", e.getNamespaceURI()); 
+        assertEquals("uri:HelloWorld", e.getNamespaceURI());
         assertEquals("text", e.getLocalName());
         assertEquals("hello", e.getTextContent());
 
@@ -144,37 +157,37 @@ public class HelloWorldSoapTest extends TestCase {
         msgOut.put(SoapVersion.class, msg.get(SoapVersion.class));
         phaseOut.doIntercept(msgOut);
         log.info(baos.toString());
-        
+
         Document node = DomUtil.parse(new ByteArrayInputStream(baos.toByteArray()));
-        
+
         Element envelope = DomUtil.getFirstChildElement(node);
         Element headers = DomUtil.getFirstChildElement(envelope);
         Element body = DomUtil.getNextSiblingElement(headers);
-        
+
         // check body element
         hello = DomUtil.getFirstChildElement(body);
         assertNotNull(hello);
-        assertEquals("uri:HelloWorld", hello.getNamespaceURI()); 
+        assertEquals("uri:HelloWorld", hello.getNamespaceURI());
         assertEquals("HelloRequest", hello.getLocalName());
-        
+
         // check body content
         e = DomUtil.getFirstChildElement(hello);
         assertNotNull(e);
-        assertEquals("uri:HelloWorld", e.getNamespaceURI()); 
+        assertEquals("uri:HelloWorld", e.getNamespaceURI());
         assertEquals("text", e.getLocalName());
         assertEquals("hello", e.getTextContent());
-        
+
         // check header
         header = DomUtil.getFirstChildElement(headers);
         assertNotNull(header);
         assertNull(DomUtil.getNextSiblingElement(header));
-        assertEquals("uri:HelloWorld", header.getNamespaceURI()); 
+        assertEquals("uri:HelloWorld", header.getNamespaceURI());
         assertEquals("HelloHeader", header.getLocalName());
-        
+
         // check header content
         e = DomUtil.getFirstChildElement(header);
         assertNotNull(e);
-        assertEquals("uri:HelloWorld", e.getNamespaceURI()); 
+        assertEquals("uri:HelloWorld", e.getNamespaceURI());
         assertEquals("id", e.getLocalName());
         assertEquals("1234567890", e.getTextContent());
     }
