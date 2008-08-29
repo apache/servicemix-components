@@ -216,6 +216,24 @@
       <scope>test</scope>
       <version>1.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jta_1.1_spec</artifactId>
+    </dependency>
+    <!-- provided to allow compilation - OSGi imports marked optional for SMX4 -->
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <!-- include servicemix-common as a source for the XSD documentation generator -->
     <dependency>
       <groupId>org.apache.servicemix</groupId>
