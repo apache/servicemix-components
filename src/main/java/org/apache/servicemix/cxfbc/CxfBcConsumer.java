@@ -230,7 +230,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     @Override
     public void stop() throws Exception {
         server.stop();
-        if (ei.getAddress().startsWith("https")) {
+        if (ei.getAddress() != null && ei.getAddress().startsWith("https")) {
             bus.shutdown(false);
             bus = null;
         }
