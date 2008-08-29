@@ -39,15 +39,17 @@ public class SoapActionInOperationInterceptor extends AbstractInterceptor {
             if (soapAction.startsWith("\"") && soapAction.endsWith("\"")) {
                 soapAction = soapAction.substring(1, soapAction.length() - 1);
             }
-            SoapBinding<?> binding = (SoapBinding<?>) message.get(Binding.class);
-            List<SoapOperation<?>> matching = new ArrayList<SoapOperation<?>>();
-            for (SoapOperation<?> operation : binding.getOperations()) {
-                if (soapAction.equals(operation.getSoapAction())) {
-                    matching.add(operation);
+            if (soapAction.length() > 0) {
+                SoapBinding<?> binding = (SoapBinding<?>) message.get(Binding.class);
+                List<SoapOperation<?>> matching = new ArrayList<SoapOperation<?>>();
+                for (SoapOperation<?> operation : binding.getOperations()) {
+                    if (soapAction.equals(operation.getSoapAction())) {
+                        matching.add(operation);
+                    }
                 }
-            }
-            if (matching.size() == 1) {
-                message.put(Operation.class, matching.get(0));
+                if (matching.size() == 1) {
+                    message.put(Operation.class, matching.get(0));
+                }
             }
         }
     }

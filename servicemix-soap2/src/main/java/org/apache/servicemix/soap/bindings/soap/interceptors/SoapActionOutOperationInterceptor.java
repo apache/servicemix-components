@@ -30,9 +30,15 @@ public class SoapActionOutOperationInterceptor extends AbstractInterceptor {
             return;
         }
         SoapOperation soapOp = (SoapOperation) operation;
-        if (soapOp.getSoapAction() != null) {
-            message.getTransportHeaders().put(SoapConstants.SOAP_ACTION_HEADER, soapOp.getSoapAction());
+        String soapAction = ((SoapOperation<?>) operation).getSoapAction();
+        if (soapAction != null) {
+            if (!soapAction.startsWith("\"") || !soapAction.endsWith("\"")) {
+                soapAction = "\"" + soapAction + "\"";
+            }
+        } else {
+            soapAction = "\"\"";
         }
+        message.getTransportHeaders().put(SoapConstants.SOAP_ACTION_HEADER, soapAction);
     }
 
 }

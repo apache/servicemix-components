@@ -65,10 +65,6 @@ public class JbiOutInterceptor extends AbstractInterceptor {
                                     + operation.getName());
                 }
                 message.put(Operation.class, operation);
-                if (operation instanceof SoapOperation<?>) {
-                    String soapAction = ((SoapOperation<?>) operation).getSoapAction();
-                    message.getTransportHeaders().put(SoapConstants.SOAP_ACTION_HEADER, soapAction);
-                }
             }
         }
     }
