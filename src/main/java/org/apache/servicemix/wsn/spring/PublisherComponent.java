@@ -30,10 +30,10 @@ import org.w3c.dom.Element;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
@@ -42,10 +42,15 @@ import org.oasis_open.docs.wsn.b_2.Unsubscribe;
 import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
 
 /**
- * 
+ * This class is a lightweight component that can be used to act as a WS-Notification publisher.
+ * All messages sent to it will be forwarded to the NotificationBroker in Notify requests.
+ *
+ *
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="publisher"
+ * @deprecated
+ * @see {@link PublisherProxyBean}
  */
 public class PublisherComponent extends ComponentSupport implements MessageExchangeListener {
 
@@ -164,7 +169,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
                     exchange.setMessage(out, "out");
                     send(exchange);
                 } else {
-                    throw new Exception("Unkown request");
+                    throw new Exception("Unknown request");
                 }
             } catch (Exception e) {
                 fail(exchange, e);
