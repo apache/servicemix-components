@@ -24,6 +24,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
+import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
 
@@ -40,6 +41,8 @@ import org.oasis_open.docs.wsn.bw_2.UnableToDestroyPullPointFault;
 
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.CreatePullPoint")
 public abstract class AbstractCreatePullPoint extends AbstractEndpoint implements CreatePullPoint {
+
+    public static final QName PULL_POINT_NAME = new QName("http://servicemix.apache.org/wsn", "PullPointName");
 
     private static Log log = LogFactory.getLog(AbstractCreatePullPoint.class);
 
@@ -86,7 +89,7 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
         AbstractPullPoint pullPoint = null;
         boolean success = false;
         try {
-            pullPoint = createPullPoint(idGenerator.generateSanitizedId());
+            pullPoint = createPullPoint(createPullPointName(createPullPointRequest));
             for (Iterator it = createPullPointRequest.getAny().iterator(); it.hasNext();) {
                 Element el = (Element) it.next();
                 if ("address".equals(el.getLocalName())
@@ -119,6 +122,16 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
                 }
             }
         }
+    }
+
+    protected String createPullPointName(org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest) {
+        // Let the creator decide which pull point name to use
+        String name = createPullPointRequest.getOtherAttributes().get(PULL_POINT_NAME);
+        if (name == null) {
+            // If no name is given, just generate one
+            name = idGenerator.generateSanitizedId();
+        }
+        return name;
     }
 
     public void destroyPullPoint(String address) throws UnableToDestroyPullPointFault {

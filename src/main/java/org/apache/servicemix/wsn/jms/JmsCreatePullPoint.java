@@ -18,9 +18,11 @@ package org.apache.servicemix.wsn.jms;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.xml.namespace.QName;
 
 import org.apache.servicemix.wsn.AbstractCreatePullPoint;
 import org.apache.servicemix.wsn.AbstractPullPoint;
+import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
 
 public class JmsCreatePullPoint extends AbstractCreatePullPoint {
 
@@ -45,6 +47,15 @@ public class JmsCreatePullPoint extends AbstractCreatePullPoint {
             connection.close();
         }
         super.destroy();
+    }
+
+    @Override
+    protected String createPullPointName(CreatePullPoint createPullPointRequest) {
+        // For JMS, avoid using dashes in the pullpoint name (which is also the queue name,
+        // as it will lead to problems with some JMS providers
+        String name = super.createPullPointName(createPullPointRequest);
+        name = name.replace("-", "");
+        return name;
     }
 
     @Override
