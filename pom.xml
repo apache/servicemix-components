@@ -131,6 +131,23 @@
       <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
       <version>1.1.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jta_1.1_spec</artifactId>
+    </dependency>
+    <!-- TODO: make sure this gets down to test scope -->
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   
   <build>
