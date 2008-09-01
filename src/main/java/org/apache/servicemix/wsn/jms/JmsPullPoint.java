@@ -104,7 +104,6 @@ public class JmsPullPoint extends AbstractPullPoint {
     @Override
     protected synchronized List<NotificationMessageHolderType> getMessages(int max) throws ResourceUnknownFault,
             UnableToGetMessagesFault {
-        Session jmsSession = null;
         try {
             if (max == 0) {
                 max = 256;
@@ -124,13 +123,13 @@ public class JmsPullPoint extends AbstractPullPoint {
             return messages;
         } catch (JMSException e) {
             log.info("Error retrieving messages", e);
-            if (jmsSession != null) {
+            if (session != null) {
                 try {
-                    jmsSession.close();
+                    session.close();
                 } catch (JMSException inner) {
                     log.debug("Error closing session", inner);
                 } finally {
-                    jmsSession = null;
+                    session = null;
                 }
             }
             UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
