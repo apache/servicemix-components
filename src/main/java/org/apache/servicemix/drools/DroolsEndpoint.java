@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
@@ -39,10 +40,7 @@ import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.MessageUtil;
-import org.apache.servicemix.drools.model.JbiHelper;
 import org.drools.RuleBase;
-import org.drools.WorkingMemory;
-import org.drools.StatefulSession;
 import org.drools.compiler.RuleBaseLoader;
 import org.springframework.core.io.Resource;
 
@@ -51,6 +49,7 @@ import org.springframework.core.io.Resource;
  * @author gnodet
  * @org.apache.xbean.XBean element="endpoint"
  */
+
 public class DroolsEndpoint extends ProviderEndpoint {
 
     private RuleBase ruleBase;
@@ -61,7 +60,19 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private String defaultTargetURI;
     private Map<String, Object> globals;
     private List<Object> assertedObjects;
-    private ConcurrentMap<String, JbiHelper> pending = new ConcurrentHashMap<String, JbiHelper>();
+    
+    @SuppressWarnings("serial")
+    private ConcurrentMap<String, DroolsExecutionContext> pending = new ConcurrentHashMap<String, DroolsExecutionContext>() {
+        public DroolsExecutionContext remove(Object key) {
+            DroolsExecutionContext context = super.remove(key);
+            if (context != null) {
+              // stop the execution context -- updating and disposing of any working memory
+              context.update();
+              context.stop();
+            }
+            return context;
+        };
+    };
 
     public DroolsEndpoint() {
         super();
@@ -194,9 +205,9 @@ public class DroolsEndpoint extends ProviderEndpoint {
      */
     private void handleConsumerExchange(MessageExchange exchange) throws MessagingException {
         String correlation = (String) exchange.getProperty(DroolsComponent.DROOLS_CORRELATION_ID); 
-        JbiHelper helper = pending.get(correlation);
-        if (helper != null) {
-            MessageExchange original = helper.getExchange().getInternalExchange();
+        DroolsExecutionContext drools = pending.get(correlation);
+        if (drools != null) {
+            MessageExchange original = drools.getExchange();
             if (exchange.getStatus() == ExchangeStatus.DONE) {
                 done(original);
             } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
@@ -209,8 +220,6 @@ public class DroolsEndpoint extends ProviderEndpoint {
                 }
                 send(original);
             }
-            // update the rule engine's working memory to trigger post-done rules
-            helper.update();
         } else {
             logger.debug("No pending exchange found for " + correlation + ", no additional rules will be triggered");
         }
@@ -219,6 +228,9 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private void handleProviderExchange(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             drools(exchange);
+        } else {
+            //must be a DONE/ERROR so removing any pending contexts
+            pending.remove(exchange.getExchangeId());
         }
     }
 
@@ -232,44 +244,25 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
 
     protected void drools(MessageExchange exchange) throws Exception {
-        StatefulSession memory = createWorkingMemory(exchange);
-        try {
-            JbiHelper helper = populateWorkingMemory(memory, exchange);
-            pending.put(exchange.getExchangeId(), helper);
-            memory.fireAllRules();
-            //no rules were fired --> must be config problem
-            if (helper.getRulesFired() < 1) {
-                fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
-            } else {
-                //a rule was triggered and the message has been answered or faulted by the drools endpoint
-                if (helper.isExchangeHandled()) {
-                    pending.remove(exchange);
-                }
+        DroolsExecutionContext drools = startDroolsExecutionContext(exchange);
+        if (drools.getRulesFired() < 1) {
+            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+        } else {
+            //the exchange has been answered or faulted by the drools endpoint
+            if (drools.isExchangeHandled() && exchange instanceof InOnly) {
+                //only removing InOnly
+                pending.remove(exchange.getExchangeId());
             }
-        } finally {
-            memory.dispose();
         }
     }
     
-    protected StatefulSession createWorkingMemory(MessageExchange exchange) throws Exception {
-        return ruleBase.newStatefulSession();
+    private DroolsExecutionContext startDroolsExecutionContext(MessageExchange exchange) {
+        DroolsExecutionContext drools = new DroolsExecutionContext(this, exchange);
+        pending.put(exchange.getExchangeId(), drools);
+        drools.start();
+        return drools;
     }
 
-    protected JbiHelper populateWorkingMemory(WorkingMemory memory, MessageExchange exchange) throws Exception {
-        JbiHelper helper = new JbiHelper(this, exchange, memory);
-        memory.setGlobal("jbi", helper);
-        if (assertedObjects != null) {
-            for (Object o : assertedObjects) {
-                memory.insert(o);
-            }
-        }
-        if (globals != null) {
-            for (Map.Entry<String, Object> e : globals.entrySet()) {
-                memory.setGlobal(e.getKey(), e.getValue());
-            }
-        }
-        return helper;
-    }
 
     public QName getDefaultTargetService() {
         return defaultTargetService;
@@ -309,8 +302,10 @@ public class DroolsEndpoint extends ProviderEndpoint {
     
     @Override
     protected void send(MessageExchange me) throws MessagingException {
-        //remove the exchange from the list of pending exchanges
-        pending.remove(me.getExchangeId());
+        if (me.getStatus() != ExchangeStatus.ACTIVE) {
+            // must be a DONE/ERROR so removing any pending contexts
+            pending.remove(me.getExchangeId());
+        }
         super.send(me);
     }
  }

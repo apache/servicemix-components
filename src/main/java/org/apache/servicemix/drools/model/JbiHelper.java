@@ -37,28 +37,24 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.drools.FactHandle;
 import org.drools.WorkingMemory;
-import org.drools.event.ActivationCreatedEvent;
-import org.drools.event.DefaultAgendaEventListener;
 
 /**
  * A helper class for use inside a rule to forward a message to an endpoint
  * 
  * @version $Revision: 426415 $
  */
-public class JbiHelper extends DefaultAgendaEventListener {
+public class JbiHelper {
 
     private DroolsEndpoint endpoint;
     private Exchange exchange;
     private WorkingMemory memory;
     private FactHandle exchangeFactHandle;
-    private int rulesFired;
     private boolean exchangeHandled = false;
 
     public JbiHelper(DroolsEndpoint endpoint, MessageExchange exchange, WorkingMemory memory) {
         this.endpoint = endpoint;
         this.exchange = new Exchange(exchange, endpoint.getNamespaceContext());
         this.memory = memory;
-        this.memory.addEventListener(this);
         this.exchangeFactHandle = this.memory.insert(this.exchange);
     }
 
@@ -203,7 +199,7 @@ public class JbiHelper extends DefaultAgendaEventListener {
         NormalizedMessage out = me.createMessage();
         out.setContent(content);
         me.setMessage(out, "out");
-        getChannel().sendSync(me);
+        getChannel().send(me);
         exchangeHandled = true;
         update();
     }
@@ -214,15 +210,6 @@ public class JbiHelper extends DefaultAgendaEventListener {
     public void update() {
         this.memory.update(this.exchangeFactHandle, this.exchange);
     }
-
-    /**
-     * Get the number of rules that were fired
-     * 
-     * @return the number of rules
-     */
-    public int getRulesFired() {
-        return rulesFired;
-    }
     
     /**
      * Has the MessageExchange been handled by the drools endpoint?
@@ -231,12 +218,6 @@ public class JbiHelper extends DefaultAgendaEventListener {
      */
     public boolean isExchangeHandled() {
         return exchangeHandled;
-    }
-
-    // event handler callbacks
-    @Override
-    public void activationCreated(ActivationCreatedEvent event, WorkingMemory workingMemory) {
-        rulesFired++;
     }
 
 }
