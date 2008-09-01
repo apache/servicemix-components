@@ -42,8 +42,6 @@ import org.oasis_open.docs.wsn.bw_2.UnableToDestroyPullPointFault;
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.CreatePullPoint")
 public abstract class AbstractCreatePullPoint extends AbstractEndpoint implements CreatePullPoint {
 
-    public static final QName PULL_POINT_NAME = new QName("http://servicemix.apache.org/wsn", "PullPointName");
-
     private static Log log = LogFactory.getLog(AbstractCreatePullPoint.class);
 
     private IdGenerator idGenerator;
@@ -126,7 +124,14 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
 
     protected String createPullPointName(org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest) {
         // Let the creator decide which pull point name to use
-        String name = createPullPointRequest.getOtherAttributes().get(PULL_POINT_NAME);
+        String name = null;
+        for (Iterator it = createPullPointRequest.getAny().iterator(); it.hasNext();) {
+            Element el = (Element) it.next();
+            if ("name".equals(el.getLocalName())
+                    && "http://servicemix.apache.org/wsn2005/1.0".equals(el.getNamespaceURI())) {
+                name = DOMUtil.getElementText(el).trim();
+            }
+        }
         if (name == null) {
             // If no name is given, just generate one
             name = idGenerator.generateSanitizedId();
