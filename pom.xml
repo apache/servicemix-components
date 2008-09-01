@@ -26,7 +26,7 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-scripting</artifactId>
-  <version>4.0-SNAPSHOT</version>
+  <version>2008.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: JSR-223 Scripting Service Engine</name>
@@ -40,7 +40,7 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
-    <servicemix-shared-version>4.0-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2008.01-SNAPSHOT</servicemix-shared-version>
 
     <groovy-version>1.5.6</groovy-version>
     <jruby-version>1.1.2</jruby-version>
