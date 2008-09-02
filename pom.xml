@@ -208,7 +208,7 @@
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
-      <scope>provided</scope>
+      <scope>test</scope>
       <optional>true</optional>
       <exclusions>
         <exclusion>

@@ -46,16 +46,12 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.ibm.wsdl.Constants;
-import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.common.EndpointDeliveryChannel;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
-import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.api.Container;
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
@@ -79,6 +75,10 @@ import org.codehaus.xfire.soap.SoapConstants;
 import org.codehaus.xfire.transport.Channel;
 import org.codehaus.xfire.transport.Transport;
 import org.springframework.core.io.Resource;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import com.ibm.wsdl.Constants;
 
 /**
  * 
@@ -228,7 +228,7 @@ public class Jsr181Endpoint extends ProviderEndpoint {
         super.stop();
     }
 
-    protected void injectPojo(ComponentContext context, JBIContainer container) {
+    protected void injectPojo(ComponentContext context, Container container) {
         try {
             Method mth = pojo.getClass().getMethod("setContext", new Class[] {ComponentContext.class });
             mth.invoke(pojo, new Object[] {context });
@@ -236,19 +236,19 @@ public class Jsr181Endpoint extends ProviderEndpoint {
             logger.debug("Unable to inject ComponentContext: " + e.getMessage());
         }
         try {
-            Method mth = pojo.getClass().getMethod("setContainer", new Class[] {JBIContainer.class });
+            Method mth = pojo.getClass().getMethod("setContainer", new Class[] {Container.class });
             mth.invoke(pojo, new Object[] {container });
         } catch (Exception e) {
             logger.debug("Unable to inject JBIContainer: " + e.getMessage());
         }
     }
     
-    protected JBIContainer getContainer() {
+    protected Container getContainer() {
         try {
             ComponentContext ctx = getServiceUnit().getComponent().getComponentContext();
             Field field = ctx.getClass().getDeclaredField("container");
             field.setAccessible(true);
-            return (JBIContainer) field.get(ctx);
+            return (Container) field.get(ctx);
         } catch (Exception e) {
             logger.debug("Unable to retrieve JBIContainer: " + e.getMessage());
             return null;

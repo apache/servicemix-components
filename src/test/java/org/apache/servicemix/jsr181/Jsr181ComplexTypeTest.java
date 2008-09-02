@@ -39,7 +39,9 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.servicemix.jbi.api.Container;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.framework.ClientFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.view.DotViewEndpointListener;
 import org.apache.servicemix.jbi.view.DotViewFlowListener;
@@ -111,11 +113,11 @@ public class Jsr181ComplexTypeTest extends TestCase {
 
         // Create interface based proxy
         JbiProxyFactoryBean pf = new JbiProxyFactoryBean();
-        pf.setContainer(container);
+        pf.setContext(orderEndpoint.getContext());
         pf.setInterfaceName(orderEndpoint.getInterfaceName());
         pf.setEndpoint(orderEndpoint.getEndpoint());
         pf.setType(OrderService.class);
-        OrderService orderService = (OrderService) pf.getObject();
+        OrderService orderService = (OrderService) pf.getObject(); 
 
         // Prepare cart for order request
         Cart cart = new Cart();
@@ -171,6 +173,6 @@ public class Jsr181ComplexTypeTest extends TestCase {
                 .contains(modelNameSpace));
 
         // The WSDL should be abstract so we should have no bindings
-        assertEquals("Bindings count ", 0, definition.getBindings().size());
+        assertEquals("Bindings count ", 0, definition.getBindings().size()); 
     }
 }

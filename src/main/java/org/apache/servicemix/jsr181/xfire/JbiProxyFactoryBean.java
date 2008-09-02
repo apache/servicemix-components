@@ -24,9 +24,9 @@ import javax.jbi.component.ComponentContext;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.client.ClientFactory;
-import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.api.ClientFactory;
+import org.apache.servicemix.jbi.api.Container;
+import org.apache.servicemix.jbi.api.ServiceMixClient;
 import org.apache.servicemix.jsr181.Jsr181Component;
 import org.codehaus.xfire.XFire;
 import org.springframework.beans.factory.DisposableBean;
@@ -45,7 +45,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, DisposableBean {
     
     private String name = ClientFactory.DEFAULT_JNDI_NAME;
-    private JBIContainer container;
+    private Container container;
     private ClientFactory factory;
     private ComponentContext context;
     private Class type;
@@ -158,14 +158,14 @@ public class JbiProxyFactoryBean implements FactoryBean, InitializingBean, Dispo
     /**
      * @return the container
      */
-    public JBIContainer getContainer() {
+    public Container getContainer() {
         return container;
     }
 
     /**
      * @param container the container to set
      */
-    public void setContainer(JBIContainer container) {
+    public void setContainer(Container container) {
         this.container = container;
     }
 

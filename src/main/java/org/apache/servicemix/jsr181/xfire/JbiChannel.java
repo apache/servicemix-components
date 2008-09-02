@@ -36,7 +36,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.jbi.helper.MessageExchangePattern;
 import org.apache.servicemix.jsr181.JBIContext;
 import org.codehaus.xfire.MessageContext;
 import org.codehaus.xfire.XFireException;
@@ -99,11 +99,11 @@ public class JbiChannel extends AbstractChannel {
                 MessageExchangeFactory factory = channel.createExchangeFactory();
                 URI mep = null;
                 if (context.getExchange().getOperation().getOutputMessage() != null) {
-                    mep = MessageExchangeSupport.IN_OUT;
+                    mep = MessageExchangePattern.IN_OUT;
                 } else if (context.getExchange().getOperation().getFaults().size() > 0) {
-                    mep = MessageExchangeSupport.ROBUST_IN_ONLY;
+                    mep = MessageExchangePattern.ROBUST_IN_ONLY;
                 } else {
-                    mep = MessageExchangeSupport.IN_ONLY;
+                    mep = MessageExchangePattern.IN_ONLY;
                 }
                 MessageExchange me = factory.createExchange(mep);
                 me.setInterfaceName((QName) context.getService().getProperty(JBI_INTERFACE_NAME));
