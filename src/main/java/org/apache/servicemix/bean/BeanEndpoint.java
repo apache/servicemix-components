@@ -55,7 +55,6 @@ import org.apache.servicemix.bean.support.Holder;
 import org.apache.servicemix.bean.support.MethodInvocationStrategy;
 import org.apache.servicemix.bean.support.ReflectionUtils;
 import org.apache.servicemix.bean.support.Request;
-import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.common.util.URIResolver;
@@ -89,8 +88,6 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     private Map<String, Holder> exchanges = new ConcurrentHashMap<String, Holder>();
     private Map<Object, Request> requests = new ConcurrentHashMap<Object, Request>();
     private ThreadLocal<Request> currentRequest = new ThreadLocal<Request>();
-    private ComponentContext context;
-    private DeliveryChannel channel;
     private ServiceEndpoint serviceEndpoint;
     
     public BeanEndpoint() {
@@ -104,10 +101,8 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
 
     public void start() throws Exception {
         super.start();
-        context = new EndpointComponentContext(this);
-        channel = context.getDeliveryChannel();
         if (serviceEndpoint == null) {
-        	serviceEndpoint = context.getEndpoint(getService(), getEndpoint());
+        	serviceEndpoint = getContext().getEndpoint(getService(), getEndpoint());
         }
         Object pojo = getBean();
         if (pojo != null) {
@@ -459,27 +454,27 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         private DeliveryChannel channel = new PojoChannel();
 
         public ServiceEndpoint activateEndpoint(QName qName, String s) throws JBIException {
-            return context.activateEndpoint(qName, s);
+            return getContext().activateEndpoint(qName, s);
         }
 
         public void deactivateEndpoint(ServiceEndpoint serviceEndpoint) throws JBIException {
-            context.deactivateEndpoint(serviceEndpoint);
+            getContext().deactivateEndpoint(serviceEndpoint);
         }
 
         public void registerExternalEndpoint(ServiceEndpoint serviceEndpoint) throws JBIException {
-            context.registerExternalEndpoint(serviceEndpoint);
+            getContext().registerExternalEndpoint(serviceEndpoint);
         }
 
         public void deregisterExternalEndpoint(ServiceEndpoint serviceEndpoint) throws JBIException {
-            context.deregisterExternalEndpoint(serviceEndpoint);
+            getContext().deregisterExternalEndpoint(serviceEndpoint);
         }
 
         public ServiceEndpoint resolveEndpointReference(DocumentFragment documentFragment) {
-            return context.resolveEndpointReference(documentFragment);
+            return getContext().resolveEndpointReference(documentFragment);
         }
 
         public String getComponentName() {
-            return context.getComponentName();
+            return getContext().getComponentName();
         }
 
         public DeliveryChannel getDeliveryChannel() throws MessagingException {
@@ -487,86 +482,85 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         }
 
         public ServiceEndpoint getEndpoint(QName qName, String s) {
-            return context.getEndpoint(qName, s);
+            return getContext().getEndpoint(qName, s);
         }
 
         public Document getEndpointDescriptor(ServiceEndpoint serviceEndpoint) throws JBIException {
-            return context.getEndpointDescriptor(serviceEndpoint);
+            return getContext().getEndpointDescriptor(serviceEndpoint);
         }
 
         public ServiceEndpoint[] getEndpoints(QName qName) {
-            return context.getEndpoints(qName);
+            return getContext().getEndpoints(qName);
         }
 
         public ServiceEndpoint[] getEndpointsForService(QName qName) {
-            return context.getEndpointsForService(qName);
+            return getContext().getEndpointsForService(qName);
         }
 
         public ServiceEndpoint[] getExternalEndpoints(QName qName) {
-            return context.getExternalEndpoints(qName);
+            return getContext().getExternalEndpoints(qName);
         }
 
         public ServiceEndpoint[] getExternalEndpointsForService(QName qName) {
-            return context.getExternalEndpointsForService(qName);
+            return getContext().getExternalEndpointsForService(qName);
         }
 
         public String getInstallRoot() {
-            return context.getInstallRoot();
+            return getContext().getInstallRoot();
         }
 
         public Logger getLogger(String s, String s1) throws MissingResourceException, JBIException {
-            return context.getLogger(s, s1);
+            return getContext().getLogger(s, s1);
         }
 
         public MBeanNames getMBeanNames() {
-            return context.getMBeanNames();
+            return getContext().getMBeanNames();
         }
 
         public MBeanServer getMBeanServer() {
-            return context.getMBeanServer();
+            return getContext().getMBeanServer();
         }
 
         public InitialContext getNamingContext() {
-            return context.getNamingContext();
+            return getContext().getNamingContext();
         }
 
         public Object getTransactionManager() {
-            return context.getTransactionManager();
+            return getContext().getTransactionManager();
         }
 
         public String getWorkspaceRoot() {
-            return context.getWorkspaceRoot();
+            return getContext().getWorkspaceRoot();
         }
     }
 
     protected class PojoChannel implements DeliveryChannel {
 
         public void close() throws MessagingException {
-            BeanEndpoint.this.channel.close();
         }
 
         public MessageExchangeFactory createExchangeFactory() {
-            return BeanEndpoint.this.channel.createExchangeFactory();
+            return getChannel().createExchangeFactory();
         }
 
         public MessageExchangeFactory createExchangeFactory(QName qName) {
-            return BeanEndpoint.this.channel.createExchangeFactory(qName);
+            return getChannel().createExchangeFactory(qName);
         }
 
         public MessageExchangeFactory createExchangeFactoryForService(QName qName) {
-            return BeanEndpoint.this.channel.createExchangeFactoryForService(qName);
+            return getChannel().createExchangeFactoryForService(qName);
         }
 
         public MessageExchangeFactory createExchangeFactory(ServiceEndpoint serviceEndpoint) {
-            return BeanEndpoint.this.channel.createExchangeFactory(serviceEndpoint);
+            return getChannel().createExchangeFactory(serviceEndpoint);
         }
 
         public MessageExchange accept() throws MessagingException {
-            return BeanEndpoint.this.channel.accept();
+            return getChannel().accept();
         }
 
         public MessageExchange accept(long l) throws MessagingException {
-            return BeanEndpoint.this.channel.accept(l);
+            return getChannel().accept(l);
         }
 
         public void send(MessageExchange messageExchange) throws MessagingException {
@@ -574,15 +568,15 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                     && messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
                 requests.put(messageExchange.getExchangeId(), currentRequest.get());
             }
-            BeanEndpoint.this.channel.send(messageExchange);
+            getChannel().send(messageExchange);
         }
 
         public boolean sendSync(MessageExchange messageExchange) throws MessagingException {
-            return BeanEndpoint.this.channel.sendSync(messageExchange);
+            return getChannel().sendSync(messageExchange);
         }
 
         public boolean sendSync(MessageExchange messageExchange, long l) throws MessagingException {
-            return BeanEndpoint.this.channel.sendSync(messageExchange, l);
+            return getChannel().sendSync(messageExchange, l);
         }
 
     }
