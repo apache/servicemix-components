@@ -30,6 +30,7 @@
 	xmlns:wsn-bw="http://docs.oasis-open.org/wsn/bw-2"
 	xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2"
 	xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2"
+    xmlns:wsrf-rpw="http://docs.oasis-open.org/wsrf/rpw-2"
 	xmlns:tns="http://servicemix.apache.org/wsn/jaxws"
 	targetNamespace="http://servicemix.apache.org/wsn/jaxws">
 
@@ -40,6 +41,10 @@
 	<wsdl:import namespace="http://docs.oasis-open.org/wsn/bw-2"
 		location="bw-2.wsdl">
 	</wsdl:import>
+
+    <wsdl:import namespace="http://docs.oasis-open.org/wsrf/rpw-2"
+        location="rpw-2.wsdl">
+    </wsdl:import>
 
 	<wsdl:binding name="NotificationConsumerJBI"
 		type="wsn-bw:NotificationConsumer">
@@ -478,5 +483,33 @@
 				location="http://servicemix.org/wsnotification" />
 		</wsdl:port>
 	</wsdl:service>
+
+    <wsdl:binding name="GetResourcePropertyJBI" type="wsrf-rpw:GetResourceProperty">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+            style="document" />
+        <wsdl:operation name="GetResourceProperty">
+            <wsdl:input name="GetResourcePropertyRequest">
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output name="GetResourcePropertyResponse">
+                <soap:body use="literal" />
+            </wsdl:output>
+            <wsdl:fault name="ResourceUnknownFault">
+                <soap:fault use="literal" name="ResourceUnknownFault" />
+            </wsdl:fault>
+            <wsdl:fault name="ResourceUnavailableFault">
+                <soap:fault use="literal" name="ResourceUnavailableFault" />
+            </wsdl:fault>
+            <wsdl:fault name="InvalidResourcePropertyQNameFault">
+                <soap:fault use="literal" name="InvalidResourcePropertyQNameFault" />
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="GetResourcePropertyService">
+        <wsdl:port name="JBI" binding="tns:GetResourcePropertyJBI">
+            <soap:address
+                location="http://servicemix.org/wsnotification" />
+        </wsdl:port>
+    </wsdl:service>
 
 </wsdl:definitions>

@@ -40,9 +40,11 @@ import org.w3c.dom.Document;
 import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.wsn.jbi.JbiWrapperHelper;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
+import org.oasis_open.docs.wsrf.rp_2.GetResourcePropertyResponse;
 
 public abstract class AbstractWSAClient {
 
@@ -55,6 +57,8 @@ public abstract class AbstractWSAClient {
     private ServiceEndpoint serviceEndpoint;
 
     private boolean jbiWrapped;
+
+    private SourceTransformer transformer;
 
     public AbstractWSAClient() {
     }
@@ -148,7 +152,10 @@ public abstract class AbstractWSAClient {
             if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 throw new JBIException(exchange.getError());
             } else if (exchange.getFault() != null) {
-                throw new JBIException(exchange.getFault().toString());
+                if (transformer == null) {
+                    transformer = new SourceTransformer();
+                }
+                throw new JBIException(transformer.contentToString(exchange.getFault()));
             } else {
                 NormalizedMessage out = exchange.getOutMessage();
                 Source source = out.getContent();
@@ -188,7 +195,7 @@ public abstract class AbstractWSAClient {
 
     private synchronized JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class);
+            jaxbContext = JAXBContext.newInstance(Subscribe.class, RegisterPublisher.class, GetResourcePropertyResponse.class);
         }
         return jaxbContext;
     }

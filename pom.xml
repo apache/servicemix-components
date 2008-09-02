@@ -77,12 +77,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-components</artifactId>
-      <version>${servicemix-version}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
       <groupId>wsdl4j</groupId>
       <artifactId>wsdl4j</artifactId>
     </dependency>
@@ -107,16 +101,9 @@
       <artifactId>commons-logging</artifactId>
     </dependency>
     <dependency>
-      <groupId>quartz</groupId>
-      <artifactId>quartz</artifactId>
-      <version>1.5.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-core</artifactId>
-      <version>${activemq-version}</version>
-      <scope>provided</scope>
+      <version>5.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
@@ -141,13 +128,30 @@
       <artifactId>geronimo-annotation_1.0_spec</artifactId>
       <version>1.0</version>
     </dependency>
+    <dependency>
+      <groupId>quartz</groupId>
+      <artifactId>quartz</artifactId>
+      <version>1.5.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-components</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>test</scope>
+    </dependency>
     <!-- TODO: make sure this gets down to test scope -->
+    <!-- This is currently not possible due to the PublisherComponent -->
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
       <scope>provided</scope>
       <exclusions>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.springframework</groupId>
           <artifactId>spring-jmx</artifactId>

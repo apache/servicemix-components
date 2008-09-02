@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.jbi.listener.MessageExchangeListener;
+import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.oasis_open.docs.wsn.b_2.Subscribe;

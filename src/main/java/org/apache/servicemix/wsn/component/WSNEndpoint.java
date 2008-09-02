@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -43,8 +45,6 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.WebFault;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.w3c.dom.Document;
@@ -52,7 +52,6 @@ import org.w3c.dom.Document;
 import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
-import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.wsn.ComponentContextAware;
 import org.apache.servicemix.wsn.jbi.JbiWrapperHelper;
 import org.oasis_open.docs.wsrf.bf_2.BaseFaultType;
@@ -65,7 +64,7 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
 
     protected JAXBContext jaxbContext;
 
-    protected Class endpointInterface;
+    protected Set<Class> endpointInterfaces = new HashSet<Class>();
 
     public WSNEndpoint(String address, Object pojo) {
         this.address = address;
@@ -85,9 +84,18 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
         if (ws == null) {
             throw new IllegalStateException("Unable to find WebService annotation");
         }
-        endpointInterface = Class.forName(ws.endpointInterface());
-        jaxbContext = createJAXBContext(endpointInterface);
-        ws = getWebServiceAnnotation(endpointInterface);
+        Class mainInterface = Class.forName(ws.endpointInterface());
+        endpointInterfaces.add(mainInterface);
+        // Check additional interfaces
+        for (Class pojoClass = pojo.getClass(); pojoClass != Object.class; pojoClass = pojoClass.getSuperclass()) {
+            for (Class cl : pojoClass.getInterfaces()) {
+                if (getWebServiceAnnotation(cl) != null) {
+                    endpointInterfaces.add(cl);
+                }
+            }
+        }
+        jaxbContext = createJAXBContext(endpointInterfaces);
+        ws = getWebServiceAnnotation(mainInterface);
         if (ws != null) {
             interfaceName = new QName(ws.targetNamespace(), ws.name());
         }
@@ -95,17 +103,27 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
     }
 
     public static JAXBContext createJAXBContext(Class interfaceClass) throws JAXBException {
+        return createJAXBContext(Collections.singletonList(interfaceClass));
+    }
+
+    public static JAXBContext createJAXBContext(Iterable<Class> interfaceClasses) throws JAXBException {
         List<Class> classes = new ArrayList<Class>();
         classes.add(JbiFault.class);
         classes.add(XmlException.class);
-        for (Method mth : interfaceClass.getMethods()) {
-            WebMethod wm = (WebMethod) mth.getAnnotation(WebMethod.class);
-            if (wm != null) {
-                classes.add(mth.getReturnType());
-                classes.addAll(Arrays.asList(mth.getParameterTypes()));
+        for (Class interfaceClass : interfaceClasses) {
+            for (Method mth : interfaceClass.getMethods()) {
+                WebMethod wm = (WebMethod) mth.getAnnotation(WebMethod.class);
+                if (wm != null) {
+                    classes.add(mth.getReturnType());
+                    classes.addAll(Arrays.asList(mth.getParameterTypes()));
+                }
             }
         }
         return JAXBContext.newInstance(classes.toArray(new Class[classes.size()]));
+    }
+
+    public JAXBContext getJaxbContext() {
+        return jaxbContext;
     }
 
     @SuppressWarnings("unchecked")
@@ -123,11 +141,21 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
 
         Object input = jaxbContext.createUnmarshaller().unmarshal(source);
         Method webMethod = null;
-        for (Method mth : endpointInterface.getMethods()) {
-            Class[] params = mth.getParameterTypes();
-            if (params.length == 1 && params[0].isAssignableFrom(input.getClass())) {
-                webMethod = mth;
-                break;
+        Class inputClass = input.getClass();
+        if (input instanceof JAXBElement) {
+            inputClass = ((JAXBElement) input).getDeclaredType();
+            input = ((JAXBElement) input).getValue(); 
+        }
+        for (Class clazz : endpointInterfaces) {
+            for (Method mth : clazz.getMethods()) {
+                Class[] params = mth.getParameterTypes();
+                if (params.length == 1 && params[0].isAssignableFrom(inputClass)) {
+                    if (webMethod == null) {
+                        webMethod = mth;
+                    } else if (!mth.getName().equals(webMethod.getName())) {
+                        throw new IllegalStateException("Multiple methods matching parameters");
+                    }
+                }
             }
         }
         if (webMethod == null) {

@@ -25,6 +25,7 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
+import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +39,7 @@ import org.oasis_open.docs.wsn.b_2.Notify;
 import org.oasis_open.docs.wsn.b_2.Subscribe;
 import org.oasis_open.docs.wsn.b_2.SubscribeCreationFailedFaultType;
 import org.oasis_open.docs.wsn.b_2.SubscribeResponse;
+import org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFaultType;
 import org.oasis_open.docs.wsn.br_2.PublisherRegistrationFailedFaultType;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
@@ -59,9 +61,22 @@ import org.oasis_open.docs.wsn.bw_2.UnacceptableInitialTerminationTimeFault;
 import org.oasis_open.docs.wsn.bw_2.UnsupportedPolicyRequestFault;
 import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
 import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnavailableFault;
+import org.oasis_open.docs.wsrf.rpw_2.GetResourceProperty;
+import org.oasis_open.docs.wsrf.rpw_2.InvalidResourcePropertyQNameFault;
+import org.oasis_open.docs.wsrf.rp_2.GetResourcePropertyResponse;
+import org.oasis_open.docs.wsrf.rp_2.InvalidResourcePropertyQNameFaultType;
 
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.brw_2.NotificationBroker")
-public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker {
+public abstract class AbstractNotificationBroker extends AbstractEndpoint implements NotificationBroker, GetResourceProperty {
+
+    public static final String NAMESPACE_URI = "http://docs.oasis-open.org/wsn/b-2";
+    public static final String PREFIX = "wsnt";
+    public static final QName TOPIC_EXPRESSION_QNAME = new QName(NAMESPACE_URI, "TopicExpression", PREFIX);
+    public static final QName FIXED_TOPIC_SET_QNAME = new QName(NAMESPACE_URI, "FixedTopicSet", PREFIX);
+    public static final QName TOPIC_EXPRESSION_DIALECT_QNAME = new QName(NAMESPACE_URI, "TopicExpressionDialect", PREFIX);
+    public static final QName TOPIC_SET_QNAME = new QName(NAMESPACE_URI, "TopicSet", PREFIX);
+
 
     private static Log log = LogFactory.getLog(AbstractNotificationBroker.class);
 
@@ -298,5 +313,22 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
     protected abstract AbstractPublisher createPublisher(String name);
 
     protected abstract AbstractSubscription createSubcription(String name);
+
+    @WebResult(name = "GetResourcePropertyResponse", targetNamespace = "http://docs.oasis-open.org/wsrf/rp-2", partName = "GetResourcePropertyResponse")
+    @WebMethod(operationName = "GetResourceProperty")
+    public GetResourcePropertyResponse getResourceProperty(
+        @WebParam(partName = "GetResourcePropertyRequest", name = "GetResourceProperty", targetNamespace = "http://docs.oasis-open.org/wsrf/rp-2")
+        javax.xml.namespace.QName getResourcePropertyRequest
+    ) throws ResourceUnavailableFault, ResourceUnknownFault, InvalidResourcePropertyQNameFault {
+
+        log.debug("GetResourceProperty");
+        return handleGetResourceProperty(getResourcePropertyRequest);
+    }
+
+    protected GetResourcePropertyResponse handleGetResourceProperty(QName property)
+            throws ResourceUnavailableFault, ResourceUnknownFault, InvalidResourcePropertyQNameFault {
+        InvalidResourcePropertyQNameFaultType fault = new InvalidResourcePropertyQNameFaultType();
+        throw new InvalidResourcePropertyQNameFault("Invalid resource property QName: " + property, fault);
+    }
 
 }

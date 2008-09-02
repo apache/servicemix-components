@@ -37,6 +37,9 @@ import org.oasis_open.docs.wsn.b_2.TopicExpressionType;
 import org.oasis_open.docs.wsn.b_2.UseRaw;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisher;
 import org.oasis_open.docs.wsn.br_2.RegisterPublisherResponse;
+import org.oasis_open.docs.wsrf.rpw_2.GetResourceProperty;
+import org.oasis_open.docs.wsrf.rp_2.GetResourcePropertyResponse;
+import org.oasis_open.docs.wsrf.rp_2.ObjectFactory;
 
 public class NotificationBroker extends AbstractWSAClient {
     
@@ -133,6 +136,12 @@ public class NotificationBroker extends AbstractWSAClient {
         registerPublisherRequest.setDemand(Boolean.valueOf(demand));
         RegisterPublisherResponse response = (RegisterPublisherResponse) request(registerPublisherRequest);
         return new Publisher(getContext(), response.getPublisherRegistrationReference());
+    }
+
+    public List<Object> getResourceProperty(QName property) throws JBIException {
+        GetResourcePropertyResponse response = (GetResourcePropertyResponse) request(
+                new ObjectFactory().createGetResourceProperty(property));
+        return response.getAny();
     }
 
 }

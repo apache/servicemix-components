@@ -24,10 +24,14 @@ import java.util.List;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.bind.JAXBElement;
+import javax.xml.transform.Source;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,16 +47,20 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.tck.mock.MockMessageExchange;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.client.CreatePullPoint;
 import org.apache.servicemix.wsn.client.NotificationBroker;
 import org.apache.servicemix.wsn.client.PullPoint;
 import org.apache.servicemix.wsn.client.Subscription;
 import org.apache.servicemix.wsn.spring.PublisherComponent;
+import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
+import org.apache.servicemix.wsn.AbstractNotificationBroker;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
+import org.oasis_open.docs.wsrf.rp_2.ObjectFactory;
 
 public class WSNComponentTest extends TestCase {
 
@@ -288,21 +296,21 @@ public class WSNComponentTest extends TestCase {
         publisherComponent.setDemand(true);
         jbi.activateComponent(publisherComponent, "publisher");
 
-        Thread.sleep(500);
+        Thread.sleep(5000);
         assertNull(publisherComponent.getSubscription());
 
         PullPoint pullPoint = wsnCreatePullPoint.createPullPoint();
         Subscription subscription = wsnBroker.subscribe(pullPoint.getEndpoint(), "myTopic", null);
 
-        Thread.sleep(500);
+        Thread.sleep(1500);
         assertNotNull(publisherComponent.getSubscription());
 
         subscription.unsubscribe();
 
-        Thread.sleep(500);
+        Thread.sleep(1500);
         assertNull(publisherComponent.getSubscription());
 
-        Thread.sleep(500);
+        Thread.sleep(1500);
     }
 
     public void testDeployPullPoint() throws Exception {
@@ -356,6 +364,17 @@ public class WSNComponentTest extends TestCase {
         Thread.sleep(500);
         receiver.getMessageList().assertMessagesReceived(1);
         receiver.getMessageList().flushMessages();
+    }
+
+    public void testWsRfRp() throws Exception {
+        List<Object> props = wsnBroker.getResourceProperty(AbstractNotificationBroker.TOPIC_EXPRESSION_DIALECT_QNAME);
+        for (Object o : props) {
+            if (o instanceof JAXBElement) {
+                System.err.println(((JAXBElement) o).getValue());
+            } else {
+                System.err.println(o);
+            }
+        }
     }
 
     protected Element parse(String txt) throws Exception {

@@ -16,12 +16,22 @@
  */
 package org.apache.servicemix.wsn.jms;
 
+import java.net.URI;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.xml.namespace.QName;
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeFactory;
 
 import org.apache.servicemix.wsn.AbstractNotificationBroker;
 import org.apache.servicemix.wsn.AbstractPublisher;
 import org.apache.servicemix.wsn.AbstractSubscription;
+import org.oasis_open.docs.wsrf.rp_2.GetResourcePropertyResponse;
+import org.oasis_open.docs.wsrf.rp_2.InvalidResourcePropertyQNameFaultType;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnavailableFault;
+import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
+import org.oasis_open.docs.wsrf.rpw_2.InvalidResourcePropertyQNameFault;
 
 public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
 
@@ -74,6 +84,22 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
 
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
+    }
+
+    protected GetResourcePropertyResponse handleGetResourceProperty(QName property)
+            throws ResourceUnavailableFault, ResourceUnknownFault, InvalidResourcePropertyQNameFault {
+        if (TOPIC_EXPRESSION_QNAME.equals(property)) {
+            // TODO
+        } else if (FIXED_TOPIC_SET_QNAME.equals(property)) {
+            // TODO
+        } else if (TOPIC_EXPRESSION_DIALECT_QNAME.equals(property)) {
+            GetResourcePropertyResponse r = new GetResourcePropertyResponse();
+            r.getAny().add(new JAXBElement(TOPIC_EXPRESSION_DIALECT_QNAME, URI.class, JmsTopicExpressionConverter.SIMPLE_DIALECT));
+            return r;
+        } else if (TOPIC_SET_QNAME.equals(property)) {
+            // TODO
+        }
+        return super.handleGetResourceProperty(property);
     }
 
 }
