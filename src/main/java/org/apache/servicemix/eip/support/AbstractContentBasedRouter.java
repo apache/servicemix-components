@@ -126,16 +126,22 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
             // Now copy input to new exchange
             // We need to read the message once for finding routing target
             // so ensure we have a re-readable source
-            NormalizedMessage in = MessageUtil.copyIn(exchange);
-            MessageUtil.transferToIn(in, tme); 
-            // Retrieve target
-            ExchangeTarget target = getDestination(tme);
-            target.configureTarget(tme, getContext());
-            if (isForwardOperation() && tme.getOperation() == null) {
-                tme.setOperation(exchange.getOperation());
+            try {
+                NormalizedMessage in = MessageUtil.copyIn(exchange);
+                MessageUtil.transferToIn(in, tme); 
+                // Retrieve target
+                ExchangeTarget target = getDestination(tme);
+                target.configureTarget(tme, getContext());
+                if (isForwardOperation() && tme.getOperation() == null) {
+                    tme.setOperation(exchange.getOperation());
+                }
+                // Send in to target
+                send(tme);
+            } catch (Exception e) {
+                // Clear the store on error
+                store.load(exchange.getExchangeId());
+                throw e;
             }
-            // Send in to target
-            send(tme);
         // Mimic the exchange on the other side and send to needed listener
         } else {
             String id = (String) exchange.getProperty(correlation);
@@ -155,13 +161,23 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
             // Reproduce faults to the other side and listeners
             } else if (exchange.getFault() != null) {
                 store.store(exchange.getExchangeId(), exchange);
-                MessageUtil.transferTo(exchange, org, "fault"); 
-                send(org);
+                try {
+                    MessageUtil.transferTo(exchange, org, "fault"); 
+                    send(org);
+                } catch (Exception e) {
+                    store.load(exchange.getExchangeId());
+                    throw e;
+                }
             // Reproduce answers to the other side
             } else if (exchange.getMessage("out") != null) {
                 store.store(exchange.getExchangeId(), exchange);
-                MessageUtil.transferTo(exchange, org, "out"); 
-                send(org);
+                try {
+                    MessageUtil.transferTo(exchange, org, "out"); 
+                    send(org);
+                } catch (Exception e) {
+                    store.load(exchange.getExchangeId());
+                    throw e;
+                }
             } else {
                 throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
                         + " but has no Out nor Fault message");
