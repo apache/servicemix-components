@@ -106,10 +106,12 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         }
         Object pojo = getBean();
         if (pojo != null) {
+            beanType = pojo.getClass();
             injectBean(pojo);
             ReflectionUtils.callLifecycleMethod(pojo, PostConstruct.class);
+        } else {
+            beanType = createBean().getClass();
         }
-        beanType = pojo != null ? pojo.getClass() : createBean().getClass();
         if (getMethodInvocationStrategy() == null) {
             throw new IllegalArgumentException("No 'methodInvocationStrategy' property set");
         }
@@ -215,17 +217,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
 
     protected void onProviderExchange(MessageExchange exchange) throws Exception {
         Object corId = getCorrelation(exchange);
-        Request req = requests.get(corId);
-        if (req == null) {
-            Object pojo = getBean();
-            if (pojo == null) {
-                pojo = createBean();
-                injectBean(pojo);
-                ReflectionUtils.callLifecycleMethod(pojo, PostConstruct.class);
-            }
-            req = new Request(pojo, exchange);
-            requests.put(corId, req);
-        }
+        Request req = getOrCreateCurrentRequest(exchange);
         currentRequest.set(req);
         synchronized (req) {
             // If the bean implements MessageExchangeListener,
@@ -268,6 +260,22 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             checkEndOfRequest(req, corId);
             currentRequest.set(null);
         }
+    }
+
+    protected Request getOrCreateCurrentRequest(MessageExchange exchange) throws ClassNotFoundException, InstantiationException, IllegalAccessException, MessagingException {
+        Object corId = getCorrelation(exchange);
+        Request req = requests.get(corId);
+        if (req == null) {
+            Object pojo = getBean();
+            if (pojo == null) {
+                pojo = createBean();
+                injectBean(pojo);
+                ReflectionUtils.callLifecycleMethod(pojo, PostConstruct.class);
+            }
+            req = new Request(pojo, exchange);
+            requests.put(corId, req);
+        }
+        return req;
     }
 
     protected void onConsumerExchange(MessageExchange exchange) throws Exception {
@@ -564,11 +572,20 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         }
 
         public void send(MessageExchange messageExchange) throws MessagingException {
-            if (messageExchange.getRole() == MessageExchange.Role.CONSUMER
-                    && messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
-                requests.put(messageExchange.getExchangeId(), currentRequest.get());
+            try {
+                if (messageExchange.getRole() == MessageExchange.Role.CONSUMER
+                        && messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
+                    Request req = getOrCreateCurrentRequest(messageExchange);
+                    if (!(req.getBean() instanceof MessageExchangeListener)) {
+                        throw new IllegalStateException("A bean acting as a consumer and using the channel to send exchanges must implement the MessageExchangeListener interface");
+                    }
+                }
+                getChannel().send(messageExchange);
+            } catch (MessagingException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new MessagingException(e);
             }
-            getChannel().send(messageExchange);
         }
 
         public boolean sendSync(MessageExchange messageExchange) throws MessagingException {
