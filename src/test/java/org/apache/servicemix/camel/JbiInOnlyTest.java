@@ -19,11 +19,15 @@ package org.apache.servicemix.camel;
 import java.util.List;
 
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.Processor;
+import org.apache.camel.Exchange;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -48,6 +52,24 @@ public class JbiInOnlyTest extends JbiTestSupport {
         done.assertIsSatisfied();
     }
 
+    public void testInOnlyWithException() throws Exception {
+        ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
+        InOnly exchange = client.createInOnlyExchange();
+        exchange.setService(new QName("urn:test", "in-only-error"));
+        exchange.getInMessage().setContent(new StringSource(MESSAGE));
+        client.sendSync(exchange);
+        assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
+    }
+
+    public void testInOutWithException() throws Exception {
+        ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
+        InOut exchange = client.createInOutExchange();
+        exchange.setService(new QName("urn:test", "in-only-error"));
+        exchange.getInMessage().setContent(new StringSource(MESSAGE));
+        client.sendSync(exchange);
+        assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
+    }
+
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
         // no additional activation specs required
@@ -60,6 +82,11 @@ public class JbiInOnlyTest extends JbiTestSupport {
             @Override
             public void configure() throws Exception {
                 from("jbi:service:urn:test:in-only").convertBodyTo(String.class).to("mock:done");
+                from("jbi:service:urn:test:in-only-error").process(new Processor() {
+                    public void process(Exchange exchange) throws Exception {
+                        throw new Exception("Error");
+                    }
+                });
             }
             
         };

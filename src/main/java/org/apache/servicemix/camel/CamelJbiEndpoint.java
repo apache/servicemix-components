@@ -91,18 +91,44 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
                 }
                 JbiExchange camelExchange = new JbiExchange(camelEndpoint.getCamelContext(), binding, exchange);
                 camelProcessor.process(camelExchange);
-                done(exchange);
+                if (camelExchange.isFailed()) {
+                    Throwable t = camelExchange.getException();
+                    Exception e;
+                    if (t == null) {
+                        e = new Exception("Unknown error");
+                    } else if (t instanceof Exception) {
+                        e = (Exception) t;
+                    } else {
+                        e = new Exception(t);
+                    }
+                    fail(exchange, e);
+                } else {
+                    done(exchange);
+                }
             } else {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Received exchange: " + exchange);
                 }
                 JbiExchange camelExchange = new JbiExchange(camelEndpoint.getCamelContext(), binding, exchange);
                 camelProcessor.process(camelExchange);
-                boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
-                if (txSync) {
-                    sendSync(exchange);
+                if (camelExchange.isFailed()) {
+                    Throwable t = camelExchange.getException();
+                    Exception e;
+                    if (t == null) {
+                        e = new Exception("Unknown error");
+                    } else if (t instanceof Exception) {
+                        e = (Exception) t;
+                    } else {
+                        e = new Exception(t);
+                    }
+                    fail(exchange, e);
                 } else {
-                    send(exchange);
+                    boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+                    if (txSync) {
+                        sendSync(exchange);
+                    } else {
+                        send(exchange);
+                    }
                 }
             }
         // This is not compliant with the default MEPs
