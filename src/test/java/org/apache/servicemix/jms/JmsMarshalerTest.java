@@ -17,6 +17,7 @@
 package org.apache.servicemix.jms;
 
 import java.util.List;
+import java.nio.charset.Charset;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -36,6 +37,8 @@ import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.soap.marshalers.SoapMarshaler;
+import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.springframework.core.io.ClassPathResource;
 
 public class JmsMarshalerTest extends TestCase {
@@ -103,6 +106,42 @@ public class JmsMarshalerTest extends TestCase {
 
         // Wait for DONE status
         Thread.sleep(50);
+    }
+
+    public void testEncoding() throws Exception {
+        JmsEndpoint ep = new JmsEndpoint();
+        ep.setService(ReceiverComponent.SERVICE);
+        ep.setEndpoint("jms");
+        ep.setTargetService(ReceiverComponent.SERVICE);
+        ep.setTargetEndpoint(ReceiverComponent.ENDPOINT);
+        ep.setRole(MessageExchange.Role.CONSUMER);
+        ep.setDestinationStyle(AbstractJmsProcessor.STYLE_QUEUE);
+        ep.setDestination(queue);
+        ep.setDefaultMep(JbiConstants.IN_ONLY);
+        ep.setMarshaler(new DefaultJmsMarshaler(ep));
+
+        QueueConnection qConn = connectionFactory.createQueueConnection();
+        QueueSession qSess = qConn.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        
+        // Test character encoding.
+        String defaultCharset = SourceTransformer.getDefaultCharset();
+        try {
+            SourceTransformer.setDefaultCharset("ISO-8859-1");
+
+            SourceTransformer sourceTransformer = new SourceTransformer();
+            SoapMarshaler marshaler = new SoapMarshaler(true);
+            SoapMessage soapMessage = marshaler.createReader().read(getClass().getResourceAsStream("charsettest.xml"));
+            soapMessage.setHeaders(null);
+            soapMessage.setBodyName(null);
+            soapMessage.setEnvelopeName(null);
+
+            soapMessage.setSource(sourceTransformer.toDOMSource(soapMessage.getSource()));
+            TextMessage m = (TextMessage) ep.getMarshaler().toJMS(soapMessage, null, qSess);
+
+            assertEquals("Messages match", new SourceTransformer().toString(soapMessage.getSource()), m.getText().replace('\'', '"'));
+        } finally {
+            SourceTransformer.setDefaultCharset(defaultCharset);
+        }
     }
     
 

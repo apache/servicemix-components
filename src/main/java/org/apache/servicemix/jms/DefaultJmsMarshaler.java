@@ -32,6 +32,7 @@ import javax.jms.TextMessage;
 import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
 /**
  * Encapsulates the conversion to and from JMS messages
@@ -47,14 +48,14 @@ public class DefaultJmsMarshaler implements JmsMarshaler {
     
     /**
      * Converts an {@link Exception} into an JMS message. This method will be
-     * invoked when the {@link MessageExchange} contains an error.
+     * invoked when the {@link javax.jbi.messaging.MessageExchange} contains an error.
      * 
      * @param e
      *            Exception to convert
      * @param session
      *            JMS session used to create JMS messages
      * @return JMS message
-     * @see MessageExchange#getError()
+     * @see javax.jbi.messaging.MessageExchange#getError()
      */
     public Message toJMS(Exception e, Session session) throws Exception {
         return session.createObjectMessage(e);
@@ -68,7 +69,7 @@ public class DefaultJmsMarshaler implements JmsMarshaler {
      * @param session JMS session used to create JMS messages
      * @return JMS version of the specified source SOAP message
      * @throws Exception if an IO error occurs
-     * @throws JMSException if a JMS error occurs
+     * @throws javax.jms.JMSException if a JMS error occurs
      */
     protected Message toJMS(SoapMessage message, Session session) throws Exception {
         SoapHelper soapHelper = new SoapHelper(endpoint);
@@ -80,7 +81,7 @@ public class DefaultJmsMarshaler implements JmsMarshaler {
         
         // create text message
         TextMessage msg = session.createTextMessage();
-        msg.setText(baos.toString());
+        msg.setText(baos.toString(SourceTransformer.getDefaultCharset()));
         
         // overwrite whatever content-type was passed on to us with the one
         // the SoapWriter constructed
@@ -130,7 +131,7 @@ public class DefaultJmsMarshaler implements JmsMarshaler {
      * @throws Exception
      *             if JMS message is an ObjectMessage containing an Exception
      *             (the containing exception is thrown.)
-     * @throws JMSException
+     * @throws javax.jms.JMSException
      *             if a JMS problem occurs
      * @throws UnsupportedOperationException
      *             if the JMS message is an ObjectMessage which contains

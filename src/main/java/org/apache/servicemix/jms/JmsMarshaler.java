@@ -29,8 +29,7 @@ public interface JmsMarshaler {
      * Marshalls the JMS message into an XML/SOAP message
      *
      * @param src Message to marshall
-     * @param soapHelper 
-     * @throws Exception 
+     * @throws Exception
      */
     SoapMessage toSOAP(Message src) throws Exception;
     
@@ -39,8 +38,8 @@ public interface JmsMarshaler {
      *
      * @param message Message to unmarshall
      * @param session Used to create the JMS message
-     * @throws MessagingException
-     * @throws JMSException
+     * @throws javax.jbi.messaging.MessagingException
+     * @throws javax.jms.JMSException
      */
     Message toJMS(SoapMessage message, Map headers, Session session) throws Exception;
 
