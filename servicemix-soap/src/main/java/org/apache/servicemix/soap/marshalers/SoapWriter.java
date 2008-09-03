@@ -107,7 +107,7 @@ public class SoapWriter {
             marshaler.getSourceTransformer().toResult(new DOMSource(message.getDocument()), new StreamResult(out));
             return;
         }
-        XMLStreamWriter writer = marshaler.getOutputFactory().createXMLStreamWriter(out);
+        XMLStreamWriter writer = marshaler.getOutputFactory().createXMLStreamWriter(out, SourceTransformer.getDefaultCharset());
         writer.writeStartDocument();
         if (marshaler.isSoap()) {
             writeSoapEnvelope(writer);
@@ -120,7 +120,7 @@ public class SoapWriter {
                     XMLStreamReader reader = marshaler.getSourceTransformer().toXMLStreamReader(
                             message.getFault().getDetails());
                     XMLStreamHelper.copy(reader, writer);
-                } else {
+                } else {            
                     throw new IllegalStateException("Cannot write non xml faults for non soap messages");
                 }
             } else if (message.getSource() != null) {
