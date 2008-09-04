@@ -287,6 +287,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) getBus()
             .getExtension(ConduitInitiatorManager.class)
             .getConduitInitiator(JBITransportFactory.TRANSPORT_ID);
+        jbiTransportFactory.setDeliveryChannel(null);
         jbiTransportFactory.removeDestination(getService().toString()
                     + getInterfaceName().toString());
         super.stop();
