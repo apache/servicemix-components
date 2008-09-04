@@ -20,7 +20,7 @@
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
 
   <SOAP-ENV:Header>
-    <HelloHeader xmlns="uri:HelloWorld" SOAP-ENV:mustUnderstand="1">
+    <HelloHeader xmlns="uri:HelloWorld">
       <id>1234567890</id>
     </HelloHeader>
   </SOAP-ENV:Header>
