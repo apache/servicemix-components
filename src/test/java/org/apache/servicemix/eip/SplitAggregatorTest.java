@@ -16,10 +16,15 @@
  */
 package org.apache.servicemix.eip;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.eip.patterns.SplitAggregator;
 import org.apache.servicemix.eip.support.AbstractSplitter;
 import org.apache.servicemix.tck.ReceiverComponent;
@@ -76,5 +81,35 @@ public class SplitAggregatorTest extends AbstractEIPTest {
     public void testWithTimeout() throws Exception {
         aggregator.setTimeout(500);
         testRun(new boolean[] {true, false, true });
+    }
+    
+    public void testProcessCorrelationIdPropagationWithTimeout() throws Exception {
+        aggregator.setTimeout(500);
+
+        final AtomicReference<String> receivedCorrId = new AtomicReference<String>();
+
+        final String processCorrId = Long.toString(System.currentTimeMillis());
+        ReceiverComponent rec = new ReceiverComponent() {
+        	@Override
+            public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+                String corrId = (String) exchange.getProperty(JbiConstants.CORRELATION_ID);
+                receivedCorrId.set(corrId);
+                super.onMessageExchange(exchange);
+            }
+		};
+        activateComponent(rec, "target");
+
+        String corrId = Long.toString(System.currentTimeMillis());
+        InOnly me = client.createInOnlyExchange();
+        me.setProperty(JbiConstants.CORRELATION_ID, processCorrId);
+        me.setService(new QName("aggregator"));
+        me.getInMessage().setContent(createSource("<hello id='" + 0 + "' />"));
+        me.getInMessage().setProperty(AbstractSplitter.SPLITTER_COUNT, new Integer(2));
+        me.getInMessage().setProperty(AbstractSplitter.SPLITTER_INDEX, new Integer(0));
+        me.getInMessage().setProperty(AbstractSplitter.SPLITTER_CORRID, corrId);
+        client.send(me);
+
+        rec.getMessageList().waitForMessagesToArrive(1);
+        assertEquals(processCorrId, receivedCorrId.get());
     }
 }

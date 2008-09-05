@@ -129,7 +129,9 @@ public abstract class AbstractAggregator extends EIPEndpoint {
 
     public void setCopyAttachments(boolean copyAttachments) {
         this.copyAttachments = copyAttachments;
-    }/* (non-Javadoc)
+    }
+    
+    /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
     protected void processSync(MessageExchange exchange) throws Exception {
@@ -195,6 +197,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     private void processProvider(MessageExchange exchange) throws Exception {
+        final String processCorrelationId = (String) exchange.getProperty(JbiConstants.CORRELATION_ID);
+
         NormalizedMessage in = MessageUtil.copyIn(exchange);
         final String correlationId = getCorrelationID(exchange, in);
         if (correlationId == null || correlationId.length() == 0) {
@@ -220,7 +224,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             // If the aggregation is not closed
             if (aggregation != null) {
                 if (addMessage(aggregation, in, exchange)) {
-                    sendAggregate(correlationId, aggregation, false, isSynchronous(exchange));
+                    sendAggregate(processCorrelationId, correlationId, aggregation, false, isSynchronous(exchange));
                 } else {
                     store.store(correlationId, aggregation);
                     if (timeout != null) {
@@ -229,7 +233,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                         }
                         Timer t = getTimerManager().schedule(new TimerListener() {
                             public void timerExpired(Timer timer) {
-                                AbstractAggregator.this.onTimeout(correlationId, timer);
+                                AbstractAggregator.this.onTimeout(processCorrelationId, correlationId, timer);
                             }
                         }, timeout);
                         timers.put(correlationId, t);
@@ -242,11 +246,15 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         }
     }
 
-    protected void sendAggregate(String correlationId,
+    protected void sendAggregate(String processCorrelationId,
+                                 String correlationId,
                                  Object aggregation,
                                  boolean timeout,
                                  boolean sync) throws Exception {
         InOnly me = getExchangeFactory().createInOnlyExchange();
+        if (processCorrelationId != null) {
+            me.setProperty(JbiConstants.CORRELATION_ID, processCorrelationId);
+        }
         target.configureTarget(me, getContext());
         NormalizedMessage nm = me.createMessage();
         me.setInMessage(nm);
@@ -259,7 +267,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         }
     }
 
-    protected void onTimeout(String correlationId, Timer timer) {
+    protected void onTimeout(String processCorrelationId, String correlationId, Timer timer) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Timeout expired for aggregate " + correlationId);
         }
@@ -269,12 +277,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             // the timeout event could have been fired before timer was canceled
             Timer t = timers.get(correlationId);
             if (t == null || !t.equals(timer)) {
-		return;
+                return;
             }
             timers.remove(correlationId);
             Object aggregation = store.load(correlationId);
             if (aggregation != null) {
-                sendAggregate(correlationId, aggregation, true, isSynchronous());
+                sendAggregate(processCorrelationId, correlationId, aggregation, true, isSynchronous());
             } else if (!isAggregationClosed(correlationId)) {
                 throw new IllegalStateException("Aggregation is not closed, but can not be retrieved from the store");
             } else {
