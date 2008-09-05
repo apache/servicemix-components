@@ -39,7 +39,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
 
     private final CamelJbiComponent component;
 
-    private List<CamelJbiEndpoint> activatedEndpoints = new ArrayList<CamelJbiEndpoint>();
+    private List<CamelProviderEndpoint> activatedEndpoints = new ArrayList<CamelProviderEndpoint>();
 
     private String serviceUnitName;
 
@@ -73,7 +73,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
         return serviceUnit;
     }
 
-    public void addService(CamelJbiEndpoint endpoint) {
+    public void addService(CamelProviderEndpoint endpoint) {
         activatedEndpoints.add(endpoint);
     }
 

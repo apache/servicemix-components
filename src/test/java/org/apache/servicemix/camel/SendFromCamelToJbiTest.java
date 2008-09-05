@@ -25,15 +25,17 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.MessageList;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.components.util.EchoComponent;
 
 /**
  * @version $Revision: 563665 $
  */
 public class SendFromCamelToJbiTest extends JbiTestSupport {
+
     private ReceiverComponent receiverComponent = new ReceiverComponent();
 
     public void testCamelInvokingJbi() throws Exception {
-        sendExchange("<foo bar='123'/>");
+        sendExchangeAsync("<foo bar='123'/>");
         MessageList list = receiverComponent.getMessageList();
 
         list.assertMessagesReceived(1);
@@ -43,6 +45,8 @@ public class SendFromCamelToJbiTest extends JbiTestSupport {
         log.info("Received: " + message);
 
         assertEquals("cheese header", 123, message.getProperty("cheese"));
+
+        exchangeCompletedListener.assertExchangeCompleted();
     }
 
     @Override
@@ -56,14 +60,12 @@ public class SendFromCamelToJbiTest extends JbiTestSupport {
     }
 
     @Override
-    protected void appendJbiActivationSpecs(
-            List<ActivationSpec> activationSpecList) {
+    protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
         ActivationSpec activationSpec = new ActivationSpec();
         activationSpec.setId("jbiReceiver");
         activationSpec.setService(new QName("serviceNamespace", "serviceA"));
         activationSpec.setEndpoint("endpointA");
         activationSpec.setComponent(receiverComponent);
-
         activationSpecList.add(activationSpec);
     }
 

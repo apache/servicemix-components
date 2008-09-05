@@ -45,7 +45,7 @@ public class JbiInOutTest extends
     protected void configureExchange(ServiceMixClient client,
             MessageExchange exchange) {
         ServiceEndpoint endpoint = client.getContext().getEndpoint(
-                CamelJbiEndpoint.SERVICE_NAME, "cheese");
+                CamelProviderEndpoint.SERVICE_NAME, "cheese");
         assertNotNull("Should have a Camel endpoint exposed in JBI!", endpoint);
         exchange.setEndpoint(endpoint);
     }

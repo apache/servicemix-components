@@ -34,8 +34,9 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
  *
  * @version $Revision: 426415 $
  */
-public class CamelJbiEndpoint extends ProviderEndpoint {
-    public static final QName SERVICE_NAME = new QName("http://activemq.apache.org/camel/schema/jbi", "endpoint");
+public class CamelProviderEndpoint extends ProviderEndpoint {
+
+    public static final QName SERVICE_NAME = new QName("http://activemq.apache.org/camel/schema/jbi", "provider");
 
     private Endpoint camelEndpoint;
 
@@ -43,7 +44,7 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
 
     private Processor camelProcessor;
 
-    public CamelJbiEndpoint(ServiceUnit serviceUnit, QName service, String endpoint, Endpoint camelEndpoint, JbiBinding binding,
+    public CamelProviderEndpoint(ServiceUnit serviceUnit, QName service, String endpoint, Endpoint camelEndpoint, JbiBinding binding,
             Processor camelProcessor) {
         super(serviceUnit, service, endpoint);
         this.camelProcessor = camelProcessor;
@@ -51,7 +52,7 @@ public class CamelJbiEndpoint extends ProviderEndpoint {
         this.binding = binding;
     }
 
-    public CamelJbiEndpoint(ServiceUnit serviceUnit, Endpoint camelEndpoint, JbiBinding binding, Processor camelProcessor) {
+    public CamelProviderEndpoint(ServiceUnit serviceUnit, Endpoint camelEndpoint, JbiBinding binding, Processor camelProcessor) {
         this(serviceUnit, SERVICE_NAME, camelEndpoint.getEndpointUri(), camelEndpoint, binding, camelProcessor);
     }
 

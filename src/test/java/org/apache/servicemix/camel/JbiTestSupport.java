@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.namespace.QName;
 
@@ -30,11 +31,13 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.TestSupport;
+import org.apache.camel.AsyncCallback;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
+import org.apache.servicemix.tck.ExchangeCompletedListener;
 
 /**
  * @version $Revision: 563665 $
@@ -45,6 +48,8 @@ public abstract class JbiTestSupport extends TestSupport {
     protected CamelContext camelContext = new DefaultCamelContext();
 
     protected SpringJBIContainer jbiContainer = new SpringJBIContainer();
+
+    protected ExchangeCompletedListener exchangeCompletedListener;
 
     protected CountDownLatch latch = new CountDownLatch(1);
 
@@ -67,6 +72,26 @@ public abstract class JbiTestSupport extends TestSupport {
         });
     }
 
+    /**
+     * Sends an exchange to the endpoint
+     */
+    protected AtomicBoolean sendExchangeAsync(final Object expectedBody) {
+        final AtomicBoolean bool = new AtomicBoolean();
+        client.send(endpoint, new Processor() {
+            public void process(Exchange exchange) {
+                Message in = exchange.getIn();
+                in.setBody(expectedBody);
+                in.setHeader("cheese", 123);
+            }
+        }, new AsyncCallback() {
+            public void done(boolean b) {
+                bool.set(true);
+                bool.notify();
+            }
+        });
+        return bool;
+    }
+
     protected Object assertReceivedValidExchange(Class type) throws Exception {
         // lets wait on the message being received
         boolean received = latch.await(5, TimeUnit.SECONDS);
@@ -84,6 +109,7 @@ public abstract class JbiTestSupport extends TestSupport {
     @Override
     protected void setUp() throws Exception {
         jbiContainer.setEmbedded(true);
+        exchangeCompletedListener = new ExchangeCompletedListener();
 
         CamelJbiComponent component = new CamelJbiComponent();
 
@@ -103,6 +129,7 @@ public abstract class JbiTestSupport extends TestSupport {
                 .toArray(new ActivationSpec[activationSpecList.size()]);
         jbiContainer.setActivationSpecs(activationSpecs);
         jbiContainer.afterPropertiesSet();
+        jbiContainer.addListener(exchangeCompletedListener);
 
         // lets configure some componnets
         camelContext.addComponent("jbi", component);

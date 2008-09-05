@@ -74,8 +74,8 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
      * @see org.apache.servicemix.common.DefaultComponent#getConfiguredEndpoints()
      */
     @Override
-    protected List<CamelJbiEndpoint> getConfiguredEndpoints() {
-        return new ArrayList<CamelJbiEndpoint>();
+    protected List<CamelProviderEndpoint> getConfiguredEndpoints() {
+        return new ArrayList<CamelProviderEndpoint>();
     }
 
     /**
@@ -84,7 +84,7 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
      */
     @Override
     protected Class[] getEndpointClasses() {
-        return new Class[] {CamelJbiEndpoint.class};
+        return new Class[] {CamelProviderEndpoint.class, CamelConsumerEndpoint.class};
     }
 
     /**
@@ -112,18 +112,18 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
 
     @Override
     protected org.apache.servicemix.common.Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
-        CamelJbiEndpoint endpoint = createEndpoint(ep);
+        CamelProviderEndpoint endpoint = createEndpoint(ep);
         endpoint.activate();
         return endpoint;
     }
 
-    public CamelJbiEndpoint createEndpoint(ServiceEndpoint ep) throws URISyntaxException {
+    public CamelProviderEndpoint createEndpoint(ServiceEndpoint ep) throws URISyntaxException {
         URI uri = new URI(ep.getEndpointName());
         Map map = URISupport.parseQuery(uri.getQuery());
         String camelUri = uri.getSchemeSpecificPart();
         Endpoint camelEndpoint = getCamelContext().getEndpoint(camelUri);
         Processor processor = createCamelProcessor(camelEndpoint);
-        CamelJbiEndpoint endpoint = new CamelJbiEndpoint(getServiceUnit(), camelEndpoint, getBinding(), processor);
+        CamelProviderEndpoint endpoint = new CamelProviderEndpoint(getServiceUnit(), camelEndpoint, getBinding(), processor);
 
         IntrospectionSupport.setProperties(endpoint, map);
 
@@ -163,8 +163,8 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
      * 
      * @returns a JBI endpoint created for the given Camel endpoint
      */
-    public CamelJbiEndpoint activateJbiEndpoint(Endpoint camelEndpoint, Processor processor) throws Exception {
-        CamelJbiEndpoint jbiEndpoint = createJbiEndpointFromCamel(camelEndpoint, processor);
+    public CamelProviderEndpoint activateJbiEndpoint(Endpoint camelEndpoint, Processor processor) throws Exception {
+        CamelProviderEndpoint jbiEndpoint = createJbiEndpointFromCamel(camelEndpoint, processor);
 
         // the following method will activate the new dynamic JBI endpoint
         if (deployer != null) {
@@ -176,20 +176,20 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
         return jbiEndpoint;
     }
 
-    public void deactivateJbiEndpoint(CamelJbiEndpoint jbiEndpoint) throws Exception {
+    public void deactivateJbiEndpoint(CamelProviderEndpoint jbiEndpoint) throws Exception {
         // this will be done by the ServiceUnit
         // jbiEndpoint.deactivate();
     }
 
-    protected CamelJbiEndpoint createJbiEndpointFromCamel(Endpoint camelEndpoint, Processor processor) {
-        CamelJbiEndpoint jbiEndpoint;
+    protected CamelProviderEndpoint createJbiEndpointFromCamel(Endpoint camelEndpoint, Processor processor) {
+        CamelProviderEndpoint jbiEndpoint;
         String endpointUri = camelEndpoint.getEndpointUri();
         if (camelEndpoint instanceof JbiEndpoint) {
             QName service = null;
             String endpoint = null;
             if (endpointUri.startsWith("name:")) {
                 endpoint = endpointUri.substring("name:".length());
-                service = CamelJbiEndpoint.SERVICE_NAME;
+                service = CamelProviderEndpoint.SERVICE_NAME;
             } else if (endpointUri.startsWith("endpoint:")) {
                 String uri = endpointUri.substring("endpoint:".length());
                 // lets decode "serviceNamespace sep serviceName sep
@@ -225,9 +225,9 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
                         + "or jbi:service:[serviceNamespace][sep][serviceName or jbi:name:[endpointName] but was given: "
                                 + endpointUri);
             }
-            jbiEndpoint = new CamelJbiEndpoint(getServiceUnit(), service, endpoint, camelEndpoint, getBinding(), processor);
+            jbiEndpoint = new CamelProviderEndpoint(getServiceUnit(), service, endpoint, camelEndpoint, getBinding(), processor);
         } else {
-            jbiEndpoint = new CamelJbiEndpoint(getServiceUnit(), camelEndpoint, getBinding(), processor);
+            jbiEndpoint = new CamelProviderEndpoint(getServiceUnit(), camelEndpoint, getBinding(), processor);
         }
         return jbiEndpoint;
     }
@@ -242,7 +242,7 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
     /**
      * Returns a JBI endpoint created for the given Camel endpoint
      */
-    public CamelJbiEndpoint createJbiEndpointFromCamel(Endpoint camelEndpoint) {
+    public CamelProviderEndpoint createJbiEndpointFromCamel(Endpoint camelEndpoint) {
         Processor processor = createCamelProcessor(camelEndpoint);
         return createJbiEndpointFromCamel(camelEndpoint, processor);
     }
