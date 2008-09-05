@@ -34,4 +34,8 @@ public interface HttpProviderMarshaler {
 
     void handleResponse(MessageExchange exchange,
                         SmxHttpExchange httpExchange) throws Exception;
+
+    void handleException(MessageExchange exchange,
+                         SmxHttpExchange httpExchange, Throwable ex);
+
 }

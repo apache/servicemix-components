@@ -125,6 +125,11 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
         // TODO: Retrieve headers ? 
     }
 
+    public void handleException(MessageExchange exchange, SmxHttpExchange httpExchange, Throwable ex) {
+        exchange.setError((Exception)ex);
+    }
+
+
     protected InterceptorChain getChain(Phase phase) {
         InterceptorChain chain = chains.get(phase);
         if (chain == null) {

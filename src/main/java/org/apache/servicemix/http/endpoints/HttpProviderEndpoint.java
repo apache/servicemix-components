@@ -232,16 +232,17 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         }
     }
 
-    protected void handleConnectionFailed(Throwable throwable, MessageExchange exchange) {
+    protected void handleException(SmxHttpExchange httpExchange, MessageExchange exchange, Throwable ex)  {
         try {
-            Exception e;
-            if (throwable instanceof Exception) {
-                e = (Exception) throwable;
+            marshaler.handleException(exchange, httpExchange, ex);
+            boolean txSync = exchange.getStatus() == ExchangeStatus.ACTIVE
+                             && exchange.isTransacted()
+                            && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+            if (txSync) {
+                sendSync(exchange);
             } else {
-                e = new Exception(throwable);
+                send(exchange);
             }
-            exchange.setError(e);
-            send(exchange);
         } catch (Exception e) {
             logger.warn("Unable to send back exchange in error", e);
         }
@@ -317,11 +318,11 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         }
 
         protected void onConnectionFailed(Throwable throwable) {
-            handleConnectionFailed(throwable, jbiExchange);
+            handleException(this, jbiExchange, throwable);
         }
 
         protected void onException(Throwable throwable) {
-            throw new RuntimeException(throwable);
+            handleException(this, jbiExchange, throwable);
         }
     }
 

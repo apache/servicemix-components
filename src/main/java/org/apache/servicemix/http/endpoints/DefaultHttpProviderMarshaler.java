@@ -214,4 +214,8 @@ public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
         }
     }
 
+    public void handleException(MessageExchange exchange, SmxHttpExchange httpExchange, Throwable ex) {
+        exchange.setError((Exception)ex);
+    }
+
 }
