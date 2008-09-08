@@ -307,9 +307,9 @@ public abstract class AbstractAggregator extends EIPEndpoint {
      */
     protected boolean isAggregationClosed(String correlationId) throws Exception {
         // TODO: implement this using a persistent / cached behavior
-        Object data = store.load(correlationId);
+        Object data = closedAggregates.load(correlationId);
         if (data != null) {
-            store.store(correlationId, data);
+            closedAggregates.store(correlationId, data);
         }
         return data != null;
     }

@@ -22,6 +22,7 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.JbiConstants;
@@ -110,6 +111,21 @@ public class SplitAggregatorTest extends AbstractEIPTest {
         client.send(me);
 
         rec.getMessageList().waitForMessagesToArrive(1);
+        rec.getMessageList().flushMessages();
         assertEquals(processCorrId, receivedCorrId.get());
+
+        me = client.createInOnlyExchange();
+        me.setProperty(JbiConstants.CORRELATION_ID, processCorrId);
+        me.setService(new QName("aggregator"));
+        me.getInMessage().setContent(createSource("<hello id='" + 0 + "' />"));
+        me.getInMessage().setProperty(AbstractSplitter.SPLITTER_COUNT, new Integer(2));
+        me.getInMessage().setProperty(AbstractSplitter.SPLITTER_INDEX, new Integer(1));
+        me.getInMessage().setProperty(AbstractSplitter.SPLITTER_CORRID, corrId);
+        client.sendSync(me);
+
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+
+        Thread.sleep(500);
+        rec.getMessageList().assertMessagesReceived(0);
     }
 }
