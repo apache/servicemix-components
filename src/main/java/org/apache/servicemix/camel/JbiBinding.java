@@ -19,6 +19,7 @@ package org.apache.servicemix.camel;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -158,7 +159,11 @@ public class JbiBinding {
         Set<Map.Entry<String, Object>> entries = camelExchange.getIn().getHeaders().entrySet();
         for (Map.Entry<String, Object> entry : entries) {
             normalizedMessage.setProperty(entry.getKey(), entry.getValue());
-            if (entry.getValue() instanceof Serializable) {
+            //check if value is Serializable, and if value is Map or collection,
+            //just exclude it since the entry of it may not be Serializable as well
+            if (entry.getValue() instanceof Serializable
+                    && !(entry.getValue() instanceof Map)
+                    && !(entry.getValue() instanceof Collection)) {
                 normalizedMessage.setProperty(entry.getKey(), entry.getValue());
             }
         }
