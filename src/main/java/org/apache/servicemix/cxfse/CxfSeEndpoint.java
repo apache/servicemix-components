@@ -59,7 +59,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 /**
  * 
  * @author gnodet
- * @org.apache.xbean.XBean element="endpoint"
+ * @org.apache.xbean.XBean element="endpoint" description="an endpoint using CXF's JAX-WS frontend"
  */
 public class CxfSeEndpoint extends ProviderEndpoint implements
         InterceptorProvider {
@@ -88,6 +88,10 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     
     
     /**
+        * Returns the object implementing the endpoint's functionality. It is 
+        * returned as a generic Java <code>Object</code> that can be cast to 
+        * the proper type.
+        *
      * @return the pojo
      */
     public Object getPojo() {
@@ -95,41 +99,96 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     }
 
     /**
-     * @param pojo
-     *            the pojo to set
+        * Specifies the object implementing the endpoint's functionality. This 
+        * object should use the JAX-WS annotations.
+        *
+     * @param pojo  a JAX-WS annotated object
+     * @org.apache.xbean.Property description="a bean configuring the JAX-WS annotated implementation for the endpoint"
      */
     public void setPojo(Object pojo) {
         this.pojo = pojo;
     }
 
+    /**
+        * Returns the list of interceptors used to process fault messages being
+        * sent back to the consumer.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getOutFaultInterceptors() {
         return outFault;
     }
 
+    /**
+        * Returns the list of interceptors used to process fault messages being
+        * recieved by the endpoint.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getInFaultInterceptors() {
         return inFault;
     }
 
+    /**
+        * Returns the list of interceptors used to process messages being 
+        * recieved by the endpoint.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getInInterceptors() {
         return in;
     }
 
+    /**
+        * Returns the list of interceptors used to process responses being
+        * sent back to the consumer.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getOutInterceptors() {
         return out;
     }
 
+    /**
+        * Specifies a list of interceptors used to process requests recieved
+        * by the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming requests"
+        * */
     public void setInInterceptors(List<Interceptor> interceptors) {
         in = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process faults recieved by
+         * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming faults"
+        * */
     public void setInFaultInterceptors(List<Interceptor> interceptors) {
         inFault = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process responses sent by 
+        * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process response messages"
+        * */
     public void setOutInterceptors(List<Interceptor> interceptors) {
         out = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process faults sent by 
+        * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process fault messages being returned to the consumer"
+        * */
     public void setOutFaultInterceptors(List<Interceptor> interceptors) {
         outFault = interceptors;
     }
@@ -312,6 +371,12 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         
     }
 
+    /**
+        * Specifies if the endpoint can process messages with binary data.
+        *
+        * @param    mtomEnabled     a <code>boolean</code>
+        * @org.apache.xbean.Property description="Specifies if the service can  consume MTOM formatted binary data. The  default is <code>false</code>."
+        * */
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
     }
@@ -320,6 +385,13 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         return mtomEnabled;
     }
 
+    /**
+        * Specifies if the endpoint expects messages that are encased in the 
+        * JBI wrapper used for SOAP messages.
+        *
+        * @param    mtomEnabled     a <code>boolean</code>
+        * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The  default is <code>true</code>."
+        * */
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
     }
