@@ -215,6 +215,16 @@
       <artifactId>woden</artifactId>
       <version>1.0.0M6</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+            <groupId>org.apache.ws.commons.axiom</groupId>
+            <artifactId>axiom-impl</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.ws.commons.axiom</groupId>
+            <artifactId>axiom-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
