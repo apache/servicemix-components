@@ -47,6 +47,7 @@
     <servicemix.osgi.import>
         javax.jws,
         javax.xml.bind.annotation,
+        org.apache.cxf*;version="[2.1.0,3.0.0)",
         org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.client*;resolution:=optional,
