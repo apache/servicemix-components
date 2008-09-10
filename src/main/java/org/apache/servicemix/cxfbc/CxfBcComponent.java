@@ -26,7 +26,7 @@ import org.apache.servicemix.common.DefaultComponent;
 /**
  * 
  * @author gnodet
- * @org.apache.xbean.XBean element="component"
+ * @org.apache.xbean.XBean element="component" description="a JBI component for hosting endpoints that can use either SOAP/HTTP or SOAP/JMS."
  */
 public class CxfBcComponent extends DefaultComponent {
 
@@ -46,8 +46,10 @@ public class CxfBcComponent extends DefaultComponent {
     }
 
     /**
+    * Specifies the list of endpoints hosted by the component.
      * @param endpoints
      *            the endpoints to set
+     * @org.apache.xbean.Property description="the list of endpoints hosted by the component"
      */
     public void setEndpoints(CxfBcEndpointType[] endpoints) {
         this.endpoints = endpoints;
@@ -92,6 +94,15 @@ public class CxfBcComponent extends DefaultComponent {
         return bus;
     }
 
+    /**
+        * Specifies the location of the CXF configuraiton file used to configure
+        * the CXF bus. This allows you to access features like JMS runtime 
+        * behavior and WS-RM. The configuration set at the component level is
+        * superceeded by any configuration specified by an endpoint.
+        *
+        * @param busCfg a string containing the relative path to the configuration file
+        * @org.apache.xbean.Property description="the location of the CXF configuration file used to configure the CXF bus for all endpoints in the container. Endpoint-specific configuration overrides these settings. This allows you to configure features like WS-RM and JMS runtime behavior."
+        **/
     public void setBusConfig(String busConfig) {
         this.busCfg = busConfig;
     }

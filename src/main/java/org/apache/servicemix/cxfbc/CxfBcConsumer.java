@@ -107,7 +107,7 @@ import org.springframework.core.io.Resource;
 /**
  * 
  * @author gnodet
- * @org.apache.xbean.XBean element="consumer"
+ * @org.apache.xbean.XBean element="consumer" description="a consumer endpoint that is capable of using SOAP/HTTP or SOAP/JMS"
  */
 public class CxfBcConsumer extends ConsumerEndpoint implements
         CxfBcEndpointWithInterceptor {
@@ -157,41 +157,95 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     /**
-     * @param wsdl
-     *            the wsdl to set
-     */
+          * Specifies the location of the WSDL defining the endpoint's interface.
+          *
+          * @param wsdl the location of the WSDL contract as a <code>Resource</code> object
+          * @org.apache.xbean.Property description="the location of the WSDL document defining the endpoint's interface"
+          **/
     public void setWsdl(Resource wsdl) {
         this.wsdl = wsdl;
     }
 
+    /**
+        * Returns the list of interceptors used to process fault messages being
+        * sent to the provider.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getOutFaultInterceptors() {
         return outFault;
     }
 
+    /**
+        * Returns the list of interceptors used to process fault messages being
+        * recieved by the endpoint.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getInFaultInterceptors() {
         return inFault;
     }
 
+    /**
+        * Returns the list of interceptors used to process responses being 
+        * recieved by the endpoint.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getInInterceptors() {
         return in;
     }
 
+    /**
+        * Returns the list of interceptors used to process requests being
+        * sent to the provider.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getOutInterceptors() {
         return out;
     }
 
+    /**
+        * Specifies a list of interceptors used to process responses recieved
+        * by the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming responses"
+        * */
     public void setInInterceptors(List<Interceptor> interceptors) {
         in = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process faults recieved by
+         * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming faults"
+        * */
     public void setInFaultInterceptors(List<Interceptor> interceptors) {
         inFault = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process requests sent by 
+        * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process requests"
+        * */
     public void setOutInterceptors(List<Interceptor> interceptors) {
         out = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process faults sent by 
+        * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process fault messages being returned to the consumer"
+        * */
     public void setOutFaultInterceptors(List<Interceptor> interceptors) {
         outFault = interceptors;
     }
@@ -420,6 +474,13 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         }
     }
 
+    /**
+           * Specifies the HTTP address to which requests are sent. This value
+           * will overide any value specified in the WSDL.
+           *
+           * @param locationURI the URI as a string
+           * @org.apache.xbean.Property description="the HTTP address to which requests are sent. This value will overide any value specified in the WSDL."
+           **/
     public void setLocationURI(String locationURI) {
         this.locationURI = locationURI;
     }
@@ -684,6 +745,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         return ret;
     }
 
+    /**
+        * Specifies the location of the CXF configuraiton file used to configure
+        * the CXF bus. This allows you to access features like JMS runtime 
+        * behavior and WS-RM.
+        *
+        * @param busCfg a string containing the relative path to the configuration file
+        * @org.apache.xbean.Property description="the location of the CXF configuration file used to configure the CXF bus. This allows you to configure features like WS-RM and JMS runtime behavior."
+        **/
     public void setBusCfg(String busCfg) {
         this.busCfg = busCfg;
     }
@@ -692,6 +761,12 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         return busCfg;
     }
 
+    /**
+          * Specifies if the endpoint can support binnary attachments.
+          *
+          * @param  mtomEnabled a boolean
+          * @org.apache.xbean.Property description="Specifies if MTOM / attachment support is enabled. Default is <code>false</code>."
+          **/
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
     }
@@ -700,6 +775,13 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         return mtomEnabled;
     }
 
+    /**
+          * Specifies the interval for which the endpoint will wait for a 
+          * response, This is specified in seconds.
+          *
+          * @param  timeout the number of seconds to wait for a response
+          * @org.apache.xbean.Property description="the number of seconds the endpoint will wait for a response. The default is 10."
+          **/
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
@@ -708,6 +790,13 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         return timeout;
     }
 
+    /**
+          * Specifies if the endpoint expects messages to use the JBI wrapper 
+          * for SOAP messages.
+          *
+          * @param  useJBIWrapper a boolean
+          * @org.apache.xbean.Property description="Specifies if the JBI wrapper is sent in the body of the message. Default is <code>true</code>."
+          **/
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
     }

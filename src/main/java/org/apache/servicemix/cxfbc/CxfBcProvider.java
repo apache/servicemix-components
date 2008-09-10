@@ -98,7 +98,7 @@ import org.springframework.core.io.Resource;
 /**
  * 
  * @author gnodet
- * @org.apache.xbean.XBean element="provider"
+ * @org.apache.xbean.XBean element="provider" description="a provider endpoint that is capable of exposing SOAP/HTTP or SOAP/JMS services"
  */
 public class CxfBcProvider extends ProviderEndpoint implements
         CxfBcEndpointWithInterceptor {
@@ -274,38 +274,96 @@ public class CxfBcProvider extends ProviderEndpoint implements
         message.put("jbiFault", true);
     }
     
+    /**
+        * Returns the list of interceptors used to process fault messages being
+        * sent back to the consumer.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getOutFaultInterceptors() {
         return outFault;
     }
 
+    /**
+        * Returns the list of interceptors used to process fault messages being
+        * recieved by the endpoint.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getInFaultInterceptors() {
         return inFault;
     }
 
+    /**
+        * Returns the list of interceptors used to process requests being 
+        * recieved by the endpoint.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getInInterceptors() {
         return in;
     }
 
+    /**
+        * Returns the list of interceptors used to process responses being
+        * sent back to the consumer.
+        *
+        * @return a list of <code>Interceptor</code> objects
+        * */
     public List<Interceptor> getOutInterceptors() {
         return out;
     }
 
+    /**
+        * Specifies a list of interceptors used to process requests recieved
+        * by the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming requests"
+        * */
     public void setInInterceptors(List<Interceptor> interceptors) {
         in = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process faults recieved by
+         * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming faults"
+        * */
     public void setInFaultInterceptors(List<Interceptor> interceptors) {
         inFault = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process responses sent by 
+        * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process responses"
+        * */
     public void setOutInterceptors(List<Interceptor> interceptors) {
         out = interceptors;
     }
 
+    /**
+        * Specifies a list of interceptors used to process faults sent by 
+        * the endpoint.
+        *
+        * @param interceptors   a list of <code>Interceptor</code> objects
+        * @org.apache.xbean.Property description="a list of beans configuring interceptors that process fault messages being returned to the consumer"
+        * */
     public void setOutFaultInterceptors(List<Interceptor> interceptors) {
         outFault = interceptors;
     }
 
+    /**
+          * Specifies the location of the WSDL defining the endpoint's interface.
+          *
+          * @param wsdl the location of the WSDL contract as a <code>Resource</code> object
+          * @org.apache.xbean.Property description="the location of the WSDL document defining the endpoint's interface"
+          **/
     public void setWsdl(Resource wsdl) {
         this.wsdl = wsdl;
     }
@@ -435,6 +493,14 @@ public class CxfBcProvider extends ProviderEndpoint implements
         }
     }
 
+    /**
+        * Specifies the location of the CXF configuraiton file used to configure
+        * the CXF bus. This allows you to access features like JMS runtime 
+        * behavior and WS-RM.
+        *
+        * @param busCfg a string containing the relative path to the configuration file
+        * @org.apache.xbean.Property description="the location of the CXF configuration file used to configure the CXF bus. This allows you to configure features like WS-RM and JMS runtime behavior."
+        **/
     public void setBusCfg(String busCfg) {
         this.busCfg = busCfg;
     }
@@ -443,6 +509,13 @@ public class CxfBcProvider extends ProviderEndpoint implements
         return busCfg;
     }
 
+    /**
+           * Specifies the HTTP address of the exposed service. This value will
+           * overide any value specified in the WSDL.
+           *
+           * @param locationURI a <code>URI</code> object
+           * @org.apache.xbean.Property description="the HTTP address of the exposed service. This value will overide any value specified in the WSDL."
+           **/
     public void setLocationURI(URI locationURI) {
         this.locationURI = locationURI;
     }
@@ -461,6 +534,12 @@ public class CxfBcProvider extends ProviderEndpoint implements
         return this.ei;
     }
 
+    /**
+          * Specifies if the endpoint can support binnary attachments.
+          *
+          * @param  mtomEnabled a boolean
+          * @org.apache.xbean.Property description="Specifies if MTOM / attachment support is enabled. Default is <code>false</code>."
+          **/
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
     }
@@ -469,6 +548,13 @@ public class CxfBcProvider extends ProviderEndpoint implements
         return mtomEnabled;
     }
 
+    /**
+          * Specifies if the endpoint expects messages to use the JBI wrapper 
+          * for SOAP messages.
+          *
+          * @param  useJBIWrapper a boolean
+          * @org.apache.xbean.Property description="Specifies if the JBI wrapper is sent in the body of the message. Default is <code>true</code>."
+          **/
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
     }
