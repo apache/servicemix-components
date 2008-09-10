@@ -101,6 +101,14 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // debug the session
                 session.setDebug(this.debugMode);
 
+                // get the transport from session
+                Transport transport = session.getTransport(config.getProtocol());
+
+                // Connect only once here
+                // Transport.send() disconnects after each send
+                // Usually, no username and password is required for SMTP
+                transport.connect(config.getHost(), config.getPort(), config.getUsername(), config.getPassword());
+                
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
@@ -108,13 +116,16 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
                 // Send message
-                Transport.send(msg);
+                transport.sendMessage(msg, msg.getAllRecipients());
+                
+                // close transport
+                transport.close();
             } catch (MessagingException mex) {
                 logger.error("Error sending mail...", mex);
                 throw mex;
             } finally {
                 // delete all temporary allocated resources
-                this.marshaler.cleanUpResources();
+                this.marshaler.cleanUpResources(exchange.getExchangeId());
             }
         }
     }
@@ -150,6 +161,14 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // debug the session
                 session.setDebug(this.debugMode);
 
+                // get the transport from session
+                Transport transport = session.getTransport(config.getProtocol());
+
+                // Connect only once here
+                // Transport.send() disconnects after each send
+                // Usually, no username and password is required for SMTP
+                transport.connect(config.getHost(), config.getPort(), config.getUsername(), config.getPassword());
+                                
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
@@ -157,7 +176,10 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
                 // Send message
-                Transport.send(msg);
+                transport.sendMessage(msg, msg.getAllRecipients());
+                
+                // close transport
+                transport.close();
 
                 // quit the exchange
                 out.setContent(new StringSource("<ack />"));
@@ -166,7 +188,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 throw mex;
             } finally {
                 // delete all temporary allocated resources
-                this.marshaler.cleanUpResources();
+                this.marshaler.cleanUpResources(exchange.getExchangeId());
             }
         }
     }

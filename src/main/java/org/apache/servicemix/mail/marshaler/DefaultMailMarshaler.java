@@ -37,11 +37,11 @@ import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Part;
-import javax.mail.util.ByteArrayDataSource;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -143,7 +143,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     log.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
                     
                     // add the file to the temporary resources list
-                    addTemporaryResource(f);                    
+                    addTemporaryResource(exchange.getExchangeId(), f);                    
                     // Create another body part
                     messageBodyPart = new MimeBodyPart();
                     // Set the data handler to the attachment

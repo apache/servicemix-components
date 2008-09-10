@@ -109,7 +109,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         MimeMessage mail = prepareTextMail(false);
 
         // prepare the jbi objects
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // do conversion
@@ -132,7 +132,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         MimeMessage mail = prepareHTMLMail(false);
 
         // prepare the jbi objects
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // do conversion
@@ -155,7 +155,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         MimeMessage mail = prepareBothMail(false);
 
         // prepare the jbi objects
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // do conversion
@@ -180,7 +180,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         MimeMessage mail = prepareTextMail(true);
 
         // prepare the jbi objects
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // do conversion
@@ -216,7 +216,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         MimeMessage mail = prepareHTMLMail(true);
 
         // prepare the jbi objects
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // do conversion
@@ -253,7 +253,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         MimeMessage mail = prepareBothMail(true);
 
         // prepare the jbi objects
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // do conversion
@@ -287,7 +287,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testJbiToPlainText() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -325,7 +325,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testJbiToHTML() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -364,7 +364,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testJbiToBoth() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -407,7 +407,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testRawTextToMail() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -445,7 +445,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testRawHTMLToMail() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -483,7 +483,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testJbiWithAttachmentsToPlainText() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -533,7 +533,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testJbiWithAttachmentsToHTML() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -583,7 +583,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testJbiWithAttachmentsToBoth() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -637,7 +637,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testRawTextWithAttachmentsToMail() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers
@@ -687,7 +687,7 @@ public class DefaultMailMarshalerTest extends TestCase {
      */
     public void testRawHTMLWithAttachmentsToMail() throws Exception {
         MimeMessage mail = new MimeMessage(session);
-        InOnly exchange = new InOnlyImpl();
+        InOnly exchange = new InOnlyImpl("id");
         NormalizedMessage nmsg = exchange.createMessage();
 
         // prepare headers

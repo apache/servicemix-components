@@ -18,6 +18,7 @@ package org.apache.servicemix.mail.marshaler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,7 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      */
     public static final String DUMMY_CONTENT = "no content";
     
-    private List<File> temporaryFiles = new ArrayList<File>();
+    private Map< String, List<File> > temporaryFilesMap = Collections.synchronizedMap(new HashMap<String, List<File> >());
     
     /**
      * This method is used to convert a mime mail message received via an 
@@ -234,21 +235,31 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     }
     
     /**
-     * adds a temporary file resource to the list
+     * adds a temporary file resource to the list of to be cleaned up resources
      * 
-     * @param tmpFile   the temporary file to delete after sending mail
+     * @param id        the id of the message exchange
+     * @param tmpFile   the temp resource
      */
-    protected final void addTemporaryResource(File tmpFile) {
-        this.temporaryFiles.add(tmpFile);
-    }    
-    
-    /**
-     * deletes all temporary resources
-     */
-    public final void cleanUpResources() {
-        for (File f : this.temporaryFiles) {
-            f.delete();
+    protected final void addTemporaryResource(String id, File tmpFile) { 
+        if (!this.temporaryFilesMap.containsKey(id)) {
+            this.temporaryFilesMap.put(id, new ArrayList<File>()); 
         }
-        this.temporaryFiles.clear();
+        this.temporaryFilesMap.get(id).add(tmpFile); 
+    }
+
+    /**
+     * deletes all temporary resources of a given exchange id
+     * 
+     * @param id        the exchange id
+     */
+    public final void cleanUpResources(String id) {
+        List<File> list = this.temporaryFilesMap.get(id);
+        if (list != null) {
+            for (File f : list) { 
+                f.delete(); 
+            }
+            list.clear();
+            this.temporaryFilesMap.remove(id);
+        }
     }
 }
