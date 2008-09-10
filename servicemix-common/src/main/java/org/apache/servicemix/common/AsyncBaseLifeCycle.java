@@ -300,14 +300,16 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
     }
 
     protected void doStart() throws Exception {
-        synchronized (this.polling) {
-            executor.execute(new Runnable() {
-                public void run() {
-                    poller = Thread.currentThread();
-                    pollDeliveryChannel();
-                }
-            });
-            polling.wait();
+        if (container.getType() != Container.Type.ServiceMix3) {
+            synchronized (this.polling) {
+                executor.execute(new Runnable() {
+                    public void run() {
+                        poller = Thread.currentThread();
+                        pollDeliveryChannel();
+                    }
+                });
+                polling.wait();
+            }
         }
     }
 
