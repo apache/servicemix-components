@@ -144,7 +144,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     private String locationURI;
 
-    private int timeout = 10;
+    private long timeout = 60l * 60l * 1000l; //     60 minutes 
+                                              // *   60 seconds 
+                                              // * 1000 millis
+                                              // = 1 hour timeout as default
 
     private boolean useJBIWrapper = true;
     private EndpointInfo ei;
@@ -588,7 +591,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         && !CxfBcConsumer.this.isOneway) {
                     message.getInterceptorChain().pause();
                     context.getDeliveryChannel().sendSync(exchange,
-                            timeout * 1000);
+                            timeout);
                     process(exchange);
                 } else {
                     context.getDeliveryChannel().send(exchange);
@@ -779,14 +782,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
           * Specifies the interval for which the endpoint will wait for a 
           * response, This is specified in seconds.
           *
-          * @param  timeout the number of seconds to wait for a response
-          * @org.apache.xbean.Property description="the number of seconds the endpoint will wait for a response. The default is 10."
+          * @param  timeout the number of millis to wait for a response
+          * @org.apache.xbean.Property description="the number of millis the endpoint will wait for a response. The default is 1 hour."
           **/
-    public void setTimeout(int timeout) {
+    public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
 
-    public int getTimeout() {
+    public long getTimeout() {
         return timeout;
     }
 
