@@ -144,10 +144,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     private String locationURI;
 
-    private long timeout = 60l * 60l * 1000l; //     60 minutes 
-                                              // *   60 seconds 
-                                              // * 1000 millis
-                                              // = 1 hour timeout as default
+    private long timeout = 0; // default is NO_TIMEOUT
 
     private boolean useJBIWrapper = true;
     private EndpointInfo ei;
