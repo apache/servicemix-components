@@ -55,8 +55,8 @@ import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 
 /**
- * a plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP requests or to be able to process the request in a
- * non standard way. For HTTP requests, a WSDL2 HTTP binding can be used.
+ * Plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP request (without SOAP) or to be able to
+ * process the request in a non standard way. For HTTP requests, a WSDL2 HTTP binding can be used.
  * 
  * @author gnodet
  * @since 3.2
@@ -122,8 +122,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      * Specifies the timeout value for an HTTP consumer endpoint. The timeout is specified in milliseconds. The default value is 0
      * which means that the endpoint will never timeout.
      * 
-     * @org.apache.xbean.Property description=
-     *                            "the timeout is specified in milliseconds. The default value is 0 which means that the endpoint will never timeout."
+     * @org.apache.xbean.Property description="the timeout is specified in milliseconds. The default value is 0 which
+     *       means that the endpoint will never timeout."
      * @param timeout the length time, in milliseconds, to wait before timing out
      */
     public void setTimeout(long timeout) {
@@ -225,12 +225,12 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         // that will set the exchange status to ERROR.
         Continuation cont = locks.get(exchange.getExchangeId());
         if (cont == null) {
-            throw new Exception("HTTP request has timed out");
+            throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
         }
         // synchronized block
         synchronized (cont) {
             if (locks.remove(exchange.getExchangeId()) == null) {
-                throw new Exception("HTTP request has timed out");
+                throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
@@ -311,12 +311,13 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                     exchange = exchanges.remove(id);
                     request.removeAttribute(MessageExchange.class.getName());
                     // Check if this is a timeout
-                    if (!cont.isResumed()) {
-                        throw new Exception("Exchange timed out");
-                    }
-                    // This should never happen, but we never knows
                     if (exchange == null) {
                         throw new IllegalStateException("Exchange not found");
+                    }
+                    if (!cont.isResumed()) {
+                        Exception e = new Exception("Exchange timed out: " + exchange.getExchangeId());
+                        fail(exchange, e);
+                        throw e;
                     }
                 }
             }
@@ -395,8 +396,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             response.setStatus(200);
             response.setContentType("text/xml");
             try {
-                new SourceTransformer().toResult(new DOMSource((Node)res), new StreamResult(response
-                    .getOutputStream()));
+                new SourceTransformer().toResult(new DOMSource((Node)res),
+                                                 new StreamResult(response.getOutputStream()));
             } catch (TransformerException e) {
                 throw new ServletException("Error while sending xml resource", e);
             }
@@ -418,7 +419,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     }
 
     protected ContextManager getServerManager() {
-        HttpComponent comp = (HttpComponent)getServiceUnit().getComponent();
+        HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
         return comp.getServer();
     }
 
@@ -428,7 +429,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         // If the user has been authenticated, put these informations on
         // the in NormalizedMessage.
         if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
-            Subject subject = ((JaasJettyPrincipal)request.getUserPrincipal()).getSubject();
+            Subject subject = ((JaasJettyPrincipal) request.getUserPrincipal()).getSubject();
             me.getMessage("in").setSecuritySubject(subject);
         }
         return me;
@@ -460,7 +461,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             marshaler = new DefaultHttpConsumerMarshaler();
         }
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
-            ((DefaultHttpConsumerMarshaler)marshaler).setDefaultMep(getDefaultMep());
+            ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
         }
     }
 }

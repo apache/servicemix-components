@@ -57,9 +57,11 @@ import org.apache.servicemix.soap.bindings.soap.SoapConstants;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.xpath.CachedXPathAPI;
 import org.springframework.core.io.ClassPathResource;
+import org.mortbay.jetty.bio.SocketConnector;
 
 public class ConsumerEndpointTest extends TestCase {
     private static transient Log log = LogFactory.getLog(ConsumerEndpointTest.class);
@@ -76,6 +78,9 @@ public class ConsumerEndpointTest extends TestCase {
         container.setUseMBeanServer(false);
         container.setCreateMBeanServer(false);
         container.setEmbedded(true);
+        ExecutorFactoryImpl factory = new ExecutorFactoryImpl();
+        factory.getDefaultConfig().setQueueSize(0);
+        container.setExecutorFactory(factory);
         container.init();
     }
 
@@ -439,17 +444,40 @@ public class ConsumerEndpointTest extends TestCase {
      * Load testing test
      */
     public void testHttpInOutUnderLoad() throws Exception {
+        final int nbThreads = 16;
+        final int nbRequests = 8;
+        final int endpointTimeout = 100;
+        final int echoSleepTime = 90;
+        final int soTimeout = 60 * 1000 * 1000;
+        final int listenerTimeout = 5000;
+
+        ExchangeCompletedListener listener = new ExchangeCompletedListener(listenerTimeout);
+        container.addListener(listener);
+
         HttpComponent http = new HttpComponent();
+        //http.getConfiguration().setJettyConnectorClassName(SocketConnector.class.getName());
         HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "echo"));
         ep.setLocationURI("http://localhost:8192/ep1/");
-        //ep.setTimeout(500);
+        ep.setTimeout(endpointTimeout);
         http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
 
-        EchoComponent echo = new EchoComponent();
+        final CountDownLatch latchRecv = new CountDownLatch(nbThreads * nbRequests);
+        EchoComponent echo = new EchoComponent() {
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
+                latchRecv.countDown();
+                try {
+                    Thread.sleep(echoSleepTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                out.setContent(in.getContent());
+                return true;
+            }
+        };
         echo.setService(new QName("urn:test", "echo"));
         echo.setEndpoint("endpoint");
         container.activateComponent(echo, "echo");
@@ -458,37 +486,38 @@ public class ConsumerEndpointTest extends TestCase {
 
         container.start();
 
-        final int nbThreads = 32;
-        final int nbRequests = 64;
         final List<Throwable> throwables = new CopyOnWriteArrayList<Throwable>();
-        final CountDownLatch latch = new CountDownLatch(nbThreads * nbRequests);
+        final CountDownLatch latchSent = new CountDownLatch(nbThreads * nbRequests);
         for (int t = 0; t < nbThreads; t++) {
             new Thread() {
                 public void run() {
+                    final SourceTransformer transformer = new SourceTransformer(); 
                     final HttpClient client = new HttpClient();
-                    //client.getParams().setSoTimeout(60000);
+                    client.getParams().setSoTimeout(soTimeout);
                     for (int i = 0; i < nbRequests; i++) {
                         try {
                             PostMethod post = new PostMethod("http://localhost:8192/ep1/");
                             post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
                             client.executeMethod(post);
-                            Node node = transformer.toDOMNode(new StreamSource(post.getResponseBodyAsStream()));
-                            log.info(transformer.toString(node));
-                            assertEquals("world", textValueOfXPath(node, "/hello/text()"));
                             if (post.getStatusCode() != 200) {
                                 throw new InvalidStatusResponseException(post.getStatusCode());
                             }
+                            Node node = transformer.toDOMNode(new StreamSource(post.getResponseBodyAsStream()));
+                            log.info(transformer.toString(node));
+                            assertEquals("world", textValueOfXPath(node, "/hello/text()"));
                         } catch (Throwable t) {
                             throwables.add(t);
                         } finally {
-                            latch.countDown();
+                            latchSent.countDown();
                             //System.out.println("[" + System.currentTimeMillis() + "] Request " + latch.getCount() + " processed");
                         }
                     }
                 }
             }.start();
         }
-        latch.await();
+        latchSent.await();
+        latchRecv.await();
+        listener.assertExchangeCompleted();
         for (Throwable t : throwables) {
             t.printStackTrace();
         }
