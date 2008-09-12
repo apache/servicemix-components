@@ -17,6 +17,7 @@
 package org.apache.servicemix.common.endpoints;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jbi.JBIException;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -46,7 +47,9 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     private ScheduleIterator scheduleIterator;
     private boolean started;
     private boolean scheduleExecutedFlag;
-
+    private boolean concurrentPolling;
+    private AtomicBoolean pollActive = new AtomicBoolean(false);
+    
     public PollingEndpoint() {
     }
 
@@ -108,6 +111,26 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     }
 
     /**
+     * returns if more than one poll can be active at a time
+     *  
+     * @return Returns the concurrentPolling flag.
+     * @org.apache.xbean.Property description="returns if more than one poll can be active at a time"
+     */
+    public boolean isConcurrentPolling() {
+        return this.concurrentPolling;
+    }
+
+    /**
+     * sets if more than one poll can be active at a time (true means yes)
+     * 
+     * @param concurrentPolling The concurrentPolling to set.
+     * @org.apache.xbean.Property description="sets if more than one poll can be active at a time (true means yes)"
+     */
+    public void setConcurrentPolling(boolean concurrentPolling) {
+        this.concurrentPolling = concurrentPolling;
+    }
+    
+    /**
      * Sets the number of milliseconds between polling attempts.
      *
      * @param        period  a long specifying the gap between polling attempts
@@ -168,21 +191,35 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     private class PollSchedulerTask extends SchedulerTask {
         public void run() {
             try {
+                if (!isConcurrentPolling() && pollActive.get()) {
+                    // do not disturb the active poll cycle
+                    return;
+                }
+                    
                 // lets run the work inside the JCA worker pools to ensure
                 // the threads are setup correctly when we actually do stuff
                 getExecutor().execute(new Runnable() {
                     public void run() {
                         try {
+                            // set busy marker 
+                            pollActive.set(true);
+
+                            // call poll implementation
                             poll();
+                            
+                            // release busy marker
+                            pollActive.set(false);
                         }
                         catch (Exception e) {
                             handlePollException(e);
+                            pollActive.set(false);
                         }
                     }
                 });
             }
             catch (Throwable e) {
                 logger.error("Failed to schedule work: " + e, e);
+                pollActive.set(false);
             }
         }
     }
