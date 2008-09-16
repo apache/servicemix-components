@@ -42,17 +42,17 @@ public class OSWorkflowSucessTest extends SpringTestSupport {
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getFault() != null) {
-                fail("Received FAULT: "
-                        + new SourceTransformer().toString(me.getFault()
-                                .getContent()));
+                String txt = new SourceTransformer().toString(me.getFault().getContent());
+                client.done(me);
+                fail("Received FAULT: " + txt);
             } else if (me.getError() != null) {
                 throw me.getError();
             } else {
                 fail("Received ERROR status");
             }
         } else {
-            logger.info(new SourceTransformer().toString(me.getOutMessage()
-                    .getContent()));
+            logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+            client.done(me);
         }
     }
 
