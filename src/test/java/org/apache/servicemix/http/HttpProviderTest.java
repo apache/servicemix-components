@@ -88,6 +88,7 @@ public class HttpProviderTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().init("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
@@ -147,6 +148,7 @@ public class HttpProviderTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().init("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
@@ -198,6 +200,7 @@ public class HttpProviderTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().init("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it

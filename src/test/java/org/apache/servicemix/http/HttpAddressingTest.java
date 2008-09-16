@@ -56,9 +56,12 @@ public class HttpAddressingTest extends SpringTestSupport {
                 fail("Received ERROR status");
             }
         } else if (me.getFault() != null) {
-            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            String txt = new SourceTransformer().toString(me.getFault().getContent());
+            client.done(me);
+            fail("Received fault: " + txt);
         } else {
             Node node = new SourceTransformer().toDOMNode(me.getOutMessage());
+            client.done(me);
             log.info(new SourceTransformer().toString(node));
             assertEquals("myid", textValueOfXPath(node, "//*[local-name()='RelatesTo']"));
             assertNotNull(textValueOfXPath(node, "//*[local-name()='MessageID']"));

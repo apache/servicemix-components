@@ -30,7 +30,6 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.http.HTTPAddress;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.common.security.AuthenticationService;
@@ -39,6 +38,7 @@ import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
 import org.apache.servicemix.http.tools.PortTypeDecorator;
 import org.apache.servicemix.soap.SoapEndpoint;
+import org.apache.servicemix.soap.SoapExchangeProcessor;
 
 import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 
@@ -61,6 +61,13 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected boolean synchronous;
     protected boolean wantContentTypeHeaderFromExchangeIntoHttpRequest;
     protected int timeout;
+
+    public HttpEndpoint() {
+    }
+
+    public HttpEndpoint(boolean dynamic) {
+        super(dynamic);
+    }
 
     /**
      * Determines if the HTTP provider processor copies the HTTP headers from the HTTP response into the JBI exchange.
@@ -375,11 +382,11 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
         }
     }
 
-    protected ExchangeProcessor createProviderProcessor() {
+    protected SoapExchangeProcessor createProviderProcessor() {
         return new ProviderProcessor(this);
     }
 
-    protected ExchangeProcessor createConsumerProcessor() {
+    protected SoapExchangeProcessor createConsumerProcessor() {
         return new ConsumerProcessor(this);
     }
 

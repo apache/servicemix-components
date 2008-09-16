@@ -24,6 +24,7 @@ import javax.wsdl.extensions.soap.SOAPBinding;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceMixComponent;
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 import org.apache.servicemix.common.wsdl1.AbstractWsdl1Deployer;
 import org.apache.servicemix.common.wsdl1.JbiEndpoint;
 
@@ -43,7 +44,7 @@ public class HttpWsdl1Deployer extends AbstractWsdl1Deployer {
      * @see org.servicemix.common.wsdl1.AbstractWsdl1Deployer#createEndpoint(javax.wsdl.extensions.ExtensibilityElement,
      *      javax.wsdl.extensions.ExtensibilityElement)
      */
-    protected Endpoint createEndpoint(ExtensibilityElement portElement, ExtensibilityElement bindingElement,
+    protected AbstractEndpoint createEndpoint(ExtensibilityElement portElement, ExtensibilityElement bindingElement,
                     JbiEndpoint jbiEndpoint) {
         if (jbiEndpoint == null) {
             return null;

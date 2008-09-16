@@ -114,8 +114,8 @@ public class ProviderEndpointTest extends TestCase {
                              +  "  </jbi:part>"
                              +  "</jbi:message>"));
         client.sendSync(me);
-
         System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        client.done(me);
     }
 
     public void testSoap() throws Exception {
@@ -168,7 +168,7 @@ public class ProviderEndpointTest extends TestCase {
                              +  "  </jbi:part>"
                              +  "</jbi:message>"));
         client.sendSync(me);
-
+        client.done(me);
         assertEquals("\"urn:myaction\"", soapAction.get());
     }
     
@@ -350,7 +350,7 @@ public class ProviderEndpointTest extends TestCase {
                              +  "  </jbi:part>"
                              +  "</jbi:message>"));
         client.sendSync(me);
-
         System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        client.done(me);
     }
 }

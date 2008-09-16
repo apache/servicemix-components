@@ -31,6 +31,7 @@ import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.servicemix.common.util.IntrospectionSupport;
 import org.apache.servicemix.common.util.URISupport;
 import org.apache.servicemix.common.security.AuthenticationService;
@@ -218,7 +219,6 @@ public class HttpComponent extends DefaultComponent {
     }
 
     protected void doInit() throws Exception {
-        super.doInit();
         // Load configuration
         configuration.setRootDir(context.getWorkspaceRoot());
         configuration.setComponentName(context.getComponentName());
@@ -271,6 +271,9 @@ public class HttpComponent extends DefaultComponent {
         }
         server.setConfiguration(configuration);
         server.init();
+        server.start();
+        // Default initalization
+        super.doInit();
     }
 
     protected void doShutDown() throws Exception {
@@ -278,6 +281,7 @@ public class HttpComponent extends DefaultComponent {
         if (server != null) {
             ContextManager s = server;
             server = null;
+            s.stop();
             s.shutDown();
         }
         if (connectionPool != null) {
@@ -292,13 +296,11 @@ public class HttpComponent extends DefaultComponent {
     }
 
     protected void doStart() throws Exception {
-        server.start();
         super.doStart();
     }
 
     protected void doStop() throws Exception {
         super.doStop();
-        server.stop();
     }
 
     protected String[] getEPRProtocols() {
@@ -308,8 +310,8 @@ public class HttpComponent extends DefaultComponent {
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         // We receive an exchange for an EPR that has not been used yet.
         // Register a provider endpoint and restart processing.
-        HttpEndpoint httpEp = new HttpEndpoint();
-        httpEp.setServiceUnit(new ServiceUnit(component));
+        HttpEndpoint httpEp = new HttpEndpoint(true);
+        httpEp.setServiceUnit(new DefaultServiceUnit(component));
         httpEp.setService(ep.getServiceName());
         httpEp.setEndpoint(ep.getEndpointName());
         httpEp.setRole(MessageExchange.Role.PROVIDER);
@@ -321,7 +323,6 @@ public class HttpComponent extends DefaultComponent {
         if (httpEp.getLocationURI() == null) {
             httpEp.setLocationURI(uri.toString());
         }
-        httpEp.activateDynamic();
         return httpEp;
     }
 

@@ -91,6 +91,7 @@ public class HttpConsumerTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
+        component.getServiceUnitManager().init("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
 
         // Call it
@@ -138,6 +139,7 @@ public class HttpConsumerTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
+        component.getServiceUnitManager().init("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
 
         // Retrieve WSDL

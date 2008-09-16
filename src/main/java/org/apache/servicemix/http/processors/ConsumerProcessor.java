@@ -40,7 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.EndpointComponentContext;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.http.ContextManager;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpoint;
@@ -51,6 +50,7 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
+import org.apache.servicemix.soap.SoapExchangeProcessor;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
@@ -58,7 +58,7 @@ import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 
-public class ConsumerProcessor extends AbstractProcessor implements ExchangeProcessor, HttpProcessor {
+public class ConsumerProcessor extends AbstractProcessor implements SoapExchangeProcessor, HttpProcessor {
 
     private static Log log = LogFactory.getLog(ConsumerProcessor.class);
 
@@ -69,6 +69,7 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
     protected Map<String, Continuation> locks;
     protected Map<String, MessageExchange> exchanges;
     protected int suspentionTime = 60000;
+    protected boolean started = false;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
         super(endpoint);
@@ -106,15 +107,23 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
         }
     }
 
-    public void start() throws Exception {
+    public void init() throws Exception {
         String url = endpoint.getLocationURI();
         context = new EndpointComponentContext(endpoint);
         channel = context.getDeliveryChannel();
         httpContext = getServerManager().createContext(url, this);
     }
 
-    public void stop() throws Exception {
+    public void shutdown() throws Exception {
         getServerManager().remove(httpContext);
+    }
+
+    public void start() throws Exception {
+        started = true;
+    }
+
+    public void stop() throws Exception {
+        started = false;
     }
 
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -123,6 +132,10 @@ public class ConsumerProcessor extends AbstractProcessor implements ExchangeProc
         }
         if ("GET".equals(request.getMethod())) {
             processGetRequest(request, response);
+            return;
+        }
+        if (!started) {
+            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
             return;
         }
         if (!"POST".equals(request.getMethod())) {

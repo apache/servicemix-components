@@ -51,12 +51,12 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapHelper;
+import org.apache.servicemix.soap.SoapExchangeProcessor;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
@@ -67,7 +67,7 @@ import org.apache.servicemix.soap.marshalers.SoapWriter;
  * @version $Revision: 370186 $
  * @since 3.0
  */
-public class ProviderProcessor extends AbstractProcessor implements ExchangeProcessor {
+public class ProviderProcessor extends AbstractProcessor implements SoapExchangeProcessor {
 
     private static Log log = LogFactory.getLog(ProviderProcessor.class);
 
@@ -292,11 +292,17 @@ public class ProviderProcessor extends AbstractProcessor implements ExchangeProc
         return host;
     }
 
-    public void start() throws Exception {
+    public void init() throws Exception {
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
     }
 
+    public void start() throws Exception {
+    }
+
     public void stop() throws Exception {
+    }
+
+    public void shutdown() throws Exception {
     }
 
     protected Map<String, String> getHeaders(HttpServletRequest request) {

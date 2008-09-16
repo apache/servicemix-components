@@ -78,6 +78,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private Map<String, MessageExchange> exchanges = new ConcurrentHashMap<String, MessageExchange>();
     private Object httpContext;
 
+    private boolean started = false;
+
     public HttpConsumerEndpoint() {
         super();
     }
@@ -206,15 +208,25 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         this.defaultMep = defaultMep;
     }
 
-    public void start() throws Exception {
-        super.start();
+    public void activate() throws Exception {
+        super.activate();
         loadStaticResources();
         httpContext = getServerManager().createContext(locationURI, this);
     }
 
-    public void stop() throws Exception {
+    public void deactivate() throws Exception {
         getServerManager().remove(httpContext);
         httpContext = null;
+        super.deactivate();
+    }
+
+    public void start() throws Exception {
+        super.start();
+        started = true;
+    }
+
+    public void stop() throws Exception {
+        started = false;
         super.stop();
     }
 
@@ -250,6 +262,11 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         try {
             // Handle WSDLs, XSDs
             if (handleStaticResource(request, response)) {
+                return;
+            }
+            // Check endpoint is started
+            if (!started) {
+                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
                 return;
             }
             // Not giving a specific mutex will synchronize on the continuation

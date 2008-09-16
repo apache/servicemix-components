@@ -111,6 +111,7 @@ public class HttpXBeanDeployerTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
+        component.getServiceUnitManager().init("xbean", path.getAbsolutePath());
         component.getServiceUnitManager().start("xbean");
 
         // Test wsdls
