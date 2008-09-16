@@ -116,7 +116,6 @@ public class BeanComponent extends DefaultComponent implements ApplicationContex
         }
         IntrospectionSupport.setProperties(endpoint.getBean(), map);
 
-        endpoint.activate();
         return endpoint;
     }
 

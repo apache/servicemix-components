@@ -42,6 +42,10 @@ public class ConsumerBeanTest extends TestCase {
         jbi.init();
     }
 
+    protected void tearDown() throws Exception {
+        jbi.shutDown();
+    }
+
     /*
     public void test() throws Exception {
         BeanComponent bc = new BeanComponent();

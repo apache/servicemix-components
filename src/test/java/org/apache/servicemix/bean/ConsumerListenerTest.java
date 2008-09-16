@@ -42,6 +42,10 @@ public class ConsumerListenerTest extends TestCase {
         jbi.init();
     }
 
+    protected void tearDown() throws Exception {
+        jbi.shutDown();
+    }
+
     public void test() throws Exception {
         BeanComponent bc = new BeanComponent();
         BeanEndpoint ep = new BeanEndpoint();
@@ -64,10 +68,6 @@ public class ConsumerListenerTest extends TestCase {
         nm.setContent(new StringSource("<hello>world</hello>"));
         client.sendSync(me);
         assertExchangeWorked(me);
-        client.done(me);
-    }
-
-    protected void assertExchangeWorked(MessageExchange me) throws Exception {
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getError() != null) {
                 throw me.getError();
@@ -75,8 +75,15 @@ public class ConsumerListenerTest extends TestCase {
                 fail("Received ERROR status");
             }
         } else if (me.getFault() != null) {
-            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            String txt = new SourceTransformer().toString(me.getFault().getContent());
+            client.done(me);
+            fail("Received fault: " + txt);
+        } else {
+            client.done(me);
         }
+    }
+
+    protected void assertExchangeWorked(MessageExchange me) throws Exception {
     }
 
 }

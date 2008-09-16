@@ -40,6 +40,8 @@ public class ConsumerListener implements MessageExchangeListener {
                 MessageUtil.transferOutToOut(exchange, io);
                 io.setProperty("exchange", exchange);
                 channel.send(io);
+                exchange.setStatus(ExchangeStatus.DONE);
+                channel.send(exchange);
             } else if (exchange.getStatus() == ExchangeStatus.DONE) {
                 MessageExchange io = (MessageExchange) exchange.getProperty("exchange");
                 io.setStatus(ExchangeStatus.DONE);
