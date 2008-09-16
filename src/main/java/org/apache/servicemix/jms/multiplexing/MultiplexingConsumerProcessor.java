@@ -45,7 +45,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
         super(endpoint);
     }
 
-    protected void doStart(InitialContext ctx) throws Exception {
+    protected void doInit(InitialContext ctx) throws Exception {
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         destination = endpoint.getDestination();
         if (destination == null) {
@@ -63,10 +63,17 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
         }
         pendingMessages = new ConcurrentHashMap();
         consumer = session.createConsumer(destination);
+    }
+
+    protected void doStart() throws Exception {
         consumer.setMessageListener(this);
     }
 
     protected void doStop() throws Exception {
+        consumer.setMessageListener(null);
+    }
+
+    protected void doShutdown() throws Exception {
         session = null;
         destination = null;
         consumer = null;

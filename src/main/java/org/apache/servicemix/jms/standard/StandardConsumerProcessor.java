@@ -40,7 +40,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
         super(endpoint);
     }
 
-    protected void doStart(InitialContext ctx) throws Exception {
+    protected void doInit(InitialContext ctx) throws Exception {
         destination = endpoint.getDestination();
         if (destination == null) {
             if (endpoint.getJndiDestinationName() != null) {
@@ -49,6 +49,9 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
                 throw new IllegalStateException("No destination provided");
             }
         }
+    }
+
+    protected void doStart() throws Exception {
         synchronized (running) {
             endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
                 public void run() {
@@ -62,11 +65,15 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
     protected void doStop() throws Exception {
         if (running.get()) {
             synchronized (running) {
-                if (session != null) {
-                    session.close();
-                }
+                running.set(false);
                 running.wait();
             }
+        }
+    }
+
+    protected void doShutdown() throws Exception {
+        if (session != null) {
+            session.close();
         }
         session = null;
         destination = null;
@@ -97,7 +104,6 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
             log.error("", e);
         } finally {
             synchronized (running) {
-                running.set(false);
                 running.notify();
             }
         }

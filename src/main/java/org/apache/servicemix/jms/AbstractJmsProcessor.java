@@ -37,16 +37,16 @@ import javax.naming.NamingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.EndpointComponentContext;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
+import org.apache.servicemix.soap.SoapExchangeProcessor;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
 
-public abstract class AbstractJmsProcessor implements ExchangeProcessor {
+public abstract class AbstractJmsProcessor implements SoapExchangeProcessor {
 
     public static final String STYLE_QUEUE = "queue";
     public static final String STYLE_TOPIC = "topic";
@@ -73,34 +73,6 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         this.channel = context.getDeliveryChannel();
     }
 
-    public void start() throws Exception {
-        try {
-            InitialContext ctx = getInitialContext();
-            ConnectionFactory connectionFactory = null;
-            connectionFactory = getConnectionFactory(ctx);
-            connection = connectionFactory.createConnection();
-            connection.start();
-
-            // set up the Store
-            if (endpoint.store != null) {
-                store = endpoint.store;
-            } else if (endpoint.storeFactory != null) {
-                store = endpoint.storeFactory.open(endpoint.getService().toString() + endpoint.getEndpoint());
-            } else {
-                store = new MemoryStoreFactory().open(endpoint.getService().toString() + endpoint.getEndpoint());
-            }
-
-            doStart(ctx);
-        } catch (Exception e) {
-            try {
-                stop();
-            } catch (Exception inner) {
-                // TODO: log
-            }
-            throw e;
-        }
-    }
-    
     protected void commonDoStartTasks(InitialContext ctx) throws Exception {
         channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -167,12 +139,61 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         return store;
     }
 
-    protected void doStart(InitialContext ctx) throws Exception {
+    public void init() throws Exception {
+        try {
+            InitialContext ctx = getInitialContext();
+            ConnectionFactory connectionFactory = null;
+            connectionFactory = getConnectionFactory(ctx);
+            connection = connectionFactory.createConnection();
+            connection.start();
+
+            // set up the Store
+            if (endpoint.store != null) {
+                store = endpoint.store;
+            } else if (endpoint.storeFactory != null) {
+                store = endpoint.storeFactory.open(endpoint.getService().toString() + endpoint.getEndpoint());
+            } else {
+                store = new MemoryStoreFactory().open(endpoint.getService().toString() + endpoint.getEndpoint());
+            }
+
+            doInit(ctx);
+        } catch (Exception e) {
+            shutdown();
+        }
+    }
+
+    protected void doInit(InitialContext ctx) throws Exception {
+    }
+
+    public void start() throws Exception {
+        try {
+            doStart();
+        } catch (Exception e) {
+            try {
+                stop();
+            } catch (Exception inner) {
+                // TODO: log
+            }
+            throw e;
+        }
+    }
+
+    protected void doStart() throws Exception {
     }
 
     public void stop() throws Exception {
         try {
             doStop();
+        } finally {
+        }
+    }
+
+    protected void doStop() throws Exception {
+    }
+
+    public void shutdown() throws Exception {
+        try {
+            doShutdown();
             if (connection != null) {
                 connection.close();
             }
@@ -181,9 +202,9 @@ public abstract class AbstractJmsProcessor implements ExchangeProcessor {
         }
     }
 
-    protected void doStop() throws Exception {
+    protected void doShutdown() throws Exception {
     }
-    
+
     protected Context createContext() {
         return soapHelper.createContext();
     }

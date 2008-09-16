@@ -46,7 +46,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
         super(endpoint);
     }
 
-    protected void doStart(InitialContext ctx) throws Exception {
+    protected void doInit(InitialContext ctx) throws Exception {
         try {
             commonDoStartTasks(ctx);
         } finally {
@@ -56,7 +56,7 @@ public class StandardProviderProcessor extends AbstractJmsProcessor {
         }
     }
 
-    protected void doStop() throws Exception {
+    protected void doShutdown() throws Exception {
         destination = null;
     }
 

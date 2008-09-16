@@ -31,11 +31,11 @@ import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.wsdl.Service;
 
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.soap.SoapEndpoint;
+import org.apache.servicemix.soap.SoapExchangeProcessor;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 
@@ -88,9 +88,15 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     protected StoreFactory storeFactory;
     
     public JmsEndpoint() {
+        super();
         marshaler = new DefaultJmsMarshaler(this);
     }
-    
+
+    public JmsEndpoint(boolean dynamic) {
+        super(dynamic);
+        this.marshaler = new DefaultJmsMarshaler(this);
+    }
+
     /**
      * The BootstrapContext to use for a JCA consumer endpoint.
      * 
@@ -393,15 +399,15 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
         this.storeFactory = storeFactory;
     }
 
-    protected ExchangeProcessor createProviderProcessor() {
+    protected SoapExchangeProcessor createProviderProcessor() {
         return createProcessor("provider");
     }
 
-    protected ExchangeProcessor createConsumerProcessor() {
+    protected SoapExchangeProcessor createConsumerProcessor() {
         return createProcessor("consumer");
     }
     
-    protected ExchangeProcessor createProcessor(String type) {
+    protected SoapExchangeProcessor createProcessor(String type) {
         try {
             String procName = processorName;
             if (processorName == null) {
@@ -414,7 +420,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
             String className = props.getProperty(type);
             Class cl = loadClass(className);
             Constructor cns = cl.getConstructor(new Class[] {getClass()});
-            return (ExchangeProcessor) cns.newInstance(new Object[] {this});
+            return (SoapExchangeProcessor) cns.newInstance(new Object[] {this});
         } catch (Exception e) {
             throw new RuntimeException("Could not create processor of type " + type + " and name " + processorName, e);
         }

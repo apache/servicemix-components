@@ -71,6 +71,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().init("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
@@ -108,6 +109,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().init("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Call it
@@ -139,6 +141,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
+        component.getServiceUnitManager().init("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
 
         // Send test message
@@ -175,6 +178,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("provider", path.getAbsolutePath());
+        component.getServiceUnitManager().init("provider", path.getAbsolutePath());
         component.getServiceUnitManager().start("provider");
 
         // Deploy Consumer SU
@@ -183,6 +187,7 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("consumer", path.getAbsolutePath());
+        component.getServiceUnitManager().init("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
 
         // Call it

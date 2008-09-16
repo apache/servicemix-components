@@ -44,7 +44,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         super(endpoint);
     }
    
-    protected void doStart(InitialContext ctx) throws Exception {
+    protected void doInit(InitialContext ctx) throws Exception {
 //        channel = endpoint.getServiceUnit().getComponent().getComponentContext().getDeliveryChannel();
         commonDoStartTasks(ctx);
         //Create temp destination of no reply destination found.
@@ -60,7 +60,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         consumer.setMessageListener(this);
     }
 
-    protected void doStop() throws Exception {
+    protected void doShutdown() throws Exception {
         session = null;
         destination = null;
         consumer = null;

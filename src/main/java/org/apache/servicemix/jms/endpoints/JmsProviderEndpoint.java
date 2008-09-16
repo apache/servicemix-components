@@ -693,7 +693,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      *
      * @throws Exception
      */
-    public synchronized void start() throws Exception {
+    public synchronized void activate() throws Exception {
+        super.activate();
         if (store == null) {
             if (storeFactory == null) {
                 storeFactory = new MemoryStoreFactory();
@@ -722,7 +723,6 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             listenerContainer = createListenerContainer();
             listenerContainer.start();
         }
-        super.start();
     }
 
     /**
@@ -730,9 +730,10 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      * 
      * @throws Exception
      */
-    public synchronized void stop() throws Exception {
+    public synchronized void deactivate() throws Exception {
         if (listenerContainer != null) {
             listenerContainer.stop();
+            listenerContainer.shutdown();
         }
         if (store != null) {
             if (storeFactory != null) {
@@ -740,7 +741,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             }
             store = null;
         }
-        super.stop();
+        super.deactivate();
     }
 
     /**
@@ -816,6 +817,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 JmsProviderEndpoint.this.onMessage(message);
             }
         });
+        cont.setAutoStartup(false);
         cont.afterPropertiesSet();
         return cont;
     }

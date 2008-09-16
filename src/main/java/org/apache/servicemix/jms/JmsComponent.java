@@ -28,6 +28,7 @@ import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.servicemix.common.util.IntrospectionSupport;
 import org.apache.servicemix.common.util.URISupport;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
@@ -155,8 +156,8 @@ public class JmsComponent extends DefaultComponent {
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         // We receive an exchange for an EPR that has not been used yet.
         // Register a provider endpoint and restart processing.
-        JmsEndpoint jmsEp = new JmsEndpoint();
-        jmsEp.setServiceUnit(new ServiceUnit(component));
+        JmsEndpoint jmsEp = new JmsEndpoint(true);
+        jmsEp.setServiceUnit(new DefaultServiceUnit(component));
         jmsEp.setService(ep.getServiceName());
         jmsEp.setEndpoint(ep.getEndpointName());
         jmsEp.setRole(MessageExchange.Role.PROVIDER);
@@ -178,7 +179,6 @@ public class JmsComponent extends DefaultComponent {
                 jmsEp.setJmsProviderDestinationName(path.substring(AbstractJmsProcessor.STYLE_TOPIC.length() + 1));
             }
         }
-        jmsEp.activateDynamic();
         return jmsEp;
     }
 

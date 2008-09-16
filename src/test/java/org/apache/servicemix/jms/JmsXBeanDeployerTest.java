@@ -87,6 +87,7 @@ public class JmsXBeanDeployerTest extends AbstractJmsTestSupport {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
+        component.getServiceUnitManager().init("xbean", path.getAbsolutePath());
         component.getServiceUnitManager().start("xbean");
         
         // Test wsdls
@@ -157,6 +158,7 @@ public class JmsXBeanDeployerTest extends AbstractJmsTestSupport {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
+        component.getServiceUnitManager().init("xbean", path.getAbsolutePath());
         component.getServiceUnitManager().start("xbean");
         
         // Test wsdls

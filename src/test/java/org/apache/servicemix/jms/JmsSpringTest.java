@@ -51,6 +51,7 @@ public class JmsSpringTest extends SpringTestSupport {
             }
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+            client.done(me);
         }
     }
 

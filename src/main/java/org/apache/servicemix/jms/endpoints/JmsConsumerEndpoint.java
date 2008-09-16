@@ -365,25 +365,33 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
         return getService() + "#" + getEndpoint();
     }
 
-    public synchronized void start() throws Exception {
+    public synchronized void activate() throws Exception {
+        super.activate();
         listenerContainer = createListenerContainer();
         listenerContainer.setMessageListener(new SessionAwareMessageListener() {
             public void onMessage(Message message, Session session) throws JMSException {
                 JmsConsumerEndpoint.this.onMessage(message, session);
             }
         });
-        listenerContainer.setAutoStartup(true);
+        listenerContainer.setAutoStartup(false);
         listenerContainer.afterPropertiesSet();
-        super.start();
     }
     
+    public synchronized void start() throws Exception {
+        listenerContainer.start();
+    }
+
     public synchronized void stop() throws Exception {
+        listenerContainer.stop();
+    }
+
+    public synchronized void deactivate() throws Exception {
         if (listenerContainer != null) {
             listenerContainer.stop();
             listenerContainer.shutdown();
             listenerContainer = null;
         }
-        super.stop();
+        super.deactivate();
     }
     
     public void validate() throws DeploymentException {

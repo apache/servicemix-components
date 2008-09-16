@@ -20,6 +20,7 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.ExtensionRegistry;
 
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 import org.apache.servicemix.common.wsdl1.AbstractWsdl1Deployer;
 import org.apache.servicemix.common.wsdl1.JbiEndpoint;
 import org.apache.servicemix.jms.wsdl.JmsAddress;
@@ -36,7 +37,7 @@ public class JmsWsdl1Deployer extends AbstractWsdl1Deployer {
         super(component);
     }
 
-    protected Endpoint createEndpoint(ExtensibilityElement portElement, 
+    protected AbstractEndpoint createEndpoint(ExtensibilityElement portElement,
                                       ExtensibilityElement bindingElement,
                                       JbiEndpoint jbiEndpoint) {
         if (jbiEndpoint == null) {

@@ -316,8 +316,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         return getService() + "#" + getEndpoint();
     }
     
-    public synchronized void start() throws Exception {
-        super.start();
+    public synchronized void activate() throws Exception {
+        super.activate();
         if (template == null) {
             if (isJms102()) {
                 template = new JmsTemplate102(getConnectionFactory(), isPubSubDomain());
@@ -333,14 +333,14 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         }
     }
 
-    public synchronized void stop() throws Exception {
+    public synchronized void deactivate() throws Exception {
         if (store != null) {
             if (storeFactory != null) {
                 storeFactory.close(store);
             }
             store = null;
         }
-        super.stop();
+        super.deactivate();
     }
 
     public void process(MessageExchange exchange) throws Exception {
