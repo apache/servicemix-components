@@ -38,6 +38,9 @@ import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -101,6 +104,8 @@ import org.apache.servicemix.cxfbc.interceptors.JbiFault;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.mortbay.jetty.Handler;
+import org.mortbay.jetty.HttpConnection;
+import org.mortbay.jetty.handler.AbstractHandler;
 import org.springframework.core.io.Resource;
 
 
@@ -148,6 +153,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     private boolean useJBIWrapper = true;
     private EndpointInfo ei;
+
+    private boolean started;
 
     /**
      * @return the wsdl
@@ -261,8 +268,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     @Override
-    public void start() throws Exception {
-        super.start();
+    public void activate() throws Exception {
+        super.activate();
         registerListServiceHandler();
         server.start();
     }
@@ -277,18 +284,29 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 jettyEng.setHandlers(handlers);
             }
             handlers.add(new ListServiceHandler(getBus().getExtension(ServerRegistry.class)));
-                
         }
     }
 
     @Override
+    public void start() throws Exception {
+        super.start();
+        this.started = true;
+    }
+
+    @Override
     public void stop() throws Exception {
+        this.started = false;
+        super.stop();
+    }
+
+    @Override
+    public void deactivate() throws Exception {
         server.stop();
         if (ei.getAddress() != null && ei.getAddress().startsWith("https")) {
             bus.shutdown(false);
             bus = null;
         }
-        super.stop();
+        super.deactivate();
     }
 
     @Override
@@ -337,6 +355,13 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             ei.getBinding().setProperty(
                     AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
 
+            cxfService.getInInterceptors().add(new AbstractPhaseInterceptor<Message>(Phase.PRE_PROTOCOL) {
+                public void handleMessage(Message message) throws Fault {
+                    if (!started) {
+                        throw new Fault(new Exception("Endpoint is stopped"));
+                    }
+                }
+            });
             cxfService.getInInterceptors().add(new MustUnderstandInterceptor());
             cxfService.getInInterceptors().add(new AttachmentInInterceptor());
             cxfService.getInInterceptors().add(new StaxInInterceptor());

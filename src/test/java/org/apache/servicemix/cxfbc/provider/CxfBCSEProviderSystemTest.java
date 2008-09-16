@@ -162,17 +162,17 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderJmsTestBase(true, "Edell");
     }
-    
+
     public void testGreetMeProviderWithJmSTransportAsync() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderJmsTestBase(false, "Edell");
     }
-    
+
     public void testGreetMeProviderWithJmSTransportSyncTimeOut() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderJmsTestBase(true, "ffang");
     }
-    
+
     public void testGreetMeProviderWithJmSTransportAsyncTimeOut() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderJmsTestBase(false, "ffang");
@@ -199,9 +199,9 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
             io.getInMessage().setProperty(JbiConstants.HTTP_DESTINATION_URI, "http://localhost:9002/dynamicuritest");
         }
         client.sendSync(io);
-        
-        assertTrue(new SourceTransformer().contentToString(
-                io.getOutMessage()).indexOf("Hello Edell") >= 0);        
+        String txt = new SourceTransformer().contentToString(io.getOutMessage());
+        client.done(io);
+        assertTrue(txt.indexOf("Hello Edell") >= 0);
         
     }
     
@@ -223,17 +223,17 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
             client.sendSync(io);
         } else {
             client.send(io);
-            Thread.sleep(5000);
+            client.receive(5000);
         }
+        String txt = new SourceTransformer().contentToString(io.getFault() != null ? io.getFault() : io.getOutMessage());
+        client.done(io);
         if ("ffang".equals(name)) {
-            //in this case, the server is intended to sleep 3 sec, 
+            //in this case, the server is intended to sleep 3 sec,
             //which will cause time out both for sync and async invoke
-            assertTrue(new SourceTransformer().contentToString(
-                    io.getFault()).indexOf("JMS receive timed out") >= 0);
+            assertTrue(txt.indexOf("JMS receive timed out") >= 0);
         } else {
             //in this case, both sync and async invocation shouldn't see the timeout problem
-            assertTrue(new SourceTransformer().contentToString(
-                io.getOutMessage()).indexOf("Hello " + name) >= 0);
+            assertTrue(txt.indexOf("Hello " + name) >= 0);
         }
     }
 

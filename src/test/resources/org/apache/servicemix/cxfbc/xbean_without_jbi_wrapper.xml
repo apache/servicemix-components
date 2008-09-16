@@ -25,6 +25,16 @@
   
   <sm:container id="jbi" embedded="true">
     
+    <sm:executorFactory>
+      <bean class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
+        <property name="defaultConfig">
+          <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
+            <property name="corePoolSize" value="32" />
+          </bean>
+        </property>
+      </bean>
+    </sm:executorFactory>
+
     <sm:endpoints>
       <cxfse:endpoint useJBIWrapper="false">
         <cxfse:pojo>
