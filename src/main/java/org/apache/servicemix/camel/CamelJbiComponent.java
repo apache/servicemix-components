@@ -113,7 +113,6 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
     @Override
     protected org.apache.servicemix.common.Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         CamelProviderEndpoint endpoint = createEndpoint(ep);
-        endpoint.activate();
         return endpoint;
     }
 
