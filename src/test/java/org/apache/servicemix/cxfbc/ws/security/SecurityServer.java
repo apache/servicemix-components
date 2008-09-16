@@ -18,7 +18,6 @@ package org.apache.servicemix.cxfbc.ws.security;
 
 import java.util.logging.Logger;
 
-import javax.xml.ws.Endpoint;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -36,9 +35,7 @@ public class SecurityServer extends AbstractBusTestServerBase {
             "org/apache/servicemix/cxfbc/ws/security/server.xml"
         );
         BusFactory.setDefaultBus(bus);
-        Object implementor = new GreeterImpl();
-        String address = "http://localhost:9001/SoapContext/SoapPort";
-        Endpoint.publish(address, implementor);
+        
     }
         
     public static void main(String[] args) {
