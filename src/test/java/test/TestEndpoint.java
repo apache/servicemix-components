@@ -17,11 +17,12 @@
 package test;
 
 import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.messaging.MessageExchange;
 
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 
-public class TestEndpoint extends Endpoint {
+public class TestEndpoint extends AbstractEndpoint {
 
     public Role getRole() {
         // TODO Auto-generated method stub
@@ -30,17 +31,21 @@ public class TestEndpoint extends Endpoint {
 
     public void activate() throws Exception {
         // TODO Auto-generated method stub
-
     }
 
     public void deactivate() throws Exception {
         // TODO Auto-generated method stub
-
     }
 
-    public ExchangeProcessor getProcessor() {
+    public void start() throws Exception {
         // TODO Auto-generated method stub
-        return null;
     }
 
+    public void stop() throws Exception {
+        // TODO Auto-generated method stub
+    }
+
+    public void process(MessageExchange exchange) throws Exception {
+        // TODO Auto-generated method stub
+    }
 }

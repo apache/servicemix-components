@@ -41,7 +41,9 @@ public class Jsr181SpringProxyTest extends SpringTestSupport {
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
             if (me.getFault() != null) {
-                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+                String txt = new SourceTransformer().toString(me.getFault().getContent());
+                client.done(me);
+                fail("Received fault: " + txt);
             } else if (me.getError() != null) {
                 throw me.getError();
             } else {
@@ -49,6 +51,7 @@ public class Jsr181SpringProxyTest extends SpringTestSupport {
             }
         } else {
             logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+            client.done(me);
         }
     }
     

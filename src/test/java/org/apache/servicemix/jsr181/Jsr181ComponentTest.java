@@ -130,9 +130,11 @@ public class Jsr181ComponentTest extends TestCase {
         Jsr181Component component = new Jsr181Component();
         container.activateComponent(component, "JSR181Component");
         component.getServiceUnitManager().deploy("d/u", getServiceUnitPath("good1"));
+        component.getServiceUnitManager().init("d/u", getServiceUnitPath("good1"));
         component.getServiceUnitManager().shutDown("d/u");
         component.getServiceUnitManager().undeploy("d/u", getServiceUnitPath("good1"));
         component.getServiceUnitManager().deploy("d/u", getServiceUnitPath("good1"));
+        component.getServiceUnitManager().init("d/u", getServiceUnitPath("good1"));
         component.getServiceUnitManager().start("d/u");
         component.getServiceUnitManager().stop("d/u");
         component.getServiceUnitManager().shutDown("d/u");
