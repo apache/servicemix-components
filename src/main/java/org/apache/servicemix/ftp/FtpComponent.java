@@ -60,7 +60,6 @@ public class FtpComponent extends DefaultComponent {
         IntrospectionSupport.setProperties(ftpEndpoint, map);
         ftpEndpoint.setUri(uri);
         ftpEndpoint.validate();
-        ftpEndpoint.activate();
         return ftpEndpoint;
     }
 
