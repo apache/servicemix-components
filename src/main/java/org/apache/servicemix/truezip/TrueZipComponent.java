@@ -89,7 +89,6 @@ public class TrueZipComponent extends DefaultComponent {
         } else {
             throw new IllegalArgumentException("No file defined for URL: " + uri);
         }
-        fileEp.activate();
         return fileEp;
     }
 
