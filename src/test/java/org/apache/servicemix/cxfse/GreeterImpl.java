@@ -50,6 +50,7 @@ public class GreeterImpl implements Greeter {
 
     private ComponentContext context;
     public String greetMe(String me) {
+        String txt = null;
         try {
             
             // here use client api to test the injected context to invoke another endpoint
@@ -71,11 +72,12 @@ public class GreeterImpl implements Greeter {
             exchange.setInterfaceName(new QName("http://apache.org/cxf/calculator", "CalculatorPortType"));
             exchange.setOperation(new QName("http://apache.org/cxf/calculator", "add"));
             client.sendSync(exchange);
-            
+            txt = "Hello " + me  + " " + context.getComponentName();
+            client.done(exchange);
         } catch (JBIException e) {
             //
         }
-        return "Hello " + me  + " " + context.getComponentName();
+        return txt;
     }
     
     public String greetMeLater(long later) {
