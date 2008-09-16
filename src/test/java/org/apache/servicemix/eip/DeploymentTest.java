@@ -54,6 +54,7 @@ public class DeploymentTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         component.getServiceUnitManager().deploy("su", path.getAbsolutePath());
+        component.getServiceUnitManager().init("su", path.getAbsolutePath());
         component.getServiceUnitManager().start("su");
         
         component.getServiceUnitManager().stop("su");
