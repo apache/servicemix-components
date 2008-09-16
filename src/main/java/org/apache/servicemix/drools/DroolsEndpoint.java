@@ -218,7 +218,11 @@ public class DroolsEndpoint extends ProviderEndpoint {
                 } else {
                     MessageUtil.transferOutToOut(exchange, original);
                 }
-                send(original);
+                // TODO: remove this sendSync() and replace by a send()
+                // TODO: there is a need to store the exchange and send the DONE
+                // TODO: when the original comes back
+                sendSync(original);
+                done(exchange);
             }
         } else {
             logger.debug("No pending exchange found for " + correlation + ", no additional rules will be triggered");
@@ -230,7 +234,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
             drools(exchange);
         } else {
             //must be a DONE/ERROR so removing any pending contexts
-            pending.remove(exchange.getExchangeId());
+            DroolsExecutionContext drools = pending.remove(exchange.getExchangeId());
         }
     }
 
