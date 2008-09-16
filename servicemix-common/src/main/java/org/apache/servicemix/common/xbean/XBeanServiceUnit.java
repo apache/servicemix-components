@@ -19,9 +19,10 @@ package org.apache.servicemix.common.xbean;
 import javax.jbi.JBIException;
 
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.DefaultServiceUnit;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-public class XBeanServiceUnit extends ServiceUnit {
+public class XBeanServiceUnit extends DefaultServiceUnit {
 
     private ClassLoader classLoader;
     private AbstractXmlApplicationContext applicationContext;
@@ -37,7 +38,7 @@ public class XBeanServiceUnit extends ServiceUnit {
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.ServiceUnit#shutDown()
      */
-    public void shutDown() throws JBIException {
+    public void shutDown() throws Exception {
         super.shutDown();
         classLoader = null;
         try {

@@ -24,6 +24,7 @@ import javax.jbi.management.DeploymentException;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,7 +93,7 @@ public class EndpointTracker {
         }
     }
 
-    public static class OsgiServiceUnit extends ServiceUnit {
+    public static class OsgiServiceUnit extends DefaultServiceUnit {
         private static final IdGenerator idGenerator = new IdGenerator();
         private final Endpoint endpoint;
         private final ClassLoader classLoader;

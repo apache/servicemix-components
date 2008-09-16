@@ -95,6 +95,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
      * @see javax.jbi.component.ServiceUnitManager#init(java.lang.String, java.lang.String)
      */
     public synchronized void init(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Initializing service unit");
@@ -102,9 +103,10 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
-            if (getServiceUnit(serviceUnitName) == null) {
+            ServiceUnit su = getServiceUnit(serviceUnitName);
+            if (su == null) {
                 if (!persistent) {
-                    ServiceUnit su = doDeploy(serviceUnitName, serviceUnitRootPath);
+                    su = doDeploy(serviceUnitName, serviceUnitRootPath);
                     if (su == null) {
                         throw failure("deploy", "Unable to find suitable deployer for Service Unit '" + serviceUnitName + "'", null);
                     }
@@ -113,7 +115,11 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
                     throw failure("init", "Service Unit '" + serviceUnitName + "' is not deployed", null);
                 }
             }
-            doInit(serviceUnitName, serviceUnitRootPath);
+            if (!LifeCycleMBean.SHUTDOWN.equals(su.getCurrentState())) {
+                throw failure("init", "ServiceUnit should be in a SHUTDOWN state", null);
+            }
+            Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
+            su.init();
             if (logger.isDebugEnabled()) {
                 logger.debug("Service unit initialized");
             }
@@ -121,10 +127,9 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             throw e;
         } catch (Exception e) {
             throw failure("init", "Unable to init service unit", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
         }
-    }
-
-    protected void doInit(String serviceUnitName, String serviceUnitRootPath) throws Exception {
     }
 
     /* (non-Javadoc)
@@ -143,9 +148,8 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             if (su == null) {
                 throw failure("start", "Service Unit '" + serviceUnitName + "' is not deployed", null);
             }
-            if (!LifeCycleMBean.STOPPED.equals(su.getCurrentState()) &&
-                !LifeCycleMBean.SHUTDOWN.equals(su.getCurrentState())) {
-                throw failure("start", "ServiceUnit should be in a SHUTDOWN or STOPPED state", null);
+            if (!LifeCycleMBean.STOPPED.equals(su.getCurrentState())) {
+                throw failure("start", "ServiceUnit should be in a STOPPED state", null);
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.start();
@@ -173,12 +177,12 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
-            ServiceUnit su = (ServiceUnit) getServiceUnit(serviceUnitName);
+            ServiceUnit su = getServiceUnit(serviceUnitName);
             if (su == null) {
                 throw failure("stop", "Service Unit '" + serviceUnitName + "' is not deployed", null);
             }
             if (!LifeCycleMBean.STARTED.equals(su.getCurrentState())) {
-                throw failure("stop", "ServiceUnit should be in a SHUTDOWN state", null);
+                throw failure("stop", "ServiceUnit should be in a STARTED state", null);
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.stop();
@@ -206,9 +210,12 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
-            ServiceUnit su = (ServiceUnit) getServiceUnit(serviceUnitName);
+            ServiceUnit su = getServiceUnit(serviceUnitName);
             if (su == null) {
                 throw failure("shutDown", "Service Unit '" + serviceUnitName + "' is not deployed", null);
+            }
+            if (!LifeCycleMBean.STOPPED.equals(su.getCurrentState())) {
+                throw failure("start", "ServiceUnit should be in a STOPPED state", null);
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.shutDown();
@@ -239,7 +246,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
-            ServiceUnit su = (ServiceUnit) getServiceUnit(serviceUnitName);
+            ServiceUnit su = getServiceUnit(serviceUnitName);
             if (su == null) {
                 throw failure("undeploy", "Service Unit '" + serviceUnitName + "' is not deployed", null);
             }

@@ -27,7 +27,8 @@ import javax.management.ObjectName;
  * 
  * This is a default implementation of the Bootstrap,  it is used by the 
  * Maven JBI plugin to provide a standard implementation of a Bootstrap
- * when a component does not provide one
+ * when a component does not provide one, so even it is tagged as deprecated,
+ * it should not be removed.
  * 
  * @deprecated Due to JBI classloader mechanism, component should not
  *    use this class directly, but copy it, or rely on the maven-jbi-plugin

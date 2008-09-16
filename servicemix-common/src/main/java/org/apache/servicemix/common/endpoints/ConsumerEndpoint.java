@@ -53,7 +53,8 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
         return Role.CONSUMER;
     }
 
-    public synchronized void start() throws Exception {
+    public synchronized void activate() throws Exception {
+        super.activate();
         ServiceMixComponent component = getServiceUnit().getComponent();
         ComponentContext ctx = component.getComponentContext();
         activated = new ExternalEndpoint(component.getEPRElementName(), getLocationURI(), getService(),
@@ -61,7 +62,7 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
         ctx.registerExternalEndpoint(activated);
     }
 
-    public synchronized void stop() throws Exception {
+    public synchronized void deactivate() throws Exception {
         ServiceMixComponent component = getServiceUnit().getComponent();
         ComponentContext ctx = component.getComponentContext();
         if (activated != null) {
@@ -69,6 +70,7 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
             activated = null;
             ctx.deregisterExternalEndpoint(se);
         }
+        super.deactivate();
     }
 
     /**

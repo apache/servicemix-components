@@ -17,6 +17,8 @@
 package org.apache.servicemix.common;
 
 import org.apache.commons.logging.Log;
+import org.apache.servicemix.common.xbean.XBeanServiceUnit;
+
 import org.w3c.dom.Document;
 
 import javax.jbi.management.DeploymentException;
@@ -26,168 +28,72 @@ import javax.jbi.messaging.MessageExchange.Role;
 import javax.wsdl.Definition;
 import javax.xml.namespace.QName;
 
-public abstract class Endpoint {
+public interface Endpoint {
 
-    protected QName service;
-    protected String endpoint;
-    protected QName interfaceName;
-    protected Document description;
-    protected Definition definition;
-    protected ServiceUnit serviceUnit;
-    protected Log logger;
-    private String key;
+    String getKey();
 
-    public Endpoint() {
-    }
+    QName getInterfaceName();
 
-    public Endpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
-        this.serviceUnit = serviceUnit;
-        this.logger = serviceUnit.getComponent().getLogger();
-        this.service = service;
-        this.endpoint = endpoint;
-    }
+    QName getService();
+
+    String getEndpoint();
+
+    Document getDescription();
+
+    Role getRole();
+
+    ServiceUnit getServiceUnit();
+
+    void setServiceUnit(ServiceUnit serviceUnit);
+
+    boolean isExchangeOkay(MessageExchange exchange);
 
     /**
-     * @return Returns the endpoint.
+     * Register this endpoint into the NMR and put the endpoint
+     * in a STOPPED state, where the endpoint is able to process
+     * incoming requests, but won't consume external requests such
+     * as JMS messages or HTTP requests.
+     *
+     * @throws Exception
      */
-    public String getEndpoint() {
-        return endpoint;
-    }
+    void activate() throws Exception;
 
     /**
-     * Sets the name of the endpoint.
-     * 
-     * @param endpoint a string specifiying the name of the endpoint
-     * @org.apache.xbean.Property description="the name of the endpoint"
+     * Start consumption of external requests.
+     *
+     * @throws Exception
      */
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-        this.key = null;
-    }
+    void start() throws Exception;
 
     /**
-     * @return Returns the service.
+     * Stop consumption of external requests.
+     *
+     * @throws Exception
      */
-    public QName getService() {
-        return service;
-    }
+    void stop() throws Exception;
 
     /**
-     * Sets the name of the service the endpoint exposes.
-     * 
-     * @param service a QName specifiying the name of the service
-     * @org.apache.xbean.Property description="the QName of the service exposed by the endpoint"
+     * Unregister this endpoint from the NMR.
+     *
+     * @throws Exception
      */
-    public void setService(QName service) {
-        this.service = service;
-        this.key = null;
-    }
+    void deactivate() throws Exception;
 
     /**
-     * @return Returns the role.
+     * Process an incoming JBI exchange.
+     *
+     * @param exchange
+     * @throws Exception
      */
-    public abstract Role getRole();
+    void process(MessageExchange exchange) throws Exception;
 
     /**
-     * @return Returns the description.
-     */
-    public Document getDescription() {
-        return description;
-    }
-
-    /**
-     * Associates an XML document with the endpoint. The XML document describes the endpoint and is typically found in the service
-     * unit packaging.
-     * 
-     * @param description a <code>Document</code> describing the endpoint
-     * @org.apache.xbean.Property description="an XML document describing the endpoint"
-     */
-    public void setDescription(Document description) {
-        this.description = description;
-    }
-
-    /**
-     * @return Returns the interfaceName.
-     */
-    public QName getInterfaceName() {
-        return interfaceName;
-    }
-
-    /**
-     * Sets the QName of the interface exposed by the endpoint.
-     * 
-     * @param interfaceName a QName specifiying the name of the interface
-     * @org.apache.xbean.Property description="the QName of the interface exposed by the endpoint"
-     */
-    public void setInterfaceName(QName interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
-    /**
-     * @return Returns the serviceUnit.
-     */
-    public ServiceUnit getServiceUnit() {
-        return serviceUnit;
-    }
-
-    /**
-     * Associates an endpoint with a service unit. The service unit is used by the container to manage the endpoint's lifecycle.
-     * 
-     * @param serviceUnit a <code>ServiceUnit</code> to which the endpoint will be associated
-     * @org.apache.xbean.Property description="the service unit responsible for the endpoint"
-     */
-    public void setServiceUnit(ServiceUnit serviceUnit) {
-        this.serviceUnit = serviceUnit;
-        this.logger = serviceUnit.component.getLogger();
-    }
-
-    public boolean isExchangeOkay(MessageExchange exchange) {
-        // TODO: We could check the MEP here
-        return true;
-    }
-
-    public void prepareExchange(MessageExchange exchange) throws MessagingException {
-        getServiceUnit().getComponent().prepareExchange(exchange, this);
-    }
-
-    public abstract void activate() throws Exception;
-
-    public abstract void deactivate() throws Exception;
-
-    public abstract ExchangeProcessor getProcessor();
-
-    public String toString() {
-        return "Endpoint[service: " + service + ", " + "endpoint: " + endpoint + ", " + "role: "
-               + (getRole() == Role.PROVIDER ? "provider" : "consumer") + "]";
-    }
-
-    /**
-     * Validate the endpoint at either deployment time for statically defined endpoints or at runtime for dynamic endpoints
-     * 
+     * Validation is a step which is done at deployment time to check
+     * that the endpoint definition is valid and that there is no
+     * missing properties.
+     *
      * @throws DeploymentException
      */
-    public void validate() throws DeploymentException {
-    }
-
-    public Definition getDefinition() {
-        return definition;
-    }
-
-    public void setDefinition(Definition definition) {
-        this.definition = definition;
-    }
-
-    String getKey() {
-        if (key == null) {
-            if (service == null) {
-                throw new IllegalArgumentException("Endpoint: " + this + " has no service name defined");
-            }
-            if (endpoint == null) {
-                throw new IllegalArgumentException("Endpoint: " + this + " has no endpoint name defined");
-            }
-            key = EndpointSupport.getKey(service, endpoint);
-        }
-        return key;
-    }
+    void validate() throws DeploymentException;
 
 }

@@ -18,6 +18,8 @@ package org.apache.servicemix.common;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
@@ -81,19 +83,19 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     protected boolean workManagerCreated;
 
-    protected Map<String, ExchangeProcessor> processors;
-    
     protected ThreadLocal<String> correlationId;
     
     protected String currentState = LifeCycleMBean.UNKNOWN;
 
     protected Container container;
 
+    protected Map<String, Set<String>> knownExchanges;
+
     public AsyncBaseLifeCycle() {
         this.running = new AtomicBoolean(false);
         this.polling = new AtomicBoolean(false);
-        this.processors = new ConcurrentHashMap<String, ExchangeProcessor>();
         this.correlationId = new ThreadLocal<String>();
+        this.knownExchanges = new ConcurrentHashMap<String, Set<String>>();
     }
 
     public AsyncBaseLifeCycle(ServiceMixComponent component) {
@@ -190,12 +192,12 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                 // JBI implementation which throws an exception instead of
                 // return null
             }
+            container = Container.detect(context);
             doInit();
             setCurrentState(INITIALIZED);
             if (logger.isDebugEnabled()) {
                 logger.debug("Component initialized");
             }
-            container = Container.detect(context);
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -532,44 +534,37 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             boolean dynamic = false;
             ServiceEndpoint endpoint = exchange.getEndpoint();
             String key = EndpointSupport.getKey(exchange.getEndpoint());
-            Endpoint ep = (Endpoint) this.component.getRegistry().getEndpoint(key);
+            Endpoint ep = this.component.getRegistry().getEndpoint(key);
             if (ep == null) {
                 if (endpoint.getServiceName().equals(getEPRServiceName())) {
                     ep = getResolvedEPR(exchange.getEndpoint());
+                    ep.activate();
+                    ep.start();
                     dynamic = true;
                 }
                 if (ep == null) {
                     throw new IllegalStateException("Endpoint not found: " + key);
                 }
             }
-            ExchangeProcessor processor = ep.getProcessor();
-            if (processor == null) {
-                throw new IllegalStateException("No processor found for endpoint: " + key);
-            }
             try {
-                doProcess(ep, processor, exchange);
+                doProcess(ep, exchange);
             } finally {
                 // If the endpoint is dynamic, deactivate it
                 if (dynamic) {
+                    ep.stop();
                     ep.deactivate();
                 }
             }
         } else {
-            ExchangeProcessor processor = null;
             Endpoint ep = null;
             if (exchange.getProperty(JbiConstants.SENDER_ENDPOINT) != null) {
                 String key = exchange.getProperty(JbiConstants.SENDER_ENDPOINT).toString();
-                ep = (Endpoint) this.component.getRegistry().getEndpoint(key);
-                if (ep != null) {
-                    processor = ep.getProcessor();
-                }
-            } else {
-                processor = processors.remove(exchange.getExchangeId());
+                ep = this.component.getRegistry().getEndpoint(key);
             }
-            if (processor == null) {
-                throw new IllegalStateException("No processor found for: " + exchange.getExchangeId());
+            if (ep == null) {
+                throw new IllegalStateException("Endpoint not found for: " + exchange.getExchangeId());
             }
-            doProcess(ep, processor, exchange);
+            doProcess(ep, exchange);
         }
 
     }
@@ -579,8 +574,9 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
      * classloader is used where available
      * 
      */
-    private void doProcess(Endpoint ep, ExchangeProcessor processor, MessageExchange exchange) throws Exception {
+    private void doProcess(Endpoint ep, MessageExchange exchange) throws Exception {
         ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+        boolean processed = false;
         try {
             ClassLoader cl = (ep != null) ? ep.getServiceUnit().getConfigurationClassLoader() : null;
             if (cl != null) {
@@ -596,8 +592,13 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                 logger.debug("Retrieved correlation id: " + correlationID);
             }
             EndpointDeliveryChannel.setEndpoint(ep);
-            processor.process(exchange);
+            handleExchange(ep, exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
+            ep.process(exchange);
+            processed = true;
         } finally {
+            if (!processed) {
+                handleExchange(ep, exchange, false);
+            }
             EndpointDeliveryChannel.setEndpoint(null);
             Thread.currentThread().setContextClassLoader(oldCl);
             // Clean the threadlocal variable
@@ -629,8 +630,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                 }
             }
             // Set the sender endpoint property
-            String key = EndpointSupport.getKey(endpoint);
-            exchange.setProperty(JbiConstants.SENDER_ENDPOINT, key);
+            exchange.setProperty(JbiConstants.SENDER_ENDPOINT, endpoint.getKey());
         }
         // Handle transaction
         if (!container.handleTransactions()) {
@@ -646,26 +646,42 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         }
     }
 
-    @Deprecated
-    public void sendConsumerExchange(MessageExchange exchange, ExchangeProcessor processor) throws MessagingException {
-        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-            processors.put(exchange.getExchangeId(), processor);
+    public void prepareShutdown(Endpoint endpoint) throws InterruptedException {
+        Set<String> exchanges = getKnownExchanges(endpoint);
+        synchronized (exchanges) {
+            if (!exchanges.isEmpty()) {
+                exchanges.wait();
+            }
         }
-        channel.send(exchange);
     }
 
-    @Deprecated
-    public void prepareConsumerExchange(MessageExchange exchange, Endpoint endpoint) throws MessagingException {
-        prepareExchange(exchange, endpoint);
+    protected Set<String> getKnownExchanges(Endpoint endpoint) {
+        Set<String> exchanges = knownExchanges.get(endpoint.getKey());
+        if (exchanges == null) {
+            synchronized (knownExchanges) {
+                exchanges = knownExchanges.get(endpoint.getKey());
+                if (exchanges == null) {
+                    exchanges = new HashSet<String>();
+                    knownExchanges.put(endpoint.getKey(), exchanges);
+                }
+            }
+        }
+        return exchanges;
     }
 
-    @Deprecated
-    public void sendConsumerExchange(MessageExchange exchange, Endpoint endpoint) throws MessagingException {
-        prepareExchange(exchange, endpoint);
-        channel.send(exchange);
+    public void handleExchange(Endpoint endpoint, MessageExchange exchange, boolean add) {
+        Set<String> exchanges = getKnownExchanges(endpoint);
+        synchronized (exchanges) {
+            if (add) {
+                exchanges.add(exchange.getExchangeId());
+            } else {
+                exchanges.remove(exchange.getExchangeId());
+            }
+            exchanges.notifyAll();
+        }
     }
 
-    /**
+   /**
      * Handle an exchange sent to an EPR resolved by this component
      * 
      * @param ep the service endpoint

@@ -28,10 +28,9 @@ import javax.xml.namespace.QName;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointComponentContext;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.ServiceUnit;
 
-public abstract class SimpleEndpoint extends Endpoint implements ExchangeProcessor {
+public abstract class SimpleEndpoint extends AbstractEndpoint {
 
     private DeliveryChannel channel;
     private MessageExchangeFactory exchangeFactory;
@@ -52,15 +51,15 @@ public abstract class SimpleEndpoint extends Endpoint implements ExchangeProcess
         context = new EndpointComponentContext(this);
         channel = context.getDeliveryChannel();
         exchangeFactory = channel.createExchangeFactory();
-        start();
     }
 
     public synchronized void deactivate() throws Exception {
-        stop();
     }
-    
-    public ExchangeProcessor getProcessor() {
-        return this;
+
+    public synchronized void start() throws Exception {
+    }
+
+    public synchronized void stop() throws Exception {
     }
 
     protected void send(MessageExchange me) throws MessagingException {

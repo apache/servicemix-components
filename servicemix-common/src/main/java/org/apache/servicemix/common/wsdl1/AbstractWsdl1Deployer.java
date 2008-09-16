@@ -17,9 +17,11 @@
 package org.apache.servicemix.common.wsdl1;
 
 import org.apache.servicemix.common.AbstractDeployer;
-import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.DefaultServiceUnit;
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
+
 import org.w3c.dom.Document;
 
 import javax.jbi.management.DeploymentException;
@@ -66,10 +68,7 @@ public abstract class AbstractWsdl1Deployer extends AbstractDeployer {
         if (wsdls == null || wsdls.length == 0) {
             throw failure("deploy", "No wsdl found", null);
         }
-        ServiceUnit su = createServiceUnit();
-        su.setComponent(component);
-        su.setName(serviceUnitName);
-        su.setRootPath(serviceUnitRootPath);
+        ServiceUnit su = createServiceUnit(serviceUnitName, serviceUnitRootPath);
         for (int i = 0; i < wsdls.length; i++) {
             initFromWsdl(su, wsdls[i]);
         }
@@ -128,7 +127,7 @@ public abstract class AbstractWsdl1Deployer extends AbstractDeployer {
                     if (bindingElement == null) {
                         throw failure("deploy", "Invalid wsdl " + wsdl + ": no matching binding element found", null);
                     }
-                    Endpoint ep = createEndpoint(portElement, bindingElement, jbiEndpoint);
+                    AbstractEndpoint ep = createEndpoint(portElement, bindingElement, jbiEndpoint);
                     if (ep != null) {
                         ep.setServiceUnit(su);
                         ep.setDescription(description);
@@ -158,11 +157,15 @@ public abstract class AbstractWsdl1Deployer extends AbstractDeployer {
         JbiExtension.register(registry);
     }
 
-    protected ServiceUnit createServiceUnit() {
-        return new ServiceUnit();
+    protected ServiceUnit createServiceUnit(String name, String rootPath) {
+        DefaultServiceUnit su = new DefaultServiceUnit();
+        su.setComponent(component);
+        su.setName(name);
+        su.setRootPath(rootPath);
+        return su;
     }
     
-    protected abstract Endpoint createEndpoint(ExtensibilityElement portElement,
+    protected abstract AbstractEndpoint createEndpoint(ExtensibilityElement portElement,
                                                ExtensibilityElement bindingElement,
                                                JbiEndpoint jbiEndpoint);
     

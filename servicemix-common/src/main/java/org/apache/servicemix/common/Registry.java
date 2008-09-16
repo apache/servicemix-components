@@ -50,31 +50,29 @@ public class Registry {
     }
     
     public void registerEndpoint(Endpoint ep) {
-        String key = EndpointSupport.getKey(ep);
+        String key = ep.getKey();
         if (this.endpoints.put(key, ep) != null) {
             throw new IllegalStateException("An endpoint is already registered for key: " + key);
         }
     }
     
     public void unregisterEndpoint(Endpoint ep) {
-        this.endpoints.remove(EndpointSupport.getKey(ep));
+        this.endpoints.remove(ep.getKey());
     }
     
     public void registerServiceUnit(ServiceUnit su) {
         this.serviceUnits.put(su.getName(), su);
-        Collection endpoints = (Collection) su.getEndpoints();
-        for (Iterator iter = endpoints.iterator(); iter.hasNext();) {
-            Endpoint ep = (Endpoint) iter.next();
-            registerEndpoint(ep);
+        Collection<Endpoint> endpoints = su.getEndpoints();
+        for (Endpoint endpoint : endpoints) {
+            registerEndpoint(endpoint);
         }
     }
     
     public void unregisterServiceUnit(ServiceUnit su) {
         this.serviceUnits.remove(su.getName());
-        Collection endpoints = (Collection) su.getEndpoints();
-        for (Iterator iter = endpoints.iterator(); iter.hasNext();) {
-            Endpoint ep = (Endpoint) iter.next();
-            unregisterEndpoint(ep);
+        Collection<Endpoint> endpoints = su.getEndpoints();
+        for (Endpoint endpoint : endpoints) {
+            unregisterEndpoint(endpoint);
         }
     }
     

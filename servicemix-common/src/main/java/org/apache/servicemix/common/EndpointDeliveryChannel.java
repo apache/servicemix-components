@@ -18,11 +18,10 @@ package org.apache.servicemix.common;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
-import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.transaction.Transaction;
@@ -85,25 +84,46 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
 
     public void send(MessageExchange exchange) throws MessagingException {
         prepareExchange(exchange);
+        handleExchange(exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
         channel.send(exchange);
     }
 
     public boolean sendSync(MessageExchange exchange, long timeout) throws MessagingException {
-        prepareExchange(exchange);
-        boolean ret = channel.sendSync(exchange, timeout);
-        if (ret) {
-            resumeTx(exchange);
+        boolean processed = false;
+        try {
+            prepareExchange(exchange);
+            handleExchange(exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
+            boolean ret = channel.sendSync(exchange, timeout);
+            handleExchange(exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
+            if (ret) {
+                resumeTx(exchange);
+                processed = true;
+            }
+            return ret;
+        } finally {
+            if (!processed) {
+                handleExchange(exchange, false);
+            }
         }
-        return ret;
     }
 
     public boolean sendSync(MessageExchange exchange) throws MessagingException {
-        prepareExchange(exchange);
-        boolean ret = channel.sendSync(exchange);
-        if (ret) {
-            resumeTx(exchange);
+        boolean processed = false;
+        try {
+            prepareExchange(exchange);
+            handleExchange(exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
+            boolean ret = channel.sendSync(exchange);
+            handleExchange(exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
+            if (ret) {
+                resumeTx(exchange);
+                processed = true;
+            }
+            return ret;
+        } finally {
+            if (!processed) {
+                handleExchange(exchange, false);
+            }
         }
-        return ret;
     }
 
     private void resumeTx(MessageExchange exchange) throws MessagingException {
@@ -123,7 +143,13 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
     }
 
     protected void prepareExchange(MessageExchange exchange) throws MessagingException {
-        getEndpoint().prepareExchange(exchange);
+        Endpoint ep = getEndpoint();
+        ep.getServiceUnit().getComponent().prepareExchange(exchange, ep);
+    }
+
+    protected void handleExchange(MessageExchange exchange, boolean add) throws MessagingException {
+        Endpoint ep = getEndpoint();
+        ep.getServiceUnit().getComponent().handleExchange(ep, exchange, add);
     }
 
     protected Endpoint getEndpoint() {

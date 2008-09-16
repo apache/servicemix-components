@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.common;
+package org.apache.servicemix.soap;
 
 import javax.jbi.messaging.MessageExchange;
 
-@Deprecated
-public interface ExchangeProcessor {
+public interface SoapExchangeProcessor {
 
     void process(MessageExchange exchange) throws Exception;
+
+    void init() throws Exception;
 
     void start() throws Exception;
 
     void stop() throws Exception;
-    
+
+    void shutdown() throws Exception;
+
 }

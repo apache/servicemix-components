@@ -53,12 +53,13 @@ public abstract class ProviderEndpoint extends SimpleEndpoint {
         return Role.PROVIDER;
     }
 
-    public void start() throws Exception {
+    public void activate() throws Exception {
+        super.activate();
         ComponentContext ctx = getServiceUnit().getComponent().getComponentContext();
         activated = ctx.activateEndpoint(service, endpoint);
     }
 
-    public void stop() throws Exception {
+    public void deactivate() throws Exception {
         if (activated == null) {
             throw new IllegalStateException("Endpoint not activated: " + this);
         }
@@ -66,6 +67,7 @@ public abstract class ProviderEndpoint extends SimpleEndpoint {
         activated = null;
         ComponentContext ctx = getServiceUnit().getComponent().getComponentContext();
         ctx.deactivateEndpoint(ep);
+        super.deactivate();
     }
 
     /**

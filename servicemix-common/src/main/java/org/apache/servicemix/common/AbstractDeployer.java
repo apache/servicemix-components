@@ -49,7 +49,7 @@ public abstract class AbstractDeployer implements Deployer {
         // is shutdown but may need a cleanup.
         try {
             su.shutDown();
-        } catch (JBIException e) {
+        } catch (Exception e) {
             throw new DeploymentException("Unable to shutDown service unit", e);
         }
     }

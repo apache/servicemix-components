@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
 import javax.wsdl.Import;
@@ -39,9 +40,8 @@ import javax.wsdl.xml.WSDLReader;
 import javax.wsdl.xml.WSDLWriter;
 import javax.xml.namespace.QName;
 
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.common.wsdl1.JbiExtension;
@@ -51,10 +51,10 @@ import org.w3c.dom.Document;
 
 import com.ibm.wsdl.Constants;
 
-public abstract class SoapEndpoint extends Endpoint {
+public abstract class SoapEndpoint extends AbstractEndpoint {
 
     protected ServiceEndpoint activated;
-    protected ExchangeProcessor processor;
+    protected SoapExchangeProcessor processor;
     protected Role role;
     protected URI defaultMep = JbiConstants.IN_OUT;
     protected boolean soap;
@@ -66,11 +66,17 @@ public abstract class SoapEndpoint extends Endpoint {
     protected String targetEndpoint;
     protected List policies;
     protected Map wsdls = new HashMap();
+    protected boolean dynamic;
     
     public SoapEndpoint() {
         policies = Collections.singletonList(new AddressingHandler());
     }
-    
+
+    public SoapEndpoint(boolean dynamic) {
+        this();
+        this.dynamic = dynamic;
+    }
+
     public AuthenticationService getAuthenticationService() {
         return null;
     }
@@ -325,42 +331,47 @@ public abstract class SoapEndpoint extends Endpoint {
     }
     
     /* (non-Javadoc)
-     * @see org.apache.servicemix.common.Endpoint#getProcessor()
-     */
-    public ExchangeProcessor getProcessor() {
-        return this.processor;
-    }
-
-    /* (non-Javadoc)
      * @see org.servicemix.common.Endpoint#activate()
      */
     public void activate() throws Exception {
-        ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
-        loadWsdl();
-        if (getRole() == Role.PROVIDER) {
-            activated = ctx.activateEndpoint(service, endpoint);
-            processor = createProviderProcessor();
+        if (dynamic) {
+            if (getRole() == Role.PROVIDER) {
+                processor = createProviderProcessor();
+            } else {
+                processor = createConsumerProcessor();
+            }
         } else {
-            activated = createExternalEndpoint();
-            ctx.registerExternalEndpoint(activated);
-            processor = createConsumerProcessor();
+            ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
+            loadWsdl();
+            if (getRole() == Role.PROVIDER) {
+                activated = ctx.activateEndpoint(service, endpoint);
+                processor = createProviderProcessor();
+            } else {
+                activated = createExternalEndpoint();
+                ctx.registerExternalEndpoint(activated);
+                processor = createConsumerProcessor();
+            }
         }
-        processor.start();
+        processor.init();
     }
     
-    public void activateDynamic() throws Exception {
-        if (getRole() == Role.PROVIDER) {
-            processor = createProviderProcessor();
-        } else {
-            processor = createConsumerProcessor();
-        }
+    public void start() throws Exception {
         processor.start();
+    }
+
+    public void stop() throws Exception {
+        processor.stop();
+    }
+
+    public void process(MessageExchange exchange) throws Exception {
+        processor.process(exchange);
     }
 
     /* (non-Javadoc)
      * @see org.servicemix.common.Endpoint#deactivate()
      */
     public void deactivate() throws Exception {
+        processor.shutdown();
         if (activated != null) {
             ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
             if (getRole() == Role.PROVIDER) {
@@ -373,14 +384,13 @@ public abstract class SoapEndpoint extends Endpoint {
                 ctx.deregisterExternalEndpoint(ep);
             }
         }
-        processor.stop();
     }
 
     protected abstract void overrideDefinition(Definition def) throws Exception;
     
-    protected abstract ExchangeProcessor createProviderProcessor();
+    protected abstract SoapExchangeProcessor createProviderProcessor();
     
-    protected abstract ExchangeProcessor createConsumerProcessor();
+    protected abstract SoapExchangeProcessor createConsumerProcessor();
     
     protected abstract ServiceEndpoint createExternalEndpoint();
 

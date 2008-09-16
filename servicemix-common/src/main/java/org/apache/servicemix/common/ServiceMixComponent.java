@@ -78,11 +78,24 @@ public interface ServiceMixComponent extends Component {
      */
     public void prepareExchange(MessageExchange exchange, Endpoint endpoint) throws MessagingException;
 
-    @Deprecated
-    public void prepareConsumerExchange(MessageExchange exchange, Endpoint endpoint) throws MessagingException;
+    /**
+     * Prepare shutting the given endpoint down by waiting for all know exchanges for
+     * this endpoint to be fully processed.
+     *
+     * @param endpoint
+     * @throws InterruptedException
+     */
+    public void prepareShutdown(Endpoint endpoint) throws InterruptedException;
 
-    @Deprecated
-    public void sendConsumerExchange(MessageExchange exchange, Endpoint endpoint) throws MessagingException;
+    /**
+     * Make the component aware of this exchange.
+     * This method needs to be called for each exchange sent or received.
+     *
+     * @param endpoint
+     * @param exchange
+     * @param add
+     */
+    public void handleExchange(Endpoint endpoint, MessageExchange exchange, boolean add);
 
     /**
      * @return the QName of the element used in EPR

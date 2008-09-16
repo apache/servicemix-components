@@ -17,11 +17,11 @@
 package org.apache.servicemix.common.xbean;
 
 import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.messaging.MessageExchange;
 
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 
-public class XBeanEndpoint extends Endpoint {
+public class XBeanEndpoint extends AbstractEndpoint {
 
     private String prop;
     
@@ -42,11 +42,16 @@ public class XBeanEndpoint extends Endpoint {
     public void activate() throws Exception {
     }
 
+    public void start() throws Exception {
+    }
+
+    public void stop() throws Exception {
+    }
+
     public void deactivate() throws Exception {
     }
 
-    public ExchangeProcessor getProcessor() {
-        return null;
+    public void process(MessageExchange exchange) throws Exception {
     }
 
     public Role getRole() {

@@ -171,17 +171,17 @@ public class TransactionsTest extends TestCase {
             super();
         }
         protected void doInit() throws Exception {
-            super.doInit();
             TestEndpoint ep = new TestEndpoint();
             ep.setService(new QName("service"));
             ep.setEndpoint("endpoint");
             addEndpoint(ep);
+            super.doInit();
         }
         protected boolean exceptionShouldRollbackTx(Exception e) {
             return exceptionShouldRollback;
         }
 
-        protected class TestEndpoint extends ProviderEndpoint implements ExchangeProcessor {
+        protected class TestEndpoint extends ProviderEndpoint {
             protected ServiceEndpoint activated;
             public void process(MessageExchange exchange) throws Exception {
                 if (exceptionToThrow != null) {

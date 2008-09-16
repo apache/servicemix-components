@@ -56,9 +56,10 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
         setComponent(this);
         registry = createRegistry();
         serviceUnitManager = createServiceUnitManager();
-        serviceUnit = new XBeanServiceUnit();
-        serviceUnit.setName("#default#");
-        serviceUnit.setComponent(this);
+        XBeanServiceUnit su = new XBeanServiceUnit();
+        su.setName("#default#");
+        su.setComponent(this);
+        serviceUnit = su;
         registry.registerServiceUnit(serviceUnit);
     }
 
@@ -344,6 +345,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
                 addEndpoint(endpoint);
             }
         }
+        serviceUnit.init();
     }
 
     /* (non-Javadoc)
