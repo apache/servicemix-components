@@ -115,7 +115,7 @@ public class WSNComponentTest extends TestCase {
         assertEquals(1, ses.length);
     }
 
-    public void testInvalidSubscribription() throws Exception {
+    public void testInvalidSubscription() throws Exception {
         try {
             wsnBroker.subscribe(null, null, null);
             fail("Expected an exception");
@@ -318,7 +318,7 @@ public class WSNComponentTest extends TestCase {
         File path = new File(new URI(url.toString()));
         path = path.getParentFile();
         wsnComponent.getServiceUnitManager().deploy("pullpoint", path.getAbsolutePath());
-
+        wsnComponent.getServiceUnitManager().init("pullpoint", path.getAbsolutePath());
         wsnComponent.getServiceUnitManager().start("pullpoint");
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
@@ -342,6 +342,7 @@ public class WSNComponentTest extends TestCase {
         consumer.setComponent(receiver);
         jbi.activateComponent(consumer);
 
+        wsnComponent.getServiceUnitManager().init("subscription", path.getAbsolutePath());
         wsnComponent.getServiceUnitManager().start("subscription");
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
@@ -351,12 +352,14 @@ public class WSNComponentTest extends TestCase {
         receiver.getMessageList().flushMessages();
 
         wsnComponent.getServiceUnitManager().stop("subscription");
+        wsnComponent.getServiceUnitManager().shutDown("subscription");
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         // Wait for notification
         Thread.sleep(500);
         assertEquals(0, receiver.getMessageList().flushMessages().size());
 
+        wsnComponent.getServiceUnitManager().init("subscription", path.getAbsolutePath());
         wsnComponent.getServiceUnitManager().start("subscription");
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));

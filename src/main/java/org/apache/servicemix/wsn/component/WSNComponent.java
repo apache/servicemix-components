@@ -44,6 +44,7 @@ import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
 import org.apache.servicemix.wsn.EndpointManager;
 import org.apache.servicemix.wsn.EndpointRegistrationException;
@@ -76,8 +77,7 @@ public class WSNComponent extends DefaultComponent {
 
     public WSNComponent() {
         configuration = new WSNConfiguration();
-        serviceUnit = new ServiceUnit();
-        serviceUnit.setComponent(component);
+        serviceUnit = new DefaultServiceUnit(this);
     }
 
     public JbiNotificationBroker getNotificationBroker() {
@@ -287,12 +287,17 @@ public class WSNComponent extends DefaultComponent {
             }
         }
 
-        public void unregister(Object endpoint) throws EndpointRegistrationException {
-            try {
-                WSNComponent.this.removeEndpoint((Endpoint) endpoint);
-            } catch (Exception e) {
-                throw new EndpointRegistrationException("Unable to activate endpoint", e);
-            }
+        public void unregister(final Object endpoint) throws EndpointRegistrationException {
+            WSNComponent.this.getExecutor().execute(new Runnable() {
+                public void run() {
+                    try {
+                        Endpoint ep = (Endpoint) endpoint;
+                        WSNComponent.this.removeEndpoint(ep);
+                    } catch (Exception e) {
+                        logger.error("Unable to deactivate endpoint", e);
+                    }
+                }
+            });
         }
 
     }

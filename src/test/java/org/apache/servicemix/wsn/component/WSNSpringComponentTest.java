@@ -28,6 +28,9 @@ public class WSNSpringComponentTest extends SpringTestSupport {
     }
     
     public void test() throws Exception {
+        // Wait for the publisher to be registered
+        Thread.sleep(1000);
+
         Receiver receiver = (Receiver) jbi.getBean("receiver");
         receiver.getMessageList().assertMessagesReceived(1);
     }

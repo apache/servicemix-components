@@ -16,14 +16,15 @@
  */
 package org.apache.servicemix.wsn.component;
 
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ExchangeProcessor;
+import javax.jbi.messaging.MessageExchange;
+
+import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 import org.apache.servicemix.wsn.EndpointManager;
 import org.apache.servicemix.wsn.EndpointRegistrationException;
 import org.apache.servicemix.wsn.jms.JmsCreatePullPoint;
 import org.apache.servicemix.wsn.jbi.JbiNotificationBroker;
 
-public abstract class WSNDeployableEndpoint extends Endpoint implements EndpointManager {
+public abstract class WSNDeployableEndpoint extends AbstractEndpoint implements EndpointManager {
 
     public JbiNotificationBroker getNotificationBroker() {
         return ((WSNComponent) serviceUnit.getComponent()).getNotificationBroker();
@@ -33,9 +34,7 @@ public abstract class WSNDeployableEndpoint extends Endpoint implements Endpoint
         return ((WSNComponent) serviceUnit.getComponent()).getCreatePullPoint();
     }
 
-    @Override
-    public ExchangeProcessor getProcessor() {
-        return null;
+    public void process(MessageExchange exchange) throws Exception {
     }
 
     public Object register(String address, Object service) throws EndpointRegistrationException {
@@ -45,4 +44,9 @@ public abstract class WSNDeployableEndpoint extends Endpoint implements Endpoint
     public void unregister(Object endpoint) throws EndpointRegistrationException {
     }
 
+    public void start() throws Exception {
+    }
+
+    public void stop() throws Exception {
+    }
 }

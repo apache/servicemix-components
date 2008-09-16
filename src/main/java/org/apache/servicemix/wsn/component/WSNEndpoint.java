@@ -49,14 +49,13 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.w3c.dom.Document;
 
-import org.apache.servicemix.common.ExchangeProcessor;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.wsn.ComponentContextAware;
 import org.apache.servicemix.wsn.jbi.JbiWrapperHelper;
 import org.oasis_open.docs.wsrf.bf_2.BaseFaultType;
 
-public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
+public class WSNEndpoint extends ProviderEndpoint {
 
     protected String address;
 
@@ -75,11 +74,7 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
     }
 
     @Override
-    public void start() throws Exception {
-        if (pojo instanceof ComponentContextAware) {
-            ((ComponentContextAware) pojo).setContext(getContext());
-        }
-        logger = this.serviceUnit.getComponent().getLogger();
+    public void activate() throws Exception {
         WebService ws = getWebServiceAnnotation(pojo.getClass());
         if (ws == null) {
             throw new IllegalStateException("Unable to find WebService annotation");
@@ -99,7 +94,10 @@ public class WSNEndpoint extends ProviderEndpoint implements ExchangeProcessor {
         if (ws != null) {
             interfaceName = new QName(ws.targetNamespace(), ws.name());
         }
-        super.start();
+        super.activate();
+        if (pojo instanceof ComponentContextAware) {
+            ((ComponentContextAware) pojo).setContext(getContext());
+        }
     }
 
     public static JAXBContext createJAXBContext(Class interfaceClass) throws JAXBException {

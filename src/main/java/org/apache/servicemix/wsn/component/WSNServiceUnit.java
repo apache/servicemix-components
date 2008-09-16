@@ -24,44 +24,89 @@ import javax.jbi.management.LifeCycleMBean;
 
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.Endpoint;
+import org.apache.servicemix.common.DefaultServiceUnit;
 
-public class WSNServiceUnit extends ServiceUnit {
+public class WSNServiceUnit extends DefaultServiceUnit {
 
+    @Override
+    public void init() throws Exception {
+        if (this.status == LifeCycleMBean.SHUTDOWN) {
+            List<Endpoint> activated = new ArrayList<Endpoint>();
+            try {
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNPullPointEndpoint) {
+                        endpoint.activate();
+                        activated.add(endpoint);
+                    }
+                }
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNSubscriptionEndpoint) {
+                        endpoint.activate();
+                        activated.add(endpoint);
+                    }
+                }
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNPublisherEndpoint) {
+                        endpoint.activate();
+                        activated.add(endpoint);
+                    }
+                }
+                this.status = LifeCycleMBean.STOPPED;
+            } catch (Exception e) {
+                // Deactivate activated endpoints
+                for (Endpoint endpoint : activated) {
+                    try {
+                        endpoint.deactivate();
+                    } catch (Exception e2) {
+                        // do nothing
+                    }
+                }
+                throw e;
+            }
+        }
+    }
+
+    @Override
     public void start() throws Exception {
-        List<Endpoint> activated = new ArrayList<Endpoint>();
-        try {
-            for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                Endpoint endpoint = (Endpoint) iter.next();
-                if (endpoint instanceof WSNPullPointEndpoint) {
-                    endpoint.activate();
-                    activated.add(endpoint);
+        if (this.status == LifeCycleMBean.STOPPED) {
+            List<Endpoint> started = new ArrayList<Endpoint>();
+            try {
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNPullPointEndpoint) {
+                        endpoint.start();
+                        started.add(endpoint);
+                    }
                 }
-            }
-            for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                Endpoint endpoint = (Endpoint) iter.next();
-                if (endpoint instanceof WSNSubscriptionEndpoint) {
-                    endpoint.activate();
-                    activated.add(endpoint);
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNSubscriptionEndpoint) {
+                        endpoint.start();
+                        started.add(endpoint);
+                    }
                 }
-            }
-            for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-                Endpoint endpoint = (Endpoint) iter.next();
-                if (endpoint instanceof WSNPublisherEndpoint) {
-                    endpoint.activate();
-                    activated.add(endpoint);
+                for (Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
+                    Endpoint endpoint = (Endpoint) iter.next();
+                    if (endpoint instanceof WSNPublisherEndpoint) {
+                        endpoint.start();
+                        started.add(endpoint);
+                    }
                 }
-            }
-            this.status = LifeCycleMBean.STARTED;
-        } catch (Exception e) {
-            // Deactivate activated endpoints
-            for (Endpoint endpoint : activated) {
-                try {
-                    endpoint.deactivate();
-                } catch (Exception e2) {
-                    // do nothing
+                this.status = LifeCycleMBean.STARTED;
+            } catch (Exception e) {
+                // Deactivate activated endpoints
+                for (Endpoint endpoint : started) {
+                    try {
+                        endpoint.stop();
+                    } catch (Exception e2) {
+                        // do nothing
+                    }
                 }
+                throw e;
             }
-            throw e;
         }
     }
 

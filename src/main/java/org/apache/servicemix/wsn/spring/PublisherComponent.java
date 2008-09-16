@@ -113,6 +113,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
      * @see javax.jbi.management.LifeCycleMBean#start()
      */
     public void start() throws JBIException {
+        // TODO: do we really need to that in another thread ?
         new Thread() {
             public void run() {
                 try {

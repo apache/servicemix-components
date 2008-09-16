@@ -155,7 +155,10 @@ public abstract class AbstractWSAClient {
                 if (transformer == null) {
                     transformer = new SourceTransformer();
                 }
-                throw new JBIException(transformer.contentToString(exchange.getFault()));
+                String fault = transformer.contentToString(exchange.getFault());
+                exchange.setStatus(ExchangeStatus.DONE);
+                getContext().getDeliveryChannel().send(exchange);
+                throw new JBIException(fault);
             } else {
                 NormalizedMessage out = exchange.getOutMessage();
                 Source source = out.getContent();
