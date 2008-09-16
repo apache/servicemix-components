@@ -125,6 +125,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         }
         log.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
+        client.done(me);
         assertEquals("cheeseyCheese", textValueOfXPath(el, "//param"));
         assertEquals("4002", textValueOfXPath(el, "//integer"));
     }
@@ -145,6 +146,7 @@ public class SaxonComponentTest extends SpringTestSupport {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
         log.info(transformer.toString(me.getOutMessage().getContent()));
+        client.done(me);
     }
 
     public void testXQuery() throws Exception {
@@ -185,13 +187,13 @@ public class SaxonComponentTest extends SpringTestSupport {
         }
         log.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
+        client.done(me);
         assertEquals(new QName("http://saxon.sf.net/xquery-results", "sequence"), DOMUtil.getQName(el));
         el = DOMUtil.getFirstChildElement(el);
         assertEquals(new QName("http://saxon.sf.net/xquery-results", "element"), DOMUtil.getQName(el));
         el = DOMUtil.getFirstChildElement(el);
         assertEquals(new QName("title"), DOMUtil.getQName(el));
         assertEquals("XQuery Kick Start", DOMUtil.getElementText(el));
-        client.done(me);
     }
 
     public void testXQueryDynamic() throws Exception {
@@ -212,8 +214,8 @@ public class SaxonComponentTest extends SpringTestSupport {
         }
         log.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
-        assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
         client.done(me);
+        assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
     }
 
     public void testProxy() throws Exception {
@@ -233,8 +235,8 @@ public class SaxonComponentTest extends SpringTestSupport {
         }
         log.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
-        assertEquals("skcotSyub", el.getLocalName());
         client.done(me);
+        assertEquals("skcotSyub", el.getLocalName());
     }
 
     protected AbstractXmlApplicationContext createBeanFactory() {
