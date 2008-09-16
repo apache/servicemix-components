@@ -92,7 +92,6 @@ public class XMPPComponent extends DefaultComponent implements BeanFactoryAware 
 
     protected Endpoint getResolvedEPR(ServiceEndpoint ep) throws Exception {
         XMPPEndpoint endpoint = createEndpoint(ep);
-        endpoint.activate();
         return endpoint;
     }
 
