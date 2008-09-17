@@ -29,7 +29,7 @@
   http://www.springframework.org/schema/osgi
   http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-    <bean id="servicemix-camel" class="org.apache.servicemix.camel.CamelJbiComponent">
+    <bean id="servicemix-camel" class="org.apache.servicemix.camel.osgi.CamelComponentFactoryBean">
     </bean>
 
     <osgi:service ref="servicemix-camel">
