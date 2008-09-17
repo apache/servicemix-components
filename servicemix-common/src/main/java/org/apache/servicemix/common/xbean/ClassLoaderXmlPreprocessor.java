@@ -251,7 +251,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
         return classLoader;
     }
 
-    private ClassLoader getParentClassLoader(SpringApplicationContext applicationContext) {
+    protected ClassLoader getParentClassLoader(SpringApplicationContext applicationContext) {
         ClassLoader classLoader = applicationContext.getClassLoader();
         if (classLoader == null) {
             classLoader = Thread.currentThread().getContextClassLoader();
