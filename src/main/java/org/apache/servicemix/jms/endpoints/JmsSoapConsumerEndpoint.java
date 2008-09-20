@@ -46,7 +46,8 @@ import org.apache.woden.wsdl20.xml.DescriptionElement;
 import org.springframework.core.io.Resource;
 
 /**
- * 
+ *  A Spring-based JMS consumer optimized for handling SOAP messages
+ *
  * @author gnodet
  * @since 3.2
  * @org.apache.xbean.XBean element="soap-consumer"
@@ -74,6 +75,11 @@ public class JmsSoapConsumerEndpoint extends JmsConsumerEndpoint {
         return wsdl;
     }
 
+    /**
+    * Specifies the WSDL document describing the service's interface.
+    *
+    * @param wsdl a <code>Resource</code> containing the WSDL
+     */
     public void setWsdl(Resource wsdl) {
         this.wsdl = wsdl;
     }
@@ -82,6 +88,12 @@ public class JmsSoapConsumerEndpoint extends JmsConsumerEndpoint {
         return validateWsdl;
     }
 
+    /**
+    * Specifies if the WSDL is checked WSI-BP compliance. Defaults to
+    * <code>true</code>.
+    *
+    * @param validateWsdl the WSDL is validated?
+     */
     public void setValidateWsdl(boolean validateWsdl) {
         this.validateWsdl = validateWsdl;
     }
@@ -90,6 +102,12 @@ public class JmsSoapConsumerEndpoint extends JmsConsumerEndpoint {
         return useJbiWrapper;
     }
 
+    /**
+    * Specifies if the endpoint expects SOAP messages to be wrapped in the JBI 
+    * wrapper. Defaults to <code>true</code>.
+    *
+    * @param useJbiWrapper the endpoint expects the JBI wrapper?
+     */
     public void setUseJbiWrapper(boolean useJbiWrapper) {
         this.useJbiWrapper = useJbiWrapper;
     }
@@ -98,6 +116,11 @@ public class JmsSoapConsumerEndpoint extends JmsConsumerEndpoint {
         return policies;
     }
 
+    /**
+    * Specifies an array of interceptors used to process SOAP messages.
+    *
+    * @param policies the array of interceptors
+     */
     public void setPolicies(Policy[] policies) {
         this.policies = policies;
     }

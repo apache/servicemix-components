@@ -36,9 +36,9 @@ import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
 
 /**
+ * JMS JBI binding component
  * 
  * @org.apache.xbean.XBean element="component"
- *                  description="A jms component"
  */
 public class JmsComponent extends DefaultComponent {
 
@@ -63,6 +63,11 @@ public class JmsComponent extends DefaultComponent {
         return configuration;
     }
     
+    /**
+    * Specifies the configuration bean used to set up the JMS connections for the endpoints. 
+    *
+    * @param configuration the configuration object 
+          */
     public void setConfiguration(JmsConfiguration configuration) {
         this.configuration = configuration;
     }
@@ -71,6 +76,11 @@ public class JmsComponent extends DefaultComponent {
         return endpoints;
     }
 
+    /**
+          * Specifies the list of endpoints hosted by the component.
+          *
+          * @param endpoints the list of endpoints
+          */
     public void setEndpoints(JmsEndpointType[] endpoints) {
         this.endpoints = endpoints;
     }

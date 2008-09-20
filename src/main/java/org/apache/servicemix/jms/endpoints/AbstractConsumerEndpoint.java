@@ -52,6 +52,9 @@ import org.springframework.jms.support.JmsUtils;
 import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
 
+/**
+ * The base class for Spring-based JMS consumer endpoints.
+ */
 public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     
     protected static final String PROP_JMS_CONTEXT = JmsContext.class.getName();
@@ -99,6 +102,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
+    * Specifies a class implementing logic for choosing reply destinations.
+    *
      * @param destinationChooser the destinationChooser to set
      */
     public void setDestinationChooser(DestinationChooser destinationChooser) {
@@ -113,7 +118,10 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyDeliveryMode the replyDeliveryMode to set
+    * Specifies the JMS delivery mode used for the reply. Defaults to 
+    * 2(<code>PERSISTENT</code>).
+    *
+     * @param replyDeliveryMode the JMS delivery mode
      */
     public void setReplyDeliveryMode(int replyDeliveryMode) {
         this.replyDeliveryMode = replyDeliveryMode;
@@ -127,7 +135,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyDestination the replyDestination to set
+    * Specifies the JMS <code>Destination</code> for the replies. If this value 
+    * is not set the endpoint will use the <code>destinationChooser</code> 
+    * property or the <code>replyDestinationName</code> property to determine 
+    * the desitination to use.
+    *
+     * @param replyDestination the JMS destination for replies
      */
     public void setReplyDestination(Destination replyDestination) {
         this.replyDestination = replyDestination;
@@ -141,7 +154,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyDestinationName the replyDestinationName to set
+    * Specifies the name of the JMS destination to use for the reply. The 
+    * actual JMS destination is resolved using the 
+    * <code>DestinationResolver</code> specified by the 
+    * <code>.destinationResolver</code> property.
+    *
+     * @param replyDestinationName the name of the reply destination
      */
     public void setReplyDestinationName(String replyDestinationName) {
         this.replyDestinationName = replyDestinationName;
@@ -155,7 +173,10 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyExplicitQosEnabled the replyExplicitQosEnabled to set
+    * Specifies if the QoS values specified for the endpoint are explicitly 
+    * used when the reply is sent. The default is <code>false</code>.
+    *
+     * @param replyExplicitQosEnabled should the QoS values be sent?
      */
     public void setReplyExplicitQosEnabled(boolean replyExplicitQosEnabled) {
         this.replyExplicitQosEnabled = replyExplicitQosEnabled;
@@ -169,7 +190,9 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyPriority the replyPriority to set
+    * Specifies the JMS message priority of the reply. Defaults to 4.
+    * 
+     * @param replyPriority the reply's priority
      */
     public void setReplyPriority(int replyPriority) {
         this.replyPriority = replyPriority;
@@ -183,7 +206,9 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyProperties the replyProperties to set
+    * Specifies custom properties to be placed in the reply's JMS header.
+    *
+     * @param replyProperties the properties to set
      */
     public void setReplyProperties(Map<String, Object> replyProperties) {
         this.replyProperties = replyProperties;
@@ -197,7 +222,10 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param replyTimeToLive the replyTimeToLive to set
+    * Specifies the number of milliseconds the reply message is valid. The 
+    * default is unlimited.
+    *
+     * @param replyTimeToLive the number of milliseonds the message lives
      */
     public void setReplyTimeToLive(long replyTimeToLive) {
         this.replyTimeToLive = replyTimeToLive;
@@ -211,7 +239,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param useMessageIdInResponse the useMessageIdInResponse to set
+    * Specifies if the request message's ID is used as the reply's correlation 
+    * ID. The default behavior is to use the request's correlation ID. Setting 
+    * this to <code>true</code> means the request's message ID will be used 
+    * instead.
+    *
+     * @param useMessageIdInResponse use the request's message ID as the reply'e correlation ID?
      */
     public void setUseMessageIdInResponse(Boolean useMessageIdInResponse) {
         this.useMessageIdInResponse = useMessageIdInResponse;
@@ -225,6 +258,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
+    * Specifies the <code>ConnectionFactory</code> used by the endpoint.
+    *
      * @param connectionFactory the connectionFactory to set
      */
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
@@ -239,7 +274,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param pubSubDomain the pubSubDomain to set
+    * Specifies if the destination is a topic. <code>true</code> means the 
+    * destination is a topic. <code>false</code> means the destination is a 
+    * queue.
+    *
+     * @param pubSubDomain the destination is a topic?
      */
     public void setPubSubDomain(boolean pubSubDomain) {
         this.pubSubDomain = pubSubDomain;
@@ -253,7 +292,10 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param destinationResolver the destinationResolver to set
+    * Specifies the class implementing logic for converting strings into 
+    * destinations. The default is <code>DynamicDestinationResolver</code>.
+    *
+     * @param destinationResolver the destination resolver implementation
      */
     public void setDestinationResolver(DestinationResolver destinationResolver) {
         this.destinationResolver = destinationResolver;
@@ -267,7 +309,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param marshaler the marshaler to set
+    * Specifies the class implementing the message marshaler. The message 
+    * marshaller is responsible for marshalling and unmarshalling JMS messages. 
+    * The default is <code>DefaultConsumerMarshaler</code>.
+    *
+     * @param marshaler the marshaler implementation
      */
     public void setMarshaler(JmsConsumerMarshaler marshaler) {
         this.marshaler = marshaler;
@@ -281,7 +327,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param synchronous the synchronous to set
+    * Specifies if the consumer will block while waiting for a response. This 
+    * means the consumer can only process one message at a time. Defaults to 
+    * <code>true</code>.
+    *
+     * @param synchronous the consumer blocks?
      */
     public void setSynchronous(boolean synchronous) {
         this.synchronous = synchronous;
@@ -291,6 +341,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         return stateless;
     }
 
+    /**
+    * Specifies if the consumer retains state information about the message 
+    * exchange while it is in process.
+    *
+    * @param stateless the consumer retains state?
+     */
     public void setStateless(boolean stateless) {
         this.stateless = stateless;
     }
@@ -299,6 +355,14 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         return store;
     }
 
+    /**
+    * Specifies the persistent store used to store JBI exchanges that are 
+    * waiting to be processed. The store will be automatically created if not 
+    * set and the endpoint's <code>stateless</code> property is set to 
+    * <code>false</code>.
+    *
+    * @param store the <code>Store</code> object
+    */
     public void setStore(Store store) {
         this.store = store;
     }
@@ -307,6 +371,14 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
         return storeFactory;
     }
 
+    /**
+    * Specifies the store factory used to create the store.
+    * If none is set and the endpoint's <code>stateless</code> property is set 
+    * to <code>false</code>, a {@link MemoryStoreFactory} will be created 
+    * and used instead. 
+    *
+    * @param storeFactory the <code>StoreFactory</code> object
+    */
     public void setStoreFactory(StoreFactory storeFactory) {
         this.storeFactory = storeFactory;
     }
@@ -605,7 +677,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * @param jms102 the jms102 to set
+    * Specifies if the consumer uses JMS 1.0.2 compliant APIs. Defaults to 
+    * <code>false</code>.
+    * 
+     * @param jms102 consumer is JMS 1.0.2 compliant?
+     * @org.apache.xbean.Property description="Specifies if the consumer uses JMS 1.0.2 compliant APIs. Defaults to <code>false</code>."
      */
     public void setJms102(boolean jms102) {
         this.jms102 = jms102;

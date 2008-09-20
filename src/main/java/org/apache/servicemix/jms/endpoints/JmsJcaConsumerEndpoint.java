@@ -38,7 +38,8 @@ import org.jencks.SingletonEndpointFactory;
 import org.springframework.jms.listener.adapter.ListenerExecutionFailedException;
 
 /**
- * 
+ *  A Spring-based JMS consumer that uses JCA to connect to the JMS provider
+ *
  * @author gnodet
  * @org.apache.xbean.XBean element="jca-consumer"
  */
@@ -57,7 +58,11 @@ public class JmsJcaConsumerEndpoint extends AbstractConsumerEndpoint implements 
     }
 
     /**
-     * @param bootstrapContext the bootstrapContext to set
+    * Specifies the <code>BootStrapContext</code>  used to start the resource 
+    * adapter. If this property is not set, a default 
+    * <code>BootstrpContext</code> will be created.
+    *
+     * @param bootstrapContext the <code>BootstrapContext</code> to use
      */
     public void setBootstrapContext(BootstrapContext bootstrapContext) {
         this.bootstrapContext = bootstrapContext;
@@ -71,7 +76,9 @@ public class JmsJcaConsumerEndpoint extends AbstractConsumerEndpoint implements 
     }
 
     /**
-     * @param activationSpec the activationSpec to set
+    * Specifies the activation information needed by the endpoint.
+    *
+     * @param activationSpec the <code>ActivationSpec</code> containing the activation information
      */
     public void setActivationSpec(ActivationSpec activationSpec) {
         this.activationSpec = activationSpec;
@@ -85,7 +92,9 @@ public class JmsJcaConsumerEndpoint extends AbstractConsumerEndpoint implements 
     }
 
     /**
-     * @param resourceAdapter the resourceAdapter to set
+    * Specifies the resource adapter used for the endpoint.
+    *
+     * @param resourceAdapter the <code>ResourceAdapter</code> to use
      */
     public void setResourceAdapter(ResourceAdapter resourceAdapter) {
         this.resourceAdapter = resourceAdapter;

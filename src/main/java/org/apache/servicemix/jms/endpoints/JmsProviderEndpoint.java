@@ -49,7 +49,7 @@ import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
 
 /**
- * A JMS provider endpoint
+ * A Spring-based JMS provider endpoint
  *
  * @author gnodet
  * @org.apache.xbean.XBean element="provider"
@@ -96,7 +96,9 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param destination the destination to set
+    * Specifies the JMS <code>Destination</code> used to send messages.
+    *
+     * @param destination the destination
      */
     public void setDestination(Destination destination) {
         this.destination = destination;
@@ -110,21 +112,30 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param destinationName the destinationName to set
+    * Specifies a string identifying the JMS destination used to send 
+     * messages. The destination is resolved using the 
+     * <code>DesitinationResolver</code>.
+     *
+     * @param destinationName the destination name
      */
     public void setDestinationName(String destinationName) {
         this.destinationName = destinationName;
     }
 
     /**
-     * @return the jms102
-     */
+    * Determines if the provider used JMS 1.0.2 compliant APIs.
+    *
+    * @return <code>true</code> if the provider is JMS 1.0.2 compliant
+    */
     public boolean isJms102() {
         return jms102;
     }
 
     /**
-     * @param jms102 the jms102 to set
+    * Specifies if the provider uses JMS 1.0.2 compliant APIs. Defaults to 
+    * <code>false</code>.
+    * 
+     * @param jms102 provider is JMS 1.0.2 compliant?
      */
     public void setJms102(boolean jms102) {
         this.jms102 = jms102;
@@ -138,6 +149,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
+    * Specifies the <code>ConnectionFactory</code> used by the endpoint.
+    *
      * @param connectionFactory the connectionFactory to set
      */
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
@@ -152,7 +165,10 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param deliveryMode the deliveryMode to set
+    * Specifies the JMS delivery mode used for the reply. Defaults to 
+    * (2)(<code>PERSISTENT</code>).
+    *
+     * @param deliveryMode the JMS delivery mode
      */
     public void setDeliveryMode(int deliveryMode) {
         this.deliveryMode = deliveryMode;
@@ -166,7 +182,10 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param destinationChooser the destinationChooser to set
+    * Specifies a class implementing logic for choosing the destination used 
+    * to send messages.
+    *
+     * @param destinationChooser the destination chooser for sending messages
      */
     public void setDestinationChooser(DestinationChooser destinationChooser) {
         if (destinationChooser == null) {
@@ -176,14 +195,17 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @return the destinationChooser
+     * @return the destination chooser for the reply destination
      */
     public DestinationChooser getReplyDestinationChooser() {
         return replyDestinationChooser;
     }
 
     /**
-     * @param replyDestinationChooser the replyDestinationChooser to set
+    * Specifies a class implementing logic for choosing the destination used 
+    * to recieve replies.
+    *
+     * @param replyDestinationChooser the destination chooser used for the reply destination
      */
     public void setReplyDestinationChooser(DestinationChooser replyDestinationChooser) {
         this.replyDestinationChooser = replyDestinationChooser;
@@ -196,7 +218,10 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param destinationResolver the destinationResolver to set
+    * Specifies the class implementing logic for converting strings into 
+    * destinations. The default is <code>DynamicDestinationResolver</code>.
+    *
+     * @param destinationResolver the destination resolver implementation
      */
     public void setDestinationResolver(DestinationResolver destinationResolver) {
         this.destinationResolver = destinationResolver;
@@ -210,7 +235,10 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param explicitQosEnabled the explicitQosEnabled to set
+    * Specifies if the QoS values specified for the endpoint are explicitly 
+    * used when a messages is sent. The default is <code>false</code>.
+    *
+     * @param replyExplicitQosEnabled should the QoS values be sent?
      */
     public void setExplicitQosEnabled(boolean explicitQosEnabled) {
         this.explicitQosEnabled = explicitQosEnabled;
@@ -224,7 +252,11 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param marshaler the marshaler to set
+    * Specifies the class implementing the message marshaler. The message 
+    * marshaller is responsible for marshalling and unmarshalling JMS messages. 
+    * The default is <code>DefaultProviderMarshaler</code>.
+    *
+     * @param marshaler the marshaler implementation
      */
     public void setMarshaler(JmsProviderMarshaler marshaler) {
         if (marshaler == null) {
@@ -241,7 +273,15 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param messageIdEnabled the messageIdEnabled to set
+    * Specifies if your endpoint requires JMS message IDs. Setting the 
+    * <code>messageIdEnabled</code> property to <code>false</code> causes the 
+    * endpoint to call its message producer's 
+    * <code>setDisableMessageID() </code> with a value of <code>true</code>. 
+    * The JMS broker is then given a hint that it does not need to generate 
+    * message IDs or add them to the messages from the endpoint. The JMS 
+    * broker can choose to accept the hint or ignore it.
+    * 
+     * @param messageIdEnabled the endpoint requires message IDs?
      */
     public void setMessageIdEnabled(boolean messageIdEnabled) {
         this.messageIdEnabled = messageIdEnabled;
@@ -255,7 +295,15 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param messageTimestampEnabled the messageTimestampEnabled to set
+    * Specifies if your endpoints requires time stamps on its messages. 
+    * Setting the <code>messageTimeStampEnabled</code> property to 
+    * <code>false</code> causes the endpoint to call its message producer's 
+    * <code>setDisableMessageTimestamp() </code> method with a value of 
+    * <code>true</code>. The JMS broker is then given a hint that it does not 
+    * need to generate message IDs or add them to the messages from the 
+    * endpoint. The JMS broker can choose to accept the hint or ignore it.
+    * 
+     * @param messageTimestampEnabled the endpoint requires time stamps?
      */
     public void setMessageTimestampEnabled(boolean messageTimestampEnabled) {
         this.messageTimestampEnabled = messageTimestampEnabled;
@@ -269,7 +317,9 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param priority the priority to set
+    * Specifies the priority assigned to the JMS messages. Defaults to 4.
+    *
+     * @param priority the message priority
      */
     public void setPriority(int priority) {
         this.priority = priority;
@@ -283,7 +333,11 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param pubSubDomain the pubSubDomain to set
+    * Specifies if the destination is a topic. <code>true</code> means the 
+    * destination is a topic. <code>false</code> means the destination is a 
+    * queue.
+    *
+     * @param pubSubDomain the destination is a topic?
      */
     public void setPubSubDomain(boolean pubSubDomain) {
         this.pubSubDomain = pubSubDomain;
@@ -297,7 +351,10 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param pubSubNoLocal the pubSubNoLocal to set
+    * Specifies if messages published by the listener's <code>Connection</code> 
+    * are suppressed. The default is <code>false</code>.
+    *
+     * @param pubSubNoLocal messages are surpressed?
      */
     public void setPubSubNoLocal(boolean pubSubNoLocal) {
         this.pubSubNoLocal = pubSubNoLocal;
@@ -311,7 +368,9 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param receiveTimeout the receiveTimeout to set
+    * Specifies the timeout for receiving a message in milliseconds.
+    *
+     * @param receiveTimeout milliseconds to wait
      */
     public void setReceiveTimeout(long receiveTimeout) {
         this.receiveTimeout = receiveTimeout;
@@ -325,7 +384,9 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     /**
-     * @param timeToLive the timeToLive to set
+    * Specifies the number of milliseconds a message is valid.
+    *
+     * @param timeToLive number of milliseonds a message lives
      */
     public void setTimeToLive(long timeToLive) {
         this.timeToLive = timeToLive;
@@ -339,7 +400,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      * Sets the store factory used to create the store.
      * If none is set, a {@link MemoryStoreFactory} will be created and used instead.
      *
-     * @param storeFactory
+     * @param storeFactory the factory
      */
     public void setStoreFactory(StoreFactory storeFactory) {
         this.storeFactory = storeFactory;
@@ -353,7 +414,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      * Sets the store used to store JBI exchanges that are waiting for a response
      * JMS message.  The store will be automatically created if not set.
      *
-     * @param store
+     * @param store the store
      */
     public void setStore(Store store) {
         this.store = store;

@@ -44,9 +44,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 /**
- * 
+ * A Sping-based JMS consumer endpoint.
+ *
  * @author gnodet
- * @org.apache.xbean.XBean element="consumer"
+ * @org.apache.xbean.XBean element="consumer" 
  * @since 3.2
  */
 public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements JmsEndpointType {
@@ -112,7 +113,10 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param transacted the transacted to set
+    * Specifies the type of transaction used to wrap the message exchanges. 
+    * Valid values are <code>none</code>, <code>xa</code>, and <code>jms</code>.
+    *
+     * @param transacted the type of transaction wrapper to use
      */
     public void setTransacted(String transacted) {
         this.transacted = transacted;
@@ -126,6 +130,18 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
+    * Specifies the level of caching allowed by the listener. Valid values are 
+    * 0 through 3. The values map to the following:
+    * <ul>
+    * <li>0 - <code>CACHE_NONE</code></li>
+    * <li>1 - <code>CACHE_CONNECTION</code></li>
+    * <li>2 - <code>CACHE_SESSION</code></li>
+    * <li>3 - <code>CACHE_CONSUMER</code></li>
+    * </ul>
+    * The default is <code>CACHE_NONE</code>.<br/>
+    * This property only effects consumers whose <code>listenerType</code> 
+    * property is set to <code>default</code>.
+    *
      * @param cacheLevel the cacheLevel to set
      * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setCacheLevel(int)
      */
@@ -141,6 +157,9 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
+    * Specifies the JMS client id for a shared <code>Connection</code> created and used by 
+    * this listener.
+    * 
      * @param clientId the clientId to set
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setClientId(String)
      */
@@ -156,7 +175,11 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param concurrentConsumers the concurrentConsumers to set
+    * Specifies the number of concurrent consumers created by the listener.
+    * This property is only used for consumers whose <code>listenerType</code> 
+    * property is set to either <code>simple</code> or <code>default</code>.
+    * 
+     * @param concurrentConsumers the number of concurrent consumers to create
      * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setConcurrentConsumers(int)
      * @see org.springframework.jms.listener.SimpleMessageListenerContainer#setConcurrentConsumers(int)
      */
@@ -172,7 +195,9 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param destination the destination to set
+    * Specifies the JMS <code>Destination</code> used to receive messages.
+    *
+     * @param destination the JMS destination
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setDestination(Destination)
      */
     public void setDestination(Destination destination) {
@@ -187,7 +212,11 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param destinationName the destinationName to set
+    * Specifies a string identifying the JMS destination used to recieve 
+     * messages. The destination is resolved using the 
+     * <code>DesitinationResolver</code>.
+     *
+     * @param destinationName the destination name
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setDestinationName(String)
      */
     public void setDestinationName(String destinationName) {
@@ -202,7 +231,9 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param durableSubscriptionName the durableSubscriptionName to set
+    * Specifies the name used to register the durable subscription.
+    *
+     * @param durableSubscriptionName the registration name
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setDurableSubscriptionName(String)
      */
     public void setDurableSubscriptionName(String durableSubscriptionName) {
@@ -217,7 +248,11 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param exceptionListener the exceptionListener to set
+    * Specifies an <code>ExceptionListener</code> to notify in case of a 
+    * <code>JMSException</code> is thrown by the registered message listener or 
+    * the invocation infrastructure.
+    *
+     * @param exceptionListener the exception listener
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setExceptionListener(ExceptionListener)
      */
     public void setExceptionListener(ExceptionListener exceptionListener) {
@@ -232,7 +267,10 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param listenerType the listenerType to set
+    * Specifies the type of Spring JMS message listener to use. Valid values 
+    * are: <code>default</code>, <code>simple</code>, and <code>server</code>.
+    *
+     * @param listenerType the listener type
      */
     public void setListenerType(String listenerType) {
         this.listenerType = listenerType;
@@ -246,7 +284,12 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param maxMessagesPerTask the maxMessagesPerTask to set
+    * Specifies the number of attempts to receive messages per task. The 
+    * default is -1 which specifies an unlimited number of attempts.<br/>
+    * This property only effects consumers whose <code>listenerType</code> 
+    * property is set to either <code>default</code> or <code>simple</code>.
+    * 
+     * @param maxMessagesPerTask the number of attempts to make
      * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setMaxMessagesPerTask(int)
      * @see org.springframework.jms.listener.serversession.ServerSessionMessageListenerContainer#setMaxMessagesPerTask(int)
      */
@@ -262,7 +305,10 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param messageSelector the messageSelector to set
+    * Specifies the message selector string to use. The message selector string 
+    * should conform to the descrition in the JMS spec.
+    *
+     * @param messageSelector the message selector string
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setMessageSelector(String)
      */
     public void setMessageSelector(String messageSelector) {
@@ -277,7 +323,12 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param pubSubNoLocal the pubSubNoLocal to set
+    * Specifies if messages published by the listener's <code>Connection</code> 
+    * are suppressed. The default is <code>false</code>.<br/>
+    * This property only effects consumers whose <code>listenerType</code> 
+    * property is set to either <code>default</code> or <code>simple</code>.
+    *
+     * @param pubSubNoLocal messages are surpressed?
      * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setPubSubNoLocal(boolean)
      * @see org.springframework.jms.listener.SimpleMessageListenerContainer#setPubSubNoLocal(boolean)
      */
@@ -293,7 +344,12 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param receiveTimeout the receiveTimeout to set
+    * Specifies the timeout for receiving a message in milliseconds. Defaults 
+    * to 1000.<br/>
+    * This property only effects consumers whose <code>listenerType</code> 
+    * property is set to <code>default</code>.
+    *
+     * @param receiveTimeout the number of milliseconds before timing out
      * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setReceiveTimeout(long)
      */
     public void setReceiveTimeout(long receiveTimeout) {
@@ -308,7 +364,12 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param recoveryInterval the recoveryInterval to set
+    *Specifies the interval, in milliseconds, between attempts to recover after 
+    * a failed listener set-up. Defaults to 5000.<br/>
+    * This property only effects consumers whose <code>listenerType</code> 
+    * property is set to <code>default</code>.
+    *
+     * @param recoveryInterval the number of milliseconds to wait
      * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setRecoveryInterval(long)
      */
     public void setRecoveryInterval(long recoveryInterval) {
@@ -323,7 +384,12 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param serverSessionFactory the serverSessionFactory to set
+    * Specifies the <code>ServerSessionFactory</code> to use. The default is 
+    * <code>SimpleServerSessionFactory</code>.<br/>
+    * This property only effects consumers whose <code>listenerType</code> 
+    * property is set to <code>server</code>.
+    *
+     * @param serverSessionFactory an implementation of the <code>ServerSessionFactory</code> interface
      * @see ServerSessionMessageListenerContainer#setServerSessionFactory(ServerSessionFactory)
      */
     public void setServerSessionFactory(ServerSessionFactory serverSessionFactory) {
@@ -338,6 +404,10 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
+    * Specifies the acknowledgment mode that is used when creating a 
+    * <code>Session</code> to send a message. Deafults to 
+    * <code>Session.AUTO_ACKNOWLEDGE</code>.
+    *
      * @param sessionAcknowledgeMode the sessionAcknowledgeMode to set
      * @see org.springframework.jms.support.JmsAccessor#setSessionAcknowledgeMode(int)
      */
@@ -353,7 +423,10 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
-     * @param subscriptionDurable the subscriptionDurable to set
+    * Specifies if the listener uses a durable subscription to listen for 
+    * messages. Defaults to <code>false</code>.
+    *
+     * @param subscriptionDurable the listener uses a durable subscription?
      * @see org.springframework.jms.listener.AbstractMessageListenerContainer#setSubscriptionDurable(boolean)
      */
     public void setSubscriptionDurable(boolean subscriptionDurable) {

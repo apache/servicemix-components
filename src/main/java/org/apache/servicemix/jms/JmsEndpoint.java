@@ -40,11 +40,13 @@ import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 
 /**
- * 
+ ** non-Spring JMS endpoint
+ * This JMS endpoint can be either a consumer or a provider
+ * and is optimized to work with SOAP messages. 
+ *
  * @author gnodet
  * @version $Revision$
  * @org.apache.xbean.XBean element="endpoint"
- *                  description="A jms endpoint"
  * 
  */
 public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
@@ -114,8 +116,8 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * For a JCA consumer endpoint, indicates if the JBI exchange
-     * should be sent synchronously or asynchronously.
+     * Indicates if a JCA consumer endpoint sends the JBI exchange
+     * synchronously or asynchronously.
      * This changes the transaction boundary. 
      * 
      * @return the synchronous
@@ -125,13 +127,14 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param synchronous the synchronous to set
+     * @param synchronous <code>true</code> means the exchange is sent synchronously
      */
     public void setSynchronous(boolean synchronous) {
         this.synchronous = synchronous;
     }
 
     /**
+    * Indicates if the JBI exchange is rolled back if an error is encountered.
      * @return the rollbackOnError
      */
     public boolean isRollbackOnError() {
@@ -146,7 +149,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * The ActivatioSpec to use on this JCA consumer endpoint.
+     * The ActivationSpec to use on a JCA consumer endpoint.
      * 
      * @return the activationSpec
      */
@@ -162,7 +165,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * The ResourceAdapter to use on this JCA consumer endpoint.
+     * The ResourceAdapter to use on a JCA consumer endpoint.
      * 
      * @return the resourceAdapter
      */
@@ -194,7 +197,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * The name of the destination create by a call to 
+     * The name of the destination created by a call to 
      * <code>Session.createQueue</code> or <code>Session.createTopic</code>.
      * This property is used when <code>destination</code> and 
      * <code>jndiDestinationName</code> are
@@ -215,8 +218,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
 
     /**
      * The name of the JMS Reply-to destination to lookup in JNDI.
-     * Optional: a temporary queue will be used
-     * if a replyTo is not provided.
+     * If this property is not set a temporary replyTo queue is used.
      *
      * @return Returns the jndiReplyToName.
      */
@@ -225,16 +227,16 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param jndiReplyToName The jndiReplyToName to set.
+     * @param jndiReplyToName the JNDI name of the replyTo queue
      */
     public void setJndiReplyToName(String jndiReplyToName) {
         this.jndiReplyToName = jndiReplyToName;
     }
     /**
-     * The name of the reply destination create by a call to 
+     * The name of the reply destination created by a call to 
      * <code>Session.createQueue</code> or <code>Session.createTopic</code>.
      * This property is used when <code>jndiReplyToName</code> is
-     * <code>null</code>.  Optional: a temporary queue will be used
+     * <code>null</code>.  A temporary queue will be used
      * if a replyTo is not provided.
      * 
      * @return Returns the jmsProviderReplyToName.
@@ -244,7 +246,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param jmsProviderReplyToName The jmsProviderReplyToName to set.
+     * @param jmsProviderReplyToName the name of the replyTo destination
      */
     public void setJmsProviderReplyToName(String jmsProviderReplyToName) {
         this.jmsProviderReplyToName = jmsProviderReplyToName;
@@ -261,7 +263,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param jndiConnectionFactoryName The jndiConnectionFactoryName to set.
+     * @param jndiConnectionFactoryName the JNDI name of the connection factory
      */
     public void setJndiConnectionFactoryName(String jndiConnectionFactoryName) {
         this.jndiConnectionFactoryName = jndiConnectionFactoryName;
@@ -271,14 +273,14 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
      * The name of the JMS Destination to lookup in JNDI.
      * Used if <code>destination</code> is <code>null</code>.
      * 
-     * @return Returns the jndiDestinationName.
+     * @return Returns the destination's JNDI name.
      */
     public String getJndiDestinationName() {
         return jndiDestinationName;
     }
 
     /**
-     * @param jndiDestinationName The jndiDestinationName to set.
+     * @param jndiDestinationName the JNDI name of the JMS destination
      */
     public void setJndiDestinationName(String jndiDestinationName) {
         this.jndiDestinationName = jndiDestinationName;
@@ -294,14 +296,14 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param jndiProviderURL The jndiProviderURL to set.
+     * @param jndiProviderURL The JNDI provider URL
      */
     public void setJndiProviderURL(String jndiProviderURL) {
         this.jndiProviderURL = jndiProviderURL;
     }
 
     /**
-     * Used to select the destination type used with the jmsProviderDestinationName.
+     * Specifies the destination type used with the jmsProviderDestinationName.
      * Can be <code>queue</code> or <code>topic</code>.
      * 
      * @return Returns the destinationStyle.
@@ -311,7 +313,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param destinationStyle The destinationStyle to set.
+     * @param destinationStyle <code>queue</code> or <code>topic</code>
      */
     public void setDestinationStyle(String destinationStyle) {
         this.destinationStyle = destinationStyle;
@@ -327,7 +329,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param connectionFactory The connectionFactory to set.
+     * @param connectionFactory a configured JMS ConnectionFactory
      */
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
@@ -343,13 +345,15 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * @param destination The destination to set.
+     * @param destination a configured JMS destination
      */
     public void setDestination(Destination destination) {
         this.destination = destination;
     }
     
     /**
+    * Indicates if the JMS properties used by the endpoint need to be spec compliant.
+    *
      * @return if jms properties should be spec compliant
      */
     public boolean isNeedJavaIdentifiers() {
@@ -364,11 +368,10 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * The role of this endpoint.
-     * Must be <code>consumer</code> or <code>provider</code>.
+     * Specifies the role of this endpoint. Endpoints can be 
+     * <code>consumer</code> or <code>provider</code>.
      * 
-     * @org.apache.xbean.Property alias="role"
-     * @param role
+     * @param role the role of the endpoint
      */
     public void setRoleAsString(String role) {
         super.setRoleAsString(role);
@@ -381,19 +384,25 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
         return store;
     }
     /**
+    * Specifies a persistent data store to hold pending exchanges for the 
+    * endpoint.
+    *
      * @param store The store to set.
      */
     public void setStore(Store store) {
         this.store = store;
     }
     /**
+    
      * @return Returns the storeFactory.
      */
     public StoreFactory getStoreFactory() {
         return storeFactory;
     }
     /**
-     * @param storeFactory The storeFactory to set.
+    * Specifies the factory used to create presistent data stores for this endpoint.
+    *
+     * @param storeFactory the factory used to create persistent stores
      */
     public void setStoreFactory(StoreFactory storeFactory) {
         this.storeFactory = storeFactory;
@@ -560,7 +569,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
     }
 
     /**
-     * Determines whether for a request/response pattern, the message id of the request message
+     * Indicates whether  the message id of the request message
      * should be used as the correlation id in the response or the correlation id of the request.
      * @return
      */
@@ -576,6 +585,13 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
         return marshaler;
     }
 
+    /**
+    * Specifies the class implementing the logic for marshaling and 
+    * unmarshaling messages between the JMS destination and the endpoint.
+    * Defaults to <code>DefaultJmsMarshaler</code>.
+    *
+    * @param marshaler the marshaling class
+    */
     public void setMarshaler(JmsMarshaler marshaler) {
         this.marshaler = marshaler;
     }  

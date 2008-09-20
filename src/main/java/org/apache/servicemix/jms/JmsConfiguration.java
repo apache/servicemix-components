@@ -26,6 +26,8 @@ import java.util.Properties;
 import javax.jms.ConnectionFactory;
 
 /**
+ * Bean for configuring JMS connections
+ *
  * @author gnodet
  * @org.apache.xbean.XBean element="configuration"
  */
@@ -143,8 +145,10 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         return password;
     }
     /**
-     * @param password The password to set.
-     */
+          * Specifies the password used to to create a connection.
+          *
+          * @param password The password to set.
+          */
     public void setPassword(String password) {
         this.password = password;
         save();
@@ -156,8 +160,10 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         return userName;
     }
     /**
-     * @param userName The userName to set.
-     */
+          * Specifies the user name used to create a connection.
+          *
+          * @param userName The userName to set.
+         */
     public void setUserName(String userName) {
         this.userName = userName;
         save();
@@ -169,8 +175,10 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         return jndiConnectionFactoryName;
     }
     /**
-     * @param jndiName The jndiName to set.
-     */
+           * Specifies the JNDI name used to look up the JMS connection factory.
+           *
+          * @param jndiName the connection factory's JNDI name
+          */
     public void setJndiConnectionFactoryName(String jndiName) {
         this.jndiConnectionFactoryName = jndiName;
         save();
@@ -182,8 +190,10 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         return jndiInitialContextFactory;
     }
     /**
-     * @param jndiInitialContextFactory The jndiInitialContextFactory to set.
-     */
+           * Specifies the default JNDI  initial conext factory.
+           *
+           * @param jndiInitialContextFactory the JNDI initial context factory
+          */
     public void setJndiInitialContextFactory(String jndiInitialContextFactory) {
         this.jndiInitialContextFactory = jndiInitialContextFactory;
         save();
@@ -195,7 +205,9 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         return jndiProviderUrl;
     }
     /**
-     * @param jndiProviderUrl The jndiProviderUrl to set.
+    * Specifies the default JNDI provider URL.
+    *
+     * @param jndiProviderUrl URL of the JNDI provider
      */
     public void setJndiProviderUrl(String jndiProviderUrl) {
         this.jndiProviderUrl = jndiProviderUrl;
@@ -221,8 +233,8 @@ public class JmsConfiguration implements JmsConfigurationMBean {
         return connectionFactory;
     }
     /**
-     * Default ConnectionFactory to use in a spring configuration.
-     * @param connectionFactory the connectionFactory to set.
+     * Default <code>ConnectionFactory</code> to use in a spring configuration.
+     * @param connectionFactory the default connection factory
      */
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
