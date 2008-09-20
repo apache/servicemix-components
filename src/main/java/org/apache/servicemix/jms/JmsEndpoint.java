@@ -371,6 +371,8 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
      * Specifies the role of this endpoint. Endpoints can be 
      * <code>consumer</code> or <code>provider</code>.
      * 
+     * @org.apache.xbean.Property alias="role"
+     * @param role
      * @param role the role of the endpoint
      */
     public void setRoleAsString(String role) {
