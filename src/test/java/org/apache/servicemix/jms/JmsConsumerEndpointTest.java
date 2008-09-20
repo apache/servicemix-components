@@ -132,6 +132,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
+        Thread.sleep(500);
     }
 
     public void testDurableConsumerDefault() throws Exception {
@@ -149,10 +150,8 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setCacheLevel(DefaultMessageListenerContainer.CACHE_CONNECTION);
         component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
-
-        container.start();
-
         Thread.sleep(500);
+        container.start();
 
         JmsTemplate jmsTemplate = new JmsTemplate();
         jmsTemplate.setConnectionFactory(new PooledConnectionFactory(connectionFactory));
@@ -160,6 +159,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         jmsTemplate.afterPropertiesSet();
         jmsTemplate.convertAndSend("destinationTopic", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
+        Thread.sleep(500);
     }
 
     public void testConsumerDefaultInOut() throws Exception {
@@ -181,6 +181,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         Element e = sourceTransformer.toDOMElement(new StringSource(msg.getText()));
         assertEquals("hello", e.getTagName());
         assertEquals("world", e.getTextContent());
+        Thread.sleep(500);
     }
 
     public void testConsumerDefaultJmsTx() throws Exception {
@@ -198,6 +199,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
+        Thread.sleep(500);
     }
 
     public void testConsumerDefaultInOutJmsTx() throws Exception {
@@ -220,6 +222,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         Element e = sourceTransformer.toDOMElement(new StringSource(msg.getText()));
         assertEquals("hello", e.getTagName());
         assertEquals("world", e.getTextContent());
+        Thread.sleep(500);
     }
 
     public void testConsumerDefaultXaTx() throws Exception {
@@ -237,6 +240,7 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
+        Thread.sleep(500);
     }
 
     public void testConsumerServer() throws Exception {
