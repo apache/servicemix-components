@@ -28,11 +28,12 @@ import javax.xml.transform.Source;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
-public class DefaultProviderMarshaler implements JmsProviderMarshaler {
+public class DefaultProviderMarshaler extends AbstractJmsMarshaler implements
+    JmsProviderMarshaler {
 
     private Map<String, Object> jmsProperties;
     private SourceTransformer transformer = new SourceTransformer();
-    
+
     /**
      * @return the jmsProperties
      */
@@ -55,6 +56,11 @@ public class DefaultProviderMarshaler implements JmsProviderMarshaler {
                 text.setObjectProperty(e.getKey(), e.getValue());
             }
         }
+
+        if (isCopyProperties()) {
+            copyPropertiesFromNM(in, text);
+        }
+
         return text;
     }
 
@@ -63,9 +69,13 @@ public class DefaultProviderMarshaler implements JmsProviderMarshaler {
             TextMessage textMessage = (TextMessage) message;
             Source source = new StringSource(textMessage.getText());
             normalizedMessage.setContent(source);
+
+            if (isCopyProperties()) {
+                copyPropertiesFromJMS(textMessage, normalizedMessage);
+            }
         } else {
             throw new UnsupportedOperationException("JMS message is not a TextMessage");
         }
     }
-    
+
 }

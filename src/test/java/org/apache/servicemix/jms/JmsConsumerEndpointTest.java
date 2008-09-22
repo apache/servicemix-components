@@ -17,13 +17,17 @@
 package org.apache.servicemix.jms;  
 
 import java.io.ByteArrayOutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
-import org.w3c.dom.Element;
-
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
@@ -35,19 +39,29 @@ import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.jms.endpoints.DefaultConsumerMarshaler;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsSoapConsumerEndpoint;
+import org.apache.servicemix.tck.MessageList;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.activemq.pool.PooledConnectionFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
+
+import org.w3c.dom.Element;
 
 public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
     private static Log logger =  LogFactory.getLog(JmsConsumerEndpointTest.class);
 
+    /**
+     * Test property name.
+     */
+    private static final String MSG_PROPERTY = "PropertyTest";
+    private static final String MSG_PROPERTY_BLACKLISTED = "BadPropertyTest";
+    
     protected Receiver receiver;
     protected SourceTransformer sourceTransformer = new SourceTransformer();
+    protected List<String> blackList;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -62,22 +76,30 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         echo.setService(new QName("echo"));
         echo.setEndpoint("endpoint");
         container.activateComponent(echo, "echo");
+        
+        // initialize the black list
+        blackList = new LinkedList<String>();
+        blackList.add(MSG_PROPERTY_BLACKLISTED);
     }
-    
-    public void testConsumerSimple() throws Exception {
-        JmsComponent component = new JmsComponent();
-        JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
-        endpoint.setService(new QName("jms"));
-        endpoint.setEndpoint("endpoint");
-        endpoint.setTargetService(new QName("receiver"));
-        endpoint.setListenerType("simple");
-        endpoint.setConnectionFactory(connectionFactory);
-        endpoint.setDestinationName("destination");
-        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
-        container.activateComponent(component, "servicemix-jms");
 
-        jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
-        receiver.getMessageList().assertMessagesReceived(1);
+    public void testWithoutProperties() throws Exception {
+        container.activateComponent(createEndpoint(false), "servicemix-jms");
+        jmsTemplate.send("destination", new InternalCreator());
+        MessageList messageList = receiver.getMessageList();
+        messageList.assertMessagesReceived(1);
+        NormalizedMessage message = (NormalizedMessage) messageList.getMessages().get(0);
+        assertNull("Not expected property found", message.getProperty(MSG_PROPERTY));
+        assertNull("Not expected property found", message.getProperty(MSG_PROPERTY_BLACKLISTED));
+    }
+
+    public void testConsumerSimple() throws Exception {
+        container.activateComponent(createEndpoint(), "servicemix-jms");
+        jmsTemplate.send("destination", new InternalCreator());
+        MessageList messageList = receiver.getMessageList();
+        messageList.assertMessagesReceived(1);
+        NormalizedMessage message = (NormalizedMessage) messageList.getMessages().get(0);
+        assertNotNull("Expected property not found", message.getProperty(MSG_PROPERTY));
+        assertNull("Black listed property found", message.getProperty(MSG_PROPERTY_BLACKLISTED));
     }
 
     public void testConsumerStateless() throws Exception {
@@ -306,4 +328,37 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         logger.info(((TextMessage) msg).getText());
     }
 
+    // Helper methods
+    private JmsComponent createEndpoint() {
+        return createEndpoint(true);
+    }
+
+    private JmsComponent createEndpoint(boolean copyProperties) {
+        JmsComponent component = new JmsComponent();
+        JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
+        endpoint.setService(new QName("jms"));
+        endpoint.setEndpoint("endpoint");
+        DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
+        marshaler.setCopyProperties(copyProperties);
+        marshaler.setPropertyBlackList(blackList);
+        endpoint.setMarshaler(marshaler);
+        endpoint.setTargetService(new QName("receiver"));
+        endpoint.setListenerType("simple");
+        endpoint.setConnectionFactory(connectionFactory);
+        endpoint.setDestinationName("destination");
+        component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
+        return component;
+    }
+
+    /**
+     * Simple interface implementation - sets message body and one property.
+     */
+    protected static class InternalCreator implements MessageCreator {
+        public Message createMessage(Session session) throws JMSException {
+            TextMessage message = session.createTextMessage("<hello>world</hello>");
+            message.setStringProperty(MSG_PROPERTY, "test");
+            message.setObjectProperty(MSG_PROPERTY_BLACKLISTED, new String("unwanted property"));
+            return message;
+        }
+    }
 }

@@ -35,7 +35,7 @@ import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
-public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
+public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements JmsConsumerMarshaler {
     
     private URI mep;
 
@@ -70,13 +70,20 @@ public class DefaultConsumerMarshaler implements JmsConsumerMarshaler {
         MessageExchange exchange = jbiContext.getDeliveryChannel().createExchangeFactory().createExchange(mep);
         NormalizedMessage inMessage = exchange.createMessage();
         populateMessage(ctx.message, inMessage);
+        if (isCopyProperties()) {
+            copyPropertiesFromJMS(ctx.message, inMessage);
+        }
         exchange.setMessage(inMessage, "in");
         return exchange;
     }
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {
         String text = new SourceTransformer().contentToString(outMsg);
-        return session.createTextMessage(text);
+        TextMessage textMessage = session.createTextMessage(text);
+        if (isCopyProperties()) {
+            copyPropertiesFromNM(outMsg, textMessage);
+        }
+        return textMessage;
     }
 
     public Message createFault(MessageExchange exchange, Fault fault, Session session, JmsContext context) throws Exception {
