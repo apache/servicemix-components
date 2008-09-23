@@ -58,13 +58,10 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
 
     String contentType;
 
-    private MessageExchange messageExchange;
 
     private CxfBcProvider providerEndpoint;
 
-    public CxfBcProviderMessageObserver(MessageExchange exchange,
-            CxfBcProvider providerEndpoint) {
-        this.messageExchange = exchange;
+    public CxfBcProviderMessageObserver(CxfBcProvider providerEndpoint) {
         this.providerEndpoint = providerEndpoint;
     }
 
@@ -83,6 +80,7 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
 
     public void onMessage(Message message) {
         try {
+            MessageExchange messageExchange = message.getExchange().get(MessageExchange.class);
             if (messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
                 return;
             }
