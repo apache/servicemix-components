@@ -89,6 +89,12 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         multiClientTestBase();
     }
     
+    public void testMultipleClientWithAsyn() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/xbean_asyn.xml");
+        multiClientTestBase();
+    }
+
+    
     private void calculatorTestBase() throws Exception {
 
         URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");

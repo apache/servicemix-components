@@ -258,8 +258,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     public void process(MessageExchange exchange) throws Exception {
+        synchronized (messages.get(exchange.getExchangeId())) {
+            messages.get(exchange.getExchangeId()).notifyAll();
+        }
         Message message = messages.remove(exchange.getExchangeId());
-        message.getInterceptorChain().resume();
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             exchange.setStatus(ExchangeStatus.DONE);
             message.getExchange().get(ComponentContext.class)
@@ -609,14 +611,18 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             message.getExchange().setOneWay(CxfBcConsumer.this.isOneway);
 
             try {
-                if (CxfBcConsumer.this.synchronous
+            	if (CxfBcConsumer.this.isOneway) {
+            		context.getDeliveryChannel().send(exchange);
+            	} else if (CxfBcConsumer.this.isSynchronous()
                         && !CxfBcConsumer.this.isOneway) {
-                    message.getInterceptorChain().pause();
                     context.getDeliveryChannel().sendSync(exchange,
                             timeout);
                     process(exchange);
                 } else {
-                    context.getDeliveryChannel().send(exchange);
+                     synchronized (CxfBcConsumer.this.messages.get(exchange.getExchangeId())) {
+                         context.getDeliveryChannel().send(exchange);
+                         CxfBcConsumer.this.messages.get(exchange.getExchangeId()).wait(timeout);
+                     }
 
                 }
             } catch (Exception e) {
@@ -828,6 +834,20 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     public boolean isUseJBIWrapper() {
         return useJBIWrapper;
+    }
+   
+    /**
+     * Specifies if the endpoint expects send messageExchange by sendSync
+     * @param  synchronous a boolean
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects send messageExchange by sendSync .
+     * Default is <code>true</code>."
+     **/
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
+    }
+
+    public boolean isSynchronous() {
+        return synchronous;
     }
 
 }
