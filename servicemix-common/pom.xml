@@ -39,11 +39,15 @@
         org.apache.servicemix;resolution:=optional,
         org.apache.servicemix.jbi*;resolution:=optional,
         org.apache.servicemix.components*;resolution:=optional,
+        org.apache.servicemix.jbi.deployer;resolution:=optional,
         *
     </servicemix.osgi.import>
     <servicemix.osgi.export.pkg>
         org.apache.servicemix.common
     </servicemix.osgi.export.pkg>
+    <servicemix.osgi.private>
+        org.apache.servicemix.jbi.deployer
+    </servicemix.osgi.private>
   </properties>
 
   <dependencies>

@@ -23,9 +23,7 @@ import javax.jbi.management.DeploymentException;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.DefaultServiceUnit;
-import org.apache.servicemix.id.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -56,16 +54,6 @@ public class EndpointTracker {
             OsgiServiceUnit su = new OsgiServiceUnit(component, endpoint, wrapper.getClassLoader());
             endpoints.put(wrapper, su);
             component.getRegistry().registerServiceUnit(su);
-            if (component.isStarted()) {
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                try {
-                    Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
-                    su.start();
-                } finally {
-                    Thread.currentThread().setContextClassLoader(cl);
-                }
-            }
-
         }
     }
 
@@ -79,31 +67,20 @@ public class EndpointTracker {
             if (LOGGER.isDebugEnabled()) {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
-            try {
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                try {
-                    Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
-                    su.stop();
-                } finally {
-                    Thread.currentThread().setContextClassLoader(cl);
-                }
-            } finally {
-                component.getRegistry().unregisterServiceUnit(su);
-            }
+            component.getRegistry().unregisterServiceUnit(su);
         }
     }
 
     public static class OsgiServiceUnit extends DefaultServiceUnit {
-        private static final IdGenerator idGenerator = new IdGenerator();
         private final Endpoint endpoint;
         private final ClassLoader classLoader;
         public OsgiServiceUnit(DefaultComponent component, Endpoint endpoint, ClassLoader classLoader) throws DeploymentException {
             this.component = component;
-            this.name = idGenerator.generateSanitizedId();
             this.endpoint = endpoint;
             this.classLoader = classLoader;
             this.endpoint.setServiceUnit(this);
             this.endpoint.validate();
+            this.name = endpoint.getKey();
             addEndpoint(this.endpoint);
         }
         public Endpoint getEndpoint() {
