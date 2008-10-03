@@ -183,6 +183,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             if (logger.isDebugEnabled()) {
                 logger.debug("Initializing component");
             }
+            Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             this.context = context;
             this.channel = context.getDeliveryChannel();
             try {
@@ -248,6 +249,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             if (logger.isDebugEnabled()) {
                 logger.debug("Shutting down component");
             }
+            Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             doShutDown();
             setCurrentState(LifeCycleMBean.SHUTDOWN);
             this.context = null;
@@ -287,6 +289,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             if (logger.isDebugEnabled()) {
                 logger.debug("Starting component");
             }
+            Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             if (this.running.compareAndSet(false, true)) {
                 doStart();
                 setCurrentState(LifeCycleMBean.STARTED);
@@ -366,6 +369,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             if (logger.isDebugEnabled()) {
                 logger.debug("Stopping component");
             }
+            Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             if (this.running.compareAndSet(true, false)) {
                 doStop();
                 setCurrentState(LifeCycleMBean.STOPPED);
