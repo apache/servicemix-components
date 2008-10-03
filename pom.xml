@@ -153,6 +153,14 @@
           <artifactId>xalan</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.springframework</groupId>
           <artifactId>spring-jmx</artifactId>
         </exclusion>
