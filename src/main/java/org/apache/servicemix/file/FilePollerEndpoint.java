@@ -372,12 +372,15 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                             }
                         }
                     } 
-                } else {
+                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
                     Exception e = exchange.getError();
                     if (e == null) {
-                        e = new JBIException("Unkown error");
+                        throw new JBIException("Received an exchange with status ERROR, but no exception was set");
                     }
-                    throw e;
+                    logger.warn("Message in file " + aFile + " could not be handled successfully: " + e.getMessage(), e);
+                } else {
+                    //we should never get an ACTIVE exchange -- the File poller only sends InOnly exchanges
+                    throw new JBIException("Unexpectedly received an exchange with status ACTIVE");
                 }
             } finally {
                 // remove the open exchange
