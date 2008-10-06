@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
@@ -41,7 +41,7 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
-    <servicemix-shared-version>2008.01-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2008.01</servicemix-shared-version>
     
     <activemq-version>5.1.0</activemq-version>
     <xbean-version>3.4.1</xbean-version>
