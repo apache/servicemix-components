@@ -26,16 +26,16 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-jsr181</artifactId>
-  <version>2008.01-SNAPSHOT</version>
+  <version>2008.01</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: JSR-181 Service Engine</name>
   <description>JSR-181 service engine</description>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-jsr181/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/tags/servicemix-jsr181-2008.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/tags/servicemix-jsr181-2008.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-jsr181/tags/servicemix-jsr181-2008.01</url>
   </scm>
 
   <properties>
@@ -229,15 +229,13 @@
             <phase>generate-resources</phase>
             <configuration>
               <tasks>
-                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask"
-                  name="mapping">
+                <taskdef classname="org.apache.xbean.spring.generator.MappingGeneratorTask" name="mapping">
                   <classpath>
                     <pathelement path="${basedir}/target/classes" />
                     <path refid="maven.test.classpath" />
                   </classpath>
                 </taskdef>
-                <mapping destFile="${basedir}/target/servicemix-jsr181-${version}.xsd"
-                  namespace="http://servicemix.apache.org/jsr181/1.0"
+                <mapping destFile="${basedir}/target/servicemix-jsr181-${version}.xsd" namespace="http://servicemix.apache.org/jsr181/1.0"
                   srcdir="${basedir}/src/main/java" metaInfDir="${basedir}/target/generated/" />
               </tasks>
             </configuration>
