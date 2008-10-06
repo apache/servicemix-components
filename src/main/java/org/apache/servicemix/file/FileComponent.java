@@ -34,7 +34,10 @@ import org.apache.servicemix.common.util.URISupport;
  * @version $Revision$
  * @org.apache.xbean.XBean element="component" description="a JBI component that interacts with the file system. It hosts endpoints that reads data from and writes data to the file system."
  */
+@SuppressWarnings("unchecked")
 public class FileComponent extends DefaultComponent {
+    
+    public static final String FILE_PROPERTY = "org.apache.servicemix.file";
 
     private FileEndpointType[] endpoints;
 

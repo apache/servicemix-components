@@ -62,7 +62,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     private File archive;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
-    private ConcurrentMap<String, File> openExchanges;
+    private ConcurrentMap<String, InputStream> openExchanges;
 
     public FilePollerEndpoint() {
     }
@@ -83,7 +83,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         super.start();
         
         // create the openExchanges map
-        this.openExchanges = new ConcurrentHashMap<String, File>();
+        this.openExchanges = new ConcurrentHashMap<String, InputStream>();
     }
     
     public void poll() throws Exception {
@@ -154,10 +154,10 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     }
 
     /**
-            * Specifies a class that implements the locking strategy used by 
-            * the endpoint. This class must be an implementation of the 
-            * <code>org.apache.servicemix.locks.LockManager</code> interface.
-            *
+     * Specifies a class that implements the locking strategy used by 
+     * the endpoint. This class must be an implementation of the 
+     * <code>org.apache.servicemix.locks.LockManager</code> interface.
+     *
      * @param lockManager the <code>LockManager</code> implementation to use
      * @org.apache.xbean.Property description="the bean defining the class implementing the file locking strategy"
      */
@@ -337,16 +337,18 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         }
     }
 
-    protected void processFile(File aFile) throws Exception {
-        InputStream in = null;
-        String name = aFile.getCanonicalPath();
-        in = new BufferedInputStream(new FileInputStream(aFile));
+    protected void processFile(File file) throws Exception {
+        InputStream stream = new BufferedInputStream(new FileInputStream(file));
         InOnly exchange = getExchangeFactory().createInOnlyExchange();
         configureExchangeTarget(exchange);
         NormalizedMessage message = exchange.createMessage();
         exchange.setInMessage(message);
-        marshaler.readMessage(exchange, message, in, name);
-        this.openExchanges.put(exchange.getExchangeId(), aFile);
+        marshaler.readMessage(exchange, message, stream, file.getCanonicalPath());
+
+        //sending the file itself along as a message property and holding on to the stream we opened
+        exchange.getInMessage().setProperty(FileComponent.FILE_PROPERTY, file);
+        this.openExchanges.put(exchange.getExchangeId(), stream);
+        
         send(exchange);
     }
 
@@ -357,9 +359,16 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     public void process(MessageExchange exchange) throws Exception {
         // check for done or error
         if (this.openExchanges.containsKey(exchange.getExchangeId())) {
-            File aFile = this.openExchanges.get(exchange.getExchangeId());
+            InputStream stream = this.openExchanges.get(exchange.getExchangeId());
+            File aFile = (File) exchange.getMessage("in").getProperty(FileComponent.FILE_PROPERTY);
+            
+            if (aFile == null) {
+                throw new JBIException("Property org.apache.servicemix.file was removed from the exchange -- unable to delete/archive the file");
+            }
 
             logger.debug("Releasing " + aFile.getAbsolutePath());
+            //first try to close the stream 
+            stream.close();
             try {
                 // check for state
                 if (exchange.getStatus() == ExchangeStatus.DONE) {
