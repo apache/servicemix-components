@@ -28,7 +28,7 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-bean</artifactId>
-  <version>2008.01-SNAPSHOT</version>
+  <version>2008.01</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: Bean</name>
@@ -59,9 +59,9 @@
   </properties>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-bean/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/tags/servicemix-bean-2008.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-bean/tags/servicemix-bean-2008.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-bean/tags/servicemix-bean-2008.01</url>
   </scm>
 
   <dependencies>
