@@ -26,16 +26,16 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-validation</artifactId>
-  <version>2008.01-SNAPSHOT</version>
+  <version>2008.01</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: Validation</name>
   <description>Validation Service Engine</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-validation/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-validation/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-validation/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-validation/tags/servicemix-validation-2008.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-validation/tags/servicemix-validation-2008.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-validation/tags/servicemix-validation-2008.01</url>
   </scm>
 
   <properties>
