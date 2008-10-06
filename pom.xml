@@ -20,13 +20,13 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-camel</artifactId>
   <packaging>jbi-component</packaging>
-  <version>2008.01-SNAPSHOT</version>
+  <version>2008.01</version>
   
   <name>ServiceMix :: Camel</name>
   <description>Camel Service Engine</description>
