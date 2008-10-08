@@ -104,6 +104,13 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
             }
             exchanges.put(exchange.getExchangeId(), exchange);
             cont.resume();
+            if (!cont.isResumed()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
+                }
+                exchanges.remove(exchange.getExchangeId());
+                throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
+            }
         }
     }
 
@@ -192,8 +199,6 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
                 }
                 if (!cont.isResumed()) {
                     Exception e = new Exception("Exchange timed out: " + exchange.getExchangeId());
-                    exchange.setError(e);
-                    channel.send(exchange);
                     sendFault(new SoapFault(e), request, response);
                     return;
                 }

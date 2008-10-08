@@ -251,6 +251,13 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             exchanges.put(exchange.getExchangeId(), exchange);
             // Resume continuation
             cont.resume();
+            if (!cont.isResumed()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
+                }
+                exchanges.remove(exchange.getExchangeId());
+                throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
+            }
         }
     }
 
@@ -332,9 +339,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                         throw new IllegalStateException("Exchange not found");
                     }
                     if (!cont.isResumed()) {
-                        Exception e = new Exception("Exchange timed out: " + exchange.getExchangeId());
-                        fail(exchange, e);
-                        throw e;
+                        // When the exchange comes back later, the continuation will not be found and
+                        // the exchange will be set in an ERROR state by the process(MessageExchange) method
+                        throw new Exception("Exchange timed out: " + exchange.getExchangeId());
                     }
                 }
             }
