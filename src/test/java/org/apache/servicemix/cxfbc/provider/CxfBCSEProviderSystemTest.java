@@ -168,12 +168,12 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         greetMeProviderJmsTestBase(false, "Edell");
     }
 
-    public void xtestGreetMeProviderWithJmSTransportSyncTimeOut() throws Exception {
+    public void testGreetMeProviderWithJmSTransportSyncTimeOut() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderJmsTestBase(true, "ffang");
     }
 
-    public void xtestGreetMeProviderWithJmSTransportAsyncTimeOut() throws Exception {
+    public void testGreetMeProviderWithJmSTransportAsyncTimeOut() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderJmsTestBase(false, "ffang");
     }
