@@ -41,6 +41,11 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>2008.01</servicemix-shared-version>
+    <servicemix.osgi.bundles>
+        org.springframework.bundle.spring.core,
+        org.springframework.bundle.spring.beans,
+        org.springframework.bundle.spring.context,
+    </servicemix.osgi.bundles>
   </properties>  
   
   <dependencies>
