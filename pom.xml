@@ -62,6 +62,11 @@
         org.apache.servicemix.jms*;version=${project.version},
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.jms
     </servicemix.osgi.export>
+    <servicemix.osgi.bundles>
+        org.springframework.bundle.spring.core,
+        org.springframework.bundle.spring.beans,
+        org.springframework.bundle.spring.context,
+    </servicemix.osgi.bundles>
   </properties>
 
   <dependencies>
