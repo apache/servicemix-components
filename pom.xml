@@ -41,7 +41,7 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
-    <servicemix-shared-version>2008.01</servicemix-shared-version>
+    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
     <cxf-version>2.1.2</cxf-version>
 
     <servicemix.osgi.import>
