@@ -67,6 +67,11 @@
         org.apache.servicemix.cxfbc*;version=${project.version},
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.cxfbc
     </servicemix.osgi.export>
+    <servicemix.osgi.bundles>
+        org.springframework.bundle.spring.core,
+        org.springframework.bundle.spring.beans,
+        org.springframework.bundle.spring.context,
+    </servicemix.osgi.bundles>
   </properties>
 
   <dependencies>
