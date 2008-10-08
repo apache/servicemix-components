@@ -306,11 +306,11 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     }
 
     protected Object createBean() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        if (beanName == null && beanType == null) {
-            throw new IllegalArgumentException("Property 'beanName' has not been set!");
-        }
         if (beanType == null && beanClassName != null) {
             beanType = Class.forName(beanClassName, true, getServiceUnit().getConfigurationClassLoader());
+        }
+        if (beanName == null && beanType == null) {
+            throw new IllegalArgumentException("Property 'bean', 'beanName' or 'beanClassName' has not been set!");
         }
         if (beanType != null) {
             return beanType.newInstance();
