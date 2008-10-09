@@ -20,6 +20,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
@@ -73,6 +74,16 @@ public class ContentEnricher extends EIPEndpoint {
      * response message
      */
     private QName resultElementName = new QName("result");
+
+    /**
+     * Should message properties be copied ?
+     */
+    private boolean copyProperties;
+
+    /**
+     * Should message attachments be copied ?
+     */
+    private boolean copyAttachments;
 
     /**
      * returns the QName of the resulting root node
@@ -132,6 +143,34 @@ public class ContentEnricher extends EIPEndpoint {
         this.resultElementName = resultElementName;
     }
 
+    public boolean isCopyProperties() {
+        return copyProperties;
+    }
+
+    /**
+     * If this is set to <code>true</code>, message properties from the incoming exchange and the enricher exchange will be copied
+     * to the outgoing message exchange.  The default value is <code>false</code> (do not copy message properties).
+     *
+     * @param copyProperties 
+     */
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+    }
+
+    public boolean isCopyAttachments() {
+        return copyAttachments;
+    }
+
+    /**
+     * If this is set to <code>true</code>, message attachments from the incoming exchange and the enricher exchange will be copied
+     * to the outgoing message exchange.  The default value is <code>false</code> (do not copy message atachments).
+     *
+     * @param copyAttachments
+     */
+    public void setCopyAttachments(boolean copyAttachments) {
+        this.copyAttachments = copyAttachments;
+    }
+
     protected void processAsync(MessageExchange exchange) throws Exception {
         throw new IllegalStateException();
     }
@@ -176,9 +215,13 @@ public class ContentEnricher extends EIPEndpoint {
 
         outExchange.setMessage(out, "in");
 
+        if (copyProperties || copyAttachments) {
+            copyPropertiesAndAttachments(exchange.getMessage("in"), outExchange.getMessage("in"));
+            copyPropertiesAndAttachments(enricherTargetME.getMessage("out"), outExchange.getMessage("in"));
+        }
+        
         sendSync(outExchange);
         done(exchange);
-
     }
 
     /**
@@ -257,6 +300,23 @@ public class ContentEnricher extends EIPEndpoint {
 
     public void setEnricherTarget(ExchangeTarget enricherTarget) {
         this.enricherTarget = enricherTarget;
+    }
+
+
+    /**
+     * Copies properties and attachments from one message to another
+     * depending on the endpoint configuration
+     *
+     * @param from the message containing the properties and attachments
+     * @param to the destination message where the properties and attachments are set
+     */
+    private void copyPropertiesAndAttachments(NormalizedMessage from, NormalizedMessage to) throws MessagingException {
+        if (copyProperties) {
+            copyProperties(from, to);
+        }
+        if (copyAttachments) {
+            copyAttachments(from, to);
+        }
     }
 
 }

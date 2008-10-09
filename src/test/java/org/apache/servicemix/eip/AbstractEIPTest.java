@@ -146,7 +146,13 @@ public abstract class AbstractEIPTest extends TestCase {
     }
     
     protected static class ReturnMockComponent extends ComponentSupport implements MessageExchangeListener {
+
+        //message property (name, value) to be set on the generated message
+        public static final String PROPERTY_NAME = "ReturnMockComponentPropName";
+        public static final String PROPERTY_VALUE = "ReturnMockComponentPropValue";
+
         private String response;
+
         public ReturnMockComponent(String response) {
             this.response = response;
         }
@@ -156,6 +162,10 @@ public abstract class AbstractEIPTest extends TestCase {
                     && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
                 NormalizedMessage out = exchange.createMessage();
                 out.setContent(createSource(response));
+
+                //add some message properties
+                out.setProperty(PROPERTY_NAME, PROPERTY_VALUE);
+
                 exchange.setMessage(out, "out");
                 if (txSync) {
                     sendSync(exchange);
