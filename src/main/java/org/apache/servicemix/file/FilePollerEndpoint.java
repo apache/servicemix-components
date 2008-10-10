@@ -62,7 +62,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     private File archive;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
-    private ConcurrentMap<String, InputStream> openExchanges;
+    private ConcurrentMap<String, InputStream> openExchanges = new ConcurrentHashMap<String, InputStream>();
 
     public FilePollerEndpoint() {
     }
@@ -82,7 +82,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     public synchronized void start() throws Exception {
         super.start();
         
-        // create the openExchanges map
+        // re-create the openExchanges map
         this.openExchanges = new ConcurrentHashMap<String, InputStream>();
     }
     

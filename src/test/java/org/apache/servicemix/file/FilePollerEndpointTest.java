@@ -17,22 +17,70 @@
 package org.apache.servicemix.file;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchangeFactory;
+import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
+
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.executors.Executor;
+import org.apache.servicemix.jbi.util.FileUtil;
+import org.apache.servicemix.tck.mock.MockExchangeFactory;
 
 public class FilePollerEndpointTest extends TestCase {
     
     private static final File DATA = new File("target/test/data");
     private static final File ARCHIVE = new File("target/test/archive");
+    private final List<MessageExchange> exchanges = new LinkedList<MessageExchange>();
     private FilePollerEndpoint endpoint;
 
     @Override
     protected void setUp() throws Exception {
-        endpoint = new FilePollerEndpoint();
+        exchanges.clear();
+        endpoint = new FilePollerEndpoint() {
+            {
+                logger = LogFactory.getLog(this.getClass());
+                
+            }
+            @Override
+            protected void send(MessageExchange me) throws MessagingException {
+                exchanges.add(me);
+            }
+            @Override
+            public Executor getExecutor() {
+                return new MockExecutor();
+            }
+            @Override
+            public MessageExchangeFactory getExchangeFactory() {
+                return new MockExchangeFactory() {
+                    @Override
+                    public InOnly createInOnlyExchange() throws MessagingException {
+                        return new MockExchangeFactory.MockInOnly() {
+                            private final String exchangeId = "id" + System.nanoTime();
+                            @Override
+                            public String getExchangeId() {
+                                return exchangeId;
+                            }
+                        };
+                    }
+                };
+            }
+        };
         endpoint.setTargetService(new QName("urn:test", "service"));
+        endpoint.setLockManager(new org.apache.servicemix.common.locks.impl.SimpleLockManager());
     }
     
     public void testValidateNoFile() throws Exception {
@@ -71,5 +119,67 @@ public class FilePollerEndpointTest extends TestCase {
         } catch (DeploymentException e) {
             //test succeeds
         }
+    }
+    
+    public void testProcessError() throws Exception {
+        createTestFile();
+        endpoint.setFile(DATA);
+        endpoint.pollFile(new File(DATA, "test-data.xml"));
+        MessageExchange exchange = exchanges.get(0);
+        exchange.setStatus(ExchangeStatus.ERROR);
+        exchange.setError(new TestException());
+        try {
+            endpoint.process(exchange);
+        } catch (TestException e) {
+            //this is OK
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e);
+            fail("we shouldn't be getting any other exceptions at this point");
+        }
+    }
+    
+    public void testProcessSuccess() throws Exception {
+        createTestFile();
+        endpoint.setFile(DATA);
+        File file = new File(DATA, "test-data.xml");
+        endpoint.pollFile(file);
+        MessageExchange exchange = exchanges.get(0);
+        exchange.setStatus(ExchangeStatus.DONE);
+        endpoint.process(exchange);
+        assertFalse(file.exists());
+    }
+    
+    private void createTestFile() throws IOException {
+        DATA.mkdirs();
+        InputStream fis = new FileInputStream("target/test-classes/test-data.xml");
+        OutputStream fos = new FileOutputStream(new File(DATA, "test-data.xml"));
+        FileUtil.copyInputStream(fis, fos);
+        fis.close();
+        fos.close();
+    }
+    
+    private static class TestException extends Exception {
+        //nothing to do here
+    }
+    
+    private static class MockExecutor implements Executor {
+
+        public int capacity() {
+            return 0;
+        }
+
+        public void execute(Runnable command) {
+            command.run();
+        }
+
+        public void shutdown() {  
+            //graciously do nothing
+        }
+
+        public int size() {
+            return 0;
+        }
+        
     }
 }
