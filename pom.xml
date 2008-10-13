@@ -47,7 +47,7 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
     <servicemix-shared-version>2008.01</servicemix-shared-version>
-    <servicemix-cxf-se-version>2008.01-SNAPSHOT</servicemix-cxf-se-version>
+    <servicemix-cxf-se-version>2008.01</servicemix-cxf-se-version>
     <cxf-version>2.1.2</cxf-version>
     <jetty-version>6.1.6</jetty-version>
     <spring-version>2.0.6</spring-version>
