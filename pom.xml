@@ -21,12 +21,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>2-SNAPSHOT</version>
+    <version>1</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-eip</artifactId>
-  <version>2008.02-SNAPSHOT</version>
+  <version>2008.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: EIP</name>
@@ -41,7 +41,7 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.2.1</servicemix-version>
-    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2008.01</servicemix-shared-version>
 
     <servicemix.osgi.import>
         org.apache.commons.jexl*;resolution:=optional,
