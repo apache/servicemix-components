@@ -28,7 +28,7 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>shared-libraries-pom</artifactId>
-  <version>2008.01</version>
+  <version>2008.02-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>ServiceMix :: Shared Libraries</name>
