@@ -162,6 +162,10 @@ public class WireTap extends EIPEndpoint {
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
     protected void processSync(MessageExchange exchange) throws Exception {
+        if (null == target.getOperation()) {
+            //not specify operation for the target, so save the src one by default
+            target.setOperation(exchange.getOperation());
+        }
         // Create exchange for target
         MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
         target.configureTarget(tme, getContext());
@@ -187,6 +191,10 @@ public class WireTap extends EIPEndpoint {
      * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
      */
     protected void processAsync(MessageExchange exchange) throws Exception {
+        if (null == target.getOperation()) {
+            //not specify operation for the target, so save the src one by default
+            target.setOperation(exchange.getOperation());
+        }
         if (exchange.getRole() == MessageExchange.Role.PROVIDER
             && exchange.getProperty(correlation) == null) {
             // Create exchange for target

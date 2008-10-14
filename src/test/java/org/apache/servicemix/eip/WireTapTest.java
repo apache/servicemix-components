@@ -388,4 +388,33 @@ public class WireTapTest extends AbstractEIPTest {
         listener.assertExchangeCompleted();
     }
     
+    public void testCopyOperationName() throws Exception {
+        activateReceiver("target");
+
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("wireTap"));
+        QName operation = new QName("operationNeedSave");
+        me.setOperation(operation);
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+        //since we didn't specify the operation for the target, so should save
+        //the operation name from the src MessageExchange
+        assertEquals(operation, wireTap.getTarget().getOperation());
+        
+        me = client.createInOnlyExchange();
+        me.setService(new QName("wireTap"));
+        operation = new QName("operationNeedSave");
+        me.setOperation(operation);
+        me.getInMessage().setContent(createSource("<hello/>"));
+        QName targetOperation = new QName("targetOperation");
+        wireTap.getTarget().setOperation(targetOperation);
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+        //since we specify the operation for the target, so should use the specified one
+        assertEquals(targetOperation, wireTap.getTarget().getOperation());
+        
+        listener.assertExchangeCompleted();
+    }
+    
 }
