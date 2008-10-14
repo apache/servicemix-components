@@ -556,10 +556,6 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <excludes>
-                <exclude>**/CxfBCMtomJMSFlowTest.java</exclude>
-                <exclude>**/CxfBcHttpJmsBridgeMtomTest.java</exclude>
-              </excludes>
               <forkMode>${surefire.fork.mode}</forkMode>
               <systemProperties>
                 <property>
@@ -592,6 +588,18 @@
                 <property>
                   <name>java.security.properties</name>
                   <value>${basedir}/target/test-classes/ibm.security</value>
+                </property>
+                <!--
+                  Turn down some of the logging to prevent the tests from
+                  running too slowly.
+                -->
+                <property>
+                  <name>log4j.configuration</name>
+                  <value>${basedir}/target/test-classes/log4j-tests.properties</value>
+                </property>
+                <property>
+                  <name>java.util.logging.config.file</name>
+                  <value>${basedir}/target/test-classes/logging.properties</value>
                 </property>
                 <property>
                     <name>javax.xml.transform.TransformerFactory</name>

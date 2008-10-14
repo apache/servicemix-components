@@ -230,7 +230,7 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         if ("ffang".equals(name)) {
             //in this case, the server is intended to sleep 3 sec,
             //which will cause time out both for sync and async invoke
-            assertTrue(txt.indexOf("JMS receive timed out") >= 0);
+            assertTrue(txt.indexOf("Timeout receiving message") >= 0);
         } else {
             //in this case, both sync and async invocation shouldn't see the timeout problem
             assertTrue(txt.indexOf("Hello " + name) >= 0);
