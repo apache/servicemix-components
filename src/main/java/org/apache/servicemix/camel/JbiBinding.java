@@ -34,6 +34,7 @@ import javax.xml.transform.Source;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
+import org.apache.camel.NoTypeConversionAvailableException;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +59,12 @@ public class JbiBinding {
     }
 
     public Source convertBodyToJbi(Exchange exchange, Object body) {
-        return ExchangeHelper.convertToType(exchange, Source.class, body);
+        try {
+           return ExchangeHelper.convertToType(exchange, Source.class, body);
+        } catch (NoTypeConversionAvailableException e) {
+           LOG.warn("Unable to convert " + body.getClass() + " to an XML Source, value will be null");
+           return null;
+        }
     }
 
     public MessageExchange makeJbiMessageExchange(Exchange camelExchange,
