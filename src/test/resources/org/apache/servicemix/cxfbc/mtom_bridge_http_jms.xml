@@ -50,7 +50,7 @@
                       service="mtom:TestMtomProviderService"
                       endpoint="TestMtomProviderJmsPort"
                       interfaceName="mtom:TestMtom"
-                      mtomEnabled="true"
+                      mtomEnabled="false"
                      >
           <cxfbc:inInterceptors>
             <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>

@@ -126,9 +126,7 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             inList.add(new MustUnderstandInterceptor());
             inList.add(new StaxInInterceptor());
             inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper()));
-            if (providerEndpoint.isMtomEnabled()) {
-                inList.add(new AttachmentInInterceptor());
-            }
+            inList.add(new AttachmentInInterceptor());
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);
             inChain.add(providerEndpoint.getInInterceptors());
@@ -148,17 +146,13 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             } else if (messageExchange instanceof InOut) {
                 NormalizedMessage msg = messageExchange.createMessage();
                 msg.setContent(soapMessage.getContent(Source.class));
-                if (providerEndpoint.isMtomEnabled()) {
-                    toNMSAttachments(msg, soapMessage);
-                }
+                toNMSAttachments(msg, soapMessage);
                 messageExchange.setMessage(msg, "out");
             } else if (messageExchange instanceof InOptionalOut) {
                 if (soapMessage.getContent(Source.class) != null) {
                     NormalizedMessage msg = messageExchange.createMessage();
                     msg.setContent(soapMessage.getContent(Source.class));
-                    if (providerEndpoint.isMtomEnabled()) {
-                        toNMSAttachments(msg, soapMessage);
-                    }
+                    toNMSAttachments(msg, soapMessage);
                     messageExchange.setMessage(msg, "out");
                 } else {
                     messageExchange.setStatus(ExchangeStatus.DONE);

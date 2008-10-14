@@ -38,6 +38,7 @@ import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.headers.Header;
+import org.apache.cxf.interceptor.AttachmentOutInterceptor;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Message;
@@ -164,10 +165,16 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
             attachmentList.add(attachment);
         }
         message.setAttachments(attachmentList);
+        
         if (message instanceof SoapMessage) {
             SoapMessage soapMessage = (SoapMessage)message;
             SoapVersion soapVersion = soapMessage.getVersion();
             message.put(Message.CONTENT_TYPE, soapVersion.getContentType());
+        }
+        if (attachmentList.size() > 0) {
+            message.put(org.apache.cxf.message.Message.MTOM_ENABLED, true);
+            message.put("write.attachments", true);
+            message.getInterceptorChain().add(new AttachmentOutInterceptor());
         }
         
     }
@@ -210,6 +217,8 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
                 }
             }
         }
+        
+        
     }
 
     private boolean isRequestor(org.apache.cxf.message.Message message) {
