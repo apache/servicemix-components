@@ -27,6 +27,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.MessageListener;
 
@@ -746,6 +747,14 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                                                               (String) dest, 
                                                               isPubSubDomain());
         }
+        //create temp queue/topic if no destination explicitly set
+        if (dest == null) {
+            if (destination instanceof Queue) {
+                return session.createTemporaryQueue();
+            } else {
+                return session.createTemporaryTopic();
+            }
+        } 
         throw new IllegalStateException("Unable to choose a destination for exchange " + exchange);
     }
 
