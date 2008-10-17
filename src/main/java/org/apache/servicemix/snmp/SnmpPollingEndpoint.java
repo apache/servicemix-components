@@ -16,12 +16,6 @@
  */
 package org.apache.servicemix.snmp;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.List;
-import java.util.Vector;
-
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -33,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.snmp.marshaler.DefaultSnmpMarshaler;
 import org.apache.servicemix.snmp.marshaler.SnmpMarshalerSupport;
+import org.apache.servicemix.snmp.util.OIDList;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -50,7 +45,6 @@ import org.snmp4j.smi.OID;
 import org.snmp4j.smi.OctetString;
 import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
-import org.springframework.core.io.Resource;
 
 /**
  * This is the polling endpoint for the snmp component.
@@ -66,7 +60,6 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
     public static final int DEFAULT_SNMP_RETRIES = 2;
     public static final int DEFAULT_SNMP_TIMEOUT = 1500;
 
-    private List<OID> objectsOfInterest = new Vector<OID>();
     private Address targetAddress;
     private TransportMapping transport;
     private Snmp snmp;
@@ -74,12 +67,12 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
     private CommunityTarget target;
     private PDU pdu;
 
+    private OIDList oids = new OIDList();
     private String address;
     private int retries = DEFAULT_SNMP_RETRIES;
     private int timeout = DEFAULT_SNMP_TIMEOUT;
     private int snmpVersion = DEFAULT_SNMP_VERSION;
     private String snmpCommunity = DEFAULT_COMMUNITY;
-    private Resource file; 
 
     private SnmpMarshalerSupport marshaler = new DefaultSnmpMarshaler();
 
@@ -157,42 +150,10 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
             throw new DeploymentException("The specified address " + address + " is not valid!");
         }
         
-        // check if the oid file is valid
-        if (this.file != null) {
-            if (this.file.exists()) {
-                BufferedReader br = null;
-                try {
-                    br = new BufferedReader(new FileReader(this.file.getFile()));
-                    String line = null;
-                    while ((line = br.readLine()) != null) {
-                        this.objectsOfInterest.add(new OID(line.trim()));
-                        LOG.debug(getEndpoint() + ": Added new OID : " + line.trim());
-                    }                    
-                } catch (IOException ex) {
-                    LOG.error("Error reading contents of file " + file.getFilename(), ex);
-                    throw new DeploymentException("The specified file " + file.getFilename() + " can't be read!");
-                } finally {
-                    if (br != null) {
-                        try {
-                            br.close();
-                        } catch (IOException ex) {
-                            LOG.error("Error closing file " + file.getFilename(), ex);
-                        }
-                    }
-                }
-            } else {
-                // the specified resource file is not existing
-                throw new DeploymentException("The specified file " + file.getFilename() + " does not exists!");
-            }
-        } else {
-            // no file defined - poller would have nothing to do
-            throw new DeploymentException("The file attribute has to be specified!");
-        }     
-        
         // finally check if the oid vector contains values
-        if (this.objectsOfInterest == null || this.objectsOfInterest.size()<=0) {
+        if (this.oids == null || this.oids.size()<=0) {
             // the poller would be unemployed
-            throw new DeploymentException("There are no OIDs defined to be polled. Check your OID file.");
+            throw new DeploymentException("There are no OIDs defined to be polled. Check your oids attribute.");
         }
     }
 
@@ -206,7 +167,7 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
         this.pdu.setType(PDU.GET);
 
         // prepare the request items
-        for (OID oid : objectsOfInterest) {
+        for (OID oid : oids) {
             this.pdu.add(new VariableBinding(oid));
         }
 
@@ -366,16 +327,16 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
         this.marshaler = marshaler;
     }
 
-    /** * @return Returns the file.
+    /** * @return Returns the oids.
      */
-    public Resource getFile() {
-        return this.file;
+    public OIDList getOids() {
+        return this.oids;
     }
 
     /**
-     * @param file The file to set.
+     * @param oids The oids to set.
      */
-    public void setFile(Resource file) {
-        this.file = file;
+    public void setOids(OIDList oids) {
+        this.oids = oids;
     }
 }
