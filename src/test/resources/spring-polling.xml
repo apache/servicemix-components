@@ -32,7 +32,7 @@
                 <snmp:poller service="test:poller"
                              endpoint="poller"
                              targetService="test:receiver"
-                             address="udp:172.20.16.62/161"
+                             address="udp:127.0.0.1/161"
                              oids="classpath:oids.txt"
                              period="1000" />
             	</snmp:endpoints>
