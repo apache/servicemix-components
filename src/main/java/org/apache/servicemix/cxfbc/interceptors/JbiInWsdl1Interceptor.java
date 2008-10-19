@@ -226,22 +226,25 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         Node jbiFaultDetail = null;
         if (message.getVersion() instanceof Soap11) {
             NodeList nodeList = soapFault.getElementsByTagName("detail");
-            if (nodeList == null) {
+            if (nodeList == null || nodeList.getLength() == 0) {
                 //there is no detail in the fault, which means the fault is
                 //thrown during soap header process according to soap spec,
                 //try get the mandatory elemenet faultstring
                 nodeList = soapFault.getElementsByTagName("faultstring");
+                message.put("faultstring", nodeList.item(0).getTextContent());
             }
             jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
         } else {
             NodeList nodeList = soapFault.getElementsByTagName("soap:Detail");
-            if (nodeList == null) {
+            if (nodeList == null || nodeList.getLength() == 0) {
                 //there is no detail in the fault, which means the fault is
                 //thrown during soap header process according to soap spec,
                 //try get the mandatory elemenet soap:Reason
                 nodeList = soapFault.getElementsByTagName("soap:Reason");
+                message.put("faultstring", nodeList.item(0).getTextContent());
             }
             jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
+            
         }
 
         SchemaInfo schemaInfo = 

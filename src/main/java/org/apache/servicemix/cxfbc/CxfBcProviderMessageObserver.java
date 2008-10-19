@@ -143,6 +143,10 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
                 Fault fault = messageExchange.createFault();
                 fault.setContent(soapMessage.getContent(Source.class));
                 messageExchange.setFault(fault);
+                if (soapMessage.get("faultstring") != null) {
+                    messageExchange.setProperty("faultstring", soapMessage.get("faultstring"));
+                }
+
             } else if (messageExchange instanceof InOut) {
                 NormalizedMessage msg = messageExchange.createMessage();
                 msg.setContent(soapMessage.getContent(Source.class));

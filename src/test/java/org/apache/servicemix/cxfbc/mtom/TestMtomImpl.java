@@ -34,8 +34,12 @@ import org.apache.cxf.mime.TestMtom;
             wsdlLocation = "testutils/mtom_xop.wsdl")
 public class TestMtomImpl implements TestMtom {
     public void testXop(Holder<String> name, Holder<DataHandler> attachinfo) {
+        if ("runtime exception".equals(name.value)) {
+            throw new RuntimeException("throw runtime exception");
+        }
         
         try {
+
             InputStream bis = attachinfo.value.getDataSource().getInputStream();
             byte b[] = new byte[6];
             bis.read(b, 0, 6);

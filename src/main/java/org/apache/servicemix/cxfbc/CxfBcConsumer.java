@@ -656,6 +656,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         Element details = toElement(exchange.getFault()
                                 .getContent());
                         f.setDetail(details);
+                        if (exchange.getProperty("faultstring") != null) {
+                            f.setMessage((String)exchange.getProperty("faultstring"));
+                        }
+
                         
                     } else {
                         Element details = toElement(exchange.getFault()
@@ -668,13 +672,22 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         details = (Element) details.getElementsByTagNameNS(
                                 details.getNamespaceURI(), "Fault").item(0);
                         assert details != null;
-                        details = (Element) details.getElementsByTagName("detail").item(0);
+                        if (exchange.getProperty("faultstring") != null) {
+                            details = (Element) details.getElementsByTagName("faultstring").item(0);
+                        } else {
+                            details = (Element) details.getElementsByTagName("detail").item(0);
+                        }
+
                         assert details != null;
                         f = new SoapFault(
                                 new org.apache.cxf.common.i18n.Message(
                                         "Fault occured", (ResourceBundle) null),
                                 new QName(details.getNamespaceURI(), "detail"));
                         f.setDetail(details);
+                        if (exchange.getProperty("faultstring") != null) {
+                            f.setMessage((String)exchange.getProperty("faultstring"));
+                        }
+
 
                     }
                     processFaultDetail(f, message);
@@ -722,6 +735,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         protected void processFaultDetail(Fault fault, Message msg) {
             Element exDetail = (Element) DOMUtils.getChild(fault.getDetail(),
                     Node.ELEMENT_NODE);
+            if (exDetail == null) {
+                return;
+            }
+
             QName qname = new QName(exDetail.getNamespaceURI(), exDetail
                     .getLocalName());
 

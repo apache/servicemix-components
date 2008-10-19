@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -150,8 +149,11 @@ public class CxfBcHttpJmsBridgeMtomTest extends SpringTestSupport {
             bis.read(b, 0, 10);
             String attachContent = new String(b);
             assertEquals(attachContent, "testfoobar");
-        } catch (UndeclaredThrowableException ex) {
-            throw (Exception) ex.getCause();
+            name.value = "runtime exception";
+            mtomPort.testXop(name, param);
+            fail("should catch RuntimeException");
+        } catch (RuntimeException ex) {
+            //
         }
 
     }
