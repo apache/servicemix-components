@@ -48,8 +48,8 @@ public class OIDListEditor extends PropertyEditorSupport {
                     // empty token - skip
                 }
             }
-        } else {
-            // seems to be a file resource
+        } else if (text.indexOf(":") != -1) {
+        	// seems to be a file resource
             try {
                 DefaultResourceLoader loader = new DefaultResourceLoader();
                 Resource file = loader.getResource(text);
@@ -79,7 +79,10 @@ public class OIDListEditor extends PropertyEditorSupport {
                 }
             } catch (Exception ex) {
                 throw new IllegalArgumentException(text + " is not a valid argument.", ex);
-            }
+            }        	
+        } else {
+            // maybe a single oid
+        	list.add(new OID(text.trim()));
         }
         setValue(list);
     }
