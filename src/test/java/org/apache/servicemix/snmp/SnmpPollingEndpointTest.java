@@ -39,7 +39,7 @@ public class SnmpPollingEndpointTest extends SpringTestSupport {
      * sets up an endpoint and waits 30 seconds for a incoming snmp message
      * @throws Exception
      */
-    public void testPolling() throws Exception {
+    public void xtestPolling() throws Exception {
         long waitTime = System.currentTimeMillis();
         
         Receiver receiver = (Receiver) getBean("receiver");
