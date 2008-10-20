@@ -653,11 +653,12 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         f = new JbiFault(
                                 new org.apache.cxf.common.i18n.Message(
                                         "Fault occured", (ResourceBundle) null));
-                        Element details = toElement(exchange.getFault()
-                                .getContent());
-                        f.setDetail(details);
                         if (exchange.getProperty("faultstring") != null) {
                             f.setMessage((String)exchange.getProperty("faultstring"));
+                        } else {
+                            Element details = toElement(exchange.getFault()
+                                .getContent());
+                            f.setDetail(details);
                         }
 
                         
@@ -733,6 +734,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
         // this method is used for ws-policy to set BindingFaultInfo
         protected void processFaultDetail(Fault fault, Message msg) {
+            if (fault.getDetail() == null) {
+                return;
+            }
             Element exDetail = (Element) DOMUtils.getChild(fault.getDetail(),
                     Node.ELEMENT_NODE);
             if (exDetail == null) {

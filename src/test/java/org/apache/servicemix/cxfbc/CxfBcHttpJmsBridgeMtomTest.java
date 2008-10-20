@@ -153,7 +153,7 @@ public class CxfBcHttpJmsBridgeMtomTest extends SpringTestSupport {
             mtomPort.testXop(name, param);
             fail("should catch RuntimeException");
         } catch (RuntimeException ex) {
-            //
+            assertEquals("throw runtime exception", ex.getMessage());
         }
 
     }
