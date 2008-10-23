@@ -68,6 +68,7 @@
         META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.cxfbc
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
+        org.apache.cxf.cxf-bundle,
         org.springframework.bundle.spring.core,
         org.springframework.bundle.spring.beans,
         org.springframework.bundle.spring.context,
