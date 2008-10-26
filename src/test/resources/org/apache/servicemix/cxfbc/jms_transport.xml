@@ -67,7 +67,7 @@
       <cxfbc:provider wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
                       service="greeter:HelloWorldService"
                       endpoint="HelloWorldPortProxy"
-                      interfaceName="greeter:Greetr"
+                      interfaceName="greeter:Greeter"
                       busCfg="org/apache/servicemix/cxfbc/jms_test_timeout.xml"
                      >
           <cxfbc:inInterceptors>

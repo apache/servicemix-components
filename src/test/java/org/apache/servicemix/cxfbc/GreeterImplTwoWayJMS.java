@@ -20,7 +20,7 @@ package org.apache.servicemix.cxfbc;
 
 @javax.jws.WebService(
         serviceName = "HelloWorldService", 
-        portName = "HelloWorldPort", 
+        portName = "HelloWorldPortProxy", 
         endpointInterface = "org.apache.hello_world_soap_http.Greeter",
         targetNamespace = "http://apache.org/hello_world_soap_http",
         wsdlLocation = "org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
