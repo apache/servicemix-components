@@ -23,6 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
+
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.testutil.common.ServerLauncher;
 import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
@@ -100,6 +104,10 @@ public class CxfBcJmsTest extends SpringTestSupport {
     }
 
     public void testJMSTransport() throws Exception {
+        SpringBusFactory bf = new SpringBusFactory();
+        Bus testBus = bf.createBus("org/apache/servicemix/cxfbc/jms_test_timeout.xml");
+        BusFactory.setDefaultBus(testBus);
+
         URL wsdl = getWSDLURL("org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl");
 
         QName serviceName = getServiceName(new QName(
