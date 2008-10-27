@@ -28,6 +28,14 @@ public class GreeterImpl implements Greeter {
 
     public String greetMe(String me) {
         System.out.println("\n\n*** GreetMe called with: " + me + "***\n\n");
+        if ("wait".equals(me)) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         return "Hello " + me;
     }
 

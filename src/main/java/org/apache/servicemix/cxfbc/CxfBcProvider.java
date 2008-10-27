@@ -133,6 +133,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
     private boolean mtomEnabled;
 
     private boolean useJBIWrapper = true;
+    
+    private boolean synchronous = true;
 
     public void processExchange(MessageExchange exchange) {
 
@@ -153,8 +155,9 @@ public class CxfBcProvider extends ProviderEndpoint implements
         Message message = ep.getBinding().createMessage();
         message.put(MessageExchange.class, exchange);
         Exchange cxfExchange = new ExchangeImpl();
+        cxfExchange.setSynchronous(isSynchronous());
         cxfExchange.put(MessageExchange.class, exchange);
-
+        
         message.setExchange(cxfExchange);
         cxfExchange.setOutMessage(message);
 
@@ -177,6 +180,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         cxfExchange.put(BindingOperationInfo.class, boi);
         cxfExchange.put(Endpoint.class, ep);
         cxfExchange.put(Service.class, cxfService);
+        cxfExchange.put(Bus.class, getBus());
         PhaseChainCache outboundChainCache = new PhaseChainCache();
         PhaseManager pm = getBus().getExtension(PhaseManager.class);
         List<Interceptor> outList = new ArrayList<Interceptor>();
@@ -229,13 +233,12 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 throw ex;
             }
             
-            
             os = message.getContent(OutputStream.class);
             os.flush();
             is.close();
             os.close();
         } catch (Exception e) {
-            faultProcess(exchange, message, e);
+        	faultProcess(exchange, message, e);
         }
 
     }
@@ -571,4 +574,20 @@ public class CxfBcProvider extends ProviderEndpoint implements
         transformer.transform(src, result);
         return new ByteArrayInputStream(baos.toByteArray());
     }
+
+    /**
+     * Specifies if the endpoints send message synchronously to external server using underlying 
+     * jms/http transport
+     *
+     *  * @param  synchronous a boolean
+     * @org.apache.xbean.Property description="Specifies if the endpoints send message synchronously to external server using underlying 
+     * jms/http transport. Default is <code>true</code>."
+     **/
+	public void setSynchronous(boolean synchronous) {
+		this.synchronous = synchronous;
+	}
+
+	public boolean isSynchronous() {
+		return synchronous;
+	}
 }
