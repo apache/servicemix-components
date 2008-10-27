@@ -190,7 +190,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 sls.add(library);
             }
             if (sls.size() > 0 && component.getContainer().getType() != Container.Type.ServiceMix3) {
-                throw new IllegalStateException("Can not reference shared libraries if the component is not deployed in ServiceMix");
+                throw new IllegalStateException("Can not reference shared libraries if the component is not deployed in ServiceMix 3");
             }
 
             // Add components
@@ -202,7 +202,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 components.add(component);
             }
             if (components.size() > 0 && component.getContainer().getType() != Container.Type.ServiceMix3) {
-                throw new IllegalStateException("Can not reference other components if the component is not deployed in ServiceMix");
+                throw new IllegalStateException("Can not reference other components if the component is not deployed in ServiceMix 3");
             }
 
             // convert the paths to URLS
@@ -221,7 +221,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 urls = getDefaultLocations();
             }
 
-            // create the classloader
+            // populate the list of parent classloaders
             List<ClassLoader> parents = new ArrayList<ClassLoader>();
             parents.add(getParentClassLoader(applicationContext));
             for (String library : sls) {
@@ -238,6 +238,12 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 }
                 parents.add(cl);
             }
+            // In smx4, add the system classloader as a parent so that the whole JRE classes are available
+            // to the SU, and not only the packages used by the components themselves
+            if (component.getContainer().getType() == Container.Type.ServiceMix4) {
+                parents.add(ClassLoader.getSystemClassLoader());
+            }
+            // now actually create the classloader
             classLoader = new JarFileClassLoader(applicationContext.getDisplayName(),
                                                  urls, 
                                                  parents.toArray(new ClassLoader[parents.size()]),
