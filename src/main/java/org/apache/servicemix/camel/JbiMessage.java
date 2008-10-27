@@ -155,13 +155,13 @@ public class JbiMessage extends DefaultMessage {
 //    @Override
     public void setBody(Object body) {
         if (normalizedMessage != null) {
-            if (!(body instanceof Source)) {
-                body = getExchange().getBinding().convertBodyToJbi(getExchange(), body);
-            }
-            try {
-                normalizedMessage.setContent((Source) body);
-            } catch (MessagingException e) {
-                throw new JbiException(e);
+            Source source = getExchange().getBinding().convertBodyToJbi(getExchange(), body);
+            if (source != null) {
+                try {
+                    normalizedMessage.setContent(source);
+                } catch (MessagingException e) {
+                    throw new JbiException(e);
+                }
             }
         }
         super.setBody(body);

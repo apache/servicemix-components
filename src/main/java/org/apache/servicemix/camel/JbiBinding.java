@@ -59,11 +59,15 @@ public class JbiBinding {
     }
 
     public Source convertBodyToJbi(Exchange exchange, Object body) {
-        try {
-           return ExchangeHelper.convertToType(exchange, Source.class, body);
-        } catch (NoTypeConversionAvailableException e) {
-           LOG.warn("Unable to convert " + body.getClass() + " to an XML Source, value will be null");
-           return null;
+        if (body instanceof Source) {
+            return (Source) body;
+        } else {
+            try {
+                return ExchangeHelper.convertToType(exchange, Source.class, body);
+            } catch (NoTypeConversionAvailableException e) {
+                LOG.warn("Unable to convert message body of type " + body.getClass() + " into an XML Source");
+                return null;
+            }
         }
     }
 
