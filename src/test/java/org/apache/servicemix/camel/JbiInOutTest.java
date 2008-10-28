@@ -25,8 +25,8 @@ import org.apache.servicemix.client.ServiceMixClient;
 /**
  * @version $Revision: 1.1 $
  */
-public class JbiInOutTest extends
-        NonJbiCamelEndpointsIntegrationTest {
+public class JbiInOutTest extends NonJbiCamelEndpointsIntegrationTest {
+    
     /*
      * @see TestCase#setUp()
      */
