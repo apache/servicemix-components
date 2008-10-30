@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+  -->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+       xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
+       xmlns:test="urn:test"
+       xmlns:greeter="http://apache.org/hello_world_soap_http_provider"
+       xmlns:jmsgreeter="http://apache.org/hello_world_soap_http">
+
+
+       
+  <sm:container id="jbi" embedded="true">
+    
+    <sm:endpoints>      
+      
+       
+      <cxfbc:provider wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="jmsgreeter:HelloWorldService"
+                      endpoint="HelloWorldPortProxy"
+                      interfaceName="jmsgreeter:Greetr"
+                      useJBIWrapper="false"
+                      synchronous="false"
+                     >
+          <cxfbc:inInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          </cxfbc:inInterceptors>
+          <cxfbc:outInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+            <bean class="org.apache.servicemix.cxfbc.provider.ConduitCompareInterceptor"/>
+          </cxfbc:outInterceptors>
+          <cxfbc:inFaultInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          </cxfbc:inFaultInterceptors>
+          <cxfbc:outFaultInterceptors>
+            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          </cxfbc:outFaultInterceptors>
+      </cxfbc:provider>
+    </sm:endpoints>
+    
+  </sm:container>
+  
+</beans>

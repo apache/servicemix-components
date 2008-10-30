@@ -105,6 +105,7 @@ public class CxfBCSEProviderAsyncSystemTest extends SpringTestSupport {
     }    
                
     public void setUpJBI(String beanFile) throws Exception {
+        success = true;
         if (context != null) {
             context.refresh();
         }
@@ -179,6 +180,13 @@ public class CxfBCSEProviderAsyncSystemTest extends SpringTestSupport {
         assertTrue(success);
     }
 
+    public void testSameConduit() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_conduit.xml");
+        greetMeProviderJmsTestBase();
+        assertTrue(success);
+    }
+
+
         
     private void greetMeProviderHttpTestBase() throws Exception {
        ClientInvocationForHttp thread1 = new ClientInvocationForHttp("wait");
@@ -240,8 +248,6 @@ public class CxfBCSEProviderAsyncSystemTest extends SpringTestSupport {
 	            client.done(io);
 	            if (io.getFault() != null) {
 	            	success = false;
-	            } else {
-	            	success = true;
 	            }
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -278,8 +284,6 @@ public class CxfBCSEProviderAsyncSystemTest extends SpringTestSupport {
 	            client.done(io); 
 	            if (io.getFault() != null) {
 	            	success = false;
-	            } else {
-	            	success = true;
 	            }
 			} catch (Exception e) {
 				e.printStackTrace();

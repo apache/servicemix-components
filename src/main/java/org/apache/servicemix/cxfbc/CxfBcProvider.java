@@ -155,6 +155,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         Message message = ep.getBinding().createMessage();
         message.put(MessageExchange.class, exchange);
         Exchange cxfExchange = new ExchangeImpl();
+        cxfExchange.setConduit(conduit);
         cxfExchange.setSynchronous(isSynchronous());
         cxfExchange.put(MessageExchange.class, exchange);
         
