@@ -258,6 +258,7 @@ public class Pipeline extends EIPEndpoint {
             MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
             (faultsTarget != null ? faultsTarget : target).configureTarget(me, getContext());
             MessageUtil.transferToIn(tme.getFault(), me);
+            copyPropertiesAndAttachments(exchange.getMessage("in"), me.getMessage("in"));
             sendSync(me);
             done(tme);
             if (me.getStatus() == ExchangeStatus.DONE) {
@@ -391,6 +392,7 @@ public class Pipeline extends EIPEndpoint {
                 me.setProperty(correlationTransformer, exchange.getExchangeId());
                 store.store(exchange.getExchangeId(), exchange);
                 MessageUtil.transferToIn(exchange.getFault(), me);
+                copyPropertiesAndAttachments(exchange.getMessage("in"), me.getMessage("in"));
                 send(me);
             // Faults must be sent back to the consumer
             } else {
