@@ -21,10 +21,14 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.annotation.PostConstruct;
 
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 import org.apache.servicemix.jbi.transformer.CopyTransformer;
+import org.apache.servicemix.store.StoreFactory;
+import org.apache.servicemix.store.Store;
+import org.apache.servicemix.store.memory.MemoryStoreFactory;
 
 /**
  * A useful base class for a transform component.
@@ -37,9 +41,14 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
 
     private boolean copyProperties = true;
     private boolean copyAttachments = true;
+    private StoreFactory storeFactory;
+    private Store store;
 
     protected TransformBeanSupport() {
     }
+
+    // Getters / Setters
+    //-------------------------------------------------------------------------
 
     public ExchangeTarget getTarget() {
         return target;
@@ -49,7 +58,77 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
         this.target = target;
     }
 
-    public void onMessageExchange(MessageExchange exchange) {
+    public boolean isCopyProperties() {
+        return copyProperties;
+    }
+
+
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+        if (getMessageTransformer() instanceof CopyTransformer) {
+            ((CopyTransformer) getMessageTransformer()).setCopyProperties(copyProperties);
+        }
+    }
+
+
+    public boolean isCopyAttachments() {
+        return copyAttachments;
+    }
+
+
+    public void setCopyAttachments(boolean copyAttachments) {
+        this.copyAttachments = copyAttachments;
+        if (getMessageTransformer() instanceof CopyTransformer) {
+            ((CopyTransformer) getMessageTransformer()).setCopyAttachments(copyAttachments);
+        }
+    }
+
+    public StoreFactory getStoreFactory() {
+        return storeFactory;
+    }
+
+    public void setStoreFactory(StoreFactory storeFactory) {
+        this.storeFactory = storeFactory;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    // Implementation methods
+    //-------------------------------------------------------------------------
+
+    @PostConstruct
+    public void initialize() throws Exception {
+        if (store == null) {
+            if (storeFactory == null) {
+                storeFactory = new MemoryStoreFactory();
+            }
+            store = storeFactory.open(getService().toString() + getEndpoint());
+        }
+    }
+
+    public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+        // Handle consumer exchanges
+        if (exchange.getRole() == MessageExchange.Role.CONSUMER) {
+            MessageExchange original = null;
+            try {
+                original = (MessageExchange) store.load(exchange.getExchangeId());
+            } catch (Exception e) {
+                // We can't do, so just return
+                return;
+            }
+            if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                original.setStatus(ExchangeStatus.ERROR);
+                original.setError(exchange.getError());
+                send(original);
+            }
+            return;
+        }
         // Skip done exchanges
         if (exchange.getStatus() == ExchangeStatus.DONE) {
             return;
@@ -82,23 +161,30 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
                 if (isInAndOut(exchange)) {
                     exchange.setMessage(out, "out");
                     if (txSync) {
-                        getDeliveryChannel().sendSync(exchange);
+                        sendSync(exchange);
                     } else {
-                        getDeliveryChannel().send(exchange);
+                        send(exchange);
                     }
                 } else {
                     outExchange.setMessage(out, "in");
                     if (txSync) {
-                        getDeliveryChannel().sendSync(outExchange);
+                        sendSync(outExchange);
+                        if (outExchange.getStatus() == ExchangeStatus.ERROR) {
+                            exchange.setStatus(ExchangeStatus.ERROR);
+                            exchange.setError(outExchange.getError());
+                            send(exchange);
+                        } else {
+                            exchange.setStatus(ExchangeStatus.DONE);
+                            send(exchange);
+                        }
                     } else {
-                        getDeliveryChannel().send(outExchange);
+                        store.store(outExchange.getExchangeId(), exchange);
+                        send(outExchange);
                     }
-                    exchange.setStatus(ExchangeStatus.DONE);
-                    getDeliveryChannel().send(exchange);
                 }
             } else {
                 exchange.setStatus(ExchangeStatus.DONE);
-                getDeliveryChannel().send(exchange);
+                send(exchange);
             }
         } catch (Exception e) {
             try {
@@ -113,39 +199,10 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
     }
 
 
-    // Implementation methods
-    //-------------------------------------------------------------------------
-
     /**
      * Transforms the given out message
      */
     protected abstract boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception;
-
-
-    public boolean isCopyProperties() {
-        return copyProperties;
-    }
-
-
-    public void setCopyProperties(boolean copyProperties) {
-        this.copyProperties = copyProperties;
-        if (getMessageTransformer() instanceof CopyTransformer) {
-            ((CopyTransformer) getMessageTransformer()).setCopyProperties(copyProperties);
-        }
-    }
-
-
-    public boolean isCopyAttachments() {
-        return copyAttachments;
-    }
-
-
-    public void setCopyAttachments(boolean copyAttachments) {
-        this.copyAttachments = copyAttachments;
-        if (getMessageTransformer() instanceof CopyTransformer) {
-            ((CopyTransformer) getMessageTransformer()).setCopyAttachments(copyAttachments);
-        }
-    }
 
 
     /**
@@ -160,4 +217,5 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
             CopyTransformer.copyAttachments(in, out);
         }
     }
+
 }
