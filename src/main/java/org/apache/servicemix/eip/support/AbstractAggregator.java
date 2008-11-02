@@ -17,6 +17,8 @@
 package org.apache.servicemix.eip.support;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -70,6 +72,10 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     private boolean copyProperties = true;
 
     private boolean copyAttachments = true;
+
+    private boolean reportErrors = false;
+
+    private boolean reportClosedAggregatesAsErrors = false;
     
     private ConcurrentMap<String, Timer> timers = new ConcurrentHashMap<String, Timer>();
     
@@ -130,7 +136,42 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     public void setCopyAttachments(boolean copyAttachments) {
         this.copyAttachments = copyAttachments;
     }
-    
+
+    public boolean isReportErrors() {
+        return reportErrors;
+    }
+
+    /**
+     * Sets wether the aggregator should report errors happening when sending the
+     * aggregate on all exchanges that compose the aggregate.
+     * The default value is <code>false</code>, meaning that if any error occur, this
+     * error will be lost.
+     * Note that if this flag is set to <code>true</code>, all exchanges received as part of a given aggregate
+     * will be hold until the aggregate is sent and the DONE / ERROR status is received back.
+     *
+     * @param reportErrors <code>boolean</code> indicating if errors should be reported back to consumers
+     */
+    public void setReportErrors(boolean reportErrors) {
+        this.reportErrors = reportErrors;
+    }
+
+    public boolean isReportClosedAggregatesAsErrors() {
+        return reportClosedAggregatesAsErrors;
+    }
+
+    /**
+     * Sets wether the aggregator should report errors on incoming exchanges received after a given
+     * aggregate has been closed.
+     * The default value is <code>false</code>, meaning that such exchanges will be silently sent back
+     * with a DONE status and discarded with respect to the aggregation process.
+     *
+     * @param reportClosedAggregatesAsErrors <code>boolean</code> indicating if exchanges received for a
+     *           closed aggregates should be send back with an ERROR status
+     */
+    public void setReportClosedAggregatesAsErrors(boolean reportClosedAggregatesAsErrors) {
+        this.reportClosedAggregatesAsErrors = reportClosedAggregatesAsErrors;
+    }
+
     /* (non-Javadoc)
      * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
      */
@@ -176,23 +217,36 @@ public abstract class AbstractAggregator extends EIPEndpoint {
      * @see org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging.MessageExchange)
      */
     public void process(MessageExchange exchange) throws Exception {
-        // Skip DONE
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
-            return;
-        // Skip ERROR
-        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            return;
-        // Handle an ACTIVE exchange as a PROVIDER
-        } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+        // Handle an exchange as a PROVIDER
+        if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
+            if (exchange.getStatus() != ExchangeStatus.ACTIVE) {
+                // ignore DONE / ERROR status from consumers
+                return;
+            }
             if (!(exchange instanceof InOnly)
                 && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
             } else {
                 processProvider(exchange);
             }
-        // Handle an ACTIVE exchange as a CONSUMER
-        } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-            done(exchange);
+        // Handle an exchange as a CONSUMER
+        } else {
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                throw new IllegalStateException("Unexpected active consumer exchange received");
+            }
+            if (reportErrors) {
+                String corrId = (String) exchange.getProperty(getService().toString() + ":" + getEndpoint() + ":correlation");
+                List<MessageExchange> exchanges = (List<MessageExchange>) store.load(corrId + "-exchanges");
+                if (exchanges != null) {
+                    for (MessageExchange me : exchanges) {
+                        if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                            exchange.setError(me.getError());
+                        }
+                        me.setStatus(exchange.getStatus());
+                        send(me);
+                    }
+                }
+            }
         }
     }
 
@@ -223,6 +277,14 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             }
             // If the aggregation is not closed
             if (aggregation != null) {
+                if (reportErrors) {
+                    List<MessageExchange> exchanges = (List<MessageExchange>) store.load(correlationId + "-exchanges");
+                    if (exchanges == null) {
+                        exchanges = new ArrayList<MessageExchange>();
+                    }
+                    exchanges.add(exchange);
+                    store.store(correlationId + "-exchanges", exchanges);
+                }
                 if (addMessage(aggregation, in, exchange)) {
                     sendAggregate(processCorrelationId, correlationId, aggregation, false, isSynchronous(exchange));
                 } else {
@@ -239,8 +301,16 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                         timers.put(correlationId, t);
                     }
                 }
+                if (!reportErrors) {
+                    done(exchange);
+                }
+            } else {
+                if (reportClosedAggregatesAsErrors) {
+                    fail(exchange, new ClosedAggregateException());
+                } else {
+                    done(exchange);
+                }
             }
-            done(exchange);
         } finally {
             lock.unlock();
         }
@@ -255,6 +325,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         if (processCorrelationId != null) {
             me.setProperty(JbiConstants.CORRELATION_ID, processCorrelationId);
         }
+        me.setProperty(getService().toString() + ":" + getEndpoint() + ":correlation", correlationId);
         target.configureTarget(me, getContext());
         NormalizedMessage nm = me.createMessage();
         me.setInMessage(nm);
@@ -379,4 +450,10 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                                            NormalizedMessage message,
                                            MessageExchange exchange,
                                            boolean timeout) throws Exception;
+
+    /**
+     * Error used to report that the aggregate has already been closed
+     */
+    public static class ClosedAggregateException extends Exception {
+    }
 }
