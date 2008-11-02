@@ -16,14 +16,10 @@
  */
 package org.apache.servicemix.camel;
 
-import java.io.InputStream;
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
 
-import javax.jbi.JBIException;
 import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -37,8 +33,6 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-
-import sun.security.action.GetLongAction;
 
 /**
  * Tests on correct handling of several XML Source implementations being sent by ServiceMix to Camel  
