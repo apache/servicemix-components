@@ -54,6 +54,8 @@ public class RecipientListAggregatorTest extends AbstractEIPTest {
         message.setContent(createSource("<hello/>"));
         client.sendSync(me);
         assertEquals(ExchangeStatus.ERROR, me.getStatus());
+        assertNotNull(me.getError());
+        assertEquals("Dummy error", me.getError().getMessage());
 
         listener.assertExchangeCompleted();
     }

@@ -142,7 +142,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     /**
-     * Sets wether the aggregator should report errors happening when sending the
+     * Sets whether the aggregator should report errors happening when sending the
      * aggregate on all exchanges that compose the aggregate.
      * The default value is <code>false</code>, meaning that if any error occur, this
      * error will be lost.
@@ -160,7 +160,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     /**
-     * Sets wether the aggregator should report errors on incoming exchanges received after a given
+     * Sets whether the aggregator should report errors on incoming exchanges received after a given
      * aggregate has been closed.
      * The default value is <code>false</code>, meaning that such exchanges will be silently sent back
      * with a DONE status and discarded with respect to the aggregation process.
@@ -240,7 +240,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                 if (exchanges != null) {
                     for (MessageExchange me : exchanges) {
                         if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                            exchange.setError(me.getError());
+                            me.setError(exchange.getError());
                         }
                         me.setStatus(exchange.getStatus());
                         send(me);
