@@ -30,6 +30,8 @@ import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.DefaultProducer;
 import org.apache.camel.util.URISupport;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Represents an {@link org.apache.camel.Endpoint} for interacting with JBI
@@ -62,6 +64,8 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
     }
 
     protected class JbiProducer extends DefaultProducer<Exchange> implements AsyncProcessor {
+        
+        private final Log log = LogFactory.getLog(JbiProducer.class);
 
         private CamelConsumerEndpoint consumer;
 
@@ -72,15 +76,18 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         @Override
         public void start() throws Exception {
             consumer = new CamelConsumerEndpoint(jbiComponent.getBinding(), JbiEndpoint.this);
-            //consumer.start();
             jbiComponent.addEndpoint(consumer);
             super.start();
         }
         @Override
         public void stop() throws Exception {
-            //consumer.stop();
-            jbiComponent.removeEndpoint(consumer);
-            super.stop();
+            if (isStopped()) {
+                log.debug("Camel producer for " + super.getEndpoint() + " has already been stopped");
+            } else {
+                log.debug("Stopping Camel producer for " + super.getEndpoint());
+                jbiComponent.removeEndpoint(consumer);
+                super.stop();
+            }
         }
 
         public void process(Exchange exchange) throws Exception {
