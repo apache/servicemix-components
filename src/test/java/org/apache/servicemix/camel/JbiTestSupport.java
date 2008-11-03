@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.jbi.JBIException;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.CamelContext;
@@ -35,7 +36,10 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 
@@ -43,6 +47,7 @@ import org.apache.servicemix.tck.ExchangeCompletedListener;
  * @version $Revision: 563665 $
  */
 public abstract class JbiTestSupport extends TestSupport {
+    
     protected Exchange receivedExchange;
 
     protected CamelContext camelContext = new DefaultCamelContext();
@@ -58,6 +63,8 @@ public abstract class JbiTestSupport extends TestSupport {
     protected String startEndpointUri = "jbi:endpoint:serviceNamespace:serviceA:endpointA";
 
     protected ProducerTemplate<Exchange> client = camelContext.createProducerTemplate();
+    
+    protected ServiceMixClient servicemixClient;
 
     /**
      * Sends an exchange to the endpoint
@@ -108,42 +115,65 @@ public abstract class JbiTestSupport extends TestSupport {
 
     @Override
     protected void setUp() throws Exception {
-        jbiContainer.setEmbedded(true);
-        exchangeCompletedListener = new ExchangeCompletedListener();
-
-        CamelJbiComponent component = new CamelJbiComponent();
-
+        configureContainer(jbiContainer);
         List<ActivationSpec> activationSpecList = new ArrayList<ActivationSpec>();
-
+        
         // lets add the Camel endpoint
-        ActivationSpec activationSpec = new ActivationSpec();
-        activationSpec.setId("camel");
-        activationSpec.setService(new QName("camel", "camel"));
-        activationSpec.setEndpoint("camelEndpoint");
-        activationSpec.setComponent(component);
-        activationSpecList.add(activationSpec);
+        CamelJbiComponent component = new CamelJbiComponent();
+        activationSpecList.add(createActivationSpec(component, new QName("camel", "camel"), "camelEndpoint"));
 
+        // and provide a callback method for adding more services
         appendJbiActivationSpecs(activationSpecList);
-
-        ActivationSpec[] activationSpecs = activationSpecList
-                .toArray(new ActivationSpec[activationSpecList.size()]);
-        jbiContainer.setActivationSpecs(activationSpecs);
+        jbiContainer.setActivationSpecs(activationSpecList.toArray(new ActivationSpec[activationSpecList.size()]));
+        
         jbiContainer.afterPropertiesSet();
+        
+        exchangeCompletedListener = new ExchangeCompletedListener();
         jbiContainer.addListener(exchangeCompletedListener);
 
-        // lets configure some componnets
-        camelContext.addComponent("jbi", component);
-
+        // allow for additional configuration of the compenent (e.g. deploying SU)
+        configureComponent(component);
+        
         // lets add some routes
-        camelContext.addRoutes(createRoutes());
+        RouteBuilder builder = createRoutes();
+        if (builder != null) {
+            camelContext.addRoutes(builder);
+        }
         endpoint = camelContext.getEndpoint(startEndpointUri);
-        assertNotNull("No endpoint found!", endpoint);
 
         camelContext.start();
     }
 
+    protected void configureComponent(CamelJbiComponent component) throws Exception {
+        // add the ServiceMix Camel component to the CamelContext
+        camelContext.addComponent("jbi", component);
+    }
+
+    protected void configureContainer(final JBIContainer container) throws Exception {
+        container.setEmbedded(true);
+    }
+    
+    public ServiceMixClient getServicemixClient() throws JBIException {
+        if (servicemixClient == null) {
+            servicemixClient = new DefaultServiceMixClient(jbiContainer);
+        }
+        return servicemixClient;
+    }
+    
+    protected ActivationSpec createActivationSpec(Object component, QName service) {
+        return createActivationSpec(component, service, "endpoint");
+    }
+    
+    protected ActivationSpec createActivationSpec(Object component, QName service, String endpoint) {
+        ActivationSpec spec = new ActivationSpec(component);
+        spec.setService(service);
+        spec.setEndpoint(endpoint);
+        return spec;
+    }
+
     @Override
     protected void tearDown() throws Exception {
+        getServicemixClient().close();
         client.stop();
         camelContext.stop();
         super.tearDown();

@@ -20,7 +20,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
-import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -39,8 +39,8 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  * @version $Revision: 1.1 $
  */
 public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
-    private static final transient Log LOG = LogFactory
-            .getLog(NonJbiCamelEndpointsIntegrationTest.class);
+    
+    private static final transient Log LOG = LogFactory.getLog(NonJbiCamelEndpointsIntegrationTest.class);
 
     protected String suName = "su1";
 
@@ -77,7 +77,9 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                 checkResult(exchange);
                 //assertNotNull(exchange.getMessage("out").getContent());
                 // TODO: check out the exchange
-                client.done(exchange);
+                if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                    client.done(exchange);
+                }
 
                 // Stop and undeploy
                 component.getServiceUnitManager().stop(suName);
@@ -142,7 +144,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
         deleteDir(tempRootDir);
     }
 
-    protected InOut createExchange(ServiceMixClient client)
+    protected MessageExchange createExchange(ServiceMixClient client)
         throws MessagingException {
 
         return client.createInOutExchange();
