@@ -16,14 +16,17 @@
  */
 package org.apache.servicemix.camel;
 
+import java.util.List;
+
 import javax.jbi.management.DeploymentException;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.servicemix.jbi.container.ActivationSpec;
 
 /**
  * Test for {@link JbiEndpoint.JbiProducer}  
  */
-public class JbiProducerTest extends JbiCamelErrorHandlingTestSupport {
+public class JbiProducerTest extends JbiTestSupport {
   
     /*
      * Ensure that no exceptions get thrown when shutting down the routes
@@ -40,6 +43,11 @@ public class JbiProducerTest extends JbiCamelErrorHandlingTestSupport {
     @Override
     protected void tearDown() throws Exception {
         // testing shutdown, so will do this manually
+    }
+    
+    @Override
+    protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
+        // no additional activation specs required
     }
   
     @Override
