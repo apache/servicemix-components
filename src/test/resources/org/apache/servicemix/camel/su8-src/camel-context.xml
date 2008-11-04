@@ -24,32 +24,36 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
        http://activemq.apache.org/camel/schema/spring http://activemq.apache.org/camel/schema/spring/camel-spring.xsd
     ">
-    
-    <bean id="camelTracer" class="org.apache.camel.processor.interceptor.Tracer">
-    <property name="traceExceptions" value="false"/>
-    <property name="traceInterceptors" value="true"/>
-    <property name="logLevel" value="FATAL"/>
-    <property name="logName" value="com.mycompany.messages"/>
-</bean>
-    
 
-  <camelContext trace="true"  xmlns="http://activemq.apache.org/camel/schema/spring">
+  <camelContext  xmlns="http://activemq.apache.org/camel/schema/spring">
     <route errorHandlerRef="deadLetterErrorHandler">
       <from uri="jbi:service:urn:test:error-handled-true"/>
       <onException>
         <exception>java.lang.NullPointerException</exception>
-            <redeliveryPolicy maximumRedeliveries="0"/>
-            <handled>
-              <constant>true</constant>
-            </handled>
-            <to uri="jbi:service:urn:test:receiver-service?mep=in-only"/>
+        <redeliveryPolicy maximumRedeliveries="0"/>
+        <handled>
+          <constant>true</constant>
+        </handled>
+        <to uri="jbi:service:urn:test:receiver-service?mep=in-only"/>
       </onException>
-      <to uri="jbi:service:urn:test:npe-error-service?mep=in-only"/>
+      <interceptor ref="handleFaultProcessor">
+        <to uri="jbi:service:urn:test:npe-error-service?mep=in-only"/>
+      </interceptor>
     </route>
   </camelContext>
 
   <bean id="deadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
     <property name="defaultDeadLetterEndpointUri" value="jbi:service:urn:test:deadLetter-service?mep=in-only"/>
+    <property name="redeliveryPolicy" ref="redeliveryPolicyConfig" />
   </bean>
+    
+  <bean id="redeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
+    <property name="maximumRedeliveries" value="3" />
+    <property name="initialRedeliveryDelay" value="2000" />
+    <property name="useExponentialBackOff" value="true" />
+    <property name="backOffMultiplier" value="2" />
+  </bean>
+
+  <bean id="handleFaultProcessor" class="org.apache.servicemix.camel.su8.HandleFaultProcessor" />
 
 </beans>

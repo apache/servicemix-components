@@ -22,6 +22,8 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.MessageExchangeListener;
@@ -53,9 +55,11 @@ public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSup
         InOnly exchange = smxClient.createInOnlyExchange();
         exchange.setEndpoint(jbiContainer.getRegistry().getEndpointsForService(TEST_SERVICE)[0]);
 
-        smxClient.sendSync(exchange);
+        smxClient.send(exchange);
 
+        exchange = (InOnly) smxClient.receive();
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+
         receiver.getMessageList().assertMessagesReceived(1);
         deadLetter.getMessageList().assertMessagesReceived(0);
     }
