@@ -16,10 +16,14 @@
  */
 package org.apache.servicemix.jms.multiplexing;
 
+import java.io.IOException;
+
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.jms.Message;
@@ -75,25 +79,38 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
         endpoint.getServiceUnit().getComponent().getExecutor().execute(new Runnable() {
             public void run() {
                 InOut exchange = null;
+                if (log.isDebugEnabled()) {
+                    log.debug("Handling jms message " + message);
+                }
+                String correlationID = null;
                 try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Handling jms message " + message);
-                    }
-                    exchange = (InOut) store.load(message.getJMSCorrelationID());
+                    correlationID = message.getJMSCorrelationID();
+                    exchange = (InOut) store.load(correlationID);
                     if (exchange == null) {
-                        throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
+                        throw new IllegalStateException();
                     }
+                } catch (Exception e) {
+                    log.error("Could not find exchange " + (correlationID == null ? "" : correlationID), e);
+                    return;
+                }
+                try {
                     SoapMessage soap = endpoint.getMarshaler().toSOAP(message);
-                    NormalizedMessage out = exchange.createMessage();
-                    soapHelper.getJBIMarshaler().toNMS(out, soap);
-                    ((InOut) exchange).setOutMessage(out);
-                    channel.send(exchange);
+                    if (soap.getFault() != null) {
+                        Fault fault = exchange.createFault();
+                        fault.setContent(soap.getSource());
+                        exchange.setFault(fault);
+                    } else {
+                        NormalizedMessage msg = exchange.createMessage();
+                        soapHelper.getJBIMarshaler().toNMS(msg, soap);
+                        ((InOut) exchange).setOutMessage(msg);
+                    }
                 } catch (Exception e) {
                     log.error("Error while handling jms message", e);
-                    if (exchange != null) {
-                        exchange.setError(e);
-                    }                    
-                } catch (Throwable e) {
+                    exchange.setError(e);
+                }
+                try {
+                    channel.send(exchange);
+                } catch (MessagingException e) {
                     log.error("Error while handling jms message", e);
                 }
             }

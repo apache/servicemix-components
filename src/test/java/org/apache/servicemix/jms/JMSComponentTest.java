@@ -20,8 +20,12 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -32,9 +36,12 @@ import javax.xml.transform.Source;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.components.jms.JmsReceiverComponent;
 import org.apache.servicemix.components.jms.JmsServiceComponent;
+import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.jbi.FaultException;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -190,17 +197,74 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         component.getServiceUnitManager().init("consumer", path.getAbsolutePath());
         component.getServiceUnitManager().start("consumer");
 
-        // Call it
-        InOut inout = client.createInOutExchange();
+        InOut inout = null;
+        boolean result = false;
+        
+        // Test successful return
+        inout = client.createInOutExchange();
         inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
         inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
-        boolean result = client.sendSync(inout);
+        result = client.sendSync(inout);
         assertTrue(result);
         NormalizedMessage out = inout.getOutMessage();
         assertNotNull(out);
         Source src = out.getContent();
         assertNotNull(src);
         logger.info(new SourceTransformer().toString(src));
+
+          // TODO
+//        // Test fault return 
+//        container.deactivateComponent("receiver");
+//        ReturnFaultComponent fault = new ReturnFaultComponent();
+//        ActivationSpec asFault = new ActivationSpec("receiver", fault);
+//        asFault.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+//        container.activateComponent(asFault);
+//        
+//        inout = client.createInOutExchange();
+//        inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
+//        inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+//        result = client.sendSync(inout);
+//        assertTrue(result);
+//        assertNotNull(inout.getFault());
+        
+        // Test error return
+        container.deactivateComponent("receiver");
+        ReturnErrorComponent error = new ReturnErrorComponent(new IllegalArgumentException());
+        ActivationSpec asError = new ActivationSpec("receiver", error);
+        asError.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        container.activateComponent(asError);
+        
+        inout = client.createInOutExchange();
+        inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
+        inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(inout);
+        assertEquals(ExchangeStatus.ERROR, inout.getStatus());
+        assertTrue("An IllegalArgumentException was expected", inout.getError() instanceof IllegalArgumentException);
+
+    }
+    
+    protected static class ReturnErrorComponent extends ComponentSupport implements MessageExchangeListener {
+        private Exception exception;
+
+        public ReturnErrorComponent(Exception exception) {
+            this.exception = exception;
+        }
+
+        public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                fail(exchange, exception);
+            }
+        }
+    }
+
+    protected static class ReturnFaultComponent extends ComponentSupport implements MessageExchangeListener {
+        public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                Fault fault = exchange.createFault();
+                fault.setContent(new StringSource("<fault/>"));
+                fail(exchange, fault);
+            }
+        }
     }
 
 }
