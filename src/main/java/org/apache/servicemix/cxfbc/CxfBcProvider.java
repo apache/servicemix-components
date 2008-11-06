@@ -134,6 +134,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
 
     private boolean useJBIWrapper = true;
     
+    private boolean useSOAPEnvelope = true;
+    
     private boolean synchronous = true;
 
     public void processExchange(MessageExchange exchange) {
@@ -558,7 +560,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
           * for SOAP messages.
           *
           * @param  useJBIWrapper a boolean
-          * @org.apache.xbean.Property description="Specifies if the JBI wrapper is sent in the body of the message. Default is <code>true</code>."
+          * @org.apache.xbean.Property description="Specifies if the JBI wrapper is sent in the body of the message. Default is <code>true</code>.
+          * 	Ignore the value of useSOAPEnvelope if useJBIWrapper is true"
           **/
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
@@ -567,6 +570,21 @@ public class CxfBcProvider extends ProviderEndpoint implements
     public boolean isUseJBIWrapper() {
         return useJBIWrapper;
     }
+    
+    /**
+     * Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
+     * if useJBIWrapper is true then ignore useSOAPEnvelope
+     *
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
+     * 				if useJBIWrapper is true then ignore useSOAPEnvelope. The  default is <code>true</code>.
+     * */
+	public void setUseSOAPEnvelope(boolean useSOAPEnvelope) {
+		this.useSOAPEnvelope = useSOAPEnvelope;
+	}
+
+	public boolean isUseSOAPEnvelope() {
+		return useSOAPEnvelope;
+	}
 
     protected InputStream convertMessageToInputStream(Source src) throws IOException, TransformerException {
         final Transformer transformer = TRANSFORMER_FACTORY.newTransformer();

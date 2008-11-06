@@ -125,7 +125,8 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             inList.add(new ReadHeadersInterceptor(this.providerEndpoint.getBus()));
             inList.add(new MustUnderstandInterceptor());
             inList.add(new StaxInInterceptor());
-            inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper()));
+            inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper(),
+            		this.providerEndpoint.isUseSOAPEnvelope()));
             inList.add(new AttachmentInInterceptor());
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);

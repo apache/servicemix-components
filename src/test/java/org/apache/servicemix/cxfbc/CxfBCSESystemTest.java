@@ -79,6 +79,11 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         calculatorTestBase();
     }
     
+    public void testCalculatrorWithOutJBIWrapperAndSoapEnv() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper_without_soapenv.xml");
+        calculatorTestBase();
+    }
+    
     public void testMultipleClientWithJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean.xml");
         multiClientTestBase();
