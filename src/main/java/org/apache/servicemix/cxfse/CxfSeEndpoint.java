@@ -86,6 +86,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     
     private boolean useJBIWrapper = true;
     
+    private boolean useSOAPEnvelope = true;
+    
     
     /**
         * Returns the object implementing the endpoint's functionality. It is 
@@ -227,6 +229,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
             endpoint.getInInterceptors().add(new AttachmentInInterceptor());
             endpoint.getOutInterceptors().add(new AttachmentOutInterceptor());
         }
+        
         JaxWsImplementorInfo implInfo = new JaxWsImplementorInfo(getPojo()
                 .getClass());
         setService(implInfo.getServiceName());
@@ -235,7 +238,15 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         super.validate();
     }
 
-    /*
+    private void removeInterceptor(List<Interceptor> interceptors, String whichInterceptor) {
+		for (Interceptor interceptor : interceptors) {
+			if (interceptor.getClass().getName().endsWith(whichInterceptor)) {
+				interceptors.remove(interceptor);
+			}
+		}
+	}
+
+	/*
      * (non-Javadoc)
      * 
      * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax.jbi.messaging.MessageExchange)
@@ -305,6 +316,18 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
         setService(endpoint.getServer().getEndpoint().getService().getName());
         setEndpoint(endpoint.getServer().getEndpoint().getEndpointInfo()
                 .getName().getLocalPart());
+        if (!isUseJBIWrapper() && !isUseSOAPEnvelope()) {
+           	removeInterceptor(endpoint.getServer().getEndpoint().getBinding().getInInterceptors(), 
+        			"ReadHeadersInterceptor");
+        	removeInterceptor(endpoint.getServer().getEndpoint().getBinding().getInFaultInterceptors(), 
+			"ReadHeadersInterceptor");
+        	removeInterceptor(endpoint.getServer().getEndpoint().getBinding().getOutInterceptors(), 
+        			"SoapOutInterceptor");
+        	removeInterceptor(endpoint.getServer().getEndpoint().getBinding().getOutFaultInterceptors(), 
+					"SoapOutInterceptor");
+        	removeInterceptor(endpoint.getServer().getEndpoint().getBinding().getOutInterceptors(), 
+				"StaxOutInterceptor");
+        }
         try {
             definition = new ServiceWSDLBuilder(getBus(), endpoint.getServer()
                     .getEndpoint().getService().getServiceInfos().iterator()
@@ -387,10 +410,11 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
 
     /**
         * Specifies if the endpoint expects messages that are encased in the 
-        * JBI wrapper used for SOAP messages.
+        * JBI wrapper used for SOAP messages. Ignore the value of useSOAPEnvelope 
+        * if useJBIWrapper is true
         *
-        * @param    mtomEnabled     a <code>boolean</code>
-        * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The  default is <code>true</code>."
+        * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The  default is <code>true</code>.
+        * 			Ignore the value of useSOAPEnvelope if useJBIWrapper is true"
         * */
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
@@ -399,4 +423,19 @@ public class CxfSeEndpoint extends ProviderEndpoint implements
     public boolean isUseJBIWrapper() {
         return useJBIWrapper;
     }
+
+    /**
+     * Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
+     * if useJBIWrapper is true then ignore useSOAPEnvelope
+     *
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
+     * 				if useJBIWrapper is true then ignore useSOAPEnvelope. The  default is <code>true</code>.
+     * */
+	public void setUseSOAPEnvelope(boolean useSOAPEnvelope) {
+		this.useSOAPEnvelope = useSOAPEnvelope;
+	}
+
+	public boolean isUseSOAPEnvelope() {
+		return useSOAPEnvelope;
+	}
 }

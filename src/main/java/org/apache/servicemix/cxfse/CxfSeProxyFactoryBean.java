@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.cxfse;
 
+import java.util.List;
+
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
 import javax.naming.InitialContext;
@@ -23,6 +25,8 @@ import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
@@ -67,6 +71,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     private ServiceMixClient client;
     
     private boolean useJBIWrapper = true;
+    
+    private boolean useSOAPEnvelope = true;
 
     public Object getObject() throws Exception {
         if (proxy == null) {
@@ -96,9 +102,30 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
                 jbiTransportFactory.setDeliveryChannel(dc);
             }
         }
-        return cf.create();
+        Object proxy = cf.create();
+        if (!isUseJBIWrapper() && !isUseSOAPEnvelope()) {
+        	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getInInterceptors(), 
+				"ReadHeadersInterceptor");
+        	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getInFaultInterceptors(), 
+        		"ReadHeadersInterceptor");
+        	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutInterceptors(), 
+				"SoapOutInterceptor");
+        	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutFaultInterceptors(), 
+				"SoapOutInterceptor");
+        	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutInterceptors(), 
+        		"StaxOutInterceptor");
+        }
+        return proxy;
     }
 
+    private void removeInterceptor(List<Interceptor> interceptors, String whichInterceptor) {
+		for (Interceptor interceptor : interceptors) {
+			if (interceptor.getClass().getName().endsWith(whichInterceptor)) {
+				interceptors.remove(interceptor);
+			}
+		}
+	}
+    
     public Class getObjectType() {
         return type;
     }
@@ -242,6 +269,14 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         }
     }
 
+    /**
+     * Specifies if the endpoint expects messages that are encased in the 
+     * JBI wrapper used for SOAP messages. Ignore the value of useSOAPEnvelope 
+     * if useJBIWrapper is true
+     *
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The  default is <code>true</code>.
+     * 			Ignore the value of useSOAPEnvelope if useJBIWrapper is true"
+     * */
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
     }
@@ -249,5 +284,20 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     public boolean isUseJBIWrapper() {
         return useJBIWrapper;
     }
+    
+    /**
+     * Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
+     * if useJBIWrapper is true then ignore useSOAPEnvelope
+     *
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
+     * 				if useJBIWrapper is true then ignore useSOAPEnvelope. The  default is <code>true</code>.
+     * */
+	public void setUseSOAPEnvelope(boolean useSOAPEnvelope) {
+		this.useSOAPEnvelope = useSOAPEnvelope;
+	}
+
+	public boolean isUseSOAPEnvelope() {
+		return useSOAPEnvelope;
+	}
 
 }
