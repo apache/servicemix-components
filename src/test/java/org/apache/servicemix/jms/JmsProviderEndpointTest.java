@@ -30,6 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.FileUtil;
@@ -166,6 +167,54 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         
     }
 
+    public void testSoapProviderInOutWithoutReplyDest() throws Exception {
+        JmsComponent component = new JmsComponent();
+        
+        JmsSoapProviderEndpoint endpoint = new JmsSoapProviderEndpoint();
+        endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
+        endpoint.setEndpoint("HelloPort");
+        endpoint.setConnectionFactory(new PooledConnectionFactory(connectionFactory));
+        endpoint.setDestinationName("destination");
+        endpoint.setWsdl(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC.wsdl"));
+        component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
+        container.activateComponent(component, "servicemix-jms");
+        
+        Thread th = new Thread() {
+            public void run() {
+                try {
+                    final Message msg = jmsTemplate.receive("destination");
+                    assertNotNull(msg);
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Output.xml")
+                                .getInputStream(), baos);
+                    jmsTemplate.send(msg.getJMSReplyTo(), new MessageCreator() {
+                        public Message createMessage(Session session) throws JMSException {
+                            TextMessage rep = session.createTextMessage(baos.toString());
+                            rep.setJMSCorrelationID(msg.getJMSCorrelationID() != null ? msg.getJMSCorrelationID() : msg.getJMSMessageID());
+                            return rep;
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        th.start();
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Input-Hello.xml").getInputStream(), baos);
+        InOut me = client.createInOutExchange();
+        me.getInMessage().setContent(new StringSource(baos.toString()));
+        me.setOperation(new QName("uri:HelloWorld", "Hello"));
+        me.setService(new QName("uri:HelloWorld", "HelloService"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        assertNotNull(me.getOutMessage());
+        assertNotNull(me.getOutMessage().getContent());
+        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        client.done(me);
+        
+    }
 
     // Helper methods
     private JmsComponent createEndpoint() {

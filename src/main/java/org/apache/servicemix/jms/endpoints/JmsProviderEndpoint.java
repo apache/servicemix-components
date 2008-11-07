@@ -747,14 +747,6 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                                                               (String) dest, 
                                                               isPubSubDomain());
         }
-        //create temp queue/topic if no destination explicitly set
-        if (dest == null) {
-            if (destination instanceof Queue) {
-                return session.createTemporaryQueue();
-            } else {
-                return session.createTemporaryTopic();
-            }
-        } 
         throw new IllegalStateException("Unable to choose a destination for exchange " + exchange);
     }
 
@@ -789,10 +781,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             });
         }
         // create the listener container
-        if (replyDestination != null) {
-            listenerContainer = createListenerContainer();
-            listenerContainer.start();
-        }
+        listenerContainer = createListenerContainer();
+        listenerContainer.start();
     }
 
     /**
@@ -879,7 +869,12 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             cont = new DefaultMessageListenerContainer();
         }
         cont.setConnectionFactory(getConnectionFactory());
-        cont.setDestination(getReplyDestination());
+        Destination replyDest = getReplyDestination();
+        if (replyDest == null) {
+        	replyDest = resolveOrCreateDestination(template, replyDestinationName, isPubSubDomain());
+        	setReplyDestination(replyDest);
+        }
+        cont.setDestination(replyDest);
         cont.setPubSubDomain(isPubSubDomain());
         cont.setPubSubNoLocal(isPubSubNoLocal());
         cont.setMessageListener(new MessageListener() {
@@ -891,4 +886,32 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         cont.afterPropertiesSet();
         return cont;
     }
+    
+    /**
+     * If the destinationName given is null then a temporary destination is created else the destination name
+     * is resolved using the resolver from the jmsConfig
+     *
+     * @param jmsTemplate template to use for session and resolver
+     * @param replyToDestinationName null for temporary destination or a destination name
+     * @param pubSubDomain true=pubSub, false=Queues
+     * @return resolved destination
+     */
+    private Destination resolveOrCreateDestination(final JmsTemplate jmsTemplate,
+                                                          final String replyToDestinationName,
+                                                          final boolean pubSubDomain) {
+        return (Destination)jmsTemplate.execute(new SessionCallback() {
+            public Object doInJms(Session session) throws JMSException {
+                if (replyToDestinationName == null) {
+                        if (destination instanceof Queue) {
+                        return session.createTemporaryQueue();
+                    } else {
+                        return session.createTemporaryTopic();
+                    }
+                }
+                DestinationResolver resolv = jmsTemplate.getDestinationResolver();
+                return resolv.resolveDestinationName(session, replyToDestinationName, pubSubDomain);
+            }
+        });
+    }
+
 }
