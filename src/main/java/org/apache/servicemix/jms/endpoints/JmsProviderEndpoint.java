@@ -23,6 +23,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.RobustInOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.Fault;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -30,6 +31,7 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.JbiConstants;
@@ -239,7 +241,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     * Specifies if the QoS values specified for the endpoint are explicitly 
     * used when a messages is sent. The default is <code>false</code>.
     *
-     * @param replyExplicitQosEnabled should the QoS values be sent?
+     * @param explicitQosEnabled should the QoS values be sent?
      */
     public void setExplicitQosEnabled(boolean explicitQosEnabled) {
         this.explicitQosEnabled = explicitQosEnabled;
@@ -476,7 +478,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                     done(exchange);
                 // In message
                 } else if ((in = exchange.getMessage("in")) != null) {
-                    if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
+                    if (exchange instanceof InOnly) {
                         processInOnly(exchange, in);
                         done(exchange);
                     }
@@ -631,14 +633,30 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             if (receiveJmsMsg == null) {
                 throw new IllegalStateException("Unable to receive response");
             }
-
-            NormalizedMessage out = exchange.getMessage("out");
-            if (out == null) {
-                out = exchange.createMessage();
-                exchange.setMessage(out, "out");
+            if (receiveJmsMsg.getBooleanProperty(AbstractJmsMarshaler.DONE_JMS_PROPERTY)) {
+                exchange.setStatus(ExchangeStatus.DONE);
+            } else if (receiveJmsMsg.getBooleanProperty(AbstractJmsMarshaler.ERROR_JMS_PROPERTY)) {
+                Exception e = (Exception) ((ObjectMessage) receiveJmsMsg).getObject();
+                exchange.setError(e);
+                exchange.setStatus(ExchangeStatus.ERROR);
+            } else if (receiveJmsMsg.getBooleanProperty(AbstractJmsMarshaler.FAULT_JMS_PROPERTY)) {
+                Fault fault = exchange.getFault();
+                if (fault == null) {
+                    fault = exchange.createFault();
+                    exchange.setFault(fault);
+                }
+                marshaler.populateMessage(receiveJmsMsg, exchange, fault);
+            } else {
+                NormalizedMessage out = exchange.getMessage("out");
+                if (out == null) {
+                    out = exchange.createMessage();
+                    exchange.setMessage(out, "out");
+                }
+                marshaler.populateMessage(receiveJmsMsg, exchange, out);
             }
-            marshaler.populateMessage(receiveJmsMsg, exchange, out);
-            boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+            boolean txSync = exchange.getStatus() == ExchangeStatus.ACTIVE
+                                && exchange.isTransacted()
+                                && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
             if (txSync) {
                 sendSync(exchange);
             } else {
@@ -665,12 +683,27 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             logger.error("Unable to load exchange related to incoming JMS message " + message, e);
         }
         try {
-            NormalizedMessage out = exchange.getMessage("out");
-            if (out == null) {
-                out = exchange.createMessage();
-                exchange.setMessage(out, "out");
+            if (message.getBooleanProperty(AbstractJmsMarshaler.DONE_JMS_PROPERTY)) {
+                exchange.setStatus(ExchangeStatus.DONE);
+            } else if (message.getBooleanProperty(AbstractJmsMarshaler.ERROR_JMS_PROPERTY)) {
+                Exception e = (Exception) ((ObjectMessage) message).getObject();
+                exchange.setError(e);
+                exchange.setStatus(ExchangeStatus.ERROR);
+            } else if (message.getBooleanProperty(AbstractJmsMarshaler.FAULT_JMS_PROPERTY)) {
+                Fault fault = exchange.getFault();
+                if (fault == null) {
+                    fault = exchange.createFault();
+                    exchange.setFault(fault);
+                }
+                marshaler.populateMessage(message, exchange, fault);
+            } else {
+                NormalizedMessage out = exchange.getMessage("out");
+                if (out == null) {
+                    out = exchange.createMessage();
+                    exchange.setMessage(out, "out");
+                }
+                marshaler.populateMessage(message, exchange, out);
             }
-            marshaler.populateMessage(message, exchange, out);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Error while populating JBI exchange " + exchange, e);
@@ -678,7 +711,9 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
             exchange.setError(e);
         }
         try {
-            boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+            boolean txSync = exchange.getStatus() == ExchangeStatus.ACTIVE
+                                && exchange.isTransacted()
+                                && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
             if (txSync) {
                 sendSync(exchange);
             } else {

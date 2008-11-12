@@ -426,8 +426,8 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     protected void processExchange(final MessageExchange exchange, final Session session, final JmsContext context) throws Exception {
-        // Ignore DONE exchanges
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
+        // Ignore InOnly exchanges which are currently handled in fire-and-forget mode
+        if (exchange instanceof InOnly) {
             return;
         }
         // Create session if needed
@@ -474,6 +474,10 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
             msg = marshaler.createError(exchange, error, session, context);
             dest = getReplyDestination(exchange, error, session, context);
             setCorrelationId(context.getMessage(), msg);
+            send(msg, session, dest);
+        } else if (exchange.getStatus() == ExchangeStatus.DONE) {
+            msg = session.createMessage();
+            msg.setBooleanProperty(AbstractJmsMarshaler.DONE_JMS_PROPERTY, true);
             send(msg, session, dest);
         } else {
             throw new IllegalStateException("Unrecognized exchange status");
@@ -541,9 +545,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
                 } catch (Exception e) {
                     handleException(exchange, e, session, context);
                 }
-                if (exchange.getStatus() != ExchangeStatus.DONE) {
-                    processExchange(exchange, session, context);
-                }
+                processExchange(exchange, session, context);
             } else {
                 if (stateless) {
                     exchange.setProperty(PROP_JMS_CONTEXT, context);

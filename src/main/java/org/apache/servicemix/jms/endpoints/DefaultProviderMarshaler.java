@@ -17,6 +17,12 @@
 package org.apache.servicemix.jms.endpoints;
 
 import java.util.Map;
+import java.util.List;
+import java.util.Set;
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -24,9 +30,19 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.transform.Source;
+import javax.xml.stream.XMLStreamReader;
+import javax.activation.DataHandler;
 
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.soap.core.PhaseInterceptorChain;
+import org.apache.servicemix.soap.core.MessageImpl;
+import org.apache.servicemix.soap.interceptors.mime.AttachmentsInInterceptor;
+import org.apache.servicemix.soap.interceptors.mime.AttachmentsOutInterceptor;
+import org.apache.servicemix.soap.interceptors.xml.StaxInInterceptor;
+import org.apache.servicemix.soap.interceptors.xml.StaxOutInterceptor;
+import org.apache.servicemix.soap.interceptors.xml.BodyOutInterceptor;
+import org.apache.servicemix.soap.util.stax.StaxSource;
 
 public class DefaultProviderMarshaler extends AbstractJmsMarshaler implements
     JmsProviderMarshaler {
@@ -49,8 +65,21 @@ public class DefaultProviderMarshaler extends AbstractJmsMarshaler implements
     }
 
     public Message createMessage(MessageExchange exchange, NormalizedMessage in, Session session) throws Exception {
-        TextMessage text = session.createTextMessage();
-        text.setText(transformer.contentToString(in));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PhaseInterceptorChain chain = new PhaseInterceptorChain();
+        chain.add(new AttachmentsOutInterceptor());
+        chain.add(new StaxOutInterceptor());
+        chain.add(new BodyOutInterceptor());
+        org.apache.servicemix.soap.api.Message msg = new MessageImpl();
+        msg.setContent(Source.class, in.getContent());
+        msg.setContent(OutputStream.class, baos);
+        for (String attId : (Set<String>) in.getAttachmentNames()) {
+            msg. getAttachments().put(attId, in.getAttachment(attId));
+        }
+        chain.doIntercept(msg);
+        TextMessage text = session.createTextMessage(baos.toString());
+        text.setStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE,
+                               (String) msg.get(org.apache.servicemix.soap.api.Message.CONTENT_TYPE));
         if (jmsProperties != null) {
             for (Map.Entry<String, Object> e : jmsProperties.entrySet()) {
                 text.setObjectProperty(e.getKey(), e.getValue());
@@ -66,12 +95,23 @@ public class DefaultProviderMarshaler extends AbstractJmsMarshaler implements
 
     public void populateMessage(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) throws Exception {
         if (message instanceof TextMessage) {
-            TextMessage textMessage = (TextMessage) message;
-            Source source = new StringSource(textMessage.getText());
-            normalizedMessage.setContent(source);
-
+            PhaseInterceptorChain chain = new PhaseInterceptorChain();
+            chain.add(new AttachmentsInInterceptor());
+            chain.add(new StaxInInterceptor());
+            org.apache.servicemix.soap.api.Message msg = new MessageImpl();
+            msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) message).getText().getBytes()));
+            String contentType = message.getStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE);
+            if (contentType != null) {
+                msg.put(org.apache.servicemix.soap.api.Message.CONTENT_TYPE, contentType);
+            }
+            chain.doIntercept(msg);
+            XMLStreamReader xmlReader = msg.getContent(XMLStreamReader.class);
+            normalizedMessage.setContent(new StaxSource(xmlReader));
+            for (Map.Entry<String, DataHandler> attachment : msg.getAttachments().entrySet()) {
+                normalizedMessage.addAttachment(attachment.getKey(), attachment.getValue());
+            }
             if (isCopyProperties()) {
-                copyPropertiesFromJMS(textMessage, normalizedMessage);
+                copyPropertiesFromJMS(message, normalizedMessage);
             }
         } else {
             throw new UnsupportedOperationException("JMS message is not a TextMessage");

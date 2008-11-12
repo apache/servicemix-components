@@ -20,7 +20,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -29,11 +35,22 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.ObjectMessage;
 import javax.xml.transform.Source;
+import javax.xml.stream.XMLStreamReader;
+import javax.activation.DataHandler;
 
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.soap.core.PhaseInterceptorChain;
+import org.apache.servicemix.soap.core.MessageImpl;
+import org.apache.servicemix.soap.interceptors.mime.AttachmentsInInterceptor;
+import org.apache.servicemix.soap.interceptors.mime.AttachmentsOutInterceptor;
+import org.apache.servicemix.soap.interceptors.xml.StaxInInterceptor;
+import org.apache.servicemix.soap.interceptors.xml.StaxOutInterceptor;
+import org.apache.servicemix.soap.interceptors.xml.BodyOutInterceptor;
+import org.apache.servicemix.soap.util.stax.StaxSource;
 
 public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements JmsConsumerMarshaler {
     
@@ -78,28 +95,73 @@ public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements Jm
     }
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {
-        String text = new SourceTransformer().contentToString(outMsg);
-        TextMessage textMessage = session.createTextMessage(text);
-        if (isCopyProperties()) {
-            copyPropertiesFromNM(outMsg, textMessage);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PhaseInterceptorChain chain = new PhaseInterceptorChain();
+        chain.add(new AttachmentsOutInterceptor());
+        chain.add(new StaxOutInterceptor());
+        chain.add(new BodyOutInterceptor());
+        org.apache.servicemix.soap.api.Message msg = new MessageImpl();
+        msg.setContent(Source.class, outMsg.getContent());
+        msg.setContent(OutputStream.class, baos);
+        for (String attId : (Set<String>) outMsg.getAttachmentNames()) {
+            msg. getAttachments().put(attId, outMsg.getAttachment(attId));
         }
-        return textMessage;
+        chain.doIntercept(msg);
+        TextMessage text = session.createTextMessage(baos.toString());
+        text.setStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE,
+                               (String) msg.get(org.apache.servicemix.soap.api.Message.CONTENT_TYPE));
+        if (isCopyProperties()) {
+            copyPropertiesFromNM(outMsg, text);
+        }
+        return text;
     }
 
     public Message createFault(MessageExchange exchange, Fault fault, Session session, JmsContext context) throws Exception {
-        String text = new SourceTransformer().contentToString(fault);
-        return session.createTextMessage(text);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PhaseInterceptorChain chain = new PhaseInterceptorChain();
+        chain.add(new AttachmentsOutInterceptor());
+        chain.add(new StaxOutInterceptor());
+        chain.add(new BodyOutInterceptor());
+        org.apache.servicemix.soap.api.Message msg = new MessageImpl();
+        msg.setContent(Source.class, fault.getContent());
+        msg.setContent(OutputStream.class, baos);
+        for (String attId : (Set<String>) fault.getAttachmentNames()) {
+            msg. getAttachments().put(attId, fault.getAttachment(attId));
+        }
+        chain.doIntercept(msg);
+        TextMessage text = session.createTextMessage(baos.toString());
+        text.setStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE,
+                               (String) msg.get(org.apache.servicemix.soap.api.Message.CONTENT_TYPE));
+        text.setBooleanProperty(FAULT_JMS_PROPERTY, true);
+        if (isCopyProperties()) {
+            copyPropertiesFromNM(fault, text);
+        }
+        return text;
     }
 
     public Message createError(MessageExchange exchange, Exception error, Session session, JmsContext context) throws Exception {
-        throw error;
+        ObjectMessage message = session.createObjectMessage(error);
+        message.setBooleanProperty(ERROR_JMS_PROPERTY, true);
+        return message;
     }
 
     protected void populateMessage(Message message, NormalizedMessage normalizedMessage) throws Exception {
         if (message instanceof TextMessage) {
-            TextMessage textMessage = (TextMessage) message;
-            Source source = new StringSource(textMessage.getText());
-            normalizedMessage.setContent(source);
+            PhaseInterceptorChain chain = new PhaseInterceptorChain();
+            chain.add(new AttachmentsInInterceptor());
+            chain.add(new StaxInInterceptor());
+            org.apache.servicemix.soap.api.Message msg = new MessageImpl();
+            msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) message).getText().getBytes()));
+            String contentType = message.getStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE);
+            if (contentType != null) {
+                msg.put(org.apache.servicemix.soap.api.Message.CONTENT_TYPE, contentType);
+            }
+            chain.doIntercept(msg);
+            XMLStreamReader xmlReader = msg.getContent(XMLStreamReader.class);
+            normalizedMessage.setContent(new StaxSource(xmlReader));
+            for (Map.Entry<String, DataHandler> attachment : msg.getAttachments().entrySet()) {
+                normalizedMessage.addAttachment(attachment.getKey(), attachment.getValue());
+            }
         } else {
             throw new UnsupportedOperationException("JMS message is not a TextMessage");
         }

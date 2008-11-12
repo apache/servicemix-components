@@ -16,6 +16,10 @@
  */
 package org.apache.servicemix.jms;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -26,9 +30,12 @@ import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.activemq.xbean.BrokerFactoryBean;
+import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.jencks.GeronimoPlatformTransactionManager;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jms.core.JmsTemplate;
@@ -106,4 +113,29 @@ public abstract class AbstractJmsTestSupport extends TestCase {
     protected void configureJmsBroker() throws Exception {
         
     }
+
+     protected static class ReturnErrorComponent extends ComponentSupport implements MessageExchangeListener {
+         private Exception exception;
+     
+         public ReturnErrorComponent(Exception exception) {
+             this.exception = exception;
+         }
+     
+         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                 fail(exchange, exception);
+             }
+         }
+     }
+ 
+     protected static class ReturnFaultComponent extends ComponentSupport implements MessageExchangeListener {
+         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                 Fault fault = exchange.createFault();
+                 fault.setContent(new StringSource("<fault/>"));
+                 fail(exchange, fault);
+             }
+         }
+     }
+     
 }
