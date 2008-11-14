@@ -28,17 +28,26 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.xml.transform.Source;
 
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
 /**
  * Encapsulates the conversion to and from JMS messages
  */
 public class DefaultJmsMarshaler implements JmsMarshaler {
+
     public static final String CONTENT_TYPE = "MimeContentType";
+
+    public static final String DONE_JMS_PROPERTY = "JBIDone";
+
+    public static final String FAULT_JMS_PROPERTY = "JBIFault";
+
+    public static final String ERROR_JMS_PROPERTY = "JBIError";
 
     private JmsEndpoint endpoint;
     
@@ -116,6 +125,10 @@ public class DefaultJmsMarshaler implements JmsMarshaler {
                 }
             }
         }
+
+        if (message.getFault() != null) {
+            msg.setBooleanProperty(FAULT_JMS_PROPERTY, true);
+        }
         
         return msg;
     }
@@ -179,6 +192,11 @@ public class DefaultJmsMarshaler implements JmsMarshaler {
         String contentType = message.getStringProperty(CONTENT_TYPE);
         SoapMessage soap = soapHelper.getSoapMarshaler().createReader().read(is, contentType);
 
+        if (message.getBooleanProperty(FAULT_JMS_PROPERTY)) {
+            Source src = soap.getSource();
+            soap.setSource(null);
+            soap.setFault(new SoapFault(SoapFault.SENDER, null, null, null, src));
+        }
         return soap;
     }
 

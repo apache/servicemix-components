@@ -114,28 +114,28 @@ public abstract class AbstractJmsTestSupport extends TestCase {
         
     }
 
-     protected static class ReturnErrorComponent extends ComponentSupport implements MessageExchangeListener {
-         private Exception exception;
+    protected static class ReturnErrorComponent extends ComponentSupport implements MessageExchangeListener {
+        private Exception exception;
      
-         public ReturnErrorComponent(Exception exception) {
-             this.exception = exception;
-         }
+        public ReturnErrorComponent(Exception exception) {
+            this.exception = exception;
+        }
      
-         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
-             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                 fail(exchange, exception);
-             }
-         }
-     }
+        public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                fail(exchange, exception);
+            }
+        }
+    }
  
-     protected static class ReturnFaultComponent extends ComponentSupport implements MessageExchangeListener {
-         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
-             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-                 Fault fault = exchange.createFault();
-                 fault.setContent(new StringSource("<fault/>"));
-                 fail(exchange, fault);
-             }
-         }
-     }
+    protected static class ReturnFaultComponent extends ComponentSupport implements MessageExchangeListener {
+        public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                Fault fault = exchange.createFault();
+                fault.setContent(new StringSource("<fault/>"));
+                fail(exchange, fault);
+            }
+        }
+    }
      
 }

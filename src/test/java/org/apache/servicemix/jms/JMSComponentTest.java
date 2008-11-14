@@ -215,19 +215,20 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         logger.info(new SourceTransformer().toString(src));
 
         // Test fault return 
-//        container.deactivateComponent("receiver");
-//        ReturnFaultComponent fault = new ReturnFaultComponent();
-//        ActivationSpec asFault = new ActivationSpec("receiver", fault);
-//        asFault.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
-//        container.activateComponent(asFault);
-//
-//        inout = client.createInOutExchange();
-//        inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
-//        inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
-//        result = client.sendSync(inout);
-//        assertTrue(result);
-//        assertNotNull(inout.getFault());
-        
+        container.deactivateComponent("receiver");
+        ReturnFaultComponent fault = new ReturnFaultComponent();
+        ActivationSpec asFault = new ActivationSpec("receiver", fault);
+        asFault.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        container.activateComponent(asFault);
+
+        inout = client.createInOutExchange();
+        inout.setInterfaceName(new QName("http://jms.servicemix.org/Test", "ProviderInterface"));
+        inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        result = client.sendSync(inout);
+        assertTrue(result);
+        assertNotNull(inout.getFault());
+        client.done(inout);
+
         // Test error return
         container.deactivateComponent("receiver");
         ReturnErrorComponent error = new ReturnErrorComponent(new IllegalArgumentException());
