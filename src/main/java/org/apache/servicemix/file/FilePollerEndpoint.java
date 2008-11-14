@@ -22,6 +22,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -44,10 +45,13 @@ import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 
 /**
- * A polling endpoint which looks for a file or files in a directory
- * and sends the files into the JBI bus as messages, deleting the files
- * by default when they are processed.
- *
+ * A polling endpoint that looks for a file or files in a directory and sends
+ * the files to a target service (via the JBI bus), deleting the files by
+ * default when they are processed. The polling endpoint uses a file marshaler
+ * to send the data as a JBI message; be default this marshaler expects XML
+ * payload. For non-XML payload, e.g. plain-text or binary files, use an
+ * alternative marshaler such as the
+ * <code>org.apache.servicemix.components.util.BinaryFileMa
  * @org.apache.xbean.XBean element="poller"
  *
  * @version $Revision$
@@ -120,168 +124,147 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
 
 
     // Properties
-    //-------------------------------------------------------------------------
-    /**
-            * Returns the file the endpoint polls.
-            *
-            * @return the <code>File</code> object for the file being polled
-            */
-    public File getFile() {
-        return file;
-    }
+	// -------------------------------------------------------------------------
 
     /**
-     *  Specifies the file to be polled. This can be a directory or a file. 
-     * If it is a directory, all files in the directory, or its 
-     * subdirectories, will be processed by the endpoint. If it is a file, olny 
-     * files matching the filename will be processed.
-     *
-     * @param file a <code>File</code> object representing the directory or file to poll
-     * @org.apache.xbean.Property description="the relative path of the file to poll. This can be a directory or a file. If it is a directory, all files in the directory, or its subdirectories, will be processed by the endpoint. If it is a file, olny files matching the filename will be processed."
-     */
+	 * Specifies the file or directory to be polled. If it is a directory, all
+	 * files in the directory or its sub-directories will be processed by the
+	 * endpoint. If it is a file, only files matching the filename will be
+	 * processed."
+	 * 
+	 * @param file
+	 *            a <code>File</code> object representing the directory or file
+	 *            to poll
+	 */
     public void setFile(File file) {
         this.file = file;
     }
+    
+	public File getFile() {
+		return file;
+	}
 
     /**
-            * Returns the object used to manage the endpoint's file locking 
-            * strategy.
-            *
-     * @return the lockManager
-     */
-    public LockManager getLockManager() {
-        return lockManager;
-    }
+	 * Bean defining the class implementing the file locking strategy. This bean
+	 * must be an implementation of the
+	 * <code>org.apache.servicemix.locks.LockManager</code> interface. By
+	 * default, this will be set to an instances of
+	 * <code>org.apache.servicemix.common.locks.impl.SimpleLockManager</code>.
+	 * 
+	 * @param lockManager
+	 *            the <code>LockManager</code> implementation to use
+	 */
+	public void setLockManager(LockManager lockManager) {
+		this.lockManager = lockManager;
+	}
 
+	public LockManager getLockManager() {
+		return lockManager;
+	}
+    
     /**
-     * Specifies a class that implements the locking strategy used by 
-     * the endpoint. This class must be an implementation of the 
-     * <code>org.apache.servicemix.locks.LockManager</code> interface.
-     *
-     * @param lockManager the <code>LockManager</code> implementation to use
-     * @org.apache.xbean.Property description="the bean defining the class implementing the file locking strategy"
-     */
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
+	 * Bean defining the class implementing the file filtering strategy. This
+	 * bean must be an implementation of the <code>java.io.FileFilter</code>
+	 * interface.
+	 * 
+	 * @param filter
+	 *            a <code>FileFilter</code> implementation defining the
+	 *            endpoint's filtering logic
+	 * 
+	 */
+	public void setFilter(FileFilter filter) {
+		this.filter = filter;
+	}
 
-    /**
-            * Returns the object implementing the endpoint's file filter.
-            *
-            * @return the file filer
-            */
-    public FileFilter getFilter() {
-        return filter;
-    }
+	public FileFilter getFilter() {
+		return filter;
+	}
 
+	
     /**
-           * Specifies a class that implements the filtering logic used to 
-           * choose which files to process. This class must be an 
-           * implementation of the <code>java.io.FileFilter</code> interface.
-           *
-           * @param filter a <code>FileFilter</code> implementation defining the endpoints filtering logic
-           * @org.apache.xbean.Property description="the bean defining the class implementing the file filtering strategy"
-     */
-    public void setFilter(FileFilter filter) {
-        this.filter = filter;
-    }
+     * Specifies if files should be deleted after they are processed. Default value is <code>true</code>.
+     * 
+	 * @param deleteFile
+	 *            a boolean specifying if the file should be deleted
+	 *            
+	 */
+	public void setDeleteFile(boolean deleteFile) {
+		this.deleteFile = deleteFile;
+	}
 
-    /**
-     * Returns whether or not we should delete the file when its processed
-     */
     public boolean isDeleteFile() {
         return deleteFile;
     }
 
-    /**
-            * Specifiedsif the endpoint should delete a file after it is 
-            * consumed. The default is true.
-            *
-            * @param deleteFile a boolean specifying if the file should be deleted
-            * @org.apache.xbean.Property description="specifies if files are deleted after the endpoint processes them. The defualt is <code>true</code>."
-            */
-    public void setDeleteFile(boolean deleteFile) {
-        this.deleteFile = deleteFile;
-    }
-
-    /**
-           * Returns wheter the endpoint should poll subdirectories.
-           */
-    public boolean isRecursive() {
-        return recursive;
-    }
-
-    /**
-            * Specifies if the endpoint should poll the subdirectories of the 
-            * directory being polled. Setting this to false means that the 
-            * endpoint will only poll the specified directory for files. If the 
-            * endpoint is polling for a specific file, this property is ignored.
-            *
-            * @param recursive a boolen specifying if subdirectories should be polled
-            * @org.apache.xbean.Property description="specifies if subdirectories are polled. The defualt is <code>true</code>."
-            */
-    public void setRecursive(boolean recursive) {
-        this.recursive = recursive;
-    }
-
-    /** Returns wheter the endpoint should create the directory being polled 
-            * if it does not exist.
-            */
-    public boolean isAutoCreateDirectory() {
-        return autoCreateDirectory;
-    }
-
-    /**
-            * Specifies if the endpoint should create the directory it is 
-            * configured to poll if it does not exist.  If you set this to 
-            * <code>false</code> and the directory does not exist, the endpoint 
-            * will not do anything.
-            *
-            * @param autoCreateDirectory a boolean specifying if the endpoint creates directories
-            * @org.apache.xbean.Property description="specifies if directories are created. The defualt is <code>true</code>."
-            */
-    public void setAutoCreateDirectory(boolean autoCreateDirectory) {
-        this.autoCreateDirectory = autoCreateDirectory;
-    }
-
-    /**
-            * Returns the object responsible for marshaling files into the NMR.
-            */
-    public FileMarshaler getMarshaler() {
-        return marshaler;
-    }
-
-    /**
-            * Specifies a <code>FileMarshaler</code> object that will marshal 
-            * file data into the NMR. The default file marshaller can read 
-            * valid XML data. <code>FileMarshaler</code> objects are 
-            * implementations of 
-            * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
-            *
-            * @param marshaler a <code>FileMarshaler</code> object that can read data from the file system
-            * @org.apache.xbean.Property description="the bean defining the class used to marshal data from the file system"
-            */
-    public void setMarshaler(FileMarshaler marshaler) {
-        this.marshaler = marshaler;
-    }
     
     /**
-            * Returns the file representing the location where processed files 
-            * are archived.
-            */
-    public File getArchive() {
-        return archive;
-    }
+	 * Specifies if sub-directories are polled; if false then the poller will
+	 * only poll the specified directory. If the endpoint is configured to poll
+	 * for a specific file rather than a directory then this attribute is
+	 * ignored. Default is <code>true</code>.
+	 * 
+	 * @param recursive
+	 *            a baolean specifying if sub-directories should be polled
+	 * 
+	 */
+	public void setRecursive(boolean recursive) {
+		this.recursive = recursive;
+	}
+	
+	public boolean isRecursive() {
+		return recursive;
+	}
+
+    /**
+	 * Specifies if the endpoint should create the target directory, if it does
+	 * not already exist. If you set this to <code>false</code> and the directory does
+	 * not exist, the endpoint will not do anything. Default value is <code>true</code>.
+	 * 
+	 * @param autoCreateDirectory
+	 *            a boolean specifying if the endpoint creates directories.
+	 * 
+	 */
+	public void setAutoCreateDirectory(boolean autoCreateDirectory) {
+		this.autoCreateDirectory = autoCreateDirectory;
+	}
+	
+	public boolean isAutoCreateDirectory() {
+		return autoCreateDirectory;
+	}
+
+
+    /**
+	 * Specifies a <code>FileMarshaler</code> object that will marshal file data
+	 * into the NMR. The default file marshaller can read valid XML data.
+	 * <code>FileMarshaler</code> objects are implementations of
+	 * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
+	 * 
+	 * @param marshaler
+	 *            a <code>FileMarshaler</code> object that can read data from
+	 *            the file system.
+	 */
+	public void setMarshaler(FileMarshaler marshaler) {
+		this.marshaler = marshaler;
+	}
+
+	public FileMarshaler getMarshaler() {
+		return marshaler;
+	}
     
     /**
-            * Specifies a directory to which processed files are archived.
-            * 
-           * @param archive a <code>File</code> object for the archive directory
-           * @org.apache.xbean.Property description="the relative path of the directory where processed files will be archived"
-          */
-    public void setArchive(File archive) {
-        this.archive = archive;
-    }
+	 * Specifies a directory relative to the polling directory to which
+	 * processed files are archived.
+	 * 
+	 * @param archive
+	 *            a <code>File</code> object for the archive directory
+	 */
+	public void setArchive(File archive) {
+		this.archive = archive;
+	}
+
+	public File getArchive() {
+		return archive;
+	}
     
     // Implementation methods
     //-------------------------------------------------------------------------

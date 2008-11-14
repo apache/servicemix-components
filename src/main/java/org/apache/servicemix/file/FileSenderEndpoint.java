@@ -112,123 +112,103 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
     //-------------------------------------------------------------------------
 
     /**
-            * Returns the <code>File</code> object for the directory where the 
-            * endpoint writes files.
-            */
+	 * Specifies the directory where the endpoint writes files.
+	 * 
+	 * @param directory
+	 *            a <code>File</code> object representing the directory
+	 */
+	public void setDirectory(File directory) {
+		this.directory = directory;
+	}
+	
     public File getDirectory() {
         return directory;
     }
 
     /**
-            * Specifies the directory where the endpoint writes files.
-            *
-            * @param directory a <code>File</code> object representing the directory
-            * @org.apache.xbean.Property description="the relative path of the directory to which the endpoint writes files"
-            */
-    public void setDirectory(File directory) {
-        this.directory = directory;
-    }
+	 * Specifies a <code>FileMarshaler</code> object that will marshal message
+	 * data from the NMR into a file. The default file marshaler can write
+	 * valid XML data. <code>FileMarshaler</code> objects are implementations of
+	 * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
+	 * 
+	 * @param marshaler
+	 *            a <code>FileMarshaler</code> object that can write message
+	 *            data to the file system
+	 *            
+	 */
+	public void setMarshaler(FileMarshaler marshaler) {
+		this.marshaler = marshaler;
+	}
+
+	public FileMarshaler getMarshaler() {
+		return marshaler;
+	}
 
     /**
-            * Returns the object responsible for marshaling message data into 
-            * files.
-            */
-    public FileMarshaler getMarshaler() {
-        return marshaler;
+	 * Specifies a string to prefix to the beginning of generated temporary file
+	 * names. Temporary file names are generated when the endpoint cannot
+	 * determine the name of the file from the message.
+	 * 
+	 * @param tempFilePrefix
+	 *            a string to prefix to generated file names
+	 */         
+    public void setTempFilePrefix(String tempFilePrefix) {
+        this.tempFilePrefix = tempFilePrefix;
     }
-
-    /**
-            * Specifies a <code>FileMarshaler</code> object that will marshal 
-            * message data from the NMR into a file. The default file 
-            * marshaller can write valid XML data. <code>FileMarshaler</code> 
-            * objects are implementations of 
-            * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
-            *
-            * @param marshaler a <code>FileMarshaler</code> object that can write message data to the file system
-            * @org.apache.xbean.Property description="the bean defining the class used to marshal messages to the file system"
-            */
-    public void setMarshaler(FileMarshaler marshaler) {
-        this.marshaler = marshaler;
-    }
-
-    /**
-           * Returns the string attached to the begining of generated temporary 
-           * file names.
-           */
+    
     public String getTempFilePrefix() {
         return tempFilePrefix;
     }
 
     /**
-            * Specifies a string to attach to the begining of generated 
-            * temporary file names. Temporary file names are generated when the 
-            * endpoint cannot determine the name of the file from the message.
-            *
-            * @param tempFilePrefix a string to prefix to generated file names
-            * @org.apache.xbean.Property description="a string that will be attached to the begining of any temporary file names. Temporary file names are generated when the endpoint cannot determine the name of the file from the message data."
-            */         
-    public void setTempFilePrefix(String tempFilePrefix) {
-        this.tempFilePrefix = tempFilePrefix;
-    }
+	 * Specifies a string to append to generated temporary file names. Temporary
+	 * file names are generated when the endpoint cannot determine the name of
+	 * the file from the message.
+	 * 
+	 * @param tempFileSuffix
+	 *            a string to append to generated file names
+	 */
+	public void setTempFileSuffix(String tempFileSuffix) {
+		this.tempFileSuffix = tempFileSuffix;
+	}
+
+	public String getTempFileSuffix() {
+		return tempFileSuffix;
+	}
 
     /**
-           * Returns the string attached to the end of generated temporary 
-           * file names.
-           */
-    public String getTempFileSuffix() {
-        return tempFileSuffix;
-    }
+	 * Specifies if the endpoint should create the target directory if it does
+	 * not exist. If you set this to <code>false</code> and the directory does
+	 * not exist, the endpoint will not do anything. Default value: <code>true</code>.
+	 * 
+	 * @param autoCreateDirectory
+	 *            a boolean specifying if the endpoint creates directories
+	 *            
+	 */
+	public void setAutoCreateDirectory(boolean autoCreateDirectory) {
+		this.autoCreateDirectory = autoCreateDirectory;
+	}
+
+	public boolean isAutoCreateDirectory() {
+		return autoCreateDirectory;
+	}
 
     /**
-            * Specifies a string to append to generated temporary file names. 
-            * Temporary file names are generated when the endpoint cannot 
-            * determine the name of the file from the message.
-            *
-            * @param tempFileSuffix a string to append to generated file names
-            * @org.apache.xbean.Property description="a string that will be appended to any temporary file names. Temporary file names are generated when the endpoint cannot determine the name of the file from the message data."
-            */         
-    public void setTempFileSuffix(String tempFileSuffix) {
-        this.tempFileSuffix = tempFileSuffix;
-    }
+	 * Specifies if the endpoint appends data to existing files or if it will
+	 * overwrite existing files. The default is for the endpoint to overwrite
+	 * existing files. Setting this to <code>true</code> instructs the endpoint
+	 * to append data. Default value is <code>false</code>.
+	 * 
+	 * @param append
+	 *            a boolean specifying if the endpoint appends data to existing
+	 *            files
+	 */
+	public void setAppend(boolean append) {
+		this.append = append;
+	}
 
-    /** Returns wheter the endpoint should create the target directory  
-            * if it does not exist.
-            */
-    public boolean isAutoCreateDirectory() {
-        return autoCreateDirectory;
-    }
-
-    /**
-            * Specifies if the endpoint should create the target directory if 
-            * it does not exist.  If you set this to 
-            * <code>false</code> and the directory does not exist, the endpoint 
-            * will not do anything.
-            *
-            * @param autoCreateDirectory a boolean specifying if the endpoint creates directories
-            * @org.apache.xbean.Property description="specifies if directories are created. The defualt is <code>true</code>."
-            */
-    public void setAutoCreateDirectory(boolean autoCreateDirectory) {
-        this.autoCreateDirectory = autoCreateDirectory;
-    }
-
-    /**
-           * Returns whether the endpoint will append data to an existing file. 
-           */
-    public boolean isAppend() {
-        return append;
-    }
-
-    /**
-            * Specifies if the endpoint appends data to existing files or if 
-            * it will overwrite existing files. The default is for the endpoint 
-            * to overwrite existing files. Setting this to <code>true</code> 
-            * instructs the endpoint to append data.
-            *
-            * @param append a boolean specifying if the endpoint appends data to existing files
-            * @org.apache.xbean.Property description="specifies if data is appended to existing files. The defualt is <code>false</code>."
-            */
-    public void setAppend(boolean append) {
-        this.append = append;
-    }
+	public boolean isAppend() {
+		return append;
+	}
 
 }
