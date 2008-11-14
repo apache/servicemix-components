@@ -31,8 +31,8 @@ import org.apache.servicemix.common.scheduler.SchedulerTask;
 import org.apache.servicemix.executors.Executor;
 
 /**
- * An implementation inheritence class for an endpoint which polls some resource at periodic intervals to decide if
- * there is an event to process.
+ * An implementation inheritance class for an endpoint which polls some resource
+ * at periodic intervals to decide if there is an event to process.
  *
  * @version $Revision: 464478 $
  */
@@ -75,18 +75,31 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
         return executor;
     }
 
+
+    /**
+     * Sets the amount of time in milliseconds that the endpoint should wait before making the first poll.
+     *
+     * @param        delay   a long specifying the number of milliseconds to wait
+     */
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
+
     public long getDelay() {
         return delay;
     }
 
+
     /**
-     * Sets the amount of time the endpoint waits before making the first poll.
+     * Sets the date on which the first poll will be executed. If a delay is 
+     * also set using <code>setDelay</code>, the delay interval will be added 
+     * after the date specified.
      *
-     * @param        delay   a long specifying the number of milliseconds to wait
-     * @org.apache.xbean.Property description="the number of milliseconds to wait before the first poll"
+     * @param        firstTime       a <code>Date</code> specifying when to make the 
+     *                               first polling attempt
      */
-    public void setDelay(long delay) {
-        this.delay = delay;
+    public void setFirstTime(Date firstTime) {
+        this.firstTime = firstTime;
     }
 
     public Date getFirstTime() {
@@ -94,51 +107,32 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * Sets the date on which the first poll will be executed. If a delay is 
-     * also set using <code>setDelay</code>, the delay interval will be added 
-     * after the date specified,
-     *
-     * @param        firstTime       a <code>Date</code> specifying when to make the 
-     *                               first polling attempt
-     * @org.apache.xbean.Property description="the date of the first polling attempt. The date is specified using the <code>YYYY-MM-DD</code> format. The <code>delay</code> value is added after the date."
+     * Sets whether more than one poll can be active at a time (true means yes). Default value is <code>false</code>.
+     * 
+     * @param concurrentPolling The concurrentPolling to set.
      */
-    public void setFirstTime(Date firstTime) {
-        this.firstTime = firstTime;
+    public void setConcurrentPolling(boolean concurrentPolling) {
+        this.concurrentPolling = concurrentPolling;
+    }
+   
+    public boolean isConcurrentPolling() {
+        return this.concurrentPolling;
+    }
+
+    
+    /**
+     * Sets the number of milliseconds between polling attempts.
+     *
+     * @param        period  a long specifying the gap between polling attempts
+     */
+    public void setPeriod(long period) {
+        this.period = period;
     }
 
     public long getPeriod() {
         return period;
     }
 
-    /**
-     * returns if more than one poll can be active at a time
-     *  
-     * @return Returns the concurrentPolling flag.
-     * @org.apache.xbean.Property description="returns if more than one poll can be active at a time"
-     */
-    public boolean isConcurrentPolling() {
-        return this.concurrentPolling;
-    }
-
-    /**
-     * sets if more than one poll can be active at a time (true means yes)
-     * 
-     * @param concurrentPolling The concurrentPolling to set.
-     * @org.apache.xbean.Property description="sets if more than one poll can be active at a time (true means yes)"
-     */
-    public void setConcurrentPolling(boolean concurrentPolling) {
-        this.concurrentPolling = concurrentPolling;
-    }
-    
-    /**
-     * Sets the number of milliseconds between polling attempts.
-     *
-     * @param        period  a long specifying the gap between polling attempts
-     * @org.apache.xbean.Property description="the number of milliseconds between polling attempts"
-     */
-    public void setPeriod(long period) {
-        this.period = period;
-    }
 
     public Scheduler getScheduler() {
         return scheduler;
