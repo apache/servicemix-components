@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.mail;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.jbi.JBIException;
@@ -40,6 +43,8 @@ import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
 import org.apache.servicemix.mail.utils.MailUtils;
 
+import com.sun.mail.pop3.POP3Folder;
+
 /**
  * This is the polling endpoint for the mail component.
  * 
@@ -51,6 +56,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
 
     private AbstractMailMarshaler marshaler = new DefaultMailMarshaler();
 
+    private List<String> seenMessages;
+    
     private String customTrustManagers;
 
     private MailConnectionConfiguration config;
@@ -64,6 +71,10 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     private boolean deleteProcessedMessages;
 
     private boolean debugMode;
+    
+    private boolean forgetTopHeaders;
+    
+    private boolean disableTop;
 
     /**
      * default constructor
@@ -72,6 +83,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         this.processOnlyUnseenMessages = true;
         this.deleteProcessedMessages = false;
         this.debugMode = false;
+        this.forgetTopHeaders = false;
+        this.disableTop = false;
     }
 
     /*
@@ -108,12 +121,21 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
             return;
         }
 
+        boolean isPopProtocol = this.config.getProtocol().toLowerCase().indexOf("pop") > -1 ;
+        
+        // check if protocol is POP like and setup seen messages storage properly
+        if (isPopProtocol && this.seenMessages == null) {
+        	this.seenMessages = Collections.synchronizedList(new LinkedList<String>());
+        }
+        
         Store store = null;
         Folder folder = null;
         Session session = null;
         try {
             Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
             props.put("mail.debug", isDebugMode() ? "true" : "false");
+           	props.put("mail.pop3.forgettopheaders", isForgetTopHeaders() ? "true" : "false");
+           	props.put("mail.pop3.disabletop", isDisableTop() ? "true" : "false");
 
             // Get session
             session = Session.getInstance(props, config.getAuthenticator());
@@ -130,18 +152,33 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
             folder.open(Folder.READ_WRITE);
 
             Message[] messages = null;
-            if (isProcessOnlyUnseenMessages()) {
+            if (isProcessOnlyUnseenMessages() && !isPopProtocol) {
                 messages = folder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
             } else {
                 messages = folder.getMessages();
             }
 
+            String uid = null;
+            
             int fetchSize = getMaxFetchSize() == -1 ? messages.length : Math.min(getMaxFetchSize(),
                                                                                  messages.length);
             for (int cnt = 0; cnt < fetchSize; cnt++) {
                 // get the message
                 MimeMessage mailMsg = (MimeMessage)messages[cnt];
 
+                if (isProcessOnlyUnseenMessages() && isPopProtocol) {
+                	// POP3 doesn't support flags, so we need to check manually if message is new or not
+                	if (folder instanceof POP3Folder) {
+                	    POP3Folder pf = (POP3Folder)folder;
+                	    uid = pf.getUID(mailMsg);
+                	    if (uid != null && this.seenMessages.contains(uid)) {
+                	    	// this message was already processed
+                	    	uid = null;
+                	    	continue;
+                	    }
+                	}
+                }
+                
                 // create a inOnly exchange
                 InOnly io = getExchangeFactory().createInOnlyExchange();
 
@@ -176,6 +213,11 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                     } else {
                         // processed messages have to be marked as seen
                         mailMsg.setFlag(Flags.Flag.SEEN, true);
+                    }
+                    // remember the processed mail if needed
+                    if (isProcessOnlyUnseenMessages() && isPopProtocol && uid != null) {
+                    	// POP3 doesn't support flags, so we need to remember processed mails
+                    	this.seenMessages.add(uid);
                     }
                 }
             }
@@ -307,4 +349,32 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
     public void setCustomTrustManagers(String customTrustManagers) {
         this.customTrustManagers = customTrustManagers;
     }
+
+	/**
+	 * @return the forgetTopHeaders
+	 */
+	public boolean isForgetTopHeaders() {
+		return this.forgetTopHeaders;
+	}
+
+	/**
+	 * @param forgetTopHeaders the forgetTopHeaders to set
+	 */
+	public void setForgetTopHeaders(boolean forgetTopHeaders) {
+		this.forgetTopHeaders = forgetTopHeaders;
+	}
+
+	/**
+	 * @return the disableTop
+	 */
+	public boolean isDisableTop() {
+		return this.disableTop;
+	}
+
+	/**
+	 * @param disableTop the disableTop to set
+	 */
+	public void setDisableTop(boolean disableTop) {
+		this.disableTop = disableTop;
+	}
 }
