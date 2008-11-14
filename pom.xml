@@ -75,6 +75,17 @@
       <artifactId>servicemix-shared</artifactId>
       <version>${servicemix-shared-version}</version>
     </dependency>
+
+    <!-- Include servicemix-common as a source for the XSD documentation generator -->
+    <dependency>
+     <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-common</artifactId>
+      <version>${servicemix-shared-version}</version>
+      <classifier>sources</classifier>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+            
     <dependency>
       <groupId>org.apache.servicemix.specs</groupId>
       <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
