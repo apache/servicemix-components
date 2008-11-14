@@ -25,6 +25,7 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.bean.support.ExchangeTarget;
 import org.apache.servicemix.bean.support.TransformBeanSupport;
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -32,7 +33,6 @@ import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.tck.ReceiverComponent;
 
@@ -69,8 +69,6 @@ public class TransformBeanSupportTest extends TestCase {
     protected void configureContainer() throws Exception {
         container.setFlowName("st");
     }
-
-    ReceiverComponent receiver = new ReceiverComponent();
 
     public void testInOnly() throws Exception {
         TransformBeanSupport transformer = createTransformer("receiver");
@@ -161,10 +159,10 @@ public class TransformBeanSupportTest extends TestCase {
         return transformEndpoint;
     }
 
-    protected void activateComponent(ComponentSupport component, String name) throws Exception {
-        component.setService(new QName(name));
-        component.setEndpoint("endpoint");
-        container.activateComponent(component, name);
+    protected void activateComponent(ComponentSupport cmp, String name) throws Exception {
+        cmp.setService(new QName(name));
+        cmp.setEndpoint("endpoint");
+        container.activateComponent(cmp, name);
     }
 
     public static class MyTransformer extends TransformBeanSupport {
@@ -177,9 +175,9 @@ public class TransformBeanSupportTest extends TestCase {
     public static class ReturnErrorComponent extends ComponentSupport implements MessageExchangeListener {
 
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
-        	if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-	            fail(exchange, new Exception());
-        	}
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                fail(exchange, new Exception());
+            }
         }
     }
 

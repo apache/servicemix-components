@@ -121,61 +121,14 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
     public void onMessageExchange(MessageExchange exchange) throws MessagingException {
         // Handle consumer exchanges && non-active RobustInOnly provider exchanges
         if (exchange.getRole() == MessageExchange.Role.CONSUMER
-            || exchange.getProperty(correlation) != null) {
-            MessageExchange original = null;
-            String id = null;
-            try {
-                id = (String) exchange.getProperty(correlation);
-                original = (MessageExchange) store.load(id);
-            } catch (Exception e) {
-                // We can't do, so just return
-                return;
-            }
-            try {
-                if (exchange.getStatus() == ExchangeStatus.DONE) {
-                    done(original);
-                // Reproduce ERROR status to the other side
-                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                    fail(original, exchange.getError());
-                // Reproduce faults to the other side and listeners
-                } else if (exchange.getFault() != null) {
-                    store.store(exchange.getExchangeId(), exchange);
-                    try {
-                        MessageUtil.transferTo(exchange, original, "fault"); 
-                        send(original);
-                    } catch (Exception e) {
-                        store.load(exchange.getExchangeId());
-                        throw e;
-                    }
-                // Reproduce answers to the other side
-                } else if (exchange.getMessage("out") != null) {
-                    store.store(exchange.getExchangeId(), exchange);
-                    try {
-                        MessageUtil.transferTo(exchange, original, "out"); 
-                        send(original);
-                    } catch (Exception e) {
-                        store.load(exchange.getExchangeId());
-                        throw e;
-                    }
-                } else {
-                    throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
-                            + " but has no Out nor Fault message");
-                }
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Original error: " + e, e);
-                }
-            }
-            return;
+                || exchange.getProperty(correlation) != null) {
+            processOngoingExchange(exchange);
+        } else {
+            processFirstExchange(exchange);
         }
-        
-        // Skip done exchanges
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
-            return;
-        // Handle error exchanges
-        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            return;
-        }
+    }
+
+    protected void processFirstExchange(MessageExchange exchange) {
         try {
             MessageExchange outExchange = null;
             NormalizedMessage in = getInMessage(exchange);
@@ -249,6 +202,53 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
                 if (logger.isDebugEnabled()) {
                     logger.debug("Original error: " + e, e);
                 }
+            }
+        }
+    }
+
+    protected void processOngoingExchange(MessageExchange exchange) {
+        MessageExchange original = null;
+        String id = null;
+        try {
+            id = (String) exchange.getProperty(correlation);
+            original = (MessageExchange) store.load(id);
+        } catch (Exception e) {
+            // We can't do, so just return
+            return;
+        }
+        try {
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                done(original);
+            // Reproduce ERROR status to the other side
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                fail(original, exchange.getError());
+            // Reproduce faults to the other side and listeners
+            } else if (exchange.getFault() != null) {
+                store.store(exchange.getExchangeId(), exchange);
+                try {
+                    MessageUtil.transferTo(exchange, original, "fault");
+                    send(original);
+                } catch (Exception e) {
+                    store.load(exchange.getExchangeId());
+                    throw e;
+                }
+            // Reproduce answers to the other side
+            } else if (exchange.getMessage("out") != null) {
+                store.store(exchange.getExchangeId(), exchange);
+                try {
+                    MessageUtil.transferTo(exchange, original, "out");
+                    send(original);
+                } catch (Exception e) {
+                    store.load(exchange.getExchangeId());
+                    throw e;
+                }
+            } else {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
+                        + " but has no Out nor Fault message");
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Original error: " + e, e);
             }
         }
     }
