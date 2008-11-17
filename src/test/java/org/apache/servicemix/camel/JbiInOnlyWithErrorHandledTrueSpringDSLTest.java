@@ -19,7 +19,6 @@ package org.apache.servicemix.camel;
 import java.util.List;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
@@ -50,15 +49,17 @@ public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSup
 
     public void testErrorHandledByExceptionClause() throws Exception {
         ServiceMixClient smxClient = getServicemixClient();
-        InOnly exchange = smxClient.createInOnlyExchange();
-        exchange.setEndpoint(jbiContainer.getRegistry().getEndpointsForService(TEST_SERVICE)[0]);
-
-        smxClient.send(exchange);
-
-        exchange = (InOnly) smxClient.receive();
-        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
-
-        receiver.getMessageList().assertMessagesReceived(1);
+        MessageExchange[] exchanges = new MessageExchange[] {smxClient.createInOnlyExchange(), smxClient.createRobustInOnlyExchange()};
+        for (MessageExchange exchange : exchanges) {
+            exchange.setService(TEST_SERVICE);
+    
+            smxClient.send(exchange);
+    
+            exchange = smxClient.receive();
+            assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        }
+    
+        receiver.getMessageList().assertMessagesReceived(2);
         deadLetter.getMessageList().assertMessagesReceived(0);
     }
 

@@ -18,6 +18,9 @@ package org.apache.servicemix.camel;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.builder.RouteBuilder;
@@ -33,7 +36,7 @@ import org.apache.servicemix.jbi.FaultException;
 public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSupport {
     
     private static final String MESSAGE = "<just><a>test</a></just>";
-
+    
     public void testInOnlyWithNoHandleFault() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(1);
@@ -45,6 +48,25 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         client.sendSync(exchange);
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
         assertTrue("A FaultException was expected", exchange.getError() instanceof FaultException);
+
+        receiverComponent.getMessageList().assertMessagesReceived(0);
+        
+        errors.assertIsSatisfied();
+    }
+
+    public void testRobustInOnlyWithNoHandleFault() throws Exception {
+        MockEndpoint errors = getMockEndpoint("mock:errors");
+        errors.expectedMessageCount(0);
+        
+        ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
+        RobustInOnly exchange = client.createRobustInOnlyExchange();
+        exchange.setService(new QName("urn:test", "no-handle-fault"));
+        exchange.getInMessage().setContent(new StringSource(MESSAGE));
+        client.sendSync(exchange);
+        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        assertNotNull(exchange.getFault());
+
+        receiverComponent.getMessageList().assertMessagesReceived(0);
         
         errors.assertIsSatisfied();
     }
@@ -61,55 +83,78 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
         assertTrue("A FaultException was expected", exchange.getError() instanceof FaultException);
 
+        receiverComponent.getMessageList().assertMessagesReceived(0);
+        
         errors.assertIsSatisfied();
     }
 
-    public void testInOnlyWithErrorNotHandled() throws Exception {
+    public void testRobustInOnlyWithHandleFault() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(1);
         
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
-        InOnly exchange = client.createInOnlyExchange();
-        exchange.setService(new QName("urn:test", "error-not-handled"));
+        RobustInOnly exchange = client.createRobustInOnlyExchange();
+        exchange.setService(new QName("urn:test", "handle-fault"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.sendSync(exchange);
-        assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
-        assertTrue("A IllegalArgumentException was expected", exchange.getError() instanceof IllegalArgumentException);
+        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        assertNotNull(exchange.getFault());
 
+        receiverComponent.getMessageList().assertMessagesReceived(0);
+        
         errors.assertIsSatisfied();
     }
 
-    public void testInOnlyWithErrorHandledFalse() throws Exception {
+    public void testInOnlyAndRobustInOnlyWithErrorNotHandled() throws Exception {
+        MockEndpoint errors = getMockEndpoint("mock:errors");
+        errors.expectedMessageCount(2);
+        
+        ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
+        for (MessageExchange exchange : createInOnlyAndRobustInOnly(client)) {
+            exchange.setService(new QName("urn:test", "error-not-handled"));
+            exchange.getMessage("in").setContent(new StringSource(MESSAGE));
+            client.sendSync(exchange);
+            assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
+            assertTrue("A IllegalArgumentException was expected", exchange.getError() instanceof IllegalArgumentException);
+        }
+        errors.assertIsSatisfied();
+    }
+
+    public void testInOnlyAndRobustInOnlyWithErrorHandledFalse() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(0);
         
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
-        InOnly exchange = client.createInOnlyExchange();
-        exchange.setService(new QName("urn:test", "error-handled-false"));
-        exchange.getInMessage().setContent(new StringSource(MESSAGE));
-        client.sendSync(exchange);
-        assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
-        assertTrue("A IllegalStateException was expected", exchange.getError() instanceof IllegalStateException);
-
-        receiverComponent.getMessageList().assertMessagesReceived(1);
+        for (MessageExchange exchange : createInOnlyAndRobustInOnly(client)) {            
+            exchange.setService(new QName("urn:test", "error-handled-false"));
+            exchange.getMessage("in").setContent(new StringSource(MESSAGE));
+            client.sendSync(exchange);
+            assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
+            assertTrue("A IllegalStateException was expected", exchange.getError() instanceof IllegalStateException);
+        }
+        receiverComponent.getMessageList().assertMessagesReceived(2);
         
         errors.assertIsSatisfied();
     }
     
-    public void testInOnlyWithErrorHandledTrue() throws Exception {
+    public void testInOnlyAndRobustInOnlyWithErrorHandledTrue() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(0);
         
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
-        InOnly exchange = client.createInOnlyExchange();
-        exchange.setService(new QName("urn:test", "error-handled-true"));
-        exchange.getInMessage().setContent(new StringSource(MESSAGE));
-        client.sendSync(exchange);
-        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
-
-        receiverComponent.getMessageList().assertMessagesReceived(1);
+        for (MessageExchange exchange : createInOnlyAndRobustInOnly(client)) {
+            exchange.setService(new QName("urn:test", "error-handled-true"));
+            exchange.getMessage("in").setContent(new StringSource(MESSAGE));
+            client.sendSync(exchange);
+            assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        }
+        receiverComponent.getMessageList().assertMessagesReceived(2);
         
         errors.assertIsSatisfied();
+    }
+    
+    private MessageExchange[] createInOnlyAndRobustInOnly(ServiceMixClient client) throws MessagingException {
+        return new MessageExchange[] {client.createInOnlyExchange(), client.createRobustInOnlyExchange()};
     }
 
     @Override
@@ -117,14 +162,14 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-            	onException(IllegalStateException.class).handled(false).to("jbi:service:urn:test:receiver-service?mep=in-only");
-            	onException(NullPointerException.class).handled(true).to("jbi:service:urn:test:receiver-service?mep=in-only");
+                onException(IllegalStateException.class).handled(false).to("jbi:service:urn:test:receiver-service");
+                onException(NullPointerException.class).handled(true).to("jbi:service:urn:test:receiver-service");
                 errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(1).initialRedeliveryDelay(300));
-                from("jbi:service:urn:test:no-handle-fault").to("jbi:service:urn:test:faulty-service?mep=in-only");
-                from("jbi:service:urn:test:handle-fault").handleFault().to("jbi:service:urn:test:faulty-service?mep=in-only");
-                from("jbi:service:urn:test:error-not-handled").to("jbi:service:urn:test:iae-error-service?mep=in-only");
-                from("jbi:service:urn:test:error-handled-false").to("jbi:service:urn:test:ise-error-service?mep=in-only");
-                from("jbi:service:urn:test:error-handled-true").to("jbi:service:urn:test:npe-error-service?mep=in-only");
+                from("jbi:service:urn:test:no-handle-fault").to("jbi:service:urn:test:faulty-service");
+                from("jbi:service:urn:test:handle-fault").handleFault().to("jbi:service:urn:test:faulty-service");
+                from("jbi:service:urn:test:error-not-handled").to("jbi:service:urn:test:iae-error-service");
+                from("jbi:service:urn:test:error-handled-false").to("jbi:service:urn:test:ise-error-service");
+                from("jbi:service:urn:test:error-handled-true").to("jbi:service:urn:test:npe-error-service");
             }
         };
     }

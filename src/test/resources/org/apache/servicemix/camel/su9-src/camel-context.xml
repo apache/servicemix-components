@@ -29,21 +29,31 @@
     <route errorHandlerRef="deadLetterErrorHandler">
       <from uri="jbi:service:urn:test:fault-handled-true"/>
       <onException>
+        <!-- Catch exception from in-only message exchange -->
         <exception>org.apache.servicemix.jbi.FaultException</exception>
         <redeliveryPolicy maximumRedeliveries="0"/>
         <handled>
           <constant>true</constant>
         </handled>
-        <to uri="jbi:service:urn:test:receiver-service?mep=in-only"/>
+        <to uri="jbi:service:urn:test:receiver-service"/>
+      </onException>
+      <onException>
+        <!-- Catch exception from robust-in-only message exchange -->
+        <exception>org.apache.camel.CamelException</exception>
+        <redeliveryPolicy maximumRedeliveries="0"/>
+        <handled>
+          <constant>true</constant>
+        </handled>
+        <to uri="jbi:service:urn:test:receiver-service"/>
       </onException>
       <interceptor ref="handleFaultProcessor">
-        <to uri="jbi:service:urn:test:faulty-service?mep=in-only"/>
+        <to uri="jbi:service:urn:test:faulty-service"/>
       </interceptor>
     </route>
   </camelContext>
 
   <bean id="deadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
-    <property name="defaultDeadLetterEndpointUri" value="jbi:service:urn:test:deadLetter-service?mep=in-only"/>
+    <property name="defaultDeadLetterEndpointUri" value="jbi:service:urn:test:deadLetter-service"/>
     <property name="redeliveryPolicy" ref="redeliveryPolicyConfig" />
   </bean>
     

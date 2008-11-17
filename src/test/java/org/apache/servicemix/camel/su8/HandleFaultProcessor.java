@@ -47,7 +47,7 @@ public class HandleFaultProcessor extends DelegateProcessor implements AsyncProc
             return ((AsyncProcessor)processor).process(exchange, new AsyncCallback() {
                 
                 public void done(boolean doneSynchronously) {
-                    callback.done(doneSynchronously);
+                    // Take the fault message out before we keep on going                    
                     Message faultMessage = exchange.getFault(false);
                     if (faultMessage != null) {
                         final Object faultBody = faultMessage.getBody();
@@ -61,6 +61,7 @@ public class HandleFaultProcessor extends DelegateProcessor implements AsyncProc
                             }
                         }
                     }                    
+                    callback.done(doneSynchronously);
                 }                
             });
         }

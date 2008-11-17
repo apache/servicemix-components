@@ -23,6 +23,7 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.converter.jaxp.StringSource;
@@ -50,7 +51,7 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
         super.setUp();
     }
 
-    public void testFaultHandledByExceptionClause() throws Exception {
+    public void testInOnlyWithFaultHandledByExceptionClause() throws Exception {
         ServiceMixClient smxClient = getServicemixClient();
         InOnly exchange = smxClient.createInOnlyExchange();
         exchange.setEndpoint(jbiContainer.getRegistry().getEndpointsForService(TEST_SERVICE)[0]);
@@ -64,6 +65,20 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
         deadLetter.getMessageList().assertMessagesReceived(0);
     }
 
+    public void testRobustInOnlyWithFaultHandledByExceptionClause() throws Exception {
+        ServiceMixClient smxClient = getServicemixClient();
+        RobustInOnly exchange = smxClient.createRobustInOnlyExchange();
+        exchange.setEndpoint(jbiContainer.getRegistry().getEndpointsForService(TEST_SERVICE)[0]);
+
+        smxClient.send(exchange);
+
+        exchange = (RobustInOnly) smxClient.receive();
+        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+
+        receiver.getMessageList().assertMessagesReceived(1);
+        deadLetter.getMessageList().assertMessagesReceived(0);
+    }
+    
     @Override
     protected String getServiceUnitName() {
         return "su9";

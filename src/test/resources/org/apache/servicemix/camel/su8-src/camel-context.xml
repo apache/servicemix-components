@@ -34,10 +34,10 @@
         <handled>
           <constant>true</constant>
         </handled>
-        <to uri="jbi:service:urn:test:receiver-service?mep=in-only"/>
+        <to uri="jbi:service:urn:test:receiver-service"/>
       </onException>
       <interceptor ref="handleFaultProcessor">
-        <to uri="jbi:service:urn:test:npe-error-service?mep=in-only"/>
+        <to uri="jbi:service:urn:test:npe-error-service"/>
       </interceptor>
     </route>
   </camelContext>
