@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.cxfbc.ws.security;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.cxf.Bus;
@@ -24,16 +27,21 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.testutil.common.ServerLauncher;
 import org.apache.hello_world_soap_http.Greeter;
+import org.apache.servicemix.cxfbc.EmbededJMSBrokerLauncher;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBCSecurityTest extends SpringTestSupport {
 
+    protected static boolean serversStarted;
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSecurityTest.class);
-    
     private static final java.net.URL WSDL_LOC;
+       
+    private ServerLauncher sl;
+    private ServerLauncher embeddedLauncher;
     static {
         java.net.URL tmp = null;
         try {
@@ -44,6 +52,57 @@ public class CxfBCSecurityTest extends SpringTestSupport {
             e.printStackTrace();
         }
         WSDL_LOC = tmp;
+    }
+    
+    public void startServers() throws Exception {
+        if (serversStarted) {
+            return;
+        }
+        Map<String, String> props = new HashMap<String, String>();                
+        if (System.getProperty("activemq.store.dir") != null) {
+            props.put("activemq.store.dir", System.getProperty("activemq.store.dir"));
+        }
+        props.put("java.util.logging.config.file", 
+                  System.getProperty("java.util.logging.config.file"));
+        
+        assertTrue("server did not launch correctly", 
+                   launchServer(EmbededJMSBrokerLauncher.class, props, false));
+        embeddedLauncher =  sl;
+        
+        
+        serversStarted = true;
+    }
+    
+    protected void setUp() throws Exception {
+        startServers();
+        super.setUp();
+            
+    }
+    
+    protected void tearDown() throws Exception {
+        try {
+            embeddedLauncher.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop server " + embeddedLauncher.getClass());
+        }
+        
+        serversStarted = false;
+    }
+    
+    public boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
+        boolean ok = false;
+        try { 
+            sl = new ServerLauncher(clz.getName(), p, null, inProcess);
+            ok = sl.launchServer();
+            assertTrue("server failed to launch", ok);
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to launch server " + clz);
+        }
+        
+        return ok;
     }
     
     public void testTimestampSignEncrypt() {

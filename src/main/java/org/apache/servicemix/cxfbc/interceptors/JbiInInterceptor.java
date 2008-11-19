@@ -28,6 +28,7 @@ import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.security.auth.Subject;
+import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.apache.cxf.binding.soap.SoapMessage;
@@ -169,8 +170,20 @@ public class JbiInInterceptor extends AbstractPhaseInterceptor<Message> {
             message = (SoapMessage) soapMessage;
         }
         Map<String, Object> headers = new HashMap<String, Object>();
+        QName excludeName = new QName(
+                "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd",
+                "Security");
         for (Header header : message.getHeaders()) {
-            headers.put(QNameUtil.toString(header.getName()), header.getObject());
+            if (!header.getName().equals(excludeName)) {
+                // We must exclude this security header since in Sun's SAAJ impl, the ElementImpl
+                // has a field which doesn't implement Serializable interface, which will cause
+                //java.io.NotSerializableException when we try to serialize the JBI message.
+                // And this security header isn't necessary inside jbi container since we have already
+                // delegate the AA to JAAS at this stage.
+                // SM-1696 track this issue
+                headers.put(QNameUtil.toString(header.getName()), header
+                    .getObject());
+            }
         }
 
         normalizedMessage.setProperty(CxfJbiConstants.PROTOCOL_HEADERS, headers);

@@ -22,7 +22,7 @@
        xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
        xmlns:greeter="http://apache.org/hello_world_soap_http">
   
-  <sm:container id="jbi" embedded="true">
+  <sm:container id="jbi" embedded="true" flowNames="jms?jmsURL=tcp://localhost:61616">
     
     <sm:endpoints>
       <cxfse:endpoint>
