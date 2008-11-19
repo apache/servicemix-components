@@ -20,7 +20,12 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.OutputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -35,6 +40,9 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.XMLStreamHelper;
 import org.apache.servicemix.common.JbiConstants;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
+import org.mortbay.jetty.HttpHeaders;
 
 /**
  * The default consumer marshaler used for non-soap consumer endpoints.
@@ -42,7 +50,7 @@ import org.apache.servicemix.common.JbiConstants;
  * @author gnodet
  * @since 3.2
  */
-public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
+public class DefaultHttpConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
     private StAXSourceTransformer transformer = new StAXSourceTransformer();
     private URI defaultMep;
@@ -66,36 +74,42 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
     public MessageExchange createExchange(HttpServletRequest request, ComponentContext context) throws Exception {
         MessageExchange me = context.getDeliveryChannel().createExchangeFactory().createExchange(getDefaultMep());
         NormalizedMessage in = me.createMessage();
-        InputStream is = request.getInputStream();
-        is = new BufferedInputStream(is);
-        in.setContent(new StreamSource(is));
+        in.setContent(new StreamSource(getRequestEncodingStream(request.getHeader(HttpHeaders.CONTENT_ENCODING),
+            request.getInputStream())));
         me.setMessage(in, "in");
         return me;
     }
 
-    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        addResponseHeaders(exchange, request, response);
+        response.setStatus(HttpServletResponse.SC_OK);
         XMLStreamReader reader = transformer.toXMLStreamReader(outMsg.getContent());
-        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
+        OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.ACCEPT_ENCODING),
+            response.getOutputStream());
+        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(encodingStream);
         writer.writeStartDocument();
         XMLStreamHelper.copy(reader, writer);
         writer.writeEndDocument();
-        writer.flush();
-        response.setStatus(HttpServletResponse.SC_OK);
+        writer.close();
+        encodingStream.close();
     }
 
-    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        addResponseHeaders(exchange, request, response);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         XMLStreamReader reader = transformer.toXMLStreamReader(fault.getContent());
-        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
+        OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.ACCEPT_ENCODING), response.getOutputStream());
+        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(encodingStream);
         XMLStreamHelper.copy(reader, writer);
+        writer.close();
+        encodingStream.close();
     }
 
-    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        addResponseHeaders(exchange, request, response);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(response.getWriter());
+        OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.ACCEPT_ENCODING), response.getOutputStream());
+        XMLStreamWriter writer = transformer.getOutputFactory().createXMLStreamWriter(encodingStream);
         writer.writeStartDocument();
         writer.writeStartElement("error");
         StringWriter sw = new StringWriter();
@@ -105,10 +119,11 @@ public class DefaultHttpConsumerMarshaler implements HttpConsumerMarshaler {
         writer.writeCData(sw.toString());
         writer.writeEndElement();
         writer.writeEndDocument();
+        writer.close();
+        encodingStream.close();
     }
 
-    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
+    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 

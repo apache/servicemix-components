@@ -18,10 +18,15 @@ package org.apache.servicemix.http.endpoints;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.BufferedInputStream;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -41,13 +46,14 @@ import org.apache.servicemix.soap.bindings.http.HttpConstants;
 import org.apache.servicemix.soap.bindings.soap.SoapFault;
 import org.apache.servicemix.soap.bindings.soap.SoapVersion;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
+import org.mortbay.jetty.HttpHeaders;
 
 /**
  * 
  * @author gnodet
  * @since 3.2
  */
-public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
+public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
     private Binding<?> binding;
     private boolean useJbiWrapper = true;
@@ -94,7 +100,7 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         headers.put(HttpConstants.CONTENT_TYPE, request.getContentType());
         headers.put(HttpConstants.REQUEST_METHOD, method);
         if (HttpConstants.METHOD_POST.equals(method) || HttpConstants.METHOD_PUT.equals(method)) {
-            msg.setContent(InputStream.class, request.getInputStream());
+            msg.setContent(InputStream.class, getRequestEncodingStream(request.getHeader(HttpHeaders.CONTENT_ENCODING), request.getInputStream()));
         }
         request.setAttribute(Message.class.getName(), msg);
         InterceptorChain phase = getChain(Phase.ServerIn);
@@ -102,31 +108,33 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         return msg.getContent(MessageExchange.class);
     }
 
-    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
+    public void sendAccepted(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 
-    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        addResponseHeaders(exchange, request, response);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
-        msg.setContent(OutputStream.class, response.getOutputStream());
+        OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.CONTENT_ENCODING), response.getOutputStream());
+        msg.setContent(OutputStream.class, encodingStream);
         msg.setContent(MessageExchange.class, exchange);
         msg.setContent(NormalizedMessage.class, outMsg);
         msg.put(SoapVersion.class, in.get(SoapVersion.class));
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         InterceptorChain phase = getChain(Phase.ServerOut);
         phase.doIntercept(msg);
+        encodingStream.close();
         // TODO: handle http headers: Content-Type, ...
     }
 
-    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        addResponseHeaders(exchange, request, response);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
-        msg.setContent(OutputStream.class, response.getOutputStream());
+        OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.CONTENT_ENCODING), response.getOutputStream());
+        msg.setContent(OutputStream.class, encodingStream);
         msg.setContent(MessageExchange.class, exchange);
         msg.put(SoapVersion.class, in.get(SoapVersion.class));
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
@@ -139,14 +147,16 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         }
         msg.setContent(Exception.class, soapFault);
         phase.doIntercept(msg);
+        encodingStream.close();
     }
 
-    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        addResponseHeaders(exchange, request, response);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
-        msg.setContent(OutputStream.class, response.getOutputStream());
+        OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.CONTENT_ENCODING), response.getOutputStream());
+        msg.setContent(OutputStream.class, encodingStream);
         msg.setContent(MessageExchange.class, exchange);
         msg.setContent(NormalizedMessage.class, fault);
         msg.put(SoapVersion.class, in.get(SoapVersion.class));
@@ -157,6 +167,7 @@ public class HttpSoapConsumerMarshaler implements HttpConsumerMarshaler {
         SoapFault soapFault = new SoapFault(code, reason, null, null, fault.getContent());
         msg.setContent(Exception.class, soapFault);
         phase.doIntercept(msg);
+        encodingStream.close();
         // TODO: handle http headers: Content-Type, ...
     }
 

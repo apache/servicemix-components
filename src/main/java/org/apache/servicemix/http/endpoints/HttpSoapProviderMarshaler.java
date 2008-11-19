@@ -43,7 +43,7 @@ import org.mortbay.jetty.HttpMethods;
  * @author gnodet
  * @since 3.2
  */
-public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
+public class HttpSoapProviderMarshaler extends AbstractHttpProviderMarshaler implements HttpProviderMarshaler {
 
     private Binding<?> binding;
     private boolean useJbiWrapper = true;
@@ -87,6 +87,7 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
                               final NormalizedMessage inMsg, 
                               final SmxHttpExchange httpExchange) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStream encodingStream = getRequestEncodingStream(getContentEncoding(), baos);
         Message msg = binding.createMessage();
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         msg.setContent(MessageExchange.class, exchange);
@@ -96,6 +97,7 @@ public class HttpSoapProviderMarshaler implements HttpProviderMarshaler {
 
         InterceptorChain phaseOut = getChain(Phase.ClientOut);
         phaseOut.doIntercept(msg);
+        encodingStream.close();
         httpExchange.setMethod(HttpMethods.POST);
         httpExchange.setURL(baseUrl);
         httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));

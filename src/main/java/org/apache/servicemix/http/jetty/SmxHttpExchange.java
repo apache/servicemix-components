@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 
 import org.mortbay.io.Buffer;
 import org.mortbay.io.BufferUtil;
@@ -70,6 +71,14 @@ public class SmxHttpExchange extends HttpExchange {
     public Reader getResponseReader() throws UnsupportedEncodingException {
         if (responseContent != null) {
             return new InputStreamReader(new ByteArrayInputStream(responseContent.toByteArray()), encoding);
+        }
+        return null;
+    }
+
+    /* ------------------------------------------------------------ */
+    public InputStream getResponseStream() throws UnsupportedEncodingException {
+        if (responseContent != null) {
+            return new ByteArrayInputStream(responseContent.toByteArray());
         }
         return null;
     }

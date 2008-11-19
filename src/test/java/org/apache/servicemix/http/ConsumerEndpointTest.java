@@ -17,13 +17,17 @@
 package org.apache.servicemix.http;
 
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
@@ -37,6 +41,7 @@ import junit.framework.TestCase;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
@@ -49,7 +54,6 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
-import org.apache.servicemix.jbi.messaging.MessageExchangeImpl;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.soap.bindings.soap.Soap11;
 import org.apache.servicemix.soap.bindings.soap.Soap12;
@@ -61,7 +65,7 @@ import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.xpath.CachedXPathAPI;
 import org.springframework.core.io.ClassPathResource;
-import org.mortbay.jetty.bio.SocketConnector;
+import org.mortbay.jetty.HttpHeaders;
 
 public class ConsumerEndpointTest extends TestCase {
     private static transient Log log = LogFactory.getLog(ConsumerEndpointTest.class);
@@ -432,6 +436,106 @@ public class ConsumerEndpointTest extends TestCase {
         String res = post.getResponseBodyAsString();
         log.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
+        assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
+        elem = DomUtil.getFirstChildElement(elem);
+        assertEquals(Soap12.getInstance().getBody(), DomUtil.getQName(elem));
+        elem = DomUtil.getFirstChildElement(elem);
+        assertEquals(new QName("uri:HelloWorld", "HelloResponse"), DomUtil.getQName(elem));
+        assertEquals(200, post.getStatusCode());
+    }
+
+    public void testGzipEncodingNonSoap() throws Exception {
+        HttpComponent http = new HttpComponent();
+        HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
+        ep.setService(new QName("urn:test", "svc"));
+        ep.setEndpoint("ep");
+        ep.setTargetService(new QName("urn:test", "echo"));
+        ep.setLocationURI("http://localhost:8192/ep1/");
+        http.setEndpoints(new HttpEndpointType[] {ep });
+        container.activateComponent(http, "http");
+
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("urn:test", "echo"));
+        echo.setEndpoint("endpoint");
+        container.activateComponent(echo, "echo");
+
+        container.start();
+
+        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        post.addRequestHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+        post.addRequestHeader(HttpHeaders.ACCEPT_ENCODING, "gzip");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GZIPOutputStream gos = new GZIPOutputStream(baos);
+        gos.write("<hello>world</hello>".getBytes());
+        gos.flush();
+        gos.close();
+
+        post.setRequestEntity(new ByteArrayRequestEntity(baos.toByteArray()));
+        new HttpClient().executeMethod(post);
+
+        GZIPInputStream gis = new GZIPInputStream(post.getResponseBodyAsStream());
+        BufferedReader br = new BufferedReader(new InputStreamReader(gis));
+
+        String result = br.readLine();
+        log.info(result);
+        Node node = transformer.toDOMNode(new StringSource(result));
+        log.info(transformer.toString(node));
+        assertEquals("world", textValueOfXPath(node, "/hello/text()"));
+        if (post.getStatusCode() != 200) {
+            throw new InvalidStatusResponseException(post.getStatusCode());
+        }
+    }
+
+    public void testGzipEncodingSoap() throws Exception {
+        initSoapEndpoints(true);
+
+        TransformComponentSupport mock = new TransformComponentSupport() {
+            protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
+                throws MessagingException {
+                Element elem;
+                try {
+                    elem = transformer.toDOMElement(in.getContent());
+                    log.info(transformer.toString(elem));
+                } catch (Exception e) {
+                    throw new MessagingException(e);
+                }
+                assertEquals(JbiConstants.WSDL11_WRAPPER_MESSAGE, DomUtil.getQName(elem));
+                out.setContent(
+                    new StringSource("<jbi:message xmlns:jbi='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+                        + "<jbi:part><HelloResponse xmlns='uri:HelloWorld'>world</HelloResponse></jbi:part>"
+                        + "</jbi:message> "));
+                return true;
+            }
+        };
+        mock.setService(new QName("urn:test", "echo"));
+        mock.setEndpoint("endpoint");
+        container.activateComponent(mock, "mock");
+
+        PostMethod post = new PostMethod("http://localhost:8192/ep2/");
+
+        post.addRequestHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+        post.addRequestHeader(HttpHeaders.ACCEPT_ENCODING, "gzip");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GZIPOutputStream gos = new GZIPOutputStream(baos);
+
+        gos.write(("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'>"
+            + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
+            + "<s:Body><HelloRequest xmlns='uri:HelloWorld'>world</HelloRequest></s:Body>"
+            + "</s:Envelope>").getBytes());
+        gos.flush();
+        gos.close();
+
+        post.setRequestEntity(new ByteArrayRequestEntity(baos.toByteArray()));
+        new HttpClient().executeMethod(post);
+
+        GZIPInputStream gis = new GZIPInputStream(post.getResponseBodyAsStream());
+        BufferedReader br = new BufferedReader(new InputStreamReader(gis));
+
+        String result = br.readLine();
+        log.info(result);
+        Element elem = transformer.toDOMElement(new StringSource(result));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
         assertEquals(Soap12.getInstance().getBody(), DomUtil.getQName(elem));

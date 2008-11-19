@@ -353,4 +353,96 @@ public class ProviderEndpointTest extends TestCase {
         System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
     }
+
+    public void testGzipEncodingNonSoap() throws Exception {
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
+        echo.setEndpoint("service");
+        container.activateComponent(echo, "echo");
+
+        HttpComponent http = new HttpComponent();
+
+        HttpConsumerEndpoint ep0 = new HttpConsumerEndpoint();
+        ep0.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep0.setEndpoint("consumer");
+        ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
+        ep0.setTargetEndpoint("service");
+        ep0.setLocationURI("http://localhost:8192/person/");
+
+        HttpProviderEndpoint ep1 = new HttpProviderEndpoint();
+        ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep1.setEndpoint("provider");
+        ep1.setLocationURI("http://localhost:8192/person/");
+        ep1.setGzipRequest(true);
+        ep1.setExpectGzippedResponse(true);
+
+        http.setEndpoints(new HttpEndpointType[] {ep0, ep1});
+        container.activateComponent(http, "http");
+        container.start();
+
+        ServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        me.setOperation(new QName("http://servicemix.apache.org/samples/wsdl-first", "GetPerson"));
+        me.getInMessage().setContent(new StringSource(
+            "<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\""
+                + "             xmlns:msg=\"http://servicemix.apache.org/samples/wsdl-first/types\" "
+                + "             name=\"Hello\" "
+                + "             type=\"msg:HelloRequest\" "
+                + "             version=\"1.0\">"
+                + "  <jbi:part>"
+                + "    <msg:GetPerson><msg:personId>id</msg:personId></msg:GetPerson>"
+                + "  </jbi:part>"
+                + "</jbi:message>"));
+        client.sendSync(me);
+
+        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+    }
+
+    public void testGzipEncodingSoap() throws Exception {
+        EchoComponent echo = new EchoComponent();
+        echo.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
+        echo.setEndpoint("service");
+        container.activateComponent(echo, "echo");
+
+        HttpComponent http = new HttpComponent();
+
+        HttpConsumerEndpoint ep0 = new HttpConsumerEndpoint();
+        ep0.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep0.setEndpoint("consumer");
+        ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
+        ep0.setTargetEndpoint("service");
+        ep0.setLocationURI("http://localhost:8192/PersonService/");
+
+        HttpSoapProviderEndpoint ep1 = new HttpSoapProviderEndpoint();
+        ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        ep1.setEndpoint("soap");
+        ep1.setWsdl(new ClassPathResource("person.wsdl"));
+        ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
+        ep1.setUseJbiWrapper(true);
+        ep1.setGzipRequest(true);
+        ep1.setExpectGzippedResponse(true);
+
+        http.setEndpoints(new HttpEndpointType[] {ep0, ep1});
+        container.activateComponent(http, "http");
+
+        container.start();
+
+        ServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
+        me.setOperation(new QName("http://servicemix.apache.org/samples/wsdl-first", "GetPerson"));
+        me.getInMessage().setContent(new StringSource(
+                                "<jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\""
+                             +  "             xmlns:msg=\"http://servicemix.apache.org/samples/wsdl-first/types\" "
+                             +  "             name=\"Hello\" "
+                             +  "             type=\"msg:HelloRequest\" "
+                             +  "             version=\"1.0\">"
+                             +  "  <jbi:part>"
+                             +  "    <msg:GetPerson><msg:personId>id</msg:personId></msg:GetPerson>"
+                             +  "  </jbi:part>"
+                             +  "</jbi:message>"));
+        client.sendSync(me);
+    }
+
 }

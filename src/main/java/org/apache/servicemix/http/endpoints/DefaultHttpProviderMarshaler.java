@@ -18,8 +18,15 @@ package org.apache.servicemix.http.endpoints;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Reader;
+import java.io.OutputStream;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.BufferedOutputStream;
 import java.net.URI;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -32,6 +39,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -46,7 +55,7 @@ import org.mortbay.jetty.HttpMethods;
  * @author gnodet
  * @since 3.2
  */
-public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
+public class DefaultHttpProviderMarshaler extends AbstractHttpProviderMarshaler implements HttpProviderMarshaler {
 
     private SourceTransformer transformer = new StAXSourceTransformer();
     private String locationURI;
@@ -173,6 +182,14 @@ public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
 
         httpExchange.setMethod(getMethod(exchange, inMsg));
         httpExchange.setRequestHeader(HttpHeaders.CONTENT_TYPE, getContentType(exchange, inMsg));
+
+        if (getContentEncoding() != null) {
+            httpExchange.setRequestHeader(HttpHeaders.CONTENT_ENCODING, getContentEncoding());
+        }
+        if (getAcceptEncoding() != null) {
+            httpExchange.setRequestHeader(HttpHeaders.ACCEPT_ENCODING, getAcceptEncoding());
+        }
+
         if (getHeaders() != null) {
             for (Map.Entry<String, String> e : getHeaders().entrySet()) {
                 httpExchange.setRequestHeader(e.getKey(), e.getValue());
@@ -180,7 +197,9 @@ public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
         }
         if (inMsg.getContent() != null) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            transformer.toResult(inMsg.getContent(), new StreamResult(baos));
+            OutputStream encodingStream = getRequestEncodingStream(getContentEncoding(), baos);
+            transformer.toResult(inMsg.getContent(), new StreamResult(encodingStream));
+            encodingStream.close();
             httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));
         }
     }
@@ -190,20 +209,26 @@ public class DefaultHttpProviderMarshaler implements HttpProviderMarshaler {
         if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
             if (!(exchange instanceof InOnly)) {
                 Fault fault = exchange.createFault();
-                fault.setContent(new StreamSource(httpExchange.getResponseReader()));
+                fault.setContent(new StreamSource(getResponseEncodingStream(
+                    httpExchange.getResponseFields().getStringField(HttpHeaders.CONTENT_ENCODING),
+                    httpExchange.getResponseStream())));
                 exchange.setFault(fault);
             } else {
                 throw new Exception("Invalid status response: " + response);
             }
         } else if (exchange instanceof InOut) {
             NormalizedMessage msg = exchange.createMessage();
-            msg.setContent(new StreamSource(httpExchange.getResponseReader()));
+            msg.setContent(new StreamSource(getResponseEncodingStream(
+                httpExchange.getResponseFields().getStringField(HttpHeaders.CONTENT_ENCODING),
+                httpExchange.getResponseStream())));
             exchange.setMessage(msg, "out");
         } else if (exchange instanceof InOptionalOut) {
-            Reader r = httpExchange.getResponseReader();
-            if (r != null) {
+            InputStream is = httpExchange.getResponseStream();
+            if (is != null) {
                 NormalizedMessage msg = exchange.createMessage();
-                msg.setContent(new StreamSource(r));
+                msg.setContent(new StreamSource(getResponseEncodingStream(
+                    httpExchange.getResponseFields().getStringField(HttpHeaders.CONTENT_ENCODING),
+                    is)));
                 exchange.setMessage(msg, "out");
             } else {
                 exchange.setStatus(ExchangeStatus.DONE);

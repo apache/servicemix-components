@@ -73,6 +73,10 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
 
     private SslParameters ssl;
 
+    private boolean expectGzippedResponse;
+    private boolean gzipRequest;
+
+
     public HttpProviderEndpoint() {
         super();
     }
@@ -192,6 +196,33 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         this.ssl = ssl;
     }
 
+    public boolean isExpectGzippedResponse() {
+        return expectGzippedResponse;
+    }
+
+    /**
+     * If true, the accept-encoding http header will be set to gzip and the response will be un-gzipped.
+     *
+     * @param expectGzippedResponse if the response should be unzipped
+     */
+    public void setExpectGzippedResponse(boolean expectGzippedResponse) {
+        this.expectGzippedResponse = expectGzippedResponse;
+    }
+
+    public boolean isGzipRequest() {
+        return gzipRequest;
+    }
+
+    /**
+     * If true, the request content will be gzipped and sent over the wire. The content-encoding http header will
+     * also be set to gzip.
+     *
+     * @param gzipRequest if the request should be compressed using gzip
+     */
+    public void setGzipRequest(boolean gzipRequest) {
+        this.gzipRequest = gzipRequest;
+    }
+
     public void process(MessageExchange exchange) throws Exception {
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             NormalizedMessage nm = exchange.getMessage("in");
@@ -298,7 +329,15 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
             marshaler = new DefaultHttpProviderMarshaler();
         }
         if (marshaler instanceof DefaultHttpProviderMarshaler && locationURI != null) {
-            ((DefaultHttpProviderMarshaler)marshaler).setLocationURI(locationURI);
+            ((DefaultHttpProviderMarshaler) marshaler).setLocationURI(locationURI);
+        }
+        if (marshaler instanceof AbstractHttpProviderMarshaler) {
+            if (isGzipRequest()) {
+                ((AbstractHttpProviderMarshaler) marshaler).setContentEncoding("gzip");
+            }
+            if (isExpectGzippedResponse()) {
+                ((AbstractHttpProviderMarshaler) marshaler).setAcceptEncoding("gzip");
+            }
         }
     }
 
