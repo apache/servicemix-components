@@ -395,8 +395,9 @@ public class ProviderEndpointTest extends TestCase {
                 + "  </jbi:part>"
                 + "</jbi:message>"));
         client.sendSync(me);
-
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
         System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        client.done(me);
     }
 
     public void testGzipEncodingSoap() throws Exception {
@@ -443,6 +444,9 @@ public class ProviderEndpointTest extends TestCase {
                              +  "  </jbi:part>"
                              +  "</jbi:message>"));
         client.sendSync(me);
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        client.done(me);
     }
 
 }

@@ -37,6 +37,7 @@ import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.interceptors.xml.StaxInInterceptor;
 import org.mortbay.io.ByteArrayBuffer;
 import org.mortbay.jetty.HttpMethods;
+import org.mortbay.jetty.HttpHeaders;
 
 /**
  * 
@@ -86,13 +87,19 @@ public class HttpSoapProviderMarshaler extends AbstractHttpProviderMarshaler imp
     public void createRequest(final MessageExchange exchange,
                               final NormalizedMessage inMsg, 
                               final SmxHttpExchange httpExchange) throws Exception {
+        if (getContentEncoding() != null) {
+            httpExchange.setRequestHeader(HttpHeaders.CONTENT_ENCODING, getContentEncoding());
+        }
+        if (getAcceptEncoding() != null) {
+            httpExchange.setRequestHeader(HttpHeaders.ACCEPT_ENCODING, getAcceptEncoding());
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStream encodingStream = getRequestEncodingStream(getContentEncoding(), baos);
         Message msg = binding.createMessage();
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         msg.setContent(MessageExchange.class, exchange);
         msg.setContent(NormalizedMessage.class, inMsg);
-        msg.setContent(OutputStream.class, baos);
+        msg.setContent(OutputStream.class, encodingStream);
         exchange.setProperty(Message.class.getName(), msg);
 
         InterceptorChain phaseOut = getChain(Phase.ClientOut);
@@ -120,7 +127,9 @@ public class HttpSoapProviderMarshaler extends AbstractHttpProviderMarshaler imp
         Message msg = binding.createMessage(req);
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
         msg.setContent(MessageExchange.class, exchange);
-        msg.setContent(InputStream.class, new ByteArrayInputStream(httpExchange.getResponseData()));
+        msg.setContent(InputStream.class, getResponseEncodingStream(
+                    httpExchange.getResponseFields().getStringField(HttpHeaders.CONTENT_ENCODING),
+                    httpExchange.getResponseStream()));
         msg.put(StaxInInterceptor.ENCODING, httpExchange.getResponseEncoding());
         InterceptorChain phaseOut = getChain(Phase.ClientIn);
         phaseOut.doIntercept(msg);
