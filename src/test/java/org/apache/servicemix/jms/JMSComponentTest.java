@@ -22,6 +22,7 @@ import java.net.URL;
 
 import javax.activation.DataHandler;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.NormalizedMessage;
@@ -226,7 +227,9 @@ public class JMSComponentTest extends AbstractJmsTestSupport {
         inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
         result = client.sendSync(inout);
         assertTrue(result);
-        assertNotNull(inout.getFault());
+        Fault inoutFault = inout.getFault();
+        assertNotNull(inoutFault);
+        assertTrue(new SourceTransformer().contentToString(inoutFault).indexOf("<fault/>") > 0);
         client.done(inout);
 
         // Test error return

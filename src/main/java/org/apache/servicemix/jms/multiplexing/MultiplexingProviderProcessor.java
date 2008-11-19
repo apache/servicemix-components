@@ -35,6 +35,7 @@ import javax.naming.InitialContext;
 
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
+import org.apache.servicemix.soap.SoapFault;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 
 public class MultiplexingProviderProcessor extends AbstractJmsProcessor implements MessageListener {
@@ -95,9 +96,10 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                 }
                 try {
                     SoapMessage soap = endpoint.getMarshaler().toSOAP(message);
-                    if (soap.getFault() != null) {
+                    SoapFault soapFault = soap.getFault();
+                    if (soapFault != null) {
                         Fault fault = exchange.createFault();
-                        fault.setContent(soap.getSource());
+                        fault.setContent(soapFault.getDetails());
                         exchange.setFault(fault);
                     } else {
                         NormalizedMessage msg = exchange.createMessage();

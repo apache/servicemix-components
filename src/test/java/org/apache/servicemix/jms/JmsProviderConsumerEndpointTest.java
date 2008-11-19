@@ -92,7 +92,9 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         result = client.sendSync(inout);
         assertTrue(result);
         assertNotNull(inout.getFault());
-        
+        assertTrue(new SourceTransformer().contentToString(inout.getFault()).indexOf("<fault/>") > 0);
+        client.done(inout);
+
         // Test error return
         container.deactivateComponent("receiver");
         ReturnErrorComponent error = new ReturnErrorComponent(new IllegalArgumentException());
