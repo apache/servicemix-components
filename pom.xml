@@ -110,6 +110,12 @@
       <groupId>org.codehaus.xfire</groupId>
       <artifactId>xfire-jaxws</artifactId>
       <version>${xfire-version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
