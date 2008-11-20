@@ -84,8 +84,16 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
             } else {
                 try {
                     URL[] urls = getDefaultLocations();
-                    ClassLoader parentLoader = getParentClassLoader(applicationContext);
-                    classLoader = new JarFileClassLoader(applicationContext.getDisplayName(), urls, parentLoader);
+                    List<ClassLoader> parents = new ArrayList<ClassLoader>();
+                    parents.add(getParentClassLoader(applicationContext));
+                    // In smx4, add the system classloader as a parent so that the whole JRE classes are available
+                    // to the SU, and not only the packages used by the components themselves
+                    if (component.getContainer().getType() == Container.Type.ServiceMix4) {
+                        parents.add(ClassLoader.getSystemClassLoader());
+                    }
+                    classLoader = new JarFileClassLoader(applicationContext.getDisplayName(),
+                                                         urls,
+                                                         parents.toArray(new ClassLoader[parents.size()]));
                     // assign the class loader to the xml reader and the
                     // application context
                 } catch (Exception e) {
