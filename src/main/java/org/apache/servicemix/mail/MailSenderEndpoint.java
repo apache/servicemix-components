@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.mail;
 
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jbi.management.DeploymentException;
@@ -53,10 +54,10 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     private String sender;
     private String receiver;
     private boolean debugMode;
+    private Map<String, String> customProperties;
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.apache.servicemix.common.Endpoint#validate()
      */
     public void validate() throws DeploymentException {
@@ -73,9 +74,10 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#processInOnly(javax.jbi.messaging.MessageExchange,
-     *      javax.jbi.messaging.NormalizedMessage)
+     * @see
+     * org.apache.servicemix.common.endpoints.ProviderEndpoint#processInOnly
+     * (javax.jbi.messaging.MessageExchange,
+     * javax.jbi.messaging.NormalizedMessage)
      */
     @Override
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
@@ -95,6 +97,9 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
                 props.put("mail.debug", isDebugMode() ? "true" : "false");
 
+                // apply the custom properties
+                applyCustomProperties(props);
+
                 // Get session
                 session = Session.getInstance(props, config.getAuthenticator());
 
@@ -107,8 +112,9 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // Connect only once here
                 // Transport.send() disconnects after each send
                 // Usually, no username and password is required for SMTP
-                transport.connect(config.getHost(), config.getPort(), config.getUsername(), config.getPassword());
-                
+                transport.connect(config.getHost(), config.getPort(), config.getUsername(), config
+                    .getPassword());
+
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
@@ -117,7 +123,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
 
                 // Send message
                 transport.sendMessage(msg, msg.getAllRecipients());
-                
+
                 // close transport
                 transport.close();
             } catch (MessagingException mex) {
@@ -132,9 +138,11 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#processInOut(javax.jbi.messaging.MessageExchange,
-     *      javax.jbi.messaging.NormalizedMessage, javax.jbi.messaging.NormalizedMessage)
+     * @see
+     * org.apache.servicemix.common.endpoints.ProviderEndpoint#processInOut(
+     * javax.jbi.messaging.MessageExchange,
+     * javax.jbi.messaging.NormalizedMessage,
+     * javax.jbi.messaging.NormalizedMessage)
      */
     @Override
     protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
@@ -155,6 +163,9 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
                 props.put("mail.debug", isDebugMode() ? "true" : "false");
 
+                // apply the custom properties
+                applyCustomProperties(props);
+
                 // Get session
                 session = Session.getInstance(props, config.getAuthenticator());
 
@@ -167,8 +178,9 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // Connect only once here
                 // Transport.send() disconnects after each send
                 // Usually, no username and password is required for SMTP
-                transport.connect(config.getHost(), config.getPort(), config.getUsername(), config.getPassword());
-                                
+                transport.connect(config.getHost(), config.getPort(), config.getUsername(), config
+                    .getPassword());
+
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
@@ -177,7 +189,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
 
                 // Send message
                 transport.sendMessage(msg, msg.getAllRecipients());
-                
+
                 // close transport
                 transport.close();
 
@@ -190,6 +202,19 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // delete all temporary allocated resources
                 this.marshaler.cleanUpResources(exchange.getExchangeId());
             }
+        }
+    }
+
+    /**
+     * this will apply the custom properties to the properties map used for
+     * connection to mail server
+     * 
+     * @param props the properties to apply to
+     */
+    private void applyCustomProperties(Properties props) {
+        // allow custom properties
+        if (customProperties != null) {
+            props.putAll(customProperties);
         }
     }
 
@@ -272,7 +297,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         this.customTrustManagers = customTrustManagers;
     }
 
-    /** 
+    /**
      * @return Returns the receiver.
      */
     public String getReceiver() {
@@ -284,5 +309,19 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      */
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    /**
+     * * @return Returns the customProperties.
+     */
+    public Map<String, String> getCustomProperties() {
+        return this.customProperties;
+    }
+
+    /**
+     * @param customProperties The customProperties to set.
+     */
+    public void setCustomProperties(Map<String, String> customProperties) {
+        this.customProperties = customProperties;
     }
 }
