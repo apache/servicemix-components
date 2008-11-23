@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 
@@ -366,7 +368,12 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         if (nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_SENTDATE) != null) {
             String sentDate = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_SENTDATE).toString();
             if (sentDate != null) {
-                mimeMessage.setSentDate(DateFormat.getInstance().parse(sentDate));
+            	try {
+            		mimeMessage.setSentDate(DateFormat.getInstance().parse(sentDate));
+            	} catch (ParseException ex) {
+            		// unparsable date
+            		mimeMessage.setSentDate(new Date());
+            	}
             }
         }
 

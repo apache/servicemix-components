@@ -37,7 +37,7 @@ public class MailConnectionConfiguration {
      * @return the host
      */
     public String getHost() {
-        return this.host;
+        return this.host == null ? "" : this.host;
     }
 
     /**
@@ -51,7 +51,7 @@ public class MailConnectionConfiguration {
      * @return the password
      */
     public String getPassword() {
-        return this.password;
+        return this.password == null ? "" : this.password;
     }
 
     /**
@@ -65,7 +65,7 @@ public class MailConnectionConfiguration {
      * @return the protocol
      */
     public String getProtocol() {
-        return this.protocol.toLowerCase();
+        return this.protocol == null ? "" : this.protocol.toLowerCase();
     }
 
     /**
@@ -79,7 +79,7 @@ public class MailConnectionConfiguration {
      * @return the username
      */
     public String getUsername() {
-        return this.username;
+        return this.username == null ? "" : this.username;
     }
 
     /**
@@ -93,7 +93,7 @@ public class MailConnectionConfiguration {
      * @return the folderName
      */
     public String getFolderName() {
-        return this.folderName;
+        return this.folderName == null ? "" : this.folderName;
     }
 
     /**
