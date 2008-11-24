@@ -19,26 +19,36 @@ package org.apache.servicemix.scripting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.activation.DataHandler;
 import javax.jbi.JBIException;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.RobustInOnly;
+import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.script.CompiledScript;
-import javax.script.Compilable;
+import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.common.util.URIResolver;
+import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
 import org.springframework.core.io.Resource;
 
 /**
@@ -47,13 +57,14 @@ import org.springframework.core.io.Resource;
  */
 public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndpointType {
     public static final String KEY_CHANNEL = "deliveryChannel";
-
     public static final String KEY_COMPONENT_NAMESPACE = "componentNamespace";
     public static final String KEY_CONTEXT = "componentContext";
     public static final String KEY_ENDPOINT = "endpoint";
     public static final String KEY_ENDPOINTNAME = "endpointname";
     public static final String KEY_IN_EXCHANGE = "exchange";
     public static final String KEY_IN_MSG = "inMessage";
+    public static final String KEY_OUT_EXCHANGE = "outExchange";
+    public static final String KEY_OUT_MSG = "outMessage";
     public static final String KEY_INTERFACENAME = "interfacename";
     public static final String KEY_LOGGER = "log";
     public static final String KEY_SCRIPT = "script";
@@ -65,6 +76,8 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
 
     private Map<String, Object> bindings;
     private boolean disableOutput;
+    private boolean copyProperties;
+    private boolean copyAttachments;
     private ScriptEngine engine;
     private String language = LANGUAGE_AUTODETECT;
     private String logResourceBundle;
@@ -74,6 +87,12 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     private Logger scriptLogger;
     private CompiledScript compiledScript;
 
+    private QName targetInterface;
+    private QName targetOperation;
+    private QName targetService;
+    private String targetEndpoint;
+    private String targetUri;
+    
     /**
      * @return
      * @throws MessagingException
@@ -217,6 +236,27 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 scriptBindings.put(KEY_INTERFACENAME, getInterfaceName());
                 scriptBindings.put(KEY_LOGGER, getScriptLogger());
 
+                InOnly outExchange = null;
+                
+                if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
+                    outExchange = getExchangeFactory().createInOnlyExchange();
+                    String processCorrelationId = (String)exchange.getProperty(JbiConstants.CORRELATION_ID);
+                    if (processCorrelationId != null) {
+                        outExchange.setProperty(JbiConstants.CORRELATION_ID, processCorrelationId);
+                    }                    
+                    
+                    NormalizedMessage outMsg = outExchange.createMessage();
+                    outExchange.setMessage(outMsg, "in");
+                    
+                    scriptBindings.put(KEY_OUT_EXCHANGE, outExchange);
+                    scriptBindings.put(KEY_OUT_MSG, outMsg);                    
+                } else {
+                    NormalizedMessage outMsg = exchange.createMessage();
+                    exchange.setMessage(outMsg, "out");
+                    scriptBindings.put(KEY_OUT_EXCHANGE, exchange);
+                    scriptBindings.put(KEY_OUT_MSG, outMsg);
+                }
+                
                 try {
                     scriptBindings.put(KEY_SCRIPT, getScript().getFile().getAbsolutePath());
                 } catch (IOException ioex) {
@@ -270,15 +310,31 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                     }
                 }
 
-                // on InOut exchanges we always do answer
-                if (exchange instanceof InOut) {
-                    if (!isDisableOutput()) {
-                        send(exchange);
+                if (!isDisableOutput()) {
+                    boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+                    
+                    // on InOut exchanges we always do answer
+                    if (exchange instanceof InOut || exchange instanceof InOptionalOut) {
+                        if (txSync) {
+                            getChannel().sendSync(exchange);
+                        } else {
+                            getChannel().send(exchange);
+                        }
+                    } else {
+                        configureTarget(outExchange);
+                        
+                        if (txSync) {
+                            getChannel().sendSync(outExchange);
+                        } else {
+                            getChannel().send(outExchange);
+                        }
+                        // if InOnly exchange then we only answer if user wants to
+                        done(exchange);
                     }
                 } else {
                     // if InOnly exchange then we only answer if user wants to
                     done(exchange);
-                }
+                }    
             }
         } else { 
             // Unknown role
@@ -414,6 +470,39 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     // utility
     //
 
+    /**
+     * Copies properties from one message to another that do not already exist
+     *
+     * @param from the message containing the properties
+     * @param to the destination message where the properties are set
+     */
+    protected void copyProperties(NormalizedMessage from, NormalizedMessage to) {
+        for (String propertyName : (Set<String>) from.getPropertyNames()) {
+            // Do not copy existing properties or transient properties
+            if (to.getProperty(propertyName) == null && !PojoMarshaler.BODY.equals(propertyName)) {
+                Object value = from.getProperty(propertyName);
+                to.setProperty(propertyName, value);
+            }
+        }
+    }
+
+    /**
+     * Copies attachments from one message to another that do not already exist
+     *
+     * @param from the message with the attachments
+     * @param to the destination message where the attachments are to be added
+     * @throws javax.jbi.messaging.MessagingException if an attachment could not be added
+     */
+    protected void copyAttachments(NormalizedMessage from, NormalizedMessage to) throws MessagingException {
+        for (String attachmentName : (Set<String>) from.getAttachmentNames()) {
+            // Do not copy existing attachments
+            if (to.getAttachment(attachmentName) == null) {
+                DataHandler value = from.getAttachment(attachmentName);
+                to.addAttachment(attachmentName, value);
+            }
+        }
+    }
+    
     private static final char UNIX_SEPARATOR = '/';
     private static final char WINDOWS_SEPARATOR = '\\';
     public static final char EXTENSION_SEPARATOR = '.';
@@ -447,5 +536,122 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
         int lastWindowsPos = filename.lastIndexOf(WINDOWS_SEPARATOR);
         return Math.max(lastUnixPos, lastWindowsPos);
     }
+    
+    /**
+     * Configures the target on the newly created exchange
+     * @param exchange the exchange to configure
+     * @throws MessagingException if the target could not be configured
+     */
+    public void configureTarget(MessageExchange exchange) throws MessagingException {
+        if (targetInterface == null && targetService == null && targetUri == null) {
+            throw new MessagingException("target's interface, service or uri should be specified");
+        }
+        if (targetUri != null) {
+            URIResolver.configureExchange(exchange, getContext(), targetUri);
+        }
+        if (targetInterface != null) {
+            exchange.setInterfaceName(targetInterface);
+        }
+        if (targetOperation != null) {
+            exchange.setOperation(targetOperation);
+        }
+        if (targetService != null) {
+            exchange.setService(targetService);
+            if (targetEndpoint != null) {
+                ServiceEndpoint se = getContext().getEndpoint(targetService, targetEndpoint);
+                exchange.setEndpoint(se);
+            }
+        }
+    }
 
+    /** * @return Returns the copyProperties.
+     */
+    public boolean isCopyProperties() {
+        return this.copyProperties;
+    }
+
+    /**
+     * @param copyProperties The copyProperties to set.
+     */
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+    }
+
+    /** * @return Returns the copyAttachments.
+     */
+    public boolean isCopyAttachments() {
+        return this.copyAttachments;
+    }
+
+    /**
+     * @param copyAttachments The copyAttachments to set.
+     */
+    public void setCopyAttachments(boolean copyAttachments) {
+        this.copyAttachments = copyAttachments;
+    }
+
+    /** * @return Returns the targetInterface.
+     */
+    public QName getTargetInterface() {
+        return this.targetInterface;
+    }
+
+    /**
+     * @param targetInterface The targetInterface to set.
+     */
+    public void setTargetInterface(QName targetInterface) {
+        this.targetInterface = targetInterface;
+    }
+
+    /** * @return Returns the targetOperation.
+     */
+    public QName getTargetOperation() {
+        return this.targetOperation;
+    }
+
+    /**
+     * @param targetOperation The targetOperation to set.
+     */
+    public void setTargetOperation(QName targetOperation) {
+        this.targetOperation = targetOperation;
+    }
+
+    /** * @return Returns the targetService.
+     */
+    public QName getTargetService() {
+        return this.targetService;
+    }
+
+    /**
+     * @param targetService The targetService to set.
+     */
+    public void setTargetService(QName targetService) {
+        this.targetService = targetService;
+    }
+
+    /** * @return Returns the targetEndpoint.
+     */
+    public String getTargetEndpoint() {
+        return this.targetEndpoint;
+    }
+
+    /**
+     * @param targetEndpoint The targetEndpoint to set.
+     */
+    public void setTargetEndpoint(String targetEndpoint) {
+        this.targetEndpoint = targetEndpoint;
+    }
+
+    /** * @return Returns the targetUri.
+     */
+    public String getTargetUri() {
+        return this.targetUri;
+    }
+
+    /**
+     * @param targetUri The targetUri to set.
+     */
+    public void setTargetUri(String targetUri) {
+        this.targetUri = targetUri;
+    }
 }

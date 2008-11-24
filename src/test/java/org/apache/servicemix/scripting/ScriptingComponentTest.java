@@ -17,6 +17,7 @@
 package org.apache.servicemix.scripting;
 
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
@@ -25,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -32,7 +34,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class ScriptingComponentTest extends SpringTestSupport {
     private static transient Log log = LogFactory.getLog(ScriptingComponentTest.class);
 
-    public void testGroovy() throws Exception {
+    public void testGroovyInOut() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "groovy-jsr223"));
@@ -47,11 +49,34 @@ public class ScriptingComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
+    
+    public void testGroovyInOnly() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        Receiver receiver = (Receiver) getBean("receiver");
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("urn:test", "groovy-jsr223"));
+        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
+        client.sendSync(me);
+        
+        if (me.getStatus() == ExchangeStatus.DONE) {
+            receiver.getMessageList().assertMessagesReceived(1);
+        } else {
+            if (me.getStatus() == ExchangeStatus.ERROR) {
+                if (me.getError() != null) {
+                    throw me.getError();
+                } else {
+                    fail("Received ERROR status");
+                }
+            } else if (me.getFault() != null) {
+                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            }    
+        }                
+    }
 
-    public void testJRuby() throws Exception {
+    public void testJRubyInOut() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "jruby-jsr223"));
@@ -66,11 +91,34 @@ public class ScriptingComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
+    
+    public void testJRubyInOnly() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        Receiver receiver = (Receiver) getBean("receiver");
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("urn:test", "jruby-jsr223"));
+        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
+        client.sendSync(me);
+        
+        if (me.getStatus() == ExchangeStatus.DONE) {
+            receiver.getMessageList().assertMessagesReceived(1);
+        } else {
+            if (me.getStatus() == ExchangeStatus.ERROR) {
+                if (me.getError() != null) {
+                    throw me.getError();
+                } else {
+                    fail("Received ERROR status");
+                }
+            } else if (me.getFault() != null) {
+                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            }    
+        }                
+    }
 
-    public void testJavaScript() throws Exception {
+    public void testJavaScriptInOut() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();
         me.setService(new QName("urn:test", "js-jsr223"));
@@ -85,8 +133,31 @@ public class ScriptingComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
+    }
+    
+    public void testJavaScriptInOnly() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        Receiver receiver = (Receiver) getBean("receiver");
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("urn:test", "js-jsr223"));
+        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
+        client.sendSync(me);
+        
+        if (me.getStatus() == ExchangeStatus.DONE) {
+            receiver.getMessageList().assertMessagesReceived(1);
+        } else {
+            if (me.getStatus() == ExchangeStatus.ERROR) {
+                if (me.getError() != null) {
+                    throw me.getError();
+                } else {
+                    fail("Received ERROR status");
+                }
+            } else if (me.getFault() != null) {
+                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            }    
+        }                
     }
 
     protected AbstractXmlApplicationContext createBeanFactory() {

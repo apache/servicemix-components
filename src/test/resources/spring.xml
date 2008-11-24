@@ -24,9 +24,15 @@
 
 	<sm:container id="jbi" embedded="true" createMBeanServer="false">
 		<sm:activationSpecs>
-			<sm:activationSpec service="test:echo">
+			<sm:activationSpec id="echo" service="test:echo">
 				<sm:component>
                     <bean class="org.apache.servicemix.components.util.EchoComponent" />
+                </sm:component>
+            </sm:activationSpec>
+            
+            <sm:activationSpec id="receiver" service="test:receiver">
+                <sm:component>
+                    <bean class="org.apache.servicemix.tck.ReceiverComponent" />
                 </sm:component>
             </sm:activationSpec>
         </sm:activationSpecs>
@@ -37,21 +43,24 @@
             <scripting:endpoint
                        service="test:groovy-jsr223" endpoint="endpoint"
                        script="classpath:GroovyExchangeProcessorJSR223.groovy"
-                       bindings="#customBindings">
+                       bindings="#customBindings"
+                       targetService="test:receiver">
             </scripting:endpoint>
             
             <!-- JRuby JSR-223 Endpoint  -->
             <scripting:endpoint
                        service="test:jruby-jsr223" endpoint="endpoint"
                        script="classpath:RubyExchangeProcessorJSR223.rb"
-                       bindings="#customBindings">
+                       bindings="#customBindings"
+                       targetService="test:receiver">
             </scripting:endpoint>
             
             <!-- JavaScript JSR-223 Endpoint  -->
             <scripting:endpoint
                        service="test:js-jsr223" endpoint="endpoint"
                        script="classpath:JSExchangeProcessorJSR223.js"
-                       bindings="#customBindings">
+                       bindings="#customBindings"
+                       targetService="test:receiver">
             </scripting:endpoint>
 
         </sm:endpoints>

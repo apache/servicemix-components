@@ -21,12 +21,8 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
 println "Starting JSR-223 groovy processor";
 
-println exchange;       
 def inputMessage = new SourceTransformer().toString(inMessage.getContent());
 println "Hello, I got an input message " + inputMessage;
-NormalizedMessage out = exchange.createMessage();
-out.setContent(new StringSource("<response>" + bindings.get("answerGroovy") + "</response>"));
-exchange.setMessage(out, "out");
-println exchange;
+outMessage.setContent(new StringSource("<response>" + bindings.get("answerGroovy") + "</response>"));
 
 println "Stopping JSR-223 groovy processor";

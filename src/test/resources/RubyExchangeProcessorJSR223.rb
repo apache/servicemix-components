@@ -26,20 +26,12 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer
 
 print "Starting JSR-223 jruby processor\n"
 
-print $exchange
-print "\n"
-
 inputMessage = SourceTransformer.new().toString($inMessage.getContent());
 print "Hello, I got an input message "
 print inputMessage
 print "\n"
 
-outMsg = $exchange.createMessage()
-outMsg.setContent(StringSource.new("<response>" + $bindings.get("answerJRuby") + "</response>"))
-$exchange.setMessage(outMsg, "out")
-
-print $exchange
-print "\n"
+$outMessage.setContent(StringSource.new("<response>" + $bindings.get("answerJRuby") + "</response>"))
 
 print "Stopping JSR-223 jruby processor\n"
 
