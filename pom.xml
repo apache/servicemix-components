@@ -45,11 +45,6 @@
     
     <xfire-version>1.2.5</xfire-version>    
     <xbean-version>3.4.1</xbean-version>
-    <servicemix.osgi.bundles>
-        org.springframework.bundle.spring.core,
-        org.springframework.bundle.spring.beans,
-        org.springframework.bundle.spring.context,
-    </servicemix.osgi.bundles>
   </properties>
 
   <dependencies>
