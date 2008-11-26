@@ -50,6 +50,7 @@
       org.apache.servicemix.jbi*;resolution:=optional,
       org.apache.xbean.spring.context.v2,
       org.springframework.beans.factory.xml,
+      sun.misc;resolution:=optional,
       *
   	</servicemix.osgi.import>
     <servicemix.osgi.export>
@@ -57,6 +58,7 @@
       META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.bean
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
+        org.apache.servicemix.bundles.jaxp-ri,
         org.springframework.bundle.spring.core,
         org.springframework.bundle.spring.beans,
         org.springframework.bundle.spring.context,
