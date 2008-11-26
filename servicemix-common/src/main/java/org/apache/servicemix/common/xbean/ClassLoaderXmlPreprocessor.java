@@ -84,16 +84,8 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
             } else {
                 try {
                     URL[] urls = getDefaultLocations();
-                    List<ClassLoader> parents = new ArrayList<ClassLoader>();
-                    parents.add(getParentClassLoader(applicationContext));
-                    // In smx4, add the system classloader as a parent so that the whole JRE classes are available
-                    // to the SU, and not only the packages used by the components themselves
-                    if (component.getContainer().getType() == Container.Type.ServiceMix4) {
-                        parents.add(ClassLoader.getSystemClassLoader());
-                    }
-                    classLoader = new JarFileClassLoader(applicationContext.getDisplayName(),
-                                                         urls,
-                                                         parents.toArray(new ClassLoader[parents.size()]));
+                    ClassLoader parentLoader = getParentClassLoader(applicationContext);
+                    classLoader = new JarFileClassLoader(applicationContext.getDisplayName(), urls, parentLoader);
                     // assign the class loader to the xml reader and the
                     // application context
                 } catch (Exception e) {
@@ -229,7 +221,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 urls = getDefaultLocations();
             }
 
-            // populate the list of parent classloaders
+            // create the classloader
             List<ClassLoader> parents = new ArrayList<ClassLoader>();
             parents.add(getParentClassLoader(applicationContext));
             for (String library : sls) {
@@ -246,12 +238,6 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 }
                 parents.add(cl);
             }
-            // In smx4, add the system classloader as a parent so that the whole JRE classes are available
-            // to the SU, and not only the packages used by the components themselves
-            if (component.getContainer().getType() == Container.Type.ServiceMix4) {
-                parents.add(ClassLoader.getSystemClassLoader());
-            }
-            // now actually create the classloader
             classLoader = new JarFileClassLoader(applicationContext.getDisplayName(),
                                                  urls, 
                                                  parents.toArray(new ClassLoader[parents.size()]),
