@@ -54,6 +54,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     private String sender;
     private String receiver;
     private boolean debugMode;
+    private boolean ignoreTOProperty;
     private Map<String, String> customProperties;
 
     /*
@@ -118,6 +119,15 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
+                // check if ignore on TO property is enabled
+                if (isIgnoreTOProperty()) {
+                	// we should preset TO property from NMSG
+                	if (in.getProperty(AbstractMailMarshaler.MSG_TAG_TO) != null) {
+                		// delete the property
+                		in.setProperty(AbstractMailMarshaler.MSG_TAG_TO, null);
+                	}
+                }
+                
                 // let the marshaler to the conversion of message to mail
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
@@ -184,6 +194,15 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
+                // check if ignore on TO property is enabled
+                if (isIgnoreTOProperty()) {
+                	// we should preset TO property from NMSG
+                	if (in.getProperty(AbstractMailMarshaler.MSG_TAG_TO) != null) {
+                		// delete the property
+                		in.setProperty(AbstractMailMarshaler.MAIL_TAG_TO, null);
+                	}
+                }
+                
                 // let the marshaler to the conversion of message to mail
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
@@ -324,4 +343,18 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     public void setCustomProperties(Map<String, String> customProperties) {
         this.customProperties = customProperties;
     }
+
+    /**
+	 * @return the ignoreTOProperty
+	 */
+	public boolean isIgnoreTOProperty() {
+		return this.ignoreTOProperty;
+	}
+	
+	/**
+	 * @param ignoreTOProperty the ignoreTOProperty to set
+	 */
+	public void setIgnoreTOProperty(boolean ignoreTOProperty) {
+		this.ignoreTOProperty = ignoreTOProperty;
+	}
 }
