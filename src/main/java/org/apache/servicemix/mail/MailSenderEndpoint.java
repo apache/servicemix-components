@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.mail;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -54,8 +55,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     private String sender;
     private String receiver;
     private boolean debugMode;
-    private boolean ignoreTOProperty;
     private Map<String, String> customProperties;
+    private List<String> ignoreMessageProperties;
 
     /*
      * (non-Javadoc)
@@ -119,14 +120,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
-                // check if ignore on TO property is enabled
-                if (isIgnoreTOProperty()) {
-                	// we should preset TO property from NMSG
-                	if (in.getProperty(AbstractMailMarshaler.MSG_TAG_TO) != null) {
-                		// delete the property
-                		in.setProperty(AbstractMailMarshaler.MSG_TAG_TO, null);
-                	}
-                }
+                // handle ignore properties
+                handleIgnoreProperties(in);
                 
                 // let the marshaler to the conversion of message to mail
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
@@ -194,14 +189,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
                 // Define message
                 MimeMessage msg = new MimeMessage(session);
 
-                // check if ignore on TO property is enabled
-                if (isIgnoreTOProperty()) {
-                	// we should preset TO property from NMSG
-                	if (in.getProperty(AbstractMailMarshaler.MSG_TAG_TO) != null) {
-                		// delete the property
-                		in.setProperty(AbstractMailMarshaler.MAIL_TAG_TO, null);
-                	}
-                }
+                // handle ignore properties
+                handleIgnoreProperties(in);
                 
                 // let the marshaler to the conversion of message to mail
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
@@ -224,6 +213,22 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         }
     }
 
+    /**
+     * handles the normalized messages ignored properties, means it will set every
+     * property value to null for each key inside the list of properties to ignore
+     * 
+     * @param in	the normalized message
+     */
+    private void handleIgnoreProperties(NormalizedMessage in) {
+    	if (getIgnoreMessageProperties() != null && getIgnoreMessageProperties().size()>0) {
+    		for (String key : getIgnoreMessageProperties()) {
+    			if (in.getProperty(key) != null) {
+    				in.setProperty(key, null);
+    			}
+    		}
+        }
+    }
+    
     /**
      * this will apply the custom properties to the properties map used for
      * connection to mail server
@@ -344,17 +349,17 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         this.customProperties = customProperties;
     }
 
-    /**
-	 * @return the ignoreTOProperty
-	 */
-	public boolean isIgnoreTOProperty() {
-		return this.ignoreTOProperty;
-	}
-	
 	/**
-	 * @param ignoreTOProperty the ignoreTOProperty to set
+	 * @return the ignoreMessageProperties
 	 */
-	public void setIgnoreTOProperty(boolean ignoreTOProperty) {
-		this.ignoreTOProperty = ignoreTOProperty;
+	public List<String> getIgnoreMessageProperties() {
+		return this.ignoreMessageProperties;
+	}
+
+	/**
+	 * @param ignoreMessageProperties the ignoreMessageProperties to set
+	 */
+	public void setIgnoreMessageProperties(List<String> ignoreMessageProperties) {
+		this.ignoreMessageProperties = ignoreMessageProperties;
 	}
 }
