@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.mail;
 
-import com.sun.mail.pop3.POP3Folder;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -213,34 +211,37 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                 messages = folder.getMessages();
             }
 
-            String uid = null;
-
             int fetchSize = getMaxFetchSize() == -1 ? messages.length : Math.min(getMaxFetchSize(),
                                                                                  messages.length);
             int fetchedMessages = 0;
-
+            String uid = null;
+            
             for (int cnt = 0; cnt < messages.length; cnt++) {
+                uid = null;
+                
                 // get the message
                 MimeMessage mailMsg = (MimeMessage)messages[cnt];
 
                 if (isProcessOnlyUnseenMessages() && isPopProtocol) {
                     // POP3 doesn't support flags, so we need to check manually
                     // if message is new or not
-                    if (folder instanceof POP3Folder) {
-                        POP3Folder pf = (POP3Folder)folder;
-                        uid = pf.getUID(mailMsg);
-
+                    try {
+                        Object o_uid = folder.getClass().getMethod("getUID", new Class[] { Message.class }).invoke(folder, new Object[] { mailMsg });
+                        
                         // remember each found message
-                        if (uid != null) {
+                        if (o_uid != null) {
+                            uid = (String)o_uid;
                             foundMessagesInFolder.add(uid);
                         }
 
                         // check if we already processed the message
                         if (uid != null && this.seenMessages.contains(uid)) {
                             // this message was already processed
-                            uid = null;
                             continue;
                         }
+                    } catch (Exception ex) {
+                        // this folder doesn't provide UIDs for messages
+                        logger.warn(getEndpoint() + ": Unable to determine unique id of mail.", ex);
                     }
                 }
 
