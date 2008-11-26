@@ -70,7 +70,6 @@
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
         org.apache.cxf.cxf-bundle,
-        org.apache.servicemix.bundles.jaxp-ri,
         org.springframework.bundle.spring.core,
         org.springframework.bundle.spring.beans,
         org.springframework.bundle.spring.context,
