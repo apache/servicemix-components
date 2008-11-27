@@ -63,6 +63,34 @@
                        targetService="test:receiver">
             </scripting:endpoint>
 
+            <!-- JavaScript JSR-223 Endpoint  -->
+            <scripting:endpoint
+                       service="test:js-all" endpoint="endpoint"
+                       script="classpath:JSExchangeProcessorJSR223.js"
+                       bindings="#customBindings"
+                       targetService="test:receiver"
+                       copyProperties="true"
+                       copyAttachments="true">
+            </scripting:endpoint>
+
+            <scripting:endpoint
+                       service="test:js-headersOnly" endpoint="endpoint"
+                       script="classpath:JSExchangeProcessorJSR223.js"
+                       bindings="#customBindings"
+                       targetService="test:receiver"
+                       copyProperties="true"
+                       copyAttachments="false">
+            </scripting:endpoint>
+
+            <scripting:endpoint
+                       service="test:js-attachmentsOnly" endpoint="endpoint"
+                       script="classpath:JSExchangeProcessorJSR223.js"
+                       bindings="#customBindings"
+                       targetService="test:receiver"
+                       copyProperties="false"
+                       copyAttachments="true">
+            </scripting:endpoint>
+
         </sm:endpoints>
     </sm:container>
 

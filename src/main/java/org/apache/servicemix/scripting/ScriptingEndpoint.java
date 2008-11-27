@@ -225,10 +225,14 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 // Fault message
                 done(exchange);
             } else {
+                InOnly outExchange = null;
+                NormalizedMessage outMsg = null;
+                NormalizedMessage inMsg = exchange.getMessage("in");
+
                 Bindings scriptBindings = engine.createBindings();
                 scriptBindings.put(KEY_CONTEXT, getContext());
                 scriptBindings.put(KEY_IN_EXCHANGE, exchange);
-                scriptBindings.put(KEY_IN_MSG, exchange.getMessage("in"));
+                scriptBindings.put(KEY_IN_MSG, inMsg);
                 scriptBindings.put(KEY_ENDPOINT, this);
                 scriptBindings.put(KEY_CHANNEL, getChannel());
                 scriptBindings.put(KEY_ENDPOINTNAME, getEndpoint());
@@ -236,8 +240,6 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 scriptBindings.put(KEY_INTERFACENAME, getInterfaceName());
                 scriptBindings.put(KEY_LOGGER, getScriptLogger());
 
-                InOnly outExchange = null;
-                
                 if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
                     outExchange = getExchangeFactory().createInOnlyExchange();
                     String processCorrelationId = (String)exchange.getProperty(JbiConstants.CORRELATION_ID);
@@ -245,13 +247,13 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                         outExchange.setProperty(JbiConstants.CORRELATION_ID, processCorrelationId);
                     }                    
                     
-                    NormalizedMessage outMsg = outExchange.createMessage();
+                    outMsg = outExchange.createMessage();
                     outExchange.setMessage(outMsg, "in");
                     
                     scriptBindings.put(KEY_OUT_EXCHANGE, outExchange);
                     scriptBindings.put(KEY_OUT_MSG, outMsg);                    
                 } else {
-                    NormalizedMessage outMsg = exchange.createMessage();
+                    outMsg = exchange.createMessage();
                     exchange.setMessage(outMsg, "out");
                     scriptBindings.put(KEY_OUT_EXCHANGE, exchange);
                     scriptBindings.put(KEY_OUT_MSG, outMsg);
@@ -312,6 +314,16 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
 
                 if (!isDisableOutput()) {
                     boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+                    
+                    // copy headers
+                    if (isCopyProperties()) {
+                        copyProperties(inMsg, outMsg);
+                    }
+                    
+                    // copy attachments
+                    if (isCopyAttachments()) {
+                        copyAttachments(inMsg, outMsg);
+                    }                                        
                     
                     // on InOut exchanges we always do answer
                     if (exchange instanceof InOut || exchange instanceof InOptionalOut) {
