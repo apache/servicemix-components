@@ -254,7 +254,9 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
                 throw failure("undeploy", "ServiceUnit should be in a SHUTDOWN state", null);
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
-            doUndeploy(su);
+            if (serviceUnitRootPath != null) {
+                doUndeploy(su);
+            }
             component.getRegistry().unregisterServiceUnit(su);
             if (logger.isDebugEnabled()) {
                 logger.debug("Service unit undeployed");

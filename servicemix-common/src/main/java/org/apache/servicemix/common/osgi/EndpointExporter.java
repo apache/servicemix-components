@@ -21,10 +21,14 @@ import java.util.Properties;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
+
+import javax.jbi.management.DeploymentException;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.jbi.deployer.DeployedAssembly;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.springframework.osgi.context.BundleContextAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.DisposableBean;
@@ -36,6 +40,8 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
     private BundleContext bundleContext;
     private ApplicationContext applicationContext;
     private Collection<Endpoint> endpoints;
+    private String assemblyName;
+    private Collection<ServiceRegistration> endpointRegistrations;
 
     public void setBundleContext(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
@@ -58,27 +64,43 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
     }
 
     public String getName() {
-        return bundleContext.getBundle().getSymbolicName();
+        return assemblyName;
+    }
+
+    public void deploy() {
+        endpointRegistrations = new ArrayList<ServiceRegistration>();
+        for (Endpoint ep : getEndpoints()) {
+            EndpointWrapper wrapper = new EndpointWrapperImpl(ep, applicationContext.getClassLoader());
+            Dictionary props = new Properties();
+            ServiceRegistration reg = bundleContext.registerService(EndpointWrapper.class.getName(), wrapper, props);
+            endpointRegistrations.add(reg);
+        }
     }
 
     public Map<String, String> getServiceUnits() {
+        if (endpointRegistrations == null) {
+            throw new IllegalStateException("Service assembly has not been deployed");
+        }
         Map<String, String> sus = new HashMap<String, String>();
         for (Endpoint ep : getEndpoints()) {
+            if (ep.getServiceUnit() == null) {
+                throw new IllegalStateException("Endpoint has not been ");
+            }
             sus.put(ep.getServiceUnit().getName(), ep.getServiceUnit().getComponent().getComponentName());
         }
         return sus;
     }
 
     public void afterPropertiesSet() throws Exception {
-        Collection<Endpoint> eps = getEndpoints();
-        for (Endpoint ep : eps) {
-            EndpointWrapper wrapper = new EndpointWrapperImpl(ep, applicationContext.getClassLoader());
-            Dictionary props = new Properties();
-            bundleContext.registerService(EndpointWrapper.class.getName(), wrapper, props);
-        }
+        this.assemblyName = bundleContext.getBundle().getSymbolicName();
         bundleContext.registerService(DeployedAssembly.class.getName(), this, new Properties());
     }
 
     public void destroy() throws Exception {
+        if (endpointRegistrations != null) {
+            for (ServiceRegistration reg : endpointRegistrations) {
+                reg.unregister();
+            }
+        }
     }
 }

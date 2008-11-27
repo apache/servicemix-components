@@ -31,6 +31,8 @@ public interface DeployedAssembly {
 
     String getName();
 
+    void deploy();
+
     Map<String, String> getServiceUnits();
 
 }

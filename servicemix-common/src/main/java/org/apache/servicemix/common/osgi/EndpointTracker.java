@@ -27,6 +27,11 @@ import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * This class is used by components bundles to track endpoints that they know about.
+ * Endpoints are wrapped into {@link EndpointWrapper} interfaces to be able to access
+ * the underlying object easily and bypass spring-DM proxies.
+ */
 public class EndpointTracker {
 
     private static final Log LOGGER = LogFactory.getLog(EndpointTracker.class);
@@ -58,17 +63,8 @@ public class EndpointTracker {
     }
 
     public void unregister(EndpointWrapper wrapper, Map properties) throws Exception {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[" + component.getComponentName() + "] Endpoint unregistered with properties: " + properties);
-        }
-        // Do not access the wrapper using wrapper.getEndpoint(), has the osgi context may already be shut down
-        OsgiServiceUnit su = endpoints.remove(wrapper);
-        if (su != null && component.isKnownEndpoint(su.getEndpoint())) {
-            if (LOGGER.isDebugEnabled()) {
-    	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
-            }
-            component.getRegistry().unregisterServiceUnit(su);
-        }
+        // The endpoints are deployed by the JBI deployer when the DeployedAssembly is processed.
+        // The JBI deployer is responsible for managing the SA lifecycle and will undeploy the SU itself
     }
 
     public static class OsgiServiceUnit extends DefaultServiceUnit {
