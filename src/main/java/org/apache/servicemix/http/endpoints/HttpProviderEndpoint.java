@@ -18,7 +18,6 @@ package org.apache.servicemix.http.endpoints;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -45,6 +44,7 @@ import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.HttpConfiguration;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
+import org.mortbay.jetty.client.Address;
 import org.mortbay.jetty.client.HttpClient;
 import org.mortbay.jetty.client.security.ProxyAuthorization;
 import org.mortbay.thread.QueuedThreadPool;
@@ -288,7 +288,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                 jettyClient.setThreadPool(new QueuedThreadPool(getConfiguration().getJettyClientThreadPoolSize()));
                 jettyClient.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
                 if (proxyHost != null) {
-                    jettyClient.setProxy(new InetSocketAddress(proxyHost, proxyPort));
+                    jettyClient.setProxy(new Address(proxyHost, proxyPort));
                     if (proxyUsername != null) {
                         jettyClient.setProxyAuthentication(new ProxyAuthorization(proxyUsername, proxyPassword));
                     }
