@@ -25,6 +25,7 @@ import javax.jbi.messaging.Fault;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.impl.DefaultExchange;
+import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
  * An {@link org.apache.camel.Exchange} working with JBI which exposes the underlying JBI
@@ -163,6 +164,10 @@ public class JbiExchange extends DefaultExchange {
                     if ("fault".equals(name)) {
                         Fault f = messageExchange.createFault();
                         messageExchange.setFault(f);
+                        if (getPattern().equals(ExchangePattern.RobustInOnly)
+                            || getPattern().equals(ExchangePattern.RobustOutOnly)) {                            
+                            setException(new FaultException("Fault occured for " + getPattern() + " exchange", messageExchange, f));
+                        }                        
                         msg = f;
                     } else {
                         msg = messageExchange.createMessage();
