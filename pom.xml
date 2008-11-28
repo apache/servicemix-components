@@ -71,7 +71,6 @@
         org.apache.cxf.cxf-bundle,
         org.apache.cxf.cxf-rt-bindings-jbi,
         org.apache.cxf.cxf-rt-transports-jbi,
-        org.apache.servicemix.bundles.jaxp-ri,
         org.springframework.bundle.spring.core,
         org.springframework.bundle.spring.beans,
         org.springframework.bundle.spring.context,
