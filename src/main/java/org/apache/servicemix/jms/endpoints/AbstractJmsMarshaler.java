@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.jms.endpoints;
 
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
@@ -118,7 +117,9 @@ public abstract class AbstractJmsMarshaler {
      * @return true if it should be copied
      */
     protected boolean shouldIncludeHeader(String name, Object value) {
-        return (value instanceof String || value instanceof Number || value instanceof Date)
+        return (value instanceof Boolean || value instanceof Byte || value instanceof Short
+                || value instanceof Integer || value instanceof Long || value instanceof Float
+                || value instanceof Double || value instanceof String)
                && (!isNeedJavaIdentifiers() || isJavaIdentifier(name));
     }
 

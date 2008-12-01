@@ -17,6 +17,7 @@
 package org.apache.servicemix.jms;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.activemq.pool.PooledConnectionFactory;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.FileUtil;
@@ -77,6 +79,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         NormalizedMessage inMessage = me.getInMessage();
         inMessage.setProperty(MSG_PROPERTY, "Test-Value");
         inMessage.setProperty(MSG_PROPERTY_BLACKLISTED, "Unwanted value");
+        inMessage.setProperty(JbiConstants.DATESTAMP_PROPERTY_NAME, Calendar.getInstance().getTime());
         inMessage.setContent(new StringSource("<hello>world</hello>"));
         me.setService(new QName("jms"));
         client.sendSync(me);
@@ -86,7 +89,9 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         assertNotNull("Expected property not found", msg
             .getStringProperty(MSG_PROPERTY));
         assertNull("Found blacklisted property", msg
-                   .getStringProperty(MSG_PROPERTY_BLACKLISTED));
+            .getStringProperty(MSG_PROPERTY_BLACKLISTED));
+        assertNull("Found " + JbiConstants.DATESTAMP_PROPERTY_NAME + " property", msg
+            .getObjectProperty(JbiConstants.DATESTAMP_PROPERTY_NAME));
         assertNotNull(msg);
     }
     
