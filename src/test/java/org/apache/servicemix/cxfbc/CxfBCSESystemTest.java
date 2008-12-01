@@ -21,6 +21,9 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorPortType;
 import org.apache.cxf.calculator.CalculatorService;
@@ -37,6 +40,13 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class CxfBCSESystemTest extends SpringTestSupport {
     
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSESystemTest.class);
+    
+    static {
+        SpringBusFactory bf = new SpringBusFactory();
+        Bus bus = bf.createBus("org/apache/servicemix/cxfbc/jettyThreadPool.xml");
+        BusFactory.setDefaultBus(bus);
+    }
+    
     public void setUp() throws Exception {
         //override super setup
         LOG.info("setUp is invoked");
@@ -94,6 +104,7 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         multiClientTestBase();
     }
     
+
     
     private void calculatorTestBase() throws Exception {
 
@@ -116,6 +127,7 @@ public class CxfBCSESystemTest extends SpringTestSupport {
     }
     
     private void multiClientTestBase() throws Exception {
+        
         URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
         assertNotNull(wsdl);
         CalculatorService service = new CalculatorService(wsdl, new QName(
@@ -133,10 +145,15 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         for (int i = 0; i < clients.length; i++) {
             clients[i].join();
         }
+        
+        for (int i = 0; i < clients.length; i++) {
+            assertEquals(clients[i].getResult(), 3);
+        }
     }
     
     class MultiClientThread extends Thread {
         private CalculatorPortType port;
+        private int ret;
         
         public MultiClientThread(CalculatorPortType port) {
             this.port = port;
@@ -144,10 +161,14 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         
         public void run() {
             try {
-                assertEquals(port.add(1, 2), 3);
+                ret = port.add(1, 2);
             } catch (AddNumbersFault e) {
                 fail();
             }
+        }
+        
+        public int getResult() {
+            return ret;
         }
     }
 
