@@ -17,16 +17,10 @@
 package org.apache.servicemix.http.endpoints;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Reader;
 import java.io.OutputStream;
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.BufferedOutputStream;
 import java.net.URI;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -39,8 +33,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
