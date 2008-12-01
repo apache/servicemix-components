@@ -150,7 +150,7 @@ public final class MailUtils {
             config.setPassword("");
         }
 
-        if (userInfo == null) {
+        if (userInfo == null) { 
             // alternative way of specifying the user name
             if (uri.getQuery() != null && uri.getQuery().indexOf("user=") != -1) {
                 // extract the password from query
