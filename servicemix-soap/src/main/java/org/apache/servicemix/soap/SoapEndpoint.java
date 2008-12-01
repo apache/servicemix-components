@@ -35,6 +35,7 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.ExtensionRegistry;
 import javax.wsdl.extensions.schema.Schema;
 import javax.wsdl.extensions.schema.SchemaImport;
+import javax.wsdl.extensions.schema.SchemaReference;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.wsdl.xml.WSDLWriter;
@@ -420,10 +421,10 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
     
     protected void mapDefinition(Definition def) throws WSDLException {
         wsdls.put("main.wsdl", createWsdlWriter().getDocument(def));
-        mapImports(def);
+        mapImports(def, "");
     }
 
-    protected void mapImports(Definition def) throws WSDLException {
+    protected void mapImports(Definition def, String contextPath) throws WSDLException {
         // Add other imports to mapping
         Map imports = def.getImports();
         for (Iterator iter = imports.values().iterator(); iter.hasNext();) {
@@ -433,8 +434,9 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
                 Definition impDef = imp.getDefinition();
                 String impLoc = imp.getLocationURI();
                 if (impDef != null && impLoc != null && !URI.create(impLoc).isAbsolute()) {
+                    impLoc = resolveRelativeURI(contextPath, impLoc);
                     wsdls.put(impLoc, createWsdlWriter().getDocument(impDef));
-                    mapImports(impDef);
+                    mapImports(impDef, getURIParent(impLoc));
                 }
             }
         }
@@ -445,13 +447,13 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
                 ExtensibilityElement ee = (ExtensibilityElement) it.next();
                 if (ee instanceof Schema) {
                     Schema schema = (Schema) ee;
-                    mapSchemaImport(schema);                
+                    mapSchema(schema, "");
                 }
             }
         }
     }
 
-    private void mapSchemaImport(Schema schema) {
+    private void mapSchema(Schema schema, String contextPath) {
         Map schemaImports = schema.getImports();
         for (Iterator iter = schemaImports.values().iterator(); iter.hasNext();) {
             List imps = (List) iter.next();
@@ -460,13 +462,59 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
                 Schema schemaImp = schemaImport.getReferencedSchema();
                 String schemaLoc = schemaImport.getSchemaLocationURI();
                 if (schemaLoc != null && schemaImp != null && schemaImp.getElement() != null && !URI.create(schemaLoc).isAbsolute()) {
+                    schemaLoc = resolveRelativeURI(contextPath, schemaLoc);
                     wsdls.put(schemaLoc, schemaImp.getElement());
-                    mapSchemaImport(schemaImp);
+                    // recursively map imported schemas
+                    mapSchema(schemaImp, getURIParent(schemaLoc));
                 }
+            }
+        }
+        List schemaIncludes = schema.getIncludes();
+        for (Iterator iter = schemaIncludes.iterator(); iter.hasNext();) {
+            SchemaReference schemaInclude = (SchemaReference) iter.next();
+            Schema schemaImp = schemaInclude.getReferencedSchema();
+            String schemaLoc = schemaInclude.getSchemaLocationURI();
+            if (schemaLoc != null && schemaImp != null && schemaImp.getElement() != null && !URI.create(schemaLoc).isAbsolute()) {
+                schemaLoc = resolveRelativeURI(contextPath, schemaLoc);
+                wsdls.put(schemaLoc, schemaImp.getElement());
+                // recursively map included schemas
+                mapSchema(schemaImp, getURIParent(schemaLoc));
             }
         }
     }
     
+    /**
+     * Combines a relative path with a current directory, normalising any
+     * relative pathnames like "." and "..".
+     * <p>
+     * Example:
+     * <table>
+     * <tr><th>context</th><th>path</th><th>resolveRelativeURI(context, path)</th></tr>
+     * <tr><td>addressModification</td><td>../common/DataType.xsd</td><td>common/DataType.xsd</td></tr>
+     * </table>
+     *
+     * @param context The current directory.
+     * @param path The relative path to resolve against the current directory.
+     * @return the normalised path.
+     */
+    private static String resolveRelativeURI(String context, String path) {
+        if (context.length() > 0) {
+            return URI.create(context + "/" + path).normalize().getPath();
+        } else {
+            return path;
+        }
+    }
+
+    /**
+     * Removes the filename part of a URI path.
+     *
+     * @param path A URI path part.
+     * @return The URI path part with the filename part removed.
+     */
+    private static String getURIParent(String path) {
+        return URI.create(path + "/..").normalize().getPath();
+    }
+
     /**
      * @return Returns the wsdls.
      */
