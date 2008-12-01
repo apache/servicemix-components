@@ -78,12 +78,12 @@ public class ContentEnricher extends EIPEndpoint {
     /**
      * Should message properties be copied ?
      */
-    private boolean copyProperties;
+    private boolean copyProperties = true;
 
     /**
      * Should message attachments be copied ?
      */
-    private boolean copyAttachments;
+    private boolean copyAttachments = true;
 
     /**
      * returns the QName of the resulting root node

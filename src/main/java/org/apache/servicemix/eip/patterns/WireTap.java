@@ -72,7 +72,7 @@ public class WireTap extends EIPEndpoint {
      * on the in message will be copied to the out / fault
      * message before it is sent.
      */
-    private boolean copyProperties;
+    private boolean copyProperties = true;
     
     /**
      * @return Returns the target.

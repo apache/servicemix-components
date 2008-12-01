@@ -95,12 +95,12 @@ public class Pipeline extends EIPEndpoint {
     /**
      * Should message properties be copied ?
      */
-    private boolean copyProperties;
+    private boolean copyProperties = true;
 
     /**
      * Should message attachments be copied ?
      */
-    private boolean copyAttachments;
+    private boolean copyAttachments = true;
 
     /**
      * @return Returns the target.
