@@ -59,6 +59,9 @@ import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.continuations.Continuation;
+import org.apache.cxf.continuations.ContinuationProvider;
+import org.apache.cxf.continuations.SuspendedInvocationException;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.endpoint.Server;
@@ -88,6 +91,7 @@ import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.ChainInitiationObserver;
 import org.apache.cxf.transport.http_jetty.JettyHTTPDestination;
 import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngine;
+import org.apache.cxf.transport.http_jetty.continuations.JettyContinuationWrapper;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl.WSDLManager;
@@ -261,15 +265,20 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     public void process(MessageExchange exchange) throws Exception {
-        synchronized (messages.get(exchange.getExchangeId())) {
-            messages.get(exchange.getExchangeId()).notifyAll();
-        }
         Message message = messages.remove(exchange.getExchangeId());
-        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
-            exchange.setStatus(ExchangeStatus.DONE);
-            message.getExchange().get(ComponentContext.class)
+        synchronized (message.getInterceptorChain()) {
+            if (!isSynchronous()) {
+                ContinuationProvider continuationProvider = (ContinuationProvider) message
+                    .get(ContinuationProvider.class.getName());
+                continuationProvider.getContinuation().resume();
+            }
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                exchange.setStatus(ExchangeStatus.DONE);
+                message.getExchange().get(ComponentContext.class)
                     .getDeliveryChannel().send(exchange);
-        }
+            }
+       }
+
     }
 
     @Override
@@ -567,6 +576,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             final Service service = endpoint.getService();
             final Invoker invoker = service.getInvoker();
 
+            
+            
             if (invoker instanceof Servant) {
                 // it's rm request, run the invocation directly in bc, not send
                 // to se.
@@ -622,12 +633,27 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                             timeout);
                     process(exchange);
                 } else {
-                     synchronized (CxfBcConsumer.this.messages.get(exchange.getExchangeId())) {
-                         context.getDeliveryChannel().send(exchange);
-                         CxfBcConsumer.this.messages.get(exchange.getExchangeId()).wait(timeout);
-                     }
+                    synchronized (((ContinuationProvider) message.get(
+                        ContinuationProvider.class.getName())).getContinuation()) {
+                        ContinuationProvider continuationProvider =
+                            (ContinuationProvider) message.get(ContinuationProvider.class.getName());
+                        Continuation continuation = continuationProvider.getContinuation();
+                        if (!continuation.isPending()) {
+                            context.getDeliveryChannel().send(exchange);
+                            continuation.suspend(timeout * 1000);
+                        } else {
+                            //retry or timeout
+                            if (!continuation.isResumed()) {
+                                //exchange timeout
+                                throw new Exception("Exchange timed out: " + exchange.getExchangeId());
+                            }
 
+                        }
+
+                     }
                 }
+            } catch (org.apache.cxf.continuations.SuspendedInvocationException e) {
+                throw e;
             } catch (Exception e) {
                 throw new Fault(e);
             }
@@ -643,7 +669,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         }
 
         public void handleMessage(final Message message) throws Fault {
-            MessageExchange exchange = message
+        	MessageExchange exchange = message
                     .getContent(MessageExchange.class);
             Exchange ex = message.getExchange();
             if (exchange.getStatus() == ExchangeStatus.ERROR) {

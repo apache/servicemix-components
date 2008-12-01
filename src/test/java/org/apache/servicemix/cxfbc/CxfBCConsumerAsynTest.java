@@ -21,12 +21,12 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
-import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorPortType;
 import org.apache.cxf.calculator.CalculatorService;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
 
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -34,9 +34,9 @@ import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
-public class CxfBCSESystemTest extends SpringTestSupport {
+public class CxfBCConsumerAsynTest extends SpringTestSupport {
     
-    private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSESystemTest.class);
+    private static final Logger LOG = LogUtils.getL7dLogger(CxfBCConsumerAsynTest.class);
     public void setUp() throws Exception {
         //override super setup
         LOG.info("setUp is invoked");
@@ -69,61 +69,23 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         }
     }
 
-    public void testCalculatrorWithJBIWrapper() throws Exception {
-        setUpJBI("org/apache/servicemix/cxfbc/xbean.xml");
-        calculatorTestBase();
-    }
-    
-    public void testCalculatrorWithOutJBIWrapper() throws Exception {
-        setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper.xml");
-        calculatorTestBase();
-    }
-    
-    public void testCalculatrorWithOutJBIWrapperAndSoapEnv() throws Exception {
-        setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper_without_soapenv.xml");
-        calculatorTestBase();
-    }
-    
-    public void testMultipleClientWithJBIWrapper() throws Exception {
-        setUpJBI("org/apache/servicemix/cxfbc/xbean.xml");
+    public void testMultipleClientWithAsyn() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/xbean_asyn.xml");
         multiClientTestBase();
     }
-    
-    public void testMultipleClientWithoutJBIWrapper() throws Exception {
-        setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper.xml");
-        multiClientTestBase();
-    }
-    
-    
-    private void calculatorTestBase() throws Exception {
 
-        URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
-        assertNotNull(wsdl);
-        CalculatorService service = new CalculatorService(wsdl, new QName(
-                "http://apache.org/cxf/calculator", "CalculatorService"));
-        CalculatorPortType port = service.getCalculatorPort();
-        ClientProxy.getClient(port).getInFaultInterceptors().add(new LoggingInInterceptor());
-        ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
-        int ret = port.add(1, 2);
-        assertEquals(ret, 3);
-        try {
-            port.add(1, -2);
-            fail("should get exception since there is a negative arg");
-        } catch (AddNumbersFault e) {
-            assertEquals(e.getFaultInfo().getMessage(),
-                    "Negative number cant be added!");
-        }
-    }
-    
+        
     private void multiClientTestBase() throws Exception {
         URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
         assertNotNull(wsdl);
         CalculatorService service = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));
         CalculatorPortType port = service.getCalculatorPort();
-        MultiClientThread[] clients = new MultiClientThread[10];
+        ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
+        ClientProxy.getClient(port).getOutInterceptors().add(new LoggingOutInterceptor());
+        MultiClientThread[] clients = new MultiClientThread[2];
         for (int i = 0; i < clients.length; i++) {
-            clients[i] = new MultiClientThread(port);
+            clients[i] = new MultiClientThread(port, i);
         }
         
         for (int i = 0; i < clients.length; i++) {
@@ -132,25 +94,12 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         
         for (int i = 0; i < clients.length; i++) {
             clients[i].join();
+            //ensure the second invocation return first since it's less time consuming
+            assertEquals(clients[i].getResult(), "20");
         }
     }
     
-    class MultiClientThread extends Thread {
-        private CalculatorPortType port;
-        
-        public MultiClientThread(CalculatorPortType port) {
-            this.port = port;
-        }
-        
-        public void run() {
-            try {
-                assertEquals(port.add(1, 2), 3);
-            } catch (AddNumbersFault e) {
-                fail();
-            }
-        }
-    }
-
+    
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
         // load cxf se and bc from spring config file
@@ -165,3 +114,31 @@ public class CxfBCSESystemTest extends SpringTestSupport {
     }
 
 }
+
+class MultiClientThread extends Thread {
+    private CalculatorPortType port;
+    static String result = "";
+    private int index;
+    
+    public MultiClientThread(CalculatorPortType port, int index) {
+        this.port = port;
+        this.index = index;
+    }
+    
+    public void run() {
+        try {
+        	int ret = port.add(index, index);
+        	if (ret == 2 * index) {
+        		result = result + ret;
+        	}
+        } catch (Exception ex) {
+        	result = "invocation failed " + ex.getMessage();
+        }
+    }
+    
+    public String getResult() {
+    	return result;
+    }
+    
+}
+

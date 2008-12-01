@@ -32,6 +32,8 @@ import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
 import org.apache.hello_world_soap_http.HelloWorldService;
 import org.apache.hello_world_soap_http.NoSuchCodeLitFault;
+import org.apache.servicemix.jbi.container.SpringJBIContainer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -68,8 +70,23 @@ public class CxfBcJmsTest extends SpringTestSupport {
     
     protected void setUp() throws Exception {
         startServers();
-        super.setUp();
+        //super.setUp();
             
+    }
+    
+    public void setUpJBI(String beanFile) throws Exception {
+        if (context != null) {
+            context.refresh();
+        }
+        transformer = new SourceTransformer();
+        if (beanFile == null) {
+            context = createBeanFactory();
+        } else {
+            context = createBeanFactory(beanFile);
+        }
+
+        jbi = (SpringJBIContainer) context.getBean("jbi");
+        assertNotNull("JBI Container not found in spring!", jbi);
     }
     
     protected void tearDown() throws Exception {
@@ -104,6 +121,16 @@ public class CxfBcJmsTest extends SpringTestSupport {
     }
 
     public void testJMSTransport() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/jms_transport.xml");
+        jmsTestBase();
+    }
+    
+    public void testJMSTransportAsynConsumer() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/jms_transport_asyn.xml");
+        jmsTestBase();
+    }
+
+    private void jmsTestBase() throws Exception, NoSuchCodeLitFault, BadRecordLitFault {
         SpringBusFactory bf = new SpringBusFactory();
         Bus testBus = bf.createBus("org/apache/servicemix/cxfbc/jms_test_timeout.xml");
         BusFactory.setDefaultBus(testBus);
@@ -153,13 +180,17 @@ public class CxfBcJmsTest extends SpringTestSupport {
         } catch (UndeclaredThrowableException ex) {
             throw (Exception) ex.getCause();
         }
-
     }
 
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext(
                 "org/apache/servicemix/cxfbc/jms_transport.xml");
+    }
+    
+    protected AbstractXmlApplicationContext createBeanFactory(String beanFile) {
+        // load cxf se and bc from specified spring config file
+        return new ClassPathXmlApplicationContext(beanFile);
     }
     
     public QName getServiceName(QName q) {
