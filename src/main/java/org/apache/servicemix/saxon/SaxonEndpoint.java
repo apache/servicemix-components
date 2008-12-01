@@ -51,6 +51,7 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
     private boolean copySubject = true;
     private String result = RESULT_DOM;
     private Resource resource;
+    private boolean reload;
     private Expression expression;
     private Resource wsdlResource;
     private SourceTransformer sourceTransformer = new SourceTransformer();
@@ -110,6 +111,22 @@ public abstract class SaxonEndpoint extends ProviderEndpoint {
      */
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+
+    public boolean isReload() {
+        return reload;
+    }
+
+    /**
+     * Sets whether the endpoint should reload the resource each time it is used.
+     * A value of <code>true</code> will ensure that the resource is not cached which
+     * can be useful if the resource is updated regularly and is stored outside of 
+     * the service unit. 
+     *
+     * @param reload <code>true</true> if the resource should not be cached
+     */
+    public void setReload(boolean reload) {
+        this.reload = reload;
     }
 
     /**

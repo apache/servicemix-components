@@ -60,6 +60,7 @@
                   resource="classpath:doc-call.xsl"
                   useDomSourceForXslt="true"
                   useDomSourceForContent="false"
+                  reload="true"
                   result="bytes" />
 
       <!-- START SNIPPET: xquery -->
@@ -68,7 +69,7 @@
       <!-- END SNIPPET: xquery -->
       	      
       <!-- START SNIPPET: xquery-inline -->
-      <saxon:xquery service="test:xquery-inline" endpoint="endpoint">
+      <saxon:xquery service="test:xquery-inline" endpoint="endpoint" reload="true">
         <!-- CDATA are not supported currently -->
         <saxon:query>
            for $x in /bookstore/book
@@ -97,6 +98,7 @@
                    useDomSourceForContent="false"
                    result="dom"
                    resource="classpath:transform-in.xsl"
+                   reload="true"
                    outResource="classpath:transform-out.xsl">
         <saxon:target>
           <saxon:exchange-target service="test:echo" />

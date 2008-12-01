@@ -344,7 +344,12 @@ public class XsltProxyEndpoint extends SaxonEndpoint {
             }
         // Use static stylesheet
         } else if (getResource(type) != null) {
-            return getTemplates(type).newTransformer();
+            if (isReload()) {
+                Source source = createXsltSource(getResource(type));
+                return getTransformerFactory().newTransformer(source);
+            } else {
+                return getTemplates(type).newTransformer();
+            }
         } else {
             return null;
         }

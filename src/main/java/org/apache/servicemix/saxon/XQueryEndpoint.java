@@ -17,6 +17,7 @@
 package org.apache.servicemix.saxon;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +33,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import net.sf.saxon.Configuration;
 import net.sf.saxon.om.DocumentInfo;
+import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.query.DynamicQueryContext;
 import net.sf.saxon.query.StaticQueryContext;
 import net.sf.saxon.query.XQueryExpression;
@@ -96,11 +98,7 @@ public class XQueryEndpoint extends SaxonEndpoint {
         config.setHostLanguage(Configuration.XQUERY);
         setConfiguration(config);
         staticEnv = new StaticQueryContext(config);
-        if (getQuery() != null) {
-            exp = staticEnv.compileQuery(getQuery());
-        } else if (getResource() != null) {
-            exp = staticEnv.compileQuery(getResource().getInputStream(), null);
-        }
+        exp = compileQuery();
     }
     
     public void validate() throws DeploymentException {
@@ -173,8 +171,21 @@ public class XQueryEndpoint extends SaxonEndpoint {
             Resource r = getDynamicResource(exchange, in);
             return staticEnv.compileQuery(r.getInputStream(), null);
         } else {
-            return exp;
+            if (isReload()) {
+                return compileQuery();
+            } else {
+                return exp;
+            }
         }
+    }
+
+    protected XQueryExpression compileQuery() throws XPathException, IOException {
+        if (getQuery() != null) {
+            return staticEnv.compileQuery(getQuery());
+        } else if (getResource() != null) {
+            return staticEnv.compileQuery(getResource().getInputStream(), null);
+        }
+        return null;
     }
     
 }

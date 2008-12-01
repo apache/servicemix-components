@@ -49,7 +49,8 @@ public class XsltEndpoint extends SaxonEndpoint {
     private Templates templates;
     private boolean useDomSourceForXslt = true;
     private Boolean useDomSourceForContent;
-    
+    private boolean reload = false;
+
     public TransformerFactory getTransformerFactory() {
         if (transformerFactory == null) {
             transformerFactory = createTransformerFactory();
@@ -75,6 +76,14 @@ public class XsltEndpoint extends SaxonEndpoint {
 
     public void setUseDomSourceForContent(Boolean useDomSourceForContent) {
         this.useDomSourceForContent = useDomSourceForContent;
+    }
+
+    public boolean isReload() {
+        return reload;
+    }
+
+    public void setReload(boolean reload) {
+        this.reload = reload;
     }
 
     public void validate() throws DeploymentException {
@@ -172,7 +181,12 @@ public class XsltEndpoint extends SaxonEndpoint {
             }
         // Use static stylesheet
         } else {
-            return getTemplates().newTransformer();
+            if (isReload()) {
+                Source source = createXsltSource(getResource());
+                return getTransformerFactory().newTransformer(source);
+            } else {
+                return getTemplates().newTransformer();
+            }
         }
     }
     
