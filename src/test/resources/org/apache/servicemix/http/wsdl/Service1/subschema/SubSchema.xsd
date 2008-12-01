@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://test.namespace/schemas/subschema"
+	xmlns="http://test.namespace/schemas/subschema"
+	xmlns:common="http://test.namespace/schemas/common" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:import namespace="http://test.namespace/schemas/common"
+		schemaLocation="../../common/DataType.xsd"/>
+
+	<xsd:complexType name="Request2Type">
+		<xsd:all>
+			<xsd:element maxOccurs="1" minOccurs="1" name="element1" type="common:Char7"/>
+			<xsd:element maxOccurs="1" minOccurs="0" name="element2" type="common:TestEnum"/>
+		</xsd:all>
+	</xsd:complexType>
+</xsd:schema>

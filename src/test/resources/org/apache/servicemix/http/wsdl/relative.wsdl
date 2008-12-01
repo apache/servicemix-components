@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://test.namespace/wsdl"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:tns="http://test.namespace/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:fault="http://test.namespace/schemas/fault">
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://test.namespace/schemas/service1">
+			<xsd:include schemaLocation="Service1/Requests.xsd"/>
+			<xsd:include schemaLocation="Service1/Responses.xsd"/>
+		</xsd:schema>
+		<xsd:schema targetNamespace="http://test.namespace/schemas/fault">
+			<xsd:include schemaLocation="common/Fault.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message xmlns:s1="http://test.namespace/schemas/service1" name="Request1Message">
+		<wsdl:part name="body" element="s1:Request1"/>
+	</wsdl:message>
+	<wsdl:message xmlns:s1="http://test.namespace/schemas/service1" name="Response1Message">
+		<wsdl:part name="body" element="s1:Response1"/>
+	</wsdl:message>
+	<wsdl:message xmlns:s1="http://test.namespace/schemas/service1" name="Request2Message">
+		<wsdl:part name="body" element="s1:Request2"/>
+	</wsdl:message>
+	<wsdl:message xmlns:s1="http://test.namespace/schemas/service1" name="Response2Message">
+		<wsdl:part name="body" element="s1:Response2"/>
+	</wsdl:message>
+	<wsdl:message name="FaultMessage">
+		<wsdl:part name="body" element="fault:TestFault"/>
+	</wsdl:message>
+	<wsdl:portType name="TestPortType">
+		<wsdl:operation name="Request1">
+			<wsdl:input message="tns:Request1Message"/>
+			<wsdl:output message="tns:Response1Message"/>
+			<wsdl:fault message="tns:FaultMessage" name="TestFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="Request2">
+			<wsdl:input message="tns:Request2Message"/>
+			<wsdl:output message="tns:Response2Message"/>
+			<wsdl:fault message="tns:FaultMessage" name="TestFault"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="TestBinding" type="tns:TestPortType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="Request1">
+			<soap:operation soapAction="http://test.namespace/services/service1"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="TestFault">
+				<soap:body use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Request2">
+			<soap:operation soapAction="http://test.namespace/services/service2"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="TestFault">
+				<soap:body use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="TestService">
+		<wsdl:port name="TestPort" binding="tns:TestBinding">
+			<soap:address location="http://localhost:1234/services/service1"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

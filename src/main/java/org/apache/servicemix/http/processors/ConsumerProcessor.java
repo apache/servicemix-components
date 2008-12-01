@@ -277,8 +277,8 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
             return;
         }
         String path = request.getPathInfo();
-        if (path.lastIndexOf('/') >= 0) {
-            path = path.substring(path.lastIndexOf('/') + 1);
+        if (path.charAt(0) == '/') {
+            path = path.substring(1);
         }
 
         // Set protocol, host, and port in the component

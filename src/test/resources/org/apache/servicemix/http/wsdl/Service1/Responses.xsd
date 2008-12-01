@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://test.namespace/schemas/service1"
+	xmlns="http://test.namespace/schemas/service1"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:element name="Response1" type="Response1Type"/>
+	<xsd:element name="Response2">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="element1" type="xsd:integer" minOccurs="1" maxOccurs="1"/>
+				<xsd:element name="element2" type="xsd:string" minOccurs="0" maxOccurs="3"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="Response1Type">
+		<xsd:sequence>
+			<xsd:element name="succeeded" type="xsd:boolean" maxOccurs="1" minOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
