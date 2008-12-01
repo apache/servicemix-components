@@ -139,7 +139,7 @@ public final class MailUtils {
             config.setFolderName("INBOX");
         }
 
-        if (uri.getQuery().indexOf("password=") != -1) {
+        if (uri.getQuery() != null && uri.getQuery().indexOf("password=") != -1) {
             // extract the password from query
             int beginIndex = uri.getQuery().indexOf("password=") + "password=".length();
             int endIndex = uri.getQuery().indexOf(';', beginIndex + 1) != -1 ? uri.getQuery()
@@ -152,7 +152,7 @@ public final class MailUtils {
 
         if (userInfo == null) {
             // alternative way of specifying the user name
-            if (uri.getQuery().indexOf("user=") != -1) {
+            if (uri.getQuery() != null && uri.getQuery().indexOf("user=") != -1) {
                 // extract the password from query
                 int beginIndex = uri.getQuery().indexOf("user=") + "user=".length();
                 int endIndex = uri.getQuery().indexOf(';', beginIndex + 1) != -1 ? uri.getQuery()
