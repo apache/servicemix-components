@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>2</version>
+    <version>3-SNAPSHOT</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
@@ -40,7 +40,7 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
-    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
     
     <activemq-version>5.1.0</activemq-version>
@@ -110,7 +110,7 @@
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-core</artifactId>
-      <version>5.1.0</version>
+      <version>5.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
@@ -133,7 +133,7 @@
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-annotation_1.0_spec</artifactId>
-      <version>1.0</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>quartz</groupId>
