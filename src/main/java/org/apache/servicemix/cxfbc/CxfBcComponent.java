@@ -89,6 +89,15 @@ public class CxfBcComponent extends DefaultComponent {
         }
         super.doInit();
     }
+    
+    @Override
+    protected void doShutDown() throws Exception {
+        if (bus != null) {
+            bus.shutdown(true);
+            BusFactory.setThreadDefaultBus(null);
+        }
+        super.doShutDown();
+    }
 
     public Bus getBus() {
         return bus;
