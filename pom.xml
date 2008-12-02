@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>2</version>
+    <version>3-SNAPSHOT</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
@@ -40,9 +40,9 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
-    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
-    <jetty-version>6.1.12</jetty-version>
+    <jetty-version>6.1.14</jetty-version>
     <activemq-version>5.1.0</activemq-version>
 
     <servicemix.osgi.import>
@@ -154,13 +154,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-servlet_2.4_spec</artifactId>
-      <version>1.1</version>
+      <artifactId>geronimo-servlet_2.5_spec</artifactId>
+      <version>1.1.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-javamail_1.3.1_spec</artifactId>
-      <version>1.2</version>
+      <artifactId>geronimo-javamail_1.4_spec</artifactId>
+      <version>1.5</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -178,7 +178,7 @@
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
-      <version>1.2.13</version>
+      <version>1.2.14</version>
       <scope>test</scope>
     </dependency>
     <dependency>
