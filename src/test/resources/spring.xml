@@ -33,13 +33,7 @@
 								endpoint="endpoint"
 								directory="file:target/componentOutput.zip">
 								<file:marshaler>
-									<sm:defaultFileMarshaler>
-										<sm:fileName>
-											<!-- lets use a header from the message -->
-											<sm:xpathString
-												xpath="concat($name, '.xml')" />
-										</sm:fileName>
-									</sm:defaultFileMarshaler>
+ 									<ref bean="defaultFileMarshaler"/>
 								</file:marshaler>
 							</file:sender>
 						</file:endpoints>
@@ -49,5 +43,8 @@
 
 		</sm:activationSpecs>
 	</sm:container>
+        <bean class="org.apache.servicemix.components.util.DefaultFileMarshaler" id="defaultFileMarshaler">
+            <property name="fileName"><value>concat($name, '.xml')</value></property>
+        </bean>
 
 </beans>
