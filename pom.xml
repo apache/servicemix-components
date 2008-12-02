@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>2</version>
+    <version>3-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
@@ -41,9 +41,9 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <!-- Due to the use of: JBIContainer.setUseNewTransactionModel(boolean) -->
-    <servicemix-version>3.2.1</servicemix-version>
+    <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
-    <activemq-version>5.1.0</activemq-version>
+    <activemq-version>5.2.0</activemq-version>
 
     <servicemix.osgi.import>
         javax.security.auth,
@@ -149,13 +149,13 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-components</artifactId>
-      <version>3.2.1</version>
+      <version>${servicemix-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -189,13 +189,13 @@
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1</version>
+      <version>1.1.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-j2ee-connector_1.5_spec</artifactId>
-      <version>1.1</version>
+      <version>2.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -241,6 +241,12 @@
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-core</artifactId>
+      <version>${activemq-version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-pool</artifactId>
       <version>${activemq-version}</version>
       <scope>provided</scope>
     </dependency>
@@ -320,6 +326,7 @@
             <!-- exclude abstract test classes -->
             <exclude>**/Abstract*.*</exclude>
             <exclude>**/JmsSpringJcaTest.*</exclude>
+            <exclude>**/JmsNewTxConsumerEndpointTest.*</exclude>
           </excludes>
           <forkMode>pertest</forkMode>
         </configuration>
