@@ -22,7 +22,6 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -415,8 +414,14 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
      * @throws IOException 
      */
     public static void moveFile(File src, File targetDirectory) throws IOException {
-        if (!src.renameTo(new File(targetDirectory, src.getName()))) {
-            throw new IOException("Failed to move " + src + " to " + targetDirectory);
+    	String targetName = src.getName();
+    	File target = new File(targetDirectory, targetName);
+    	if (target.exists() && target.isFile()) {
+    		// the file is already inside archive...we need a new file name
+    		targetName = String.format("%d_%s", System.currentTimeMillis(), src.getName()); // that should be unique
+    	}
+        if (!src.renameTo(new File(targetDirectory, targetName))) {
+            throw new IOException("Failed to move " + src + " to " + targetDirectory + " with new name " + targetName);
         }
     }
 }

@@ -37,8 +37,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.Executor;
-import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
+import org.apache.servicemix.util.FileUtil;
 
 public class FilePollerEndpointTest extends TestCase {
     
