@@ -28,6 +28,8 @@ import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.management.MBeanNames;
 import javax.jbi.messaging.DeliveryChannel;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.management.MBeanServer;
@@ -78,7 +80,58 @@ public class Jsr181ServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer 
         return Collections.singletonList(new ParentBeanFactoryPostProcessor(beans));
     }
 
+    protected class DummyChannel implements DeliveryChannel {
+
+        public MessageExchange accept() throws MessagingException {
+            return null;
+        }
+
+        public MessageExchange accept(long timeout)
+                throws MessagingException {
+            return null;
+        }
+
+        public void close() throws MessagingException {
+            //
+        }
+
+        public MessageExchangeFactory createExchangeFactory() {
+            return null;
+        }
+
+        public MessageExchangeFactory createExchangeFactory(
+                QName interfaceName) {
+            return null;
+        }
+
+        public MessageExchangeFactory createExchangeFactory(
+                ServiceEndpoint endpoint) {
+            return null;
+        }
+
+        public MessageExchangeFactory createExchangeFactoryForService(
+                QName serviceName) {
+            return null;
+        }
+
+        public void send(MessageExchange exchange)
+                throws MessagingException {
+            //
+        }
+
+        public boolean sendSync(MessageExchange exchange)
+                throws MessagingException {
+            return false;
+        }
+
+        public boolean sendSync(MessageExchange exchange, long timeout)
+                throws MessagingException {
+            return false;
+        }
+    }
+    
     public class DummyComponentContext implements ComponentContext {
+        DummyChannel channel = new DummyChannel();        
 
         public ServiceEndpoint activateEndpoint(QName serviceName, String endpointName) throws JBIException {
             return null;
@@ -96,7 +149,7 @@ public class Jsr181ServiceUnitAnalyzer extends AbstractXBeanServiceUnitAnalyzer 
         }
 
         public DeliveryChannel getDeliveryChannel() throws MessagingException {
-            return null;
+            return channel;
         }
 
         public ServiceEndpoint getEndpoint(QName service, String name) {
