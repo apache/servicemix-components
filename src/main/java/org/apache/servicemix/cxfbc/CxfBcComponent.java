@@ -92,8 +92,8 @@ public class CxfBcComponent extends DefaultComponent {
     
     @Override
     protected void doShutDown() throws Exception {
+        // Bus should no longer be the thread default since the component's threads will end now
         if (bus != null) {
-            bus.shutdown(true);
             BusFactory.setThreadDefaultBus(null);
         }
         super.doShutDown();
