@@ -243,98 +243,145 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
         }
     }
 
-    /**
-     * * @return Returns the address.
-     */
     public String getAddress() {
         return this.address;
     }
 
     /**
-     * @param address The address to set.
+     * <p>Specifies the connection URI used to connect to a snmp capable device.
+     * <br /><br />
+     * <b><u>Template:</u></b> <br />
+     *     &nbsp;&nbsp;&nbsp;<i>&lt;protocol&gt;:&lt;host&gt;/&lt;port&gt;</i>
+     * <br /><br />
+     * <b><u>Details:</u></b><br /><br/>
+     * <table border="0" cellpadding="0" cellspacing="0">
+     * <tr>
+     * 		<td width="40%" align="left"><b><u>Name</u></b></td>
+     * 		<td width="60%" align="left"><b><u>Description</u></b></td>
+     * </tr>
+     * <tr>
+     * 		<td>protocol</td>
+     * 		<td>the protocol to use (udp or tcp)</td>
+     * </tr>
+     * <tr>
+     * 		<td>host</td>
+     * 		<td>the name or ip address of the snmp capable device</td>
+     * </tr>
+     * <tr>
+     * 		<td>port</td>
+     * 		<td>the port number to use</td>
+     * </tr>
+     * </table>
+     * <br/>
+     * <b><u>Example:</u></b><br />
+     * &nbsp;&nbsp;&nbsp;<i>udp:192.168.2.122/161</i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param address 
+     * 				a <code>String</code> value containing the connection details
      */
     public void setAddress(String address) {
         this.address = address;
     }
 
-    /**
-     * @return Returns the retries.
-     */
     public int getRetries() {
         return this.retries;
     }
 
     /**
-     * @param retries The retries to set.
+     * <p>Specifies the connection retries.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>2</b></i><br/><br/>
+     * 
+     * @param retries 
+     * 				a <code>int</code> value containing the retry count
      */
     public void setRetries(int retries) {
         this.retries = retries;
     }
 
-    /**
-     * @return Returns the timeout.
-     */
     public int getTimeout() {
         return this.timeout;
     }
 
     /**
-     * @param timeout The timeout to set.
+     * <p>Specifies the connection time out in milliseconds.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>1500</b></i><br/><br/>
+     * 
+     * @param timeout 
+     * 				a <code>int</code> value containing the time out in millis
      */
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
 
-    /**
-     * @return Returns the snmpVersion.
-     */
     public int getSnmpVersion() {
         return this.snmpVersion;
     }
 
     /**
-     * @param snmpVersion The snmpVersion to set.
+     * <p>Specifies the snmp protocol version to use.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>0 (version 1)</b></i><br/><br/>
+     * 
+     * @param snmpVersion 
+     * 				a <code>int</code> value containing the snmp version
      */
     public void setSnmpVersion(int snmpVersion) {
         this.snmpVersion = snmpVersion;
     }
 
-    /**
-     * @return Returns the snmpCommunity.
-     */
     public String getSnmpCommunity() {
         return this.snmpCommunity;
     }
 
     /**
-     * @param snmpCommunity The snmpCommunity to set.
+     * <p>Specifies the snmp community to use.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>"public"</b></i><br/><br/>
+     * 
+     * @param snmpCommunity 
+     * 				a <code>String</code> value containing the snmp community
      */
     public void setSnmpCommunity(String snmpCommunity) {
         this.snmpCommunity = snmpCommunity;
     }
 
-    /**
-     * @return Returns the marshaler.
-     */
     public SnmpMarshalerSupport getMarshaler() {
         return this.marshaler;
     }
 
     /**
-     * @param marshaler The marshaler to set.
+     * <p>Specifies a marshaler class which provides the logic for converting 
+     * a snmp response into a normalized message. This class has to implement 
+     * the <code>SnmpMarshalerSupport</code> interface. If you don't specify a 
+     * marshaler, the <code>DefaultSnmpMarshaler</code> will be used.</p>
+     * 
+     * @param marshaler 
+     * 				a class which implements <code>SnmpMarshalerSupport</code>
      */
     public void setMarshaler(SnmpMarshalerSupport marshaler) {
         this.marshaler = marshaler;
     }
 
-    /** * @return Returns the oids.
-     */
     public OIDList getOids() {
         return this.oids;
     }
 
     /**
-     * @param oids The oids to set.
+     * <p>Specifies a reference to a list of OID values which will be used for 
+     * the snmp request. You have two possibilities how to specify the value:
+     * <br /><br />
+     * &nbsp;<i>a) referencing to a file containing a list of OID values separated by a line feed
+     * <br/>&nbsp;&nbsp;&nbsp;&nbsp;or<br/>
+     * &nbsp;<i>b) defining a coma (<b>,</b>) separated list of OID values 
+     * <br /><br />
+     * <b><u>Examples:</u></b><br />
+     * &nbsp;&nbsp;&nbsp;<i>a) oids="classpath:myOids.txt"<br />
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oids="file:/home/lhein/snmp/device_a/oids.txt"<br/>
+     * <br />
+     * &nbsp;&nbsp;&nbsp;<i>b) oids="1.3.6.1.2.1.1.3.0 , 1.3.6.1.2.1.25.3.2.1.5.1 , 1.3.6.1.2.1.25.3.5.1.1.1 , 1.3.6.1.2.1.43.5.1.1.11.1"</i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param oids 
+     * 				a <code>OIDList</code> containing the OID values for the request
      */
     public void setOids(OIDList oids) {
         this.oids = oids;
