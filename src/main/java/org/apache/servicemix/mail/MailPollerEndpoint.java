@@ -64,17 +64,13 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
 
     private String connection;
 
-    private int maxFetchSize = 5;
+    private int maxFetchSize = -1;
 
     private boolean processOnlyUnseenMessages;
 
     private boolean deleteProcessedMessages;
 
     private boolean debugMode;
-
-    private boolean forgetTopHeaders;
-
-    private boolean disableTop;
 
     private Map<String, String> customProperties;
 
@@ -89,8 +85,6 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         this.processOnlyUnseenMessages = true;
         this.deleteProcessedMessages = false;
         this.debugMode = false;
-        this.forgetTopHeaders = false;
-        this.disableTop = false;
     }
 
     /*
@@ -156,7 +150,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
      * org.apache.servicemix.common.ExchangeProcessor#process(javax.jbi.messaging
      * .MessageExchange)
      */
-    public void process(MessageExchange arg0) throws Exception {
+    public void process(MessageExchange exchange) throws Exception {
         // Do nothing. In our case, this method should never be called
         // as we only send synchronous InOnly exchange
     }
@@ -184,8 +178,6 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         try {
             Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
             props.put("mail.debug", isDebugMode() ? "true" : "false");
-            props.put("mail.pop3.forgettopheaders", isForgetTopHeaders() ? "true" : "false");
-            props.put("mail.pop3.disabletop", isDisableTop() ? "true" : "false");
 
             // apply the custom properties
             applyCustomProperties(props);
@@ -348,75 +340,132 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         }
     }
 
-    /**
-     * @return the deleteProcessedMessages
-     */
     public boolean isDeleteProcessedMessages() {
         return this.deleteProcessedMessages;
     }
 
     /**
-     * @param deleteProcessedMessages the deleteProcessedMessages to set
+     * <p>This flag is used to indicate what happens to a processed mail polled
+     * from a mail folder. If it is set to <code>true</code> the mail will
+     * be deleted after it was sent into the bus successfully. If set to
+     * <code>false</code> the mail will reside inside the mail folder but will
+     * be marked as already seen.<br/> 
+     * If the sending of the mail results in an error, the mail will not be
+     * deleted / marked and reprocessed on next run of the polling cycle.<p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>false</b></i> 
+     * 
+     * @param deleteProcessedMessages 
+     * 				a <code>boolean</code> value as flag
      */
     public void setDeleteProcessedMessages(boolean deleteProcessedMessages) {
         this.deleteProcessedMessages = deleteProcessedMessages;
     }
 
-    /**
-     * @return the marshaler
-     */
     public AbstractMailMarshaler getMarshaler() {
         return this.marshaler;
     }
 
     /**
-     * @param marshaler the marshaler to set
+     * <p>With this method you can specify a marshaler class which provides the
+     * logic for converting a mail into a normalized message. This class has
+     * to extend the abstract class <code>AbstractMailMarshaler</code> or an
+     * extending class. If you don't specify a marshaler, the 
+     * <code>DefaultMailMarshaler</code> will be used.</p>
+     * 
+     * @param marshaler 
+     * 				a class which extends <code>AbstractMailMarshaler</code>
      */
     public void setMarshaler(AbstractMailMarshaler marshaler) {
         this.marshaler = marshaler;
     }
 
-    /**
-     * @return the maxFetchSize
-     */
     public int getMaxFetchSize() {
         return this.maxFetchSize;
     }
 
     /**
-     * @param maxFetchSize the maxFetchSize to set
+     * <p>This sets the maximum amount of mails to process within one polling cycle.
+     * If the maximum amount is reached all other mails in "unseen" state will 
+     * be skipped.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>-1 (unlimited)</b></i><br/><br/>
+     * 
+     * @param maxFetchSize 
+     * 				a <code>int</code> value for maximum to be polled messages
      */
     public void setMaxFetchSize(int maxFetchSize) {
         this.maxFetchSize = maxFetchSize;
     }
 
-    /**
-     * @return the processOnlyUnseenMessages
-     */
     public boolean isProcessOnlyUnseenMessages() {
         return this.processOnlyUnseenMessages;
     }
 
     /**
-     * @param processOnlyUnseenMessages the processOnlyUnseenMessages to set
+     * <p>This flag is used to indicate whether all mails are polled from a 
+     * mail folder or only the unseen mails are processed.<br/><br />
+     * If it is set to <b><code>true</code></b> only the unseen mails will be 
+     * processed.<br /> 
+     * If it is set to <b><code>false</code></b> all mails will be processed.<br/></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>true</b></i><br/><br/>
+     * 
+     * @param processOnlyUnseenMessages 
+     * 				a <code>boolean</code> value as flag
      */
     public void setProcessOnlyUnseenMessages(boolean processOnlyUnseenMessages) {
         this.processOnlyUnseenMessages = processOnlyUnseenMessages;
     }
 
-    /**
-     * returns the connection uri used for this poller endpoint
-     * 
-     * @return Returns the connection.
-     */
     public String getConnection() {
         return this.connection;
     }
 
     /**
-     * sets the connection uri
+     * <p>Specifies the connection URI used to connect to a mail server.
+     * <br /><br />
+     * <b><u>Templates:</u></b> <br />
+     *     &nbsp;&nbsp;&nbsp;<i>&lt;protocol&gt;://&lt;user&gt;@&lt;host&gt;[:&lt;port&gt;][/&lt;folder&gt;]?password=&lt;password&gt;</i>
+     *     <br /><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR</b><br/>
+     *     &nbsp;&nbsp;&nbsp;<i>&lt;protocol&gt;://&lt;host&gt;[:&lt;port&gt;][/&lt;folder&gt;]?user=&lt;user&gt;;password=&lt;password&gt;</i>
+     * <br /><br />
+     * <b><u>Details:</u></b><br /><br/>
+     * <table border="0" cellpadding="0" cellspacing="0">
+     * <tr>
+     * 		<td width="40%" align="left"><b><u>Name</u></b></td>
+     * 		<td width="60%" align="left"><b><u>Description</u></b></td>
+     * </tr>
+     * <tr>
+     * 		<td>protocol</td>
+     * 		<td>the protocol to use (example: pop3 or imap)</td>
+     * </tr>
+     * <tr>
+     * 		<td>user</td>
+     * 		<td>the user name used to log into an account</td>
+     * </tr>
+     * <tr>
+     * 		<td>host</td>
+     * 		<td>the name or ip address of the mail server</td>
+     * </tr>
+     * <tr>
+     * 		<td>port</td>
+     * 		<td>the port number to use (optional)</td>
+     * </tr>
+     * <tr>
+     * 		<td>folder</td>
+     * 		<td>the folder to poll from (optional)</td>
+     * </tr>
+     * <tr>
+     * 		<td>password</td>
+     * 		<td>the password for the login</td>
+     * </tr>
+     * </table>
+     * <br/>
+     * <b><u>Examples:</u></b><br />
+     * &nbsp;&nbsp;&nbsp;<i>imap://lhein@imapserver:143/INBOX?password=mypass</i><br />
+     * &nbsp;&nbsp;&nbsp;<i>pop3://pop3server/INBOX?user=me@myhome.org;password=mypass</i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
      * 
-     * @param connection The connection to set.
+     * @param connection 
+     * 				a <code>String</code> value containing the connection details
      */
     public void setConnection(String connection) {
         this.connection = connection;
@@ -427,85 +476,83 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         }
     }
 
-    /**
-     * @return the debugMode
-     */
     public boolean isDebugMode() {
         return this.debugMode;
     }
 
     /**
-     * @param debugMode the debugMode to set
+     * <p>Specifies if the JavaMail is run in <code>DEBUG</code> mode. This means
+     * that while connecting to server and processing mails a detailed log
+     * is written to debug output. <br />
+     * This mode is very handy if you are experiencing problems with your
+     * mail server connection and you want to find out what is going wrong
+     * in communication with the server.
+     * <br /><br />
+     * &nbsp;&nbsp;&nbsp;<b>true</b> - <i>the debug mode is <b>enabled</b></i>
+     * <br />
+     * &nbsp;&nbsp;&nbsp;<b>false</b> - <i>the debug mode is <b>disabled</b></i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>false</b></i><br/><br/>
+     * 
+     * @param debugMode 
+     * 				a <code>boolean</code> value for debug mode
      */
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
     }
 
-    /**
-     * @return the customTrustManagers
-     */
     public String getCustomTrustManagers() {
         return this.customTrustManagers;
     }
 
     /**
-     * @param customTrustManagers the customTrustManagers to set
+     * <p>Specifies one or more trust manager classes separated by a semicolon (<b>;</b>).<br/>
+     * These classes have to implement the <code>Trustmanager</code> interface and need to provide
+     * an empty default constructor to be valid.<br/><br />
+     * If you want to accept all security certificates without a check you may 
+     * consider using the <code>DummyTrustManager</code> class. It is actually only
+     * an empty stub without any checking logic. <br/><b>But be aware that this will be
+     * a security risk in production environments. </b></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param customTrustManagers 
+     * 					a <code>String</code> value containing one or more full class names separated by <b>;</b> char
      */
     public void setCustomTrustManagers(String customTrustManagers) {
         this.customTrustManagers = customTrustManagers;
     }
 
-    /**
-     * @return the forgetTopHeaders
-     */
-    public boolean isForgetTopHeaders() {
-        return this.forgetTopHeaders;
-    }
-
-    /**
-     * @param forgetTopHeaders the forgetTopHeaders to set
-     */
-    public void setForgetTopHeaders(boolean forgetTopHeaders) {
-        this.forgetTopHeaders = forgetTopHeaders;
-    }
-
-    /**
-     * @return the disableTop
-     */
-    public boolean isDisableTop() {
-        return this.disableTop;
-    }
-
-    /**
-     * @param disableTop the disableTop to set
-     */
-    public void setDisableTop(boolean disableTop) {
-        this.disableTop = disableTop;
-    }
-
-    /**
-     * * @return Returns the customProperties.
-     */
     public Map<String, String> getCustomProperties() {
         return this.customProperties;
     }
 
     /**
-     * @param customProperties The customProperties to set.
+     * <p>Specifies a <code>java.util.Map</code> which may contain additional
+     * properties for the connection. <br/>
+     * <br/><b><u>Example for disabling TOP for POP3 headers:</u></b><br />
+     * &nbsp;<i><b>key</b>: "mail.pop3.disabletop"</i> <br />
+     * &nbsp;<i><b>value</b>: "true"</i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param customProperties 
+     * 					a <code>java.util.Map&lt;String, String&gt;</code> containing connection properties
      */
     public void setCustomProperties(Map<String, String> customProperties) {
         this.customProperties = customProperties;
     }
 
-    /**
-     * * @return Returns the storage.
-     */
     public org.apache.servicemix.store.Store getStorage() {
         return this.storage;
     }
 
     /**
-     * @param storage The storage to set.
+     * <p>Specifies a <code>org.apache.servicemix.store.Store</code> object which 
+     * will be used for storing the identifications of already processed messages.<br/>
+     * <b>This store is only used with the POP3 protocol and if unseen mails are 
+     * processed only.</b></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param storage 
+     * 					a <code>org.apache.servicemix.store.Store</code> object for storing seen message idents
      */
     public void setStorage(org.apache.servicemix.store.Store storage) {
         this.storage = storage;

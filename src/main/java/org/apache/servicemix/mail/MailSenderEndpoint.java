@@ -242,47 +242,89 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         }
     }
 
-    /**
-     * @return the marshaler
-     */
     public AbstractMailMarshaler getMarshaler() {
         return this.marshaler;
     }
 
     /**
-     * @param marshaler the marshaler to set
+     * <p>With this method you can specify a marshaler class which provides the
+     * logic for converting a normalized message into a mail. This class has
+     * to extend the abstract class <code>AbstractMailMarshaler</code> or an
+     * extending class. If you don't specify a marshaler, the 
+     * <code>DefaultMailMarshaler</code> will be used.</p>
+     * 
+     * @param marshaler 
+     * 				a class which extends <code>AbstractMailMarshaler</code>
      */
     public void setMarshaler(AbstractMailMarshaler marshaler) {
         this.marshaler = marshaler;
     }
 
-    /**
-     * @return the sender
-     */
     public String getSender() {
         return this.sender;
     }
 
     /**
-     * @param sender the sender to set
+     * <p>Specifies the sender address of the mail which is being sent.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>no-reply@localhost</b></i><br/><br/>
+     * 
+     * @param sender 
+     * 				a <code>String</code> value containing the sender address
      */
     public void setSender(String sender) {
         this.sender = sender;
     }
 
-    /**
-     * returns the connection uri used for this poller endpoint
-     * 
-     * @return Returns the connection.
-     */
     public String getConnection() {
         return this.connection;
     }
 
     /**
-     * sets the connection uri
+     * <p>Specifies the connection URI used to connect to a mail server.
+     * <br /><br />
+     * <b><u>Templates:</u></b> <br />
+     *     &nbsp;&nbsp;&nbsp;<i>&lt;protocol&gt;://&lt;user&gt;@&lt;host&gt;[:&lt;port&gt;][/&lt;folder&gt;]?password=&lt;password&gt;</i>
+     *     <br /><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR</b><br/>
+     *     &nbsp;&nbsp;&nbsp;<i>&lt;protocol&gt;://&lt;host&gt;[:&lt;port&gt;][/&lt;folder&gt;]?user=&lt;user&gt;;password=&lt;password&gt;</i>
+     * <br /><br />
+     * <b><u>Details:</u></b><br /><br/>
+     * <table border="0" cellpadding="0" cellspacing="0">
+     * <tr>
+     * 		<td width="40%" align="left"><b><u>Name</u></b></td>
+     * 		<td width="60%" align="left"><b><u>Description</u></b></td>
+     * </tr>
+     * <tr>
+     * 		<td>protocol</td>
+     * 		<td>the protocol to use (example: pop3 or imap)</td>
+     * </tr>
+     * <tr>
+     * 		<td>user</td>
+     * 		<td>the user name used to log into an account</td>
+     * </tr>
+     * <tr>
+     * 		<td>host</td>
+     * 		<td>the name or ip address of the mail server</td>
+     * </tr>
+     * <tr>
+     * 		<td>port</td>
+     * 		<td>the port number to use (optional)</td>
+     * </tr>
+     * <tr>
+     * 		<td>folder</td>
+     * 		<td>the folder to poll from (optional)</td>
+     * </tr>
+     * <tr>
+     * 		<td>password</td>
+     * 		<td>the password for the login</td>
+     * </tr>
+     * </table>
+     * <br/>
+     * <b><u>Example:</u></b><br />
+     * &nbsp;&nbsp;&nbsp;<i>smtp://lhein@myserver?password=myPass</i><br /></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
      * 
-     * @param connection The connection to set.
+     * @param connection 
+     * 				a <code>String</code> value containing the connection details
      */
     public void setConnection(String connection) {
         this.connection = connection;
@@ -293,72 +335,103 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         }
     }
 
-    /**
-     * @return the debugMode
-     */
     public boolean isDebugMode() {
         return this.debugMode;
     }
 
     /**
-     * @param debugMode the debugMode to set
+     * <p>Specifies if the JavaMail is run in <code>DEBUG</code> mode. This means
+     * that while connecting to server and processing mails a detailed log
+     * is written to debug output. <br />
+     * This mode is very handy if you are experiencing problems with your
+     * mail server connection and you want to find out what is going wrong
+     * in communication with the server.
+     * <br /><br />
+     * &nbsp;&nbsp;&nbsp;<b>true</b> - <i>the debug mode is <b>enabled</b></i>
+     * <br />
+     * &nbsp;&nbsp;&nbsp;<b>false</b> - <i>the debug mode is <b>disabled</b></i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>false</b></i><br/><br/>
+     * 
+     * @param debugMode 
+     * 				a <code>boolean</code> value for debug mode
      */
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
     }
 
-    /**
-     * @return the customTrustManagers
-     */
     public String getCustomTrustManagers() {
         return this.customTrustManagers;
     }
 
     /**
-     * @param customTrustManagers the customTrustManagers to set
+     * <p>Specifies one or more trust manager classes separated by a semicolon (<b>;</b>).<br/>
+     * These classes have to implement the <code>Trustmanager</code> interface and need to provide
+     * an empty default constructor to be valid.<br/><br />
+     * If you want to accept all security certificates without a check you may 
+     * consider using the <code>DummyTrustManager</code> class. It is actually only
+     * an empty stub without any checking logic. <br/><b>But be aware that this will be
+     * a security risk in production environments. </b></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param customTrustManagers 
+     * 					a <code>String</code> value containing one or more full class names separated by <b>;</b> char
      */
     public void setCustomTrustManagers(String customTrustManagers) {
         this.customTrustManagers = customTrustManagers;
     }
 
-    /**
-     * @return Returns the receiver.
-     */
     public String getReceiver() {
         return this.receiver;
     }
 
     /**
-     * @param receiver The receiver to set.
+     * <p>Specifies the receiver address(es) of the mail which is being sent.</p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param receiver 
+     * 				a <code>String</code> value containing the receiver address(es)
      */
     public void setReceiver(String receiver) {
         this.receiver = receiver;
     }
 
-    /**
-     * * @return Returns the customProperties.
-     */
     public Map<String, String> getCustomProperties() {
         return this.customProperties;
     }
 
     /**
-     * @param customProperties The customProperties to set.
+     * <p>Specifies a <code>java.util.Map</code> which may contain additional
+     * properties for the connection. <br/>
+     * <br/><b><u>Example for disabling TOP for POP3 headers:</u></b><br />
+     * &nbsp;<i><b>key</b>: "mail.pop3.disabletop"</i> <br />
+     * &nbsp;<i><b>value</b>: "true"</i></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param customProperties 
+     * 					a <code>java.util.Map&lt;String, String&gt;</code> containing connection properties
      */
     public void setCustomProperties(Map<String, String> customProperties) {
         this.customProperties = customProperties;
     }
 
-	/**
-	 * @return the ignoreMessageProperties
-	 */
 	public List<String> getIgnoreMessageProperties() {
 		return this.ignoreMessageProperties;
 	}
 
 	/**
-	 * @param ignoreMessageProperties the ignoreMessageProperties to set
-	 */
+     * <p>Specifies a <code>java.util.Map</code> which may contain additional
+     * properties for the connection. <br/>
+     * <br/><b><u>Example for skipping all kind of addresses from the normalized message:</u></b><br />
+     * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.to"</i> <br />
+     * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.cc"</i> <br />
+     * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.bcc"</i> <br />
+     * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.from"</i> <br />
+     * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.replyto"</i> <br /></p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
+     * 
+     * @param ignoreMessageProperties 
+     * 					a <code>java.util.List&lt;String&gt;</code> containing keys of properties to ignore
+     */
 	public void setIgnoreMessageProperties(List<String> ignoreMessageProperties) {
 		this.ignoreMessageProperties = ignoreMessageProperties;
 	}
