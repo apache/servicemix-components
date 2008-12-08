@@ -32,11 +32,11 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.ManagementSupport;
+import org.apache.servicemix.common.tools.wsdl.PortTypeDecorator;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
-import org.apache.servicemix.http.tools.PortTypeDecorator;
 import org.apache.servicemix.soap.SoapEndpoint;
 import org.apache.servicemix.soap.SoapExchangeProcessor;
 
