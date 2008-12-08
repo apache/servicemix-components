@@ -59,6 +59,7 @@ import com.ibm.wsdl.extensions.soap12.SOAP12BindingImpl;
 import com.ibm.wsdl.extensions.soap12.SOAP12BodyImpl;
 import com.ibm.wsdl.extensions.soap12.SOAP12FaultImpl;
 import com.ibm.wsdl.extensions.soap12.SOAP12OperationImpl;
+import com.ibm.wsdl.extensions.soap12.SOAP12HeaderImpl;
 
 public final class PortTypeDecorator {
 
@@ -271,7 +272,7 @@ public final class PortTypeDecorator {
                 if (i == 0) {
                     body.setParts(Collections.singletonList(p.getName()));
                 } else {
-                    SOAPHeaderImpl h = new SOAPHeaderImpl();
+                    SOAP12HeaderImpl h = new SOAP12HeaderImpl();
                     h.setUse("litteral");
                     h.setMessage(message.getQName());
                     h.setPart(p.getName());
@@ -309,7 +310,7 @@ public final class PortTypeDecorator {
                 if (i == 0) {
                     body.setParts(Collections.singletonList(p.getName()));
                 } else {
-                    SOAPHeaderImpl h = new SOAPHeaderImpl();
+                    SOAP12HeaderImpl h = new SOAP12HeaderImpl();
                     h.setUse("litteral");
                     h.setMessage(message.getQName());
                     h.setPart(p.getName());
