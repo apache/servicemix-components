@@ -74,6 +74,7 @@ public class Wsdl1Soap11BindingFactory {
             }
         }
         PortType wsdlPortType = wsdlBinding.getPortType();
+        binding.setInterfaceName(wsdlPortType.getQName());
         for (Iterator iter = wsdlPortType.getOperations().iterator(); iter.hasNext();) {
             Operation wsdlOperation = (Operation) iter.next();
             BindingOperation wsdlBindingOperation = wsdlBinding.getBindingOperation(wsdlOperation.getName(), null, null);
@@ -142,7 +143,7 @@ public class Wsdl1Soap11BindingFactory {
             part.setType(wsdlPart.getTypeName());
             part.setElement(wsdlPart.getElementName());
             if ((wsdlSoapBody.getParts() == null && wsdlInput.getMessage().getOrderedParts(null).size() == 1) ||
-                    wsdlSoapBody.getParts().contains(part.getName())) {
+                    (wsdlSoapBody.getParts() != null && wsdlSoapBody.getParts().contains(part.getName()))) {
                 part.setBody(true);
                 if (operation.getStyle() == Style.DOCUMENT) {
                     input.setElementName(wsdlPart.getElementName());

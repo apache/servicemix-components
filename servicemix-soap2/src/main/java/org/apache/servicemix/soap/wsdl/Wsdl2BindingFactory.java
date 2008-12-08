@@ -60,6 +60,7 @@ public class Wsdl2BindingFactory {
         Wsdl2HttpBindingImpl binding = new Wsdl2HttpBindingImpl();
         binding.setLocation(wsdlEndpoint.getAddress().toString());
         Interface wsdlInterface = wsdlEndpoint.getBinding().getInterface();
+        binding.setInterfaceName(wsdlInterface.getName());
         InterfaceOperation[] wsdlOperations = wsdlInterface.getInterfaceOperations();
         for (int i = 0; i < wsdlOperations.length; i++) {
             // Retrieve binding and extension

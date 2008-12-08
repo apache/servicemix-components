@@ -26,6 +26,8 @@ import org.w3c.dom.DocumentFragment;
 
 public interface Message extends Map<String, Object> {
 
+    public static final String REQUEST_MESSAGE = "request.message";
+
     public static final String CONTENT_TYPE = "Content-Type";
     
     /**

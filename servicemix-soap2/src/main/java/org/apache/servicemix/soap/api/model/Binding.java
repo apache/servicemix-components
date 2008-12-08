@@ -26,6 +26,8 @@ import org.apache.servicemix.soap.api.InterceptorProvider;
 
 public interface Binding<T extends Operation> extends InterceptorProvider {
 
+    public QName getInterfaceName();
+
     public Message createMessage();
     
     public Message createMessage(Message request);

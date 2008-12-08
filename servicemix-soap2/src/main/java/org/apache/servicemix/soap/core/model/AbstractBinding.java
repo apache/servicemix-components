@@ -36,6 +36,7 @@ import org.apache.servicemix.soap.core.PhaseInterceptorChain;
 public class AbstractBinding<T extends Operation> extends AbstractInterceptorProvider 
                              implements Binding<T> {
 
+    private QName interfaceName;
     private Map<QName, T> operations;
     private String location;
     
@@ -51,8 +52,10 @@ public class AbstractBinding<T extends Operation> extends AbstractInterceptorPro
     
     public Message createMessage(Message request) {
         Message out = new MessageImpl();
+        out.put(Message.REQUEST_MESSAGE, request);
         out.put(Binding.class, this);
         out.put(Operation.class, request.get(Operation.class));
+        out.put(org.apache.servicemix.soap.api.model.Message.class, request.get(Operation.class).getOutput());
         return out;
     }
     
@@ -61,7 +64,15 @@ public class AbstractBinding<T extends Operation> extends AbstractInterceptorPro
         chain.add(getInterceptors(phase));
         return chain;
     }
-    
+
+    public QName getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(QName interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
     public T getOperation(QName name) {
         return operations.get(name);
     }

@@ -53,6 +53,7 @@ public class WsdlOperationInInterceptor extends AbstractInterceptor {
         if (matching.size() == 1) {
             Operation op = matching.get(0);
             message.put(Operation.class, op);
+            message.put(org.apache.servicemix.soap.api.model.Message.class, op.getInput());
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("No matching operation found for element: ");

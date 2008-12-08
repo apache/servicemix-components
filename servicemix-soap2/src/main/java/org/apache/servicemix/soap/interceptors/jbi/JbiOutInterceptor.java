@@ -65,6 +65,8 @@ public class JbiOutInterceptor extends AbstractInterceptor {
                                     + operation.getName());
                 }
                 message.put(Operation.class, operation);
+                message.put(org.apache.servicemix.soap.api.model.Message.class,
+                            server ? operation.getOutput() : operation.getInput());
             }
         }
     }

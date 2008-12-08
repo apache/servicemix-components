@@ -77,6 +77,7 @@ public class Wsdl1Soap12BindingFactory {
             }
         }
         PortType wsdlPortType = wsdlBinding.getPortType();
+        binding.setInterfaceName(wsdlPortType.getQName());
         for (Iterator iter = wsdlPortType.getOperations().iterator(); iter.hasNext();) {
             Operation wsdlOperation = (Operation) iter.next();
             BindingOperation wsdlBindingOperation = wsdlBinding.getBindingOperation(wsdlOperation.getName(), null, null);

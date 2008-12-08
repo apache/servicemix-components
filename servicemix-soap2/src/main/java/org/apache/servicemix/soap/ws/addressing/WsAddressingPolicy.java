@@ -21,9 +21,12 @@ import org.apache.servicemix.soap.core.AbstractPolicy;
 public class WsAddressingPolicy extends AbstractPolicy {
 
     public WsAddressingPolicy() {
-        getInterceptors(Phase.ServerIn).add(new WsAddressingInInterceptor(this));
-        
-        getInterceptors(Phase.ServerOut).add(new WsAddressingOutInterceptor(this));
+        getInterceptors(Phase.ServerIn).add(new WsAddressingInOperationInterceptor(this, true));
+        getInterceptors(Phase.ServerIn).add(new WsAddressingInDestinationInterceptor(this, true));
+
+        getInterceptors(Phase.ServerOut).add(new WsAddressingOutInterceptor(this, true));
+
+        getInterceptors(Phase.ClientOut).add(new WsAddressingOutInterceptor(this, false));
     }
 
 }
