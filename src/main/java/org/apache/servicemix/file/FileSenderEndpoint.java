@@ -27,12 +27,12 @@ import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 
 /**
- * An endpoint which receives messages from the NMR and writes the message to the file system.
- *
+ * An endpoint which receives messages from the NMR and writes the message to
+ * the file system.
+ * 
  * @org.apache.xbean.XBean element="sender"
- *
  * @version $Revision: $
-*/
+ */
 public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpointType {
 
     private File directory;
@@ -41,7 +41,6 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
     private String tempFileSuffix = ".xml";
     private boolean autoCreateDirectory = true;
     private boolean append = true;
-
 
     public FileSenderEndpoint() {
         append = false;
@@ -93,122 +92,119 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                     logger.error("Caught exception while closing stream on error: " + e, e);
                 }
             }
-            //cleaning up incomplete files after things went wrong
+            // cleaning up incomplete files after things went wrong
             if (!success) {
-                logger.debug("An error occurred while writing file " + newFile.getCanonicalPath() + ", deleting the invalid file");
+                logger.debug("An error occurred while writing file " + newFile.getCanonicalPath()
+                             + ", deleting the invalid file");
                 if (!newFile.delete()) {
-                    logger.warn("Unable to delete the file " + newFile.getCanonicalPath() + " after an error had occurred");
+                    logger.warn("Unable to delete the file " + newFile.getCanonicalPath()
+                                + " after an error had occurred");
                 }
             }
         }
     }
 
-    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
+        throws Exception {
         /** TODO list the files? */
         super.processInOut(exchange, in, out);
     }
 
     // Properties
-    //-------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
-	 * Specifies the directory where the endpoint writes files.
-	 * 
-	 * @param directory
-	 *            a <code>File</code> object representing the directory
-	 */
-	public void setDirectory(File directory) {
-		this.directory = directory;
-	}
-	
+     * Specifies the directory where the endpoint writes files.
+     * 
+     * @param directory a <code>File</code> object representing the directory
+     */
+    public void setDirectory(File directory) {
+        this.directory = directory;
+    }
+
     public File getDirectory() {
         return directory;
     }
 
     /**
-	 * Specifies a <code>FileMarshaler</code> object that will marshal message
-	 * data from the NMR into a file. The default file marshaler can write
-	 * valid XML data. <code>FileMarshaler</code> objects are implementations of
-	 * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
-	 * 
-	 * @param marshaler
-	 *            a <code>FileMarshaler</code> object that can write message
-	 *            data to the file system
-	 *            
-	 */
-	public void setMarshaler(FileMarshaler marshaler) {
-		this.marshaler = marshaler;
-	}
+     * Specifies a <code>FileMarshaler</code> object that will marshal message
+     * data from the NMR into a file. The default file marshaler can write valid
+     * XML data. <code>FileMarshaler</code> objects are implementations of
+     * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
+     * 
+     * @param marshaler a <code>FileMarshaler</code> object that can write
+     *            message data to the file system
+     */
+    public void setMarshaler(FileMarshaler marshaler) {
+        this.marshaler = marshaler;
+    }
 
-	public FileMarshaler getMarshaler() {
-		return marshaler;
-	}
+    public FileMarshaler getMarshaler() {
+        return marshaler;
+    }
 
     /**
-	 * Specifies a string to prefix to the beginning of generated temporary file
-	 * names. Temporary file names are generated when the endpoint cannot
-	 * determine the name of the file from the message.
-	 * 
-	 * @param tempFilePrefix
-	 *            a string to prefix to generated file names
-	 */         
+     * Specifies a string to prefix to the beginning of generated temporary file
+     * names. Temporary file names are generated when the endpoint cannot
+     * determine the name of the file from the message.
+     * 
+     * @param tempFilePrefix a string to prefix to generated file names
+     */
     public void setTempFilePrefix(String tempFilePrefix) {
         this.tempFilePrefix = tempFilePrefix;
     }
-    
+
     public String getTempFilePrefix() {
         return tempFilePrefix;
     }
 
     /**
-	 * Specifies a string to append to generated temporary file names. Temporary
-	 * file names are generated when the endpoint cannot determine the name of
-	 * the file from the message.
-	 * 
-	 * @param tempFileSuffix
-	 *            a string to append to generated file names
-	 */
-	public void setTempFileSuffix(String tempFileSuffix) {
-		this.tempFileSuffix = tempFileSuffix;
-	}
+     * Specifies a string to append to generated temporary file names. Temporary
+     * file names are generated when the endpoint cannot determine the name of
+     * the file from the message.
+     * 
+     * @param tempFileSuffix a string to append to generated file names
+     */
+    public void setTempFileSuffix(String tempFileSuffix) {
+        this.tempFileSuffix = tempFileSuffix;
+    }
 
-	public String getTempFileSuffix() {
-		return tempFileSuffix;
-	}
-
-    /**
-	 * Specifies if the endpoint should create the target directory if it does
-	 * not exist. If you set this to <code>false</code> and the directory does
-	 * not exist, the endpoint will not do anything. Default value: <code>true</code>.
-	 * 
-	 * @param autoCreateDirectory
-	 *            a boolean specifying if the endpoint creates directories
-	 *            
-	 */
-	public void setAutoCreateDirectory(boolean autoCreateDirectory) {
-		this.autoCreateDirectory = autoCreateDirectory;
-	}
-
-	public boolean isAutoCreateDirectory() {
-		return autoCreateDirectory;
-	}
+    public String getTempFileSuffix() {
+        return tempFileSuffix;
+    }
 
     /**
-	 * Specifies if the endpoint appends data to existing files or if it will
-	 * overwrite existing files. The default is for the endpoint to overwrite
-	 * existing files. Setting this to <code>true</code> instructs the endpoint
-	 * to append data. Default value is <code>false</code>.
-	 * 
-	 * @param append
-	 *            a boolean specifying if the endpoint appends data to existing
-	 *            files
-	 */
-	public void setAppend(boolean append) {
-		this.append = append;
-	}
+     * Specifies if the endpoint should create the target directory if it does
+     * not exist. If you set this to <code>false</code> and the directory does
+     * not exist, the endpoint will not do anything. Default value:
+     * <code>true</code>.
+     * 
+     * @param autoCreateDirectory a boolean specifying if the endpoint creates
+     *            directories
+     */
+    public void setAutoCreateDirectory(boolean autoCreateDirectory) {
+        this.autoCreateDirectory = autoCreateDirectory;
+    }
 
-	public boolean isAppend() {
-		return append;
-	}
+    public boolean isAutoCreateDirectory() {
+        return autoCreateDirectory;
+    }
+
+    /**
+     * Specifies if the endpoint appends data to existing files or if it will
+     * overwrite existing files. The default is for the endpoint to overwrite
+     * existing files. Setting this to <code>true</code> instructs the endpoint
+     * to append data. Default value is <code>false</code>.
+     * 
+     * @param append a boolean specifying if the endpoint appends data to
+     *            existing files
+     */
+    public void setAppend(boolean append) {
+        this.append = append;
+    }
+
+    public boolean isAppend() {
+        return append;
+    }
 
 }
