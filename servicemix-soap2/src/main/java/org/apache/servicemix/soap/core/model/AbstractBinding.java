@@ -54,8 +54,11 @@ public class AbstractBinding<T extends Operation> extends AbstractInterceptorPro
         Message out = new MessageImpl();
         out.put(Message.REQUEST_MESSAGE, request);
         out.put(Binding.class, this);
-        out.put(Operation.class, request.get(Operation.class));
-        out.put(org.apache.servicemix.soap.api.model.Message.class, request.get(Operation.class).getOutput());
+        Operation op = request.get(Operation.class);
+        if (op != null) {
+            out.put(Operation.class, op);
+            out.put(org.apache.servicemix.soap.api.model.Message.class, op.getOutput());
+        }
         return out;
     }
     
