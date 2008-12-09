@@ -122,7 +122,6 @@
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jta_1.1_spec</artifactId>
-      <version>1.1</version>
       <scope>provided</scope>
     </dependency>
     <!-- for unit/integration testing -->
