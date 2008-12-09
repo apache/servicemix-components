@@ -30,13 +30,13 @@ import org.apache.servicemix.common.util.URISupport;
 
 /**
  * A file based component
- *
+ * 
  * @version $Revision$
  * @org.apache.xbean.XBean element="component" description="a JBI component that interacts with the file system. It hosts endpoints that reads data from and writes data to the file system."
  */
 @SuppressWarnings("unchecked")
 public class FileComponent extends DefaultComponent {
-    
+
     public static final String FILE_PROPERTY = "org.apache.servicemix.file";
 
     private FileEndpointType[] endpoints;
@@ -47,14 +47,14 @@ public class FileComponent extends DefaultComponent {
 
     /**
      * Sets the list of endpoint managed by the component.
-     *
+     * 
      * @param endpoints an array of <code>FileEndpointType</code> objects
-     * @org.apache.xbean.Property description="a list of beans defining the endpoints hosted by the component"
-    */
+     * @org.apache.xbean.Property description=
+     *                            "a list of beans defining the endpoints hosted by the component"
+     */
     public void setEndpoints(FileEndpointType[] endpoints) {
         this.endpoints = endpoints;
     }
-
 
     protected List getConfiguredEndpoints() {
         return asList(getEndpoints());
@@ -70,7 +70,7 @@ public class FileComponent extends DefaultComponent {
         FileSenderEndpoint fileEp = new FileSenderEndpoint(this, ep);
 
         // TODO
-        //fileEp.setRole(MessageExchange.Role.PROVIDER);
+        // fileEp.setRole(MessageExchange.Role.PROVIDER);
 
         URI uri = new URI(ep.getEndpointName());
 

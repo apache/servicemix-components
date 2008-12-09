@@ -419,9 +419,9 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         if (target.exists() && target.isFile()) {
             // the file is already inside archive...we need a new file name
             targetName = String.format("%d_%s", System.currentTimeMillis(), src.getName()); // that
-                                                                                            // should
-                                                                                            // be
-                                                                                            // unique
+            // should
+            // be
+            // unique
         }
         if (!src.renameTo(new File(targetDirectory, targetName))) {
             throw new IOException("Failed to move " + src + " to " + targetDirectory + " with new name "
