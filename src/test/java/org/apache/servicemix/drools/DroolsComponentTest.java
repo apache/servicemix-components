@@ -231,5 +231,5 @@ public class DroolsComponentTest extends TestCase {
         client.done(me);
         
         Thread.sleep(50);
-    }
+    }   
 }

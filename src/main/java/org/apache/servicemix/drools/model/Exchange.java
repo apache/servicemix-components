@@ -36,6 +36,9 @@ public class Exchange {
     public static final String ERROR = "Error";
     public static final String DONE = "Done";
     
+    public static final String IN_MESSAGE = "in";
+    public static final String OUT_MESSAGE = "out";
+    
     private final MessageExchange exchange;
     private Message in;
     private Message out;

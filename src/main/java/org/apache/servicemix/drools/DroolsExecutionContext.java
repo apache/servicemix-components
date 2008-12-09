@@ -36,8 +36,10 @@ public class DroolsExecutionContext extends DefaultAgendaEventListener {
     private int rulesFired;
     private MessageExchange exchange;
     
+    public static final String JBI_HELPER_KEY = "jbi";
+    
     /**
-     * Start a new execution for the specified exchange.
+     * Start a new execution context for the specified exchange.
      * 
      * This will create and fill {@link WorkingMemory} and register listeners on it to keep track of things.
      * 
@@ -54,7 +56,7 @@ public class DroolsExecutionContext extends DefaultAgendaEventListener {
     }
 
     private void populateWorkingMemory(DroolsEndpoint endpoint) {
-        memory.setGlobal("jbi", helper);
+        memory.setGlobal(JBI_HELPER_KEY, helper);
         if (endpoint.getAssertedObjects() != null) {
             for (Object o : endpoint.getAssertedObjects()) {
                 memory.insert(o);
@@ -116,5 +118,12 @@ public class DroolsExecutionContext extends DefaultAgendaEventListener {
     @Override
     public void activationCreated(ActivationCreatedEvent event, WorkingMemory workingMemory) {
         rulesFired++;
+    }
+    
+    /**
+     * Access the JbiHelper object that is being exposed to the .drl file
+     */
+    public JbiHelper getHelper() {
+        return helper;
     }
 }

@@ -27,9 +27,13 @@ import java.util.concurrent.ConcurrentMap;
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOptionalOut;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.NamespaceContext;
@@ -40,6 +44,7 @@ import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.MessageUtil;
+import org.apache.servicemix.drools.model.Exchange;
 import org.drools.RuleBase;
 import org.drools.compiler.RuleBaseLoader;
 import org.springframework.core.io.Resource;
@@ -60,6 +65,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
     private String defaultTargetURI;
     private Map<String, Object> globals;
     private List<Object> assertedObjects;
+    private boolean autoReply;
     
     @SuppressWarnings("serial")
     private ConcurrentMap<String, DroolsExecutionContext> pending = new ConcurrentHashMap<String, DroolsExecutionContext>() {
@@ -155,6 +161,25 @@ public class DroolsEndpoint extends ProviderEndpoint {
     public void setGlobals(Map<String, Object> variables) {
         this.globals = variables;
     }
+    
+    /**
+     * Will this endpoint automatically reply to any exchanges not handled by the Drools rulebase?
+     * 
+     * @return <code>true</code> if the endpoint replies to any unanswered exchanges
+     */
+    public boolean isAutoReply() {
+        return autoReply;
+    }
+    
+    /**
+     * Set auto-reply to <code>true</code> to ensure that every exchange is being replied to.
+     * This way, you can avoid having to end every Drools rule with jbi.answer()
+     * 
+     * @param autoReply <code>true</code> for auto-replying on incoming exchanges 
+     */
+    public void setAutoReply(boolean autoReply) {
+        this.autoReply = autoReply;
+    }
 
     public void validate() throws DeploymentException {
         super.validate();
@@ -234,7 +259,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
             drools(exchange);
         } else {
             //must be a DONE/ERROR so removing any pending contexts
-            DroolsExecutionContext drools = pending.remove(exchange.getExchangeId());
+            pending.remove(exchange.getExchangeId());
         }
     }
 
@@ -248,7 +273,22 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
 
     protected void drools(MessageExchange exchange) throws Exception {
-        DroolsExecutionContext drools = startDroolsExecutionContext(exchange);
+        DroolsExecutionContext drools1 = startDroolsExecutionContext(exchange);
+        if (drools1.getRulesFired() < 1) {
+            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+        } else {
+            //the exchange has been answered or faulted by the drools endpoint
+            if (drools1.isExchangeHandled() && exchange instanceof InOnly) {
+                //only removing InOnly
+                pending.remove(exchange.getExchangeId());
+            }
+            if (!drools1.isExchangeHandled() && autoReply) {
+                reply(exchange, drools1);
+            }
+        }
+    }
+
+    protected void drools(MessageExchange exchange, DroolsExecutionContext drools) throws Exception {
         if (drools.getRulesFired() < 1) {
             fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
         } else {
@@ -257,9 +297,33 @@ public class DroolsEndpoint extends ProviderEndpoint {
                 //only removing InOnly
                 pending.remove(exchange.getExchangeId());
             }
+            if (!drools.isExchangeHandled() && autoReply) {
+                reply(exchange, drools);
+            }
         }
     }
     
+    private void reply(MessageExchange exchange, DroolsExecutionContext drools) throws Exception {
+        Fault fault = exchange.getFault();
+        if (fault != null) {
+            drools.getHelper().fault(fault.getContent());
+        } else if (isOutCapable(exchange)) {
+            NormalizedMessage message = exchange.getMessage(Exchange.OUT_MESSAGE);
+            if (message == null) {
+                // send back the 'in' message if no 'out' message is available
+                message = exchange.getMessage(Exchange.IN_MESSAGE); 
+            }
+            drools.getHelper().answer(message.getContent());
+        } else if (exchange instanceof InOnly) {
+            // just send back the done
+            done(exchange);
+        }
+    }
+
+    private boolean isOutCapable(MessageExchange exchange) {
+        return exchange instanceof InOptionalOut || exchange instanceof InOut;
+    }
+
     private DroolsExecutionContext startDroolsExecutionContext(MessageExchange exchange) {
         DroolsExecutionContext drools = new DroolsExecutionContext(this, exchange);
         pending.put(exchange.getExchangeId(), drools);

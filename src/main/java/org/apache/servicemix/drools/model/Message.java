@@ -20,8 +20,14 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
 import org.apache.servicemix.expression.JAXPStringXPathExpression;
@@ -82,6 +88,33 @@ public class Message {
     
     public Element getContent() {
         return (Element) ((DOMSource) message.getContent()).getNode();
+    }
+        
+    public Object getXPath(String path) throws XPathExpressionException {
+        Element msgXML = getContent();
+        if(msgXML!=null) {
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            Node value = (Node) xpath.evaluate(path, getContent(), XPathConstants.NODE);
+            if(value == null || value.getNodeType() != Node.ATTRIBUTE_NODE) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute not found in message with XPath: " + path);
+            }
+            return value.getNodeValue();
+        } else {
+            return null;
+        }
+    }
+    
+    public void setXPath(String path, Object value) throws XPathExpressionException {
+        Element msgXML = getContent();
+        if(msgXML!=null) {
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            Node node = (Node) xpath.evaluate(path, getContent(), XPathConstants.NODE);
+            if (node == null || node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                throw new DOMException(DOMException.NOT_FOUND_ERR, "Attribute not found in message with xpath: "+ path);
+            } else {
+                node.setNodeValue(value.toString());
+            }
+        }        
     }
     
 }
