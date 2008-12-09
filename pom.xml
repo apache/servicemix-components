@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>components-pom</artifactId>
+    <version>3-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.apache.servicemix</groupId>
+  <artifactId>servicemix-vfs</artifactId>
+  <version>2008.01-SNAPSHOT</version>
+  <packaging>jbi-component</packaging>
+
+  <name>ServiceMix :: VFS</name>
+  <description>A Commons-VFS component</description>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-vfs/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-vfs/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-vfs/trunk</url>
+  </scm>
+
+  <properties>
+    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <servicemix-version>3.3</servicemix-version>
+    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+
+      <servicemix.osgi.import>
+          org.apache.servicemix;resolution:=optional,
+          org.apache.servicemix.client*;resolution:=optional,
+          org.apache.servicemix.common,
+          org.apache.servicemix.common.osgi,
+          org.apache.servicemix.executors.impl,
+          org.apache.servicemix.jbi.resolver;resolution:=optional,
+          org.apache.xbean.spring.context.v2,
+          org.springframework.beans.factory.xml,
+          sun.misc;resolution:=optional,
+          *
+      </servicemix.osgi.import>
+      <servicemix.osgi.export>
+          org.apache.servicemix.vfs*;version=${project.version},
+          META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.vfs
+      </servicemix.osgi.export>
+      <servicemix.osgi.bundles>
+          org.apache.servicemix.bundles.jaxp-ri,
+          org.springframework.bundle.spring.core,
+          org.springframework.bundle.spring.beans,
+          org.springframework.bundle.spring.context,
+      </servicemix.osgi.bundles>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>commons-vfs</groupId>
+      <artifactId>commons-vfs</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-shared</artifactId>
+      <version>${servicemix-shared-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.specs</groupId>
+      <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6.2</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>commons-net</groupId>
+      <artifactId>commons-net</artifactId>
+      <version>1.4.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>jdom</groupId>
+      <artifactId>jdom</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>2.0.2</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch</artifactId>
+      <version>0.1.23</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>1.0.b2</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>oro</groupId>
+      <artifactId>oro</artifactId>
+      <version>2.0.8</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jta_1.1_spec</artifactId>
+    </dependency>
+    <!-- for unit/integration testing -->
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <version>${servicemix-version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jmx</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>jbi-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <type>binding-component</type>
+          <component>org.apache.servicemix.vfs.VFSComponent</component>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>maven-xbean-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>mapping</goal>
+            </goals>
+            <configuration>
+              <namespace>http://servicemix.apache.org/vfs/1.0</namespace>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <!-- exclude abstract test cases -->
+            <exclude>**/Abstract*.*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>
