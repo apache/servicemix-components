@@ -271,16 +271,16 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             if (handleStaticResource(request, response)) {
                 return;
             }
-            // Check endpoint is started
-            if (!started) {
-                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
-                return;
-            }
             // Not giving a specific mutex will synchronize on the continuation
             // itself
             Continuation cont = ContinuationSupport.getContinuation(request, null);
             // If the continuation is not a retry
             if (!cont.isPending()) {
+	            // Check endpoint is started
+	            if (!started) {
+	                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
+	                return;
+	            }
                 // Create the exchange
                 exchange = createExchange(request);
                 // Put the exchange in a map so that we can later retrieve it

@@ -141,10 +141,6 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
             processGetRequest(request, response);
             return;
         }
-        if (!started) {
-            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
-            return;
-        }
         if (!"POST".equals(request.getMethod())) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, request.getMethod() + " not supported");
             return;
@@ -155,6 +151,10 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
         // If the continuation is not a retry
         if (!cont.isPending()) {
             try {
+		        if (!started) {
+		            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
+		            return;
+		        }
                 Context ctx = createContext(request);
                 request.setAttribute(Context.class.getName(), ctx);
                 exchange = soapHelper.onReceive(ctx);
