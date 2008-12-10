@@ -41,12 +41,12 @@ import org.apache.servicemix.components.util.FileMarshaler;
  * @author lhein
  */
 public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointType {
-    private static final Log log = LogFactory.getLog(VFSSendingEndpoint.class);
+    private static final Log logger = LogFactory.getLog(VFSSendingEndpoint.class);
 
-    private FileObject directory;
-    private FileObjectEditor editor = new FileObjectEditor();
+    private FileObject file;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
-    private String uniqueFileName = "ServiceMix";
+    private String path;
+    private FileSystemManager fileSystemManager;
     
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#start()
@@ -55,8 +55,8 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
     public synchronized void start() throws Exception {
         super.start();
         
-        if (directory == null) {
-            directory = editor.getFileObject();
+        if (file == null) {
+            file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
         }
     }
     
@@ -72,8 +72,8 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
             if (name == null) {
                 throw new MessagingException("No output name available. Cannot output message!");
             }
-            directory.close(); // remove any cached informations
-            FileObject newFile = directory.resolveFile(name);
+            file.close(); // remove any cached informations
+            FileObject newFile = file.resolveFile(name);
             newFile.close(); // remove any cached informations
             FileContent content = newFile.getContent();
             content.close();
@@ -92,46 +92,75 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
                     out.close();
                 }
                 catch (IOException e) {
-                    log.error("Caught exception while closing stream on error: " + e, e);
+                    logger.error("Caught exception while closing stream on error: " + e, e);
                 }
             }
         }
     }
     
-    public String getPath() {
-        return editor.getPath();
+    /**
+     * Specifies a <code>String</code> object representing the path of the 
+     * file/folder to be polled.<br /><br />
+     * <b><u>Examples:</u></b><br />
+     * <ul>
+     *  <li>file:///home/lhein/pollFolder</li>
+     *  <li>zip:file:///home/lhein/pollFolder/myFile.zip</li>
+     *  <li>jar:http://www.myhost.com/files/Examples.jar</li>
+     *  <li>jar:../lib/classes.jar!/META-INF/manifest.mf</li>
+     *  <li>tar:gz:http://anyhost/dir/mytar.tar.gz!/mytar.tar!/path/in/tar/README.txt</li>
+     *  <li>tgz:file://anyhost/dir/mytar.tgz!/somepath/somefile</li>
+     *  <li>gz:/my/gz/file.gz</li>
+     *  <li>http://myusername@somehost/index.html</li>
+     *  <li>webdav://somehost:8080/dist</li>
+     *  <li>ftp://myusername:mypassword@somehost/pub/downloads/somefile.tgz</li>
+     *  <li>sftp://myusername:mypassword@somehost/pub/downloads/somefile.tgz</li>
+     *  <li>smb://somehost/home</li>
+     *  <li>tmp://dir/somefile.txt</li>
+     *  <li>res:path/in/classpath/image.png</li>
+     *  <li>ram:///any/path/to/file.txt</li>
+     *  <li>mime:file:///your/path/mail/anymail.mime!/filename.pdf</li>
+     * </ul>
+     * 
+     * For further details have a look at {@link http://commons.apache.org/vfs/filesystems.html}.
+     * <br /><br />
+     * 
+     * @param path a <code>String</code> object that represents a file/folder/vfs
+     */
+    public void setPath(String path) {
+        this.path = path;
     }
 
-    public void setPath(String path) {
-        editor.setPath(path);
+    public String getPath() {
+        return this.path;
+    }
+
+    /**
+     * sets the file system manager
+     * 
+     * @param fileSystemManager the file system manager
+     */
+    public void setFileSystemManager(FileSystemManager fileSystemManager) {
+        this.fileSystemManager = fileSystemManager;
     }
 
     public FileSystemManager getFileSystemManager() {
-        return editor.getFileSystemManager();
+        return this.fileSystemManager;
     }
 
-    public void setFileSystemManager(FileSystemManager fileSystemManager) {
-        editor.setFileSystemManager(fileSystemManager);
-    }
-
-    public FileMarshaler getMarshaler() {
-        return marshaler;
-    }
-
+    /**
+     * Specifies a <code>FileMarshaler</code> object that will marshal file data
+     * into the NMR. The default file marshaller can read valid XML data.
+     * <code>FileMarshaler</code> objects are implementations of
+     * <code>org.apache.servicemix.components.util.FileMarshaler</code>.
+     * 
+     * @param marshaler a <code>FileMarshaler</code> object that can read data
+     *            from the file system.
+     */
     public void setMarshaler(FileMarshaler marshaler) {
         this.marshaler = marshaler;
     }
 
-    public String getUniqueFileName() {
-        return uniqueFileName;
-    }
-
-    /**
-     * Sets the name used to make a unique name if no file name is available on the message.
-     *
-     * @param uniqueFileName the new value of the unique name to use for generating unique names
-     */
-    public void setUniqueFileName(String uniqueFileName) {
-        this.uniqueFileName = uniqueFileName;
+    public FileMarshaler getMarshaler() {
+        return marshaler;
     }
 }

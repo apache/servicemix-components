@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,66 +24,33 @@ import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
 
 /**
- * A bean editor to make it easier to create new file system objects using VFS
+ * class for resolving a path to a FileObject
+ * 
+ * @author lhein
  */
-public class FileObjectEditor {
-    private String path;
-    private FileSystemManager fileSystemManager;
-
-    /**
-     * returns the path to the file object to resolve
-     * 
-     * @return  the path as string object
-     */
-    public String getPath() {
-        return this.path;
-    }
-
-    /**
-     * sets the path to the file object to be polled
-     * 
-     * @param path      the path as string
-     */
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    /**
-     * returns the file system manager 
-     * 
-     * @return  the file system manager
-     */
-    public FileSystemManager getFileSystemManager() {
-        return this.fileSystemManager;
-    }
-
-    /**
-     * sets the file system manager object
-     * 
-     * @param fileSystemManager the file system manager
-     */
-    public void setFileSystemManager(FileSystemManager fileSystemManager) {
-        this.fileSystemManager = fileSystemManager;
-    }
+public class FileObjectResolver {
 
     /**
      * returns the file object to use 
      * 
+     * @param manager   the file system manager
+     * @param path      the path 
      * @return  the file object
+     * @throws IllegalArgumentException on wrong parameters
      * @throws IOException      on resolving errors
      */
-    public FileObject getFileObject() throws IOException {
+    public static FileObject resolveToFileObject(FileSystemManager manager, String path) throws IllegalArgumentException, IOException {
         FileObject answer = null;
         
         try {
-            if (fileSystemManager == null) {
-                fileSystemManager = VFS.getManager();
+            if (manager == null) {
+                manager = VFS.getManager();
             }
             if (path == null) {
                 throw new IllegalArgumentException("You must specify a path property");
             }
             
-            answer = fileSystemManager.resolveFile(path);
+            answer = manager.resolveFile(path);
             if (answer == null) {
                 throw new IOException("Could not resolve file: " + path);
             }

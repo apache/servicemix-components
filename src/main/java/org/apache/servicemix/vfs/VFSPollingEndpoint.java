@@ -18,14 +18,10 @@ package org.apache.servicemix.vfs;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.locks.Lock;
 
 import javax.jbi.JBIException;
-import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -35,16 +31,18 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.vfs.FileChangeEvent;
 import org.apache.commons.vfs.FileContent;
+import org.apache.commons.vfs.FileListener;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSelector;
+import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.FileType;
+import org.apache.commons.vfs.impl.DefaultFileMonitor;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.endpoints.PollingEndpoint;
-import org.apache.servicemix.common.locks.LockManager;
-import org.apache.servicemix.common.locks.impl.SimpleLockManager;
+import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 
@@ -61,31 +59,47 @@ import org.apache.servicemix.components.util.FileMarshaler;
  * 
  * @author lhein
  */
-public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointType {
-    private static final Log log = LogFactory.getLog(VFSPollingEndpoint.class);
+public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointType, FileListener {
+    private static final Log logger = LogFactory.getLog(VFSPollingEndpoint.class);
     
     private FileMarshaler marshaler = new DefaultFileMarshaler();
-    private FileObjectEditor editor = new FileObjectEditor();
     private FileObject file;
     private FileSelector selector;
-    private Set<FileObject> workingSet = new CopyOnWriteArraySet<FileObject>();
     private boolean deleteFile = true;
     private boolean recursive = true;
-    private LockManager lockManager;
+    private String path;
+    private long period = 1000;
+    private FileSystemManager fileSystemManager;
+    private DefaultFileMonitor monitor;
     private ConcurrentMap<String, InputStream> openExchanges = new ConcurrentHashMap<String, InputStream>();
     
+    /**
+     * default constructor
+     */
     public VFSPollingEndpoint() {
     }
 
+    /**
+     * creates a VFS polling endpoint
+     * 
+     * @param serviceUnit       the service unit
+     * @param service           the service name
+     * @param endpoint          the endpoint name
+     */
     public VFSPollingEndpoint(ServiceUnit serviceUnit, QName service, String endpoint) {
         super(serviceUnit, service, endpoint);
     }
 
+    /**
+     * creates a VFS polling endpoint
+     * 
+     * @param component         the default component
+     * @param endpoint          the endpoint
+     */
     public VFSPollingEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
 
-    
     /* (non-Javadoc)
      * @see org.apache.servicemix.common.endpoints.PollingEndpoint#start()
      */
@@ -93,35 +107,98 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
     public synchronized void start() throws Exception {
         super.start();
 
-        this.workingSet.clear();
-        
         // re-create the openExchanges map
         this.openExchanges = new ConcurrentHashMap<String, InputStream>();
         
+        // resolve the path to a FileObject
         if (file == null) {
-            file = editor.getFileObject();
+            file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
         }
+        
+        // create the monitor
+        if (this.monitor == null) {
+            this.monitor = new DefaultFileMonitor(this);
+        }
+        this.monitor.setRecursive(isRecursive());
+        this.monitor.setDelay(getPeriod());
+        this.monitor.addFile(file);
+        this.monitor.start();
+        
+        // update time stamps of existing files - this is needed because the
+        // file monitor only recognizes changes and existing files are not 
+        // changed in any way and will therefore stay unrecognized
+        if (file.exists()) {
+            updateFileModified(file);                
+        }
+    }
+    
+    /**
+     * updates the last modified date time
+     * 
+     * @param aFile     last modified date time
+     */
+    private void updateFileModified(FileObject aFile) {
+        try {
+            if (aFile.getContent() != null) {
+                aFile.getContent().setLastModifiedTime(System.currentTimeMillis());
+            }
+            
+            if (!aFile.getType().equals(FileType.FILE)) {
+                FileObject[] files = aFile.getChildren();
+                for (FileObject f : files) {
+                    updateFileModified(f);
+                }
+            }
+        } catch (FileSystemException ex) {
+            // ignored
+            logger.debug("Failed to update time stamp of file " + aFile.getName().getPath(), ex);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#stop()
+     */
+    @Override
+    public synchronized void stop() throws Exception {
+        this.monitor.stop();
+        
+        super.stop();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.commons.vfs.FileListener#fileChanged(org.apache.commons.vfs.FileChangeEvent)
+     */
+    public void fileChanged(FileChangeEvent event) throws Exception {
+        FileObject aFile = event.getFile();        
+        logger.debug("FileChanged: " + aFile.getName().getPathDecoded());
+        processFile(aFile);        
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.commons.vfs.FileListener#fileCreated(org.apache.commons.vfs.FileChangeEvent)
+     */
+    public void fileCreated(FileChangeEvent event) throws Exception {
+        FileObject aFile = event.getFile();        
+        logger.debug("FileCreated: " + aFile.getName().getPathDecoded());
+        processFile(aFile);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.commons.vfs.FileListener#fileDeleted(org.apache.commons.vfs.FileChangeEvent)
+     */
+    public void fileDeleted(FileChangeEvent event) throws Exception {
+        FileObject aFile = event.getFile();
+        logger.debug("FileDeleted: " + aFile.getName().getPathDecoded());
     }
     
     /*
      * (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.ConsumerEndpoint#validate()
+     * @see org.apache.servicemix.common.endpoints.ConsumerEndpoint#getLocationURI()
      */
     @Override
-    public void validate() throws DeploymentException {
-        super.validate();
-        
-        if (lockManager == null) {
-            lockManager = createLockManager();
-        }
-    }
-
-    protected LockManager createLockManager() {
-        return new SimpleLockManager();
-    }
-    
     public String getLocationURI() {
-        return getPath();
+        // return a URI that unique identify this endpoint
+        return getService() + "#" + getEndpoint();
     }
     
     /* (non-Javadoc)
@@ -129,7 +206,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
-     // check for done or error
+        // check for done or error
         if (this.openExchanges.containsKey(exchange.getExchangeId())) {
             InputStream stream = this.openExchanges.get(exchange.getExchangeId());
             FileObject aFile = (FileObject)exchange.getMessage("in").getProperty(VFSComponent.VFS_PROPERTY);
@@ -140,6 +217,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
             }
 
             logger.debug("Releasing " + aFile.getName().getPathDecoded());
+        
             // first try to close the stream
             stream.close();
             try {
@@ -164,11 +242,10 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                     throw new JBIException("Unexpectedly received an exchange with status ACTIVE");
                 }
             } finally {
+                // remove file from set of already processed files
                 //workingSet.remove(aFile);
                 // remove the open exchange
                 openExchanges.remove(exchange.getExchangeId());
-                // unlock the file
-                unlockAsyncFile(aFile);
             }
 
         } else {
@@ -179,105 +256,26 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
     }
     
     /**
-     * unlock the file
+     * does the real processing logic
      * 
-     * @param file the file to unlock
+     * @param aFile             the file to process
+     * @throws Exception        on processing errors
      */
-    private void unlockAsyncFile(FileObject file) {
-        // finally remove the file from the open exchanges list
-        String uri = file.getName().getURI().toString();
-        Lock lock = lockManager.getLock(uri);
-        if (lock != null) {
-            try {
-                lock.unlock();
-            } catch (Exception ex) {
-                // can't release the lock
-                logger.error(ex);
-            }
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.PollingEndpoint#poll()
-     */
-    @Override
-    public void poll() throws Exception {
-        // SM-192: Force close the file, so that the cached informations are cleared
-        if (file != null) {
-            file.close();
-            pollFileOrDirectory(file);
-        }        
-    }
-    
-    protected void pollFileOrDirectory(FileObject fileOrDirectory) throws Exception {
-        pollFileOrDirectory(fileOrDirectory, true);
-    }
-    
-    protected void pollFileOrDirectory(FileObject fileOrDirectory, boolean processDir) throws Exception {
-        if (fileOrDirectory.getType().equals(FileType.FILE)) {
-            pollFile(fileOrDirectory); // process the file
-        } else if (processDir) {
-            logger.debug("Polling directory " + fileOrDirectory.getName().getPathDecoded());
-            FileObject[] files = null;
-            if (selector != null) {
-                files = fileOrDirectory.findFiles(selector);
-            } else {
-                files = fileOrDirectory.getChildren();
-            }
-            for (FileObject f : files) {
-                pollFileOrDirectory(f, isRecursive()); // self-recursion
-            }
-        } else {
-            logger.debug("Skipping directory " + fileOrDirectory.getName().getPathDecoded());
-        }
-    }
-    
-    protected void pollFile(final FileObject aFile) throws Exception {
-        if (workingSet.add(aFile)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Scheduling file " + aFile.getName().getPathDecoded() + " for processing");
-            }
-            
-            getExecutor().execute(new Runnable() {
-                public void run() {
-                    String uri = aFile.getName().getURI().toString();
-                    Lock lock = lockManager.getLock(uri);
-                    if (lock.tryLock()) {
-                        processFileNow(aFile);
-                    } else {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Unable to acquire lock on " + aFile.getName().getURI());
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    protected void processFileNow(FileObject aFile) {
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing file " + aFile.getName().getURI());
-            }
-            if (aFile.exists()) {
-                processFile(aFile);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to process file: " + aFile.getName().getURI() + ". Reason: " + e, e);
-        }
-    }
-
-    protected void processFile(FileObject file) throws Exception {
-        // SM-192: Force close the file, so that the cached informations are cleared
-        file.close();
+    protected void processFile(FileObject aFile) throws Exception {
+        logger.debug("Processing file " + aFile.getName().getPathDecoded());
         
-        String name = file.getName().getURI();
-        FileContent content = file.getContent();
+        // SM-192: Force close the file, so that the cached informations are cleared
+        aFile.close();
+        
+        String name = aFile.getName().getPathDecoded();
+        FileContent content = aFile.getContent();
         content.close();
+       
         InputStream stream = content.getInputStream();
         if (stream == null) {
-            throw new IOException("No input available for file!");
+            throw new IOException("No input available for file " + aFile.getName().getPathDecoded());
         }
+        
         InOnly exchange = getExchangeFactory().createInOnlyExchange();
         configureExchangeTarget(exchange);
         NormalizedMessage message = exchange.createMessage();
@@ -286,7 +284,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         
         // sending the file itself along as a message property and holding on to
         // the stream we opened
-        exchange.getInMessage().setProperty(VFSComponent.VFS_PROPERTY, file);
+        exchange.getInMessage().setProperty(VFSComponent.VFS_PROPERTY, aFile);
         this.openExchanges.put(exchange.getExchangeId(), stream);
 
         send(exchange);
@@ -306,23 +304,6 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         return deleteFile;
     }
 
-    /**
-     * Bean defining the class implementing the file locking strategy. This bean
-     * must be an implementation of the
-     * <code>org.apache.servicemix.locks.LockManager</code> interface. By
-     * default, this will be set to an instances of
-     * <code>org.apache.servicemix.common.locks.impl.SimpleLockManager</code>.
-     * 
-     * @param lockManager the <code>LockManager</code> implementation to use
-     */
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-    
     /**
      * Specifies a <code>FileMarshaler</code> object that will marshal file data
      * into the NMR. The default file marshaller can read valid XML data.
@@ -354,16 +335,39 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
     }
 
     /**
-     * sets the path of the file object
+     * Specifies a <code>String</code> object representing the path of the 
+     * file/folder to be polled.<br /><br />
+     * <b><u>Examples:</u></b><br />
+     * <ul>
+     *  <li>file:///home/lhein/pollFolder</li>
+     *  <li>zip:file:///home/lhein/pollFolder/myFile.zip</li>
+     *  <li>jar:http://www.myhost.com/files/Examples.jar</li>
+     *  <li>jar:../lib/classes.jar!/META-INF/manifest.mf</li>
+     *  <li>tar:gz:http://anyhost/dir/mytar.tar.gz!/mytar.tar!/path/in/tar/README.txt</li>
+     *  <li>tgz:file://anyhost/dir/mytar.tgz!/somepath/somefile</li>
+     *  <li>gz:/my/gz/file.gz</li>
+     *  <li>http://myusername@somehost/index.html</li>
+     *  <li>webdav://somehost:8080/dist</li>
+     *  <li>ftp://myusername:mypassword@somehost/pub/downloads/somefile.tgz</li>
+     *  <li>sftp://myusername:mypassword@somehost/pub/downloads/somefile.tgz</li>
+     *  <li>smb://somehost/home</li>
+     *  <li>tmp://dir/somefile.txt</li>
+     *  <li>res:path/in/classpath/image.png</li>
+     *  <li>ram:///any/path/to/file.txt</li>
+     *  <li>mime:file:///your/path/mail/anymail.mime!/filename.pdf</li>
+     * </ul>
      * 
-     * @param path      the path        
+     * For further details have a look at {@link http://commons.apache.org/vfs/filesystems.html}.
+     * <br /><br />
+     * 
+     * @param path a <code>String</code> object that represents a file/folder/vfs
      */
     public void setPath(String path) {
-        editor.setPath(path);
+        this.path = path;
     }
 
     public String getPath() {
-        return editor.getPath();
+        return this.path;
     }
 
     /**
@@ -372,34 +376,39 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
      * @param fileSystemManager the file system manager
      */
     public void setFileSystemManager(FileSystemManager fileSystemManager) {
-        editor.setFileSystemManager(fileSystemManager);
+        this.fileSystemManager = fileSystemManager;
     }
 
     public FileSystemManager getFileSystemManager() {
-        return editor.getFileSystemManager();
+        return this.fileSystemManager;
     }
 
     /**
-     * The set of FTPFiles that this component is currently working on
-     *
-     * @return  a set of in-process file objects
+     * Specifies the period between polling cycles in millis.
+     * 
+     * @param period The period to set as <code>long</code> value containing millis.
      */
-    public Set<FileObject> getWorkingSet() {
-        return workingSet;
+    public void setPeriod(long period) {
+        this.period = period;
+    }
+
+    public long getPeriod() {
+        return this.period;
     }
     
-    /** 
-     * @return Returns the recursive.
-     */
-    public boolean isRecursive() {
-        return this.recursive;
-    }
-
     /**
-     * @param recursive The recursive to set.
+     * Specifies if sub-directories are polled; if false then the poller will
+     * only poll the specified directory. If the endpoint is configured to poll
+     * for a specific file rather than a directory then this attribute is
+     * ignored. Default is <code>true</code>.
+     * 
+     * @param recursive a baolean specifying if sub-directories should be polled
      */
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
     }
 
+    public boolean isRecursive() {
+        return this.recursive;
+    }
 }
