@@ -186,13 +186,12 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                 }
             } finally {
                 // remove file from set of already processed files
-                //workingSet.remove(aFile);
+                workingSet.remove(aFile);
                 // remove the open exchange
                 openExchanges.remove(exchange.getExchangeId());
                 // unlock the file
                 unlockAsyncFile(aFile);
             }
-
         } else {
             // strange, we don't know this exchange
             logger.debug("Received unknown exchange. Will be ignored...");
@@ -280,6 +279,10 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
      * @throws Exception        on IO errors
      */
     protected void pollFile(final FileObject aFile) throws Exception {
+        // check if file is fully available
+        if (!isFullyAvailable(aFile)) {
+            return;
+        }
         // try to add to set of processed files
         if (workingSet.add(aFile)) {
             if (logger.isDebugEnabled()) {
@@ -353,6 +356,31 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         this.openExchanges.put(exchange.getExchangeId(), stream);
 
         send(exchange);
+    }
+    
+    /**
+     * checks if a file is available 
+     * 
+     * @param aFile     the file to check
+     * @return          true if available
+     */
+    private boolean isFullyAvailable(FileObject aFile) {
+        try {
+            if (aFile.getContent() != null) {
+                long size_old = aFile.getContent().getSize();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+                long size_new = aFile.getContent().getSize();
+                return (size_old == size_new);
+            }    
+        } catch (Exception ex) {
+            // ignore
+        }
+        // default to true
+        return true;
     }
     
     /**
