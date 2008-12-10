@@ -18,6 +18,10 @@ package org.apache.servicemix.vfs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -72,6 +76,8 @@ public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointT
     private FileSystemManager fileSystemManager;
     private DefaultFileMonitor monitor;
     private ConcurrentMap<String, InputStream> openExchanges = new ConcurrentHashMap<String, InputStream>();
+    private Timer scheduleTimer;
+    private FileScheduler fileSchedulerTask;
     
     /**
      * default constructor
@@ -115,6 +121,19 @@ public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointT
             file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
         }
         
+        // create timer task
+        if (fileSchedulerTask == null) {
+            fileSchedulerTask = new FileScheduler();
+        }
+        
+        // create timer 
+        if (scheduleTimer == null) {
+            scheduleTimer = new Timer("VFSFileObjectScheduler", true);
+        }
+
+        // setup timer
+        scheduleTimer.scheduleAtFixedRate(fileSchedulerTask, 0, getPeriod());
+        
         // create the monitor
         if (this.monitor == null) {
             this.monitor = new DefaultFileMonitor(this);
@@ -130,6 +149,19 @@ public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointT
         if (file.exists()) {
             updateFileModified(file);                
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#stop()
+     */
+    @Override
+    public synchronized void stop() throws Exception {
+        this.monitor.stop();
+        
+        this.scheduleTimer.cancel();
+        this.scheduleTimer = null;
+        
+        super.stop();
     }
     
     /**
@@ -156,22 +188,12 @@ public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointT
     }
     
     /* (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#stop()
-     */
-    @Override
-    public synchronized void stop() throws Exception {
-        this.monitor.stop();
-        
-        super.stop();
-    }
-    
-    /* (non-Javadoc)
      * @see org.apache.commons.vfs.FileListener#fileChanged(org.apache.commons.vfs.FileChangeEvent)
      */
     public void fileChanged(FileChangeEvent event) throws Exception {
         FileObject aFile = event.getFile();        
         logger.debug("FileChanged: " + aFile.getName().getPathDecoded());
-        processFile(aFile);        
+        fileSchedulerTask.scheduleForProcessing(aFile);
     }
 
     /* (non-Javadoc)
@@ -180,15 +202,39 @@ public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointT
     public void fileCreated(FileChangeEvent event) throws Exception {
         FileObject aFile = event.getFile();        
         logger.debug("FileCreated: " + aFile.getName().getPathDecoded());
-        processFile(aFile);
+        fileSchedulerTask.scheduleForProcessing(aFile);
     }
 
     /* (non-Javadoc)
      * @see org.apache.commons.vfs.FileListener#fileDeleted(org.apache.commons.vfs.FileChangeEvent)
      */
     public void fileDeleted(FileChangeEvent event) throws Exception {
-        FileObject aFile = event.getFile();
-        logger.debug("FileDeleted: " + aFile.getName().getPathDecoded());
+        logger.debug("FileDeleted: " + event.getFile().getName().getPathDecoded());
+    }
+    
+    /**
+     * checks whether the file is fully transmitted or not
+     * 
+     * @param aFile     the file
+     * @return          true if fully transmitted
+     */
+    private boolean isFileFullyAvailable(FileObject aFile) {
+        try {
+            if (aFile.getContent() != null) {
+                long size_old = aFile.getContent().getSize();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // ignore
+                }                
+                long size_new = aFile.getContent().getSize();
+                
+                return (size_old == size_new);
+            } 
+        } catch (FileSystemException ex) {
+            logger.error("Can't determine size of file " + aFile.getName().getPath(), ex);
+        }        
+        return true;
     }
     
     /*
@@ -411,4 +457,49 @@ public class VFSPollingEndpoint extends ConsumerEndpoint implements VFSEndpointT
     public boolean isRecursive() {
         return this.recursive;
     }
+    
+    /**
+     * a scheduler which monitors transmission state of files and calls processing
+     * if the file is fully available
+     * 
+     * @author lhein
+     */
+    class FileScheduler extends TimerTask {
+        private ConcurrentMap<String, FileObject> scheduledFiles = new ConcurrentHashMap<String, FileObject>();
+        
+        /* (non-Javadoc)
+         * @see java.util.TimerTask#run()
+         */
+        @Override
+        public void run() {
+            List<FileObject> tempList = new LinkedList<FileObject>();
+            tempList.addAll(scheduledFiles.values());
+            
+            // working on a temp list
+            for (FileObject f : tempList) {
+                if (isFileFullyAvailable(f)) {
+                    try {
+                        // process file
+                        processFile(f);
+                        // remove from scheduled files
+                        scheduledFiles.remove(f.getName().getURI());
+                    } catch (Exception ex) {
+                        logger.error("Error processing file " + f.getName().getPath(), ex);
+                    }
+                } else {
+                    logger.debug("Skipping file " + f.getName().getPath() + " because it is not fully available yet...");
+                }                    
+            }
+        }
+        
+        /**
+         * schedules a file for processing
+         * 
+         * @param aFile the file to process
+         * @return      true if it will be processed
+         */
+        public boolean scheduleForProcessing(FileObject aFile) {
+            return scheduledFiles.putIfAbsent(aFile.getName().getURI(), aFile) == null;
+        }
+    }    
 }

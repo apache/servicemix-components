@@ -53,6 +53,7 @@
           org.apache.xbean.spring.context.v2,
           org.springframework.beans.factory.xml,
           sun.misc;resolution:=optional,
+          javax.crypto;resolution:=optional,
           *
       </servicemix.osgi.import>
       <servicemix.osgi.export>
