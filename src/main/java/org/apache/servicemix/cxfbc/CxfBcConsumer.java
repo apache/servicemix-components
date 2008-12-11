@@ -67,6 +67,7 @@ import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.endpoint.ServerImpl;
 import org.apache.cxf.endpoint.ServerRegistry;
+import org.apache.cxf.feature.AbstractFeature;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.AttachmentInInterceptor;
 import org.apache.cxf.interceptor.AttachmentOutInterceptor;
@@ -162,6 +163,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private EndpointInfo ei;
 
     private boolean started;
+  
+    private List<AbstractFeature> features = new CopyOnWriteArrayList<AbstractFeature>();
 
     /**
      * @return the wsdl
@@ -285,8 +288,19 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     public void activate() throws Exception {
         super.activate();
         registerListServiceHandler();
+        applyFeatures();
         server.start();
     }
+
+    private void applyFeatures() {
+        if (getFeatures() != null) {
+            for (AbstractFeature feature : getFeatures()) {
+                feature.initialize(server, getBus());
+            }
+        }
+    }
+
+    
 
     private void registerListServiceHandler() {
         if (server.getDestination() instanceof JettyHTTPDestination) {
@@ -915,6 +929,20 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     public boolean isSynchronous() {
         return synchronous;
+    }
+    
+    /**
+     * Specifies the cxf features set for this endpoint
+     *
+     * @param  features a list of <code>AbstractFeature</code> objects
+     * @org.apache.xbean.Property description="Specifies the cxf features set for this endpoint"
+     **/
+    public void setFeatures(List<AbstractFeature> features) {
+        this.features = features;
+    }
+
+    public List<AbstractFeature> getFeatures() {
+        return features;
     }
 
 }
