@@ -177,7 +177,7 @@ public class TransactionsTest extends TestCase {
             addEndpoint(ep);
             super.doInit();
         }
-        protected boolean exceptionShouldRollbackTx(Exception e) {
+        protected boolean exceptionShouldRollbackTx(Throwable t) {
             return exceptionShouldRollback;
         }
 

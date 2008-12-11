@@ -454,20 +454,20 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                 transactionManager.resume(tx);
             }
             processExchange(exchange);
-        } catch (Exception e) {
-            logger.error("Error processing exchange " + exchange, e);
+        } catch (Throwable t) {
+            logger.error("Error processing exchange " + exchange, t);
             try {
                 // If we are transacted, check if this exception should
                 // rollback the transaction
                 if (transactionManager != null && transactionManager.getStatus() == Status.STATUS_ACTIVE) {
-                    if (exceptionShouldRollbackTx(e)) {
+                    if (exceptionShouldRollbackTx(t)) {
                         transactionManager.setRollbackOnly();
                     }
                     if (!container.handleTransactions()) {
                         transactionManager.suspend();
                     }
                 }
-                exchange.setError(e);
+                exchange.setError(t instanceof Exception ? (Exception) t : new Exception(t));
                 channel.send(exchange);
             } catch (Exception inner) {
                 logger.error("Error setting exchange status to ERROR", inner);
@@ -496,7 +496,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         }
     }
 
-    protected boolean exceptionShouldRollbackTx(Exception e) {
+    protected boolean exceptionShouldRollbackTx(Throwable t) {
         return false;
     }
 
