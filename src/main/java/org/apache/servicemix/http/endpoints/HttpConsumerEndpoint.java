@@ -380,8 +380,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         }
     }
 
-    protected void loadStaticResources() {
-        // TODO: load wsdl
+    protected void loadStaticResources() throws Exception {
     }
 
     /**

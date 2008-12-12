@@ -24,16 +24,26 @@ import java.util.concurrent.CountDownLatch;
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
+import javax.wsdl.Definition;
+import javax.wsdl.Binding;
+import javax.wsdl.BindingOperation;
+import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.soap.SOAPOperation;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Document;
 import org.w3c.dom.traversal.NodeIterator;
 
 import junit.framework.TestCase;
@@ -625,6 +635,43 @@ public class ConsumerEndpointTest extends TestCase {
         for (Throwable t : throwables) {
             t.printStackTrace();
         }
+    }
+
+    public void testProxyWsl() throws Exception {
+        final Document wsdl = DomUtil.parse(getClass().getResourceAsStream("/org/apache/servicemix/http/Echo.wsdl"));
+        EchoComponent echo = new EchoComponent() {
+            @Override
+            public Document getServiceDescription(ServiceEndpoint endpoint) {
+                return wsdl;
+            }
+        };
+        echo.setService(new QName("http://test", "MyConsumerService"));
+        echo.setEndpoint("myConsumer");
+        container.activateComponent(echo, "echo");
+
+        HttpComponent http = new HttpComponent();
+        HttpSoapConsumerEndpoint ep1 = new HttpSoapConsumerEndpoint();
+        ep1.setService(new QName("uri:HelloWorld", "HelloService"));
+        ep1.setEndpoint("HelloPortSoap11");
+        ep1.setTargetService(new QName("http://test", "MyConsumerService"));
+        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setValidateWsdl(true);
+        http.setEndpoints(new HttpEndpointType[] {ep1});
+        container.activateComponent(http, "http");
+        container.start();
+
+        WSDLFactory factory = WSDLFactory.newInstance();
+        WSDLReader reader = factory.newWSDLReader();
+        Definition def = reader.readWSDL("http://localhost:8192/ep1/?wsdl");
+        StringWriter writer = new StringWriter();
+        factory.newWSDLWriter().writeWSDL(def, writer);
+        log.info(writer.toString());
+        Binding b = (Binding) def.getBindings().values().iterator().next();
+        BindingOperation bop = (BindingOperation) b.getBindingOperations().iterator().next();
+        assertEquals(1, bop.getExtensibilityElements().size());
+        ExtensibilityElement ee = (ExtensibilityElement) bop.getExtensibilityElements().iterator().next();
+        assertTrue(ee instanceof SOAPOperation);
+        assertEquals("", ((SOAPOperation) ee).getSoapActionURI());
     }
 
 }
