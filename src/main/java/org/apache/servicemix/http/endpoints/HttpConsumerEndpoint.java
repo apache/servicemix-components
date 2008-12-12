@@ -448,7 +448,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
 
     public MessageExchange createExchange(HttpServletRequest request) throws Exception {
         MessageExchange me = marshaler.createExchange(request, getContext());
-        configureExchangeTarget(me);
+        if (me.getEndpoint() == null) {
+            configureExchangeTarget(me);
+        }
         // If the user has been authenticated, put these informations on
         // the in NormalizedMessage.
         if (request.getUserPrincipal() instanceof JaasJettyPrincipal) {
