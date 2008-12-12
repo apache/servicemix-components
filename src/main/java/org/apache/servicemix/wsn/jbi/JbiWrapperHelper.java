@@ -89,14 +89,14 @@ public class JbiWrapperHelper {
             if (WSDL11_WRAPPER_NAMESPACE.equals(el.getNamespaceURI()) && WSDL11_WRAPPER_MESSAGE_LOCALNAME.equals(el.getLocalName())) {
                 el = DOMUtil.getFirstChildElement(el);
                 if (el == null) {
-                    throw new IllegalStateException("JBI wrapper has no child element");
-                }
-                el = DOMUtil.getFirstChildElement(el);
-                if (el == null) {
                     throw new IllegalStateException("JBI message has no child element");
                 }
                 if (!WSDL11_WRAPPER_NAMESPACE.equals(el.getNamespaceURI()) || !WSDL11_WRAPPER_PART_LOCALNAME.equals(el.getLocalName())) {
                     throw new IllegalStateException("Expected a jbi:part element");
+                }
+                el = DOMUtil.getFirstChildElement(el);
+                if (el == null) {
+                    throw new IllegalStateException("JBI part has no child element");
                 }
                 isJbiWrapped.set(true);
                 source = new DOMSource(el);

@@ -108,6 +108,7 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {
+            log.warn("Unable to register new endpoint", e);
             UnableToCreatePullPointFaultType fault = new UnableToCreatePullPointFaultType();
             throw new UnableToCreatePullPointFault("Unable to register new endpoint", fault, e);
         } finally {

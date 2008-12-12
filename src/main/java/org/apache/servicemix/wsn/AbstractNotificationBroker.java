@@ -203,8 +203,9 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {
+            log.warn("Unable to register new endpoint", e);
             SubscribeCreationFailedFaultType fault = new SubscribeCreationFailedFaultType();
-            throw new SubscribeCreationFailedFault("Unable to register endpoint", fault, e);
+            throw new SubscribeCreationFailedFault("Unable to register new endpoint", fault, e);
         } finally {
             if (!success && subscription != null) {
                 subscriptions.remove(subscription);
@@ -296,6 +297,7 @@ public abstract class AbstractNotificationBroker extends AbstractEndpoint implem
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {
+            log.warn("Unable to register new endpoint", e);
             PublisherRegistrationFailedFaultType fault = new PublisherRegistrationFailedFaultType();
             throw new PublisherRegistrationFailedFault("Unable to register new endpoint", fault, e);
         } finally {

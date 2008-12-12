@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -132,10 +133,10 @@ public class WSNEndpoint extends ProviderEndpoint {
             return;
         }
 
-        boolean isJbiWrapped = false;
+        AtomicBoolean isJbiWrapped = new AtomicBoolean(false);
         Source source = exchange.getMessage("in").getContent();
         // Unwrap JBI message if needed
-        source = JbiWrapperHelper.unwrap(source);
+        source = JbiWrapperHelper.unwrap(source, isJbiWrapped);
 
         Object input = jaxbContext.createUnmarshaller().unmarshal(source);
         Method webMethod = null;
@@ -189,7 +190,7 @@ public class WSNEndpoint extends ProviderEndpoint {
                     Document doc = JbiWrapperHelper.createDocument();
                     JAXBElement el = new JAXBElement(new QName(fa.targetNamespace(), fa.name()), info.getClass(), null, info);
                     jaxbContext.createMarshaller().marshal(el, doc);
-                    if (isJbiWrapped) {
+                    if (isJbiWrapped.get()) {
                         JbiWrapperHelper.wrap(doc);
                     }
                     fault.setContent(new DOMSource(doc));
@@ -212,7 +213,7 @@ public class WSNEndpoint extends ProviderEndpoint {
             exchange.setMessage(msg, "out");
             Document doc = JbiWrapperHelper.createDocument();
             jaxbContext.createMarshaller().marshal(output, doc);
-            if (isJbiWrapped) {
+            if (isJbiWrapped.get()) {
                 JbiWrapperHelper.wrap(doc);
             }
             msg.setContent(new DOMSource(doc));
