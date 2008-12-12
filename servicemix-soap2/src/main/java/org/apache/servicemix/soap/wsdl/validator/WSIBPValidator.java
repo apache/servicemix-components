@@ -209,9 +209,11 @@ public class WSIBPValidator {
                     validateDocLitBodyParts(binding, 
                                             WSDLUtils.getExtension(bop.getBindingInput(), SOAPBody.class),
                                             bop.getOperation().getInput().getMessage());
-                    validateDocLitBodyParts(binding, 
-                                            WSDLUtils.getExtension(bop.getBindingOutput(), SOAPBody.class),
-                                            bop.getOperation().getOutput().getMessage());
+                    if (bop.getOperation().getOutput() != null) {
+                        validateDocLitBodyParts(binding,
+                                                WSDLUtils.getExtension(bop.getBindingOutput(), SOAPBody.class),
+                                                bop.getOperation().getOutput().getMessage());
+                    }
                 }
             }
             
