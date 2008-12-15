@@ -108,9 +108,11 @@ public class HttpSoapProviderMarshaler extends AbstractHttpProviderMarshaler imp
         httpExchange.setMethod(HttpMethods.POST);
         httpExchange.setURL(baseUrl);
         httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));
-        for (Map.Entry<String,String> entry : msg.getTransportHeaders().entrySet()) {
-            httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
-        }
+        // Do not include additional headers for now as it causes problems
+        // when the exchange comes from an HTTP request
+//        for (Map.Entry<String,String> entry : msg.getTransportHeaders().entrySet()) {
+//            httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
+//        }
         /*
         httpExchange.setRequestEntity(new Entity() {
             public void write(OutputStream os, Writer w) throws IOException {
