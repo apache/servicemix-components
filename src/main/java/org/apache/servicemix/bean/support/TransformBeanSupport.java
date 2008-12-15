@@ -123,7 +123,7 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
         if (exchange.getRole() == MessageExchange.Role.CONSUMER
                 || exchange.getProperty(correlation) != null) {
             processOngoingExchange(exchange);
-        } else {
+        } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             processFirstExchange(exchange);
         }
     }

@@ -32,6 +32,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.tck.ReceiverComponent;
@@ -51,23 +52,41 @@ public class TransformBeanSupportTest extends TestCase {
         configureContainer();
         listener = new ExchangeCompletedListener();
         container.addListener(listener);
-
+        
         container.init();
         container.start();
 
         component = new BeanComponent();
         container.activateComponent(component, "servicemix-bean");
-
+        
         client = new DefaultServiceMixClient(container);
     }
 
     protected void tearDown() throws Exception {
-        container.shutDown();
         listener.assertExchangeCompleted();
+        container.shutDown();
     }
 
     protected void configureContainer() throws Exception {
         container.setFlowName("st");
+    }
+    
+    public void testInOut() throws Exception {
+        TransformBeanSupport transformer = new MyTransformer();
+        BeanEndpoint transformEndpoint = createBeanEndpoint(transformer);
+        component.addEndpoint(transformEndpoint);
+
+        MessageExchange io = client.createInOutExchange();
+        io.setService(new QName("transform"));
+        io.getMessage("in").setContent(new StringSource("<hello/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        assertEquals("<hello/>", new SourceTransformer().contentToString(io.getMessage("out")));
+        
+        client.done(io);
+        assertEquals(ExchangeStatus.DONE, io.getStatus());
     }
 
     public void testInOnly() throws Exception {
@@ -77,18 +96,17 @@ public class TransformBeanSupportTest extends TestCase {
 
         ReceiverComponent receiver = new ReceiverComponent();
         activateComponent(receiver, "receiver");
-
+        
         MessageExchange io = client.createInOnlyExchange();
         io.setService(new QName("transform"));
         io.getMessage("in").setContent(new StringSource("<hello/>"));
         client.send(io);
-
+        
         io = client.receive();
         assertEquals(ExchangeStatus.DONE, io.getStatus());
-
+        
         receiver.getMessageList().assertMessagesReceived(1);
     }
-
 
     public void testInOnlyWithError() throws Exception {
         TransformBeanSupport transformer = createTransformer("error");
@@ -96,12 +114,12 @@ public class TransformBeanSupportTest extends TestCase {
         component.addEndpoint(transformEndpoint);
 
         activateComponent(new ReturnErrorComponent(), "error");
-
+        
         MessageExchange io = client.createInOnlyExchange();
         io.setService(new QName("transform"));
         io.getMessage("in").setContent(new StringSource("<hello/>"));
         client.send(io);
-
+        
         io = client.receive();
         assertEquals(ExchangeStatus.ERROR, io.getStatus());
     }
@@ -113,6 +131,24 @@ public class TransformBeanSupportTest extends TestCase {
 
         ReceiverComponent receiver = new ReceiverComponent();
         activateComponent(receiver, "receiver");
+        
+        MessageExchange io = client.createRobustInOnlyExchange();
+        io.setService(new QName("transform"));
+        io.getMessage("in").setContent(new StringSource("<hello/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.DONE, io.getStatus());
+        
+        receiver.getMessageList().assertMessagesReceived(1);
+    }
+
+    public void testRobustInOnlyWithFault() throws Exception {
+        TransformBeanSupport transformer = createTransformer("fault");
+        BeanEndpoint transformEndpoint = createBeanEndpoint(transformer);
+        component.addEndpoint(transformEndpoint);
+
+        activateComponent(new ReturnFaultComponent(), "fault");
 
         MessageExchange io = client.createRobustInOnlyExchange();
         io.setService(new QName("transform"));
@@ -120,9 +156,9 @@ public class TransformBeanSupportTest extends TestCase {
         client.send(io);
 
         io = client.receive();
-        assertEquals(ExchangeStatus.DONE, io.getStatus());
-
-        receiver.getMessageList().assertMessagesReceived(1);
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        assertNotNull(io.getFault());
+        client.done(io);
     }
 
     public void testRobustInOnlyWithFaultAndError() throws Exception {
@@ -158,13 +194,13 @@ public class TransformBeanSupportTest extends TestCase {
         transformEndpoint.setEndpoint("endpoint");
         return transformEndpoint;
     }
-
-    protected void activateComponent(ComponentSupport cmp, String name) throws Exception {
-        cmp.setService(new QName(name));
-        cmp.setEndpoint("endpoint");
-        container.activateComponent(cmp, name);
+    
+    protected void activateComponent(ComponentSupport comp, String name) throws Exception {
+        comp.setService(new QName(name));
+        comp.setEndpoint("endpoint");
+        container.activateComponent(comp, name);
     }
-
+    
     public static class MyTransformer extends TransformBeanSupport {
         protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
             MessageUtil.transfer(in, out);
@@ -182,7 +218,7 @@ public class TransformBeanSupportTest extends TestCase {
     }
 
     public static class ReturnFaultComponent extends ComponentSupport implements MessageExchangeListener {
-
+        
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                 Fault fault = exchange.createFault();
@@ -191,5 +227,5 @@ public class TransformBeanSupportTest extends TestCase {
             }
         }
     }
-
+    
 }
