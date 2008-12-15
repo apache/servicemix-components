@@ -23,16 +23,35 @@ import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mortbay.jetty.HttpHeaders;
 
 public abstract class AbstractHttpProviderMarshaler implements HttpProviderMarshaler {
 
     private final Log log = LogFactory.getLog(getClass());
 
+    private static final Set<String> DEFAULT_HEADER_BLACKLIST =
+            new HashSet<String>(
+                Arrays.asList(HttpHeaders.AUTHORIZATION,
+                              HttpHeaders.EXPECT,
+                              HttpHeaders.FORWARDED,
+                              HttpHeaders.FROM,
+                              HttpHeaders.HOST,
+                              HttpHeaders.CONTENT_ENCODING,
+                              HttpHeaders.CONTENT_TYPE));
+
     private String contentEncoding;
     private String acceptEncoding;
+    /**
+     * a blacklist for properties which shouldn't be copied
+     */
+    private Set<String> headerBlackList = DEFAULT_HEADER_BLACKLIST;
+
 
     public String getContentEncoding() {
         return contentEncoding;
@@ -70,4 +89,26 @@ public abstract class AbstractHttpProviderMarshaler implements HttpProviderMarsh
         }
     }
 
+    /**
+     * checks if a property is on black list
+     *
+     * @param name the property
+     * @return true if on black list
+     */
+    protected boolean isBlackListed(String name) {
+        return (this.headerBlackList != null && this.headerBlackList.contains(name));
+    }
+
+    public Set<String> getHeaderBlackList() {
+        return headerBlackList;
+    }
+
+    /**
+     * Specifies a list of headers to not include in the HTTP request.
+     * 
+     * @param headerBlackList list of headers to not include in the HTTP request
+     */
+    public void setHeaderBlackList(Set<String> headerBlackList) {
+        this.headerBlackList = headerBlackList;
+    }
 }

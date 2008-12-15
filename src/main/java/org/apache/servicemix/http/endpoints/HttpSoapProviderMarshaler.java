@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,7 +31,6 @@ import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.api.model.Binding;
-import org.apache.servicemix.soap.bindings.soap.SoapConstants;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.interceptors.xml.StaxInInterceptor;
 import org.mortbay.io.ByteArrayBuffer;
@@ -109,7 +107,9 @@ public class HttpSoapProviderMarshaler extends AbstractHttpProviderMarshaler imp
         httpExchange.setURL(baseUrl);
         httpExchange.setRequestContent(new ByteArrayBuffer(baos.toByteArray()));
         for (Map.Entry<String,String> entry : msg.getTransportHeaders().entrySet()) {
-            httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
+            if (!isBlackListed(entry.getKey())) {
+                httpExchange.addRequestHeader(entry.getKey(), entry.getValue());
+            }
         }
         /*
         httpExchange.setRequestEntity(new Entity() {
