@@ -189,12 +189,12 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
         if (message instanceof SoapMessage) {
 
             Map<String, String> map = (Map<String, String>) normalizedMessage
-                    .getProperty(WSAUtils.WSA_HEADERS_INBOUND);
+                    .getProperty(WSAUtils.WSA_HEADERS_OUTBOUND);
 
             if (map != null) {
                 AddressingProperties addressingProperties = WSAUtils
                         .getCXFAddressingPropertiesFromMap(map);
-                ((SoapMessage) message).put(WSAUtils.WSA_HEADERS_INBOUND,
+                ((SoapMessage) message).put(WSAUtils.WSA_HEADERS_OUTBOUND,
                         addressingProperties);
             }
         }
