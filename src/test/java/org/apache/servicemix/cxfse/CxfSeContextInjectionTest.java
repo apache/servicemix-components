@@ -65,7 +65,7 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
         
     }
     
-    public void testContextInjectionOneway() throws Exception {
+    public void testContextInjectionInOnly() throws Exception {
         LOG.info("test Injection");
         client = new DefaultServiceMixClient(jbi);
         io = client.createInOnlyExchange();
@@ -83,6 +83,24 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
         client.sendSync(io);
         assertNull(io.getMessage("out"));
         
+    }
+    
+    public void testContextInjectionRobustInOnly() throws Exception {
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createRobustInOnlyExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMeOneWay"));
+        io.getMessage("in").setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMeOneWay xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "ffang"
+              + "</requestType></greetMeOneWay>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertNull(io.getMessage("out"));
     }
 
     @Override
