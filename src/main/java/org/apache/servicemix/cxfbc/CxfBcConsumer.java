@@ -270,7 +270,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     public void process(MessageExchange exchange) throws Exception {
         Message message = messages.remove(exchange.getExchangeId());
         synchronized (message.getInterceptorChain()) {
-            if (!isSynchronous()) {
+            boolean oneway = message.getExchange().get(
+                    BindingOperationInfo.class).getOperationInfo().isOneWay();
+            if (!isSynchronous() && !oneway) {
                 ContinuationProvider continuationProvider = (ContinuationProvider) message
                     .get(ContinuationProvider.class.getName());
                 continuationProvider.getContinuation().resume();
