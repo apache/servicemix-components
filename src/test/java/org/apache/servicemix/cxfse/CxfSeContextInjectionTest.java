@@ -18,7 +18,7 @@ package org.apache.servicemix.cxfse;
 
 import java.util.logging.Logger;
 
-import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 
 import org.apache.cxf.common.logging.LogUtils;
@@ -33,15 +33,10 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
 
     private static final Logger LOG = LogUtils.getL7dLogger(CxfSeContextInjectionTest.class);
     private DefaultServiceMixClient client;
-    private InOut io;
+    private MessageExchange io;
     
     protected void setUp() throws Exception {
         super.setUp();
-        client = new DefaultServiceMixClient(jbi);
-        io = client.createInOutExchange();
-        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
-        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
-        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
     }
     
     protected void tearDown() throws Exception {
@@ -50,7 +45,12 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
     
     public void testContextInjection() throws Exception {
         LOG.info("test Injection");
-        io.getInMessage().setContent(new StringSource(
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        io.getMessage("in").setContent(new StringSource(
                 "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
               + "<part> "
               + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
@@ -61,8 +61,27 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
         client.sendSync(io);
         // the injected context belong to servicemix-cxfse component 
         assertTrue(new SourceTransformer().contentToString(
-              io.getOutMessage()).indexOf("Hello ffang servicemix-cxfse") > 0);
-        client.done(io);
+              io.getMessage("out")).indexOf("Hello ffang servicemix-cxfse") > 0);
+        
+    }
+    
+    public void testContextInjectionOneway() throws Exception {
+        LOG.info("test Injection");
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOnlyExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMeOneWay"));
+        io.getMessage("in").setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMeOneWay xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "ffang"
+              + "</requestType></greetMeOneWay>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertNull(io.getMessage("out"));
         
     }
 
