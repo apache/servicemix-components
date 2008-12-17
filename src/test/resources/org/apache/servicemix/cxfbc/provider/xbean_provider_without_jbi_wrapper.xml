@@ -54,6 +54,7 @@
                       endpoint="HelloWorldPortProxy"
                       interfaceName="jmsgreeter:Greetr"
                       useJBIWrapper="false"
+                      busCfg="org/apache/servicemix/cxfbc/jms_client_config.xml"
                      >
           <cxfbc:inInterceptors>
             <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
