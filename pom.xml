@@ -40,8 +40,9 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
-    <servicemix-version>3.3</servicemix-version>
+    <servicemix-version>3.3.1-SNAPSHOT</servicemix-version>
     <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+    <servicemix-utils-version>1.1.0-SNAPSHOT</servicemix-utils-version>
     <jetty-version>6.1.14</jetty-version>
     <activemq-version>5.1.0</activemq-version>
 
@@ -88,8 +89,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
+      <artifactId>servicemix-utils</artifactId>
       <scope>provided</scope>
+      <version>${servicemix-utils-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix</groupId>
+      <artifactId>servicemix-core</artifactId>
+      <scope>test</scope>
       <version>${servicemix-version}</version>
       <exclusions>
         <exclusion>
@@ -237,18 +244,6 @@
       <artifactId>geronimo-jta_1.1_spec</artifactId>
     </dependency>
     <!-- provided to allow compilation - OSGi imports marked optional for SMX4 -->
-    <dependency>
-      <groupId>org.apache.servicemix</groupId>
-      <artifactId>servicemix-core</artifactId>
-      <version>${servicemix-version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-jmx</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.servicemix</groupId>

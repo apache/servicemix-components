@@ -23,8 +23,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jbi.framework.ComponentMBeanImpl;
+import org.apache.servicemix.jbi.api.ComponentUtil;
+import org.apache.servicemix.jbi.api.Container;
+//import org.apache.servicemix.jbi.container.JBIContainer;
+//import org.apache.servicemix.jbi.framework.ComponentMBeanImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -58,7 +60,8 @@ public class HttpManagedServlet extends javax.servlet.http.HttpServlet {
         if (containerName == null) {
             containerName = CONTAINER_DEFAULT;
         }
-        JBIContainer container = (JBIContainer) applicationContext.getBean(containerName);
+//        JBIContainer container = (JBIContainer) applicationContext.getBean(containerName);
+        Container container = (Container) applicationContext.getBean(containerName);
         if (container == null) {
             throw new IllegalStateException("Unable to find jbi container " + containerName);
         }
@@ -66,7 +69,8 @@ public class HttpManagedServlet extends javax.servlet.http.HttpServlet {
         if (componentName == null) {
             componentName = COMPONENT_DEFAULT;
         }
-        ComponentMBeanImpl componentMBean = container.getComponent(componentName);
+//        ComponentMBeanImpl componentMBean = container.getComponent(componentName);
+        ComponentUtil componentMBean = container.getComponentByName(componentName);
         if (componentMBean == null) {
             throw new IllegalStateException("Unable to find component " + componentName);
         }
