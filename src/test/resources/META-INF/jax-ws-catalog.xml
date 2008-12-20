@@ -1,0 +1,7 @@
+<!DOCTYPE catalog
+PUBLIC "-//OASIS/DTD Entity Resolution XML Catalog V1.0//EN"
+"http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <rewriteURI uriStartString="http://apache.org/hello_world_soap_http/types" rewritePrefix="../org/apache/servicemix/cxfbc/ws/security/"/>
+</catalog>

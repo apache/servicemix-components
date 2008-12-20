@@ -26,7 +26,7 @@
     targetNamespace="http://apache.org/hello_world_soap_http" name="HelloWorld">
     <wsdl:types>
         <xsd:schema>
-            <xsd:import namespace="http://apache.org/hello_world_soap_http/types" schemaLocation="base.xsd"/>
+            <xsd:import namespace="http://apache.org/hello_world_soap_http/types" schemaLocation="http://apache.org/hello_world_soap_http/types/base.xsd"/>
         </xsd:schema>
     </wsdl:types>
     <wsdl:message name="sayHiRequest">

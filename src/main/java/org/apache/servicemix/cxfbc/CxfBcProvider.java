@@ -58,6 +58,7 @@ import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.catalog.OASISCatalogManager;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.endpoint.Endpoint;
@@ -396,6 +397,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 WSDLReader reader = wsdlFactory.newWSDLReader();
                 reader.setFeature(Constants.FEATURE_VERBOSE, false);
                 try {
+                    //ensure the jax-ws-catalog is loaded
+                    OASISCatalogManager.getCatalogManager(getBus()).loadContextCatalogs();
                     // use wsdl manager to parse wsdl or get cached definition
                     definition = getBus().getExtension(WSDLManager.class)
                             .getDefinition(wsdl.getURL());

@@ -503,6 +503,7 @@
                   <extraargs>
                     <extraarg>-verbose</extraarg>
                   </extraargs>
+                  <catalog>${basedir}/src/test/resources/META-INF/jax-ws-catalog.xml</catalog>  
                   <extraargs>
                     <extraarg>-sn</extraarg>
                     <extraarg>HelloWorldService</extraarg>
