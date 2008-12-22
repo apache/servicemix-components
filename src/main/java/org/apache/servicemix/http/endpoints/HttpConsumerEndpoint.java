@@ -53,6 +53,7 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
+import org.mortbay.util.ajax.WaitingContinuation;
 
 /**
  * Plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP request (without SOAP) or to be able to
@@ -271,16 +272,14 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             if (handleStaticResource(request, response)) {
                 return;
             }
-            // Not giving a specific mutex will synchronize on the continuation
-            // itself
-            Continuation cont = ContinuationSupport.getContinuation(request, null);
+            Continuation cont = createContinuation(request);
             // If the continuation is not a retry
             if (!cont.isPending()) {
-	            // Check endpoint is started
-	            if (!started) {
-	                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
-	                return;
-	            }
+                // Check endpoint is started
+                if (!started) {
+                   response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
+                   return;
+                }
                 // Create the exchange
                 exchange = createExchange(request);
                 // Put the exchange in a map so that we can later retrieve it
@@ -377,6 +376,18 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             throw e;
         } catch (Exception e) {
             sendError(exchange, e, request, response);
+        }
+    }
+
+    private Continuation createContinuation(HttpServletRequest request) {
+        // not giving a specific mutex will synchronize on the continuation itself
+        Continuation continuation = ContinuationSupport.getContinuation(request, null);
+        if (continuation instanceof WaitingContinuation) {
+            return continuation;
+        } else {
+            // wrap the continuation to avoid a deadlock between this endpoint and the Jetty continuation timeout mechanism
+            // the endpoint now synchronizes on the wrapper while Jetty synchronizes on the continuation itself
+            return new ContinuationWrapper(continuation);
         }
     }
 
@@ -487,6 +498,51 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         }
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
             ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
+        }
+    }
+    
+    /*
+     * Continuation wrapper just delegates everything to the underlying Continuation
+     */
+    private static final class ContinuationWrapper implements Continuation {
+        
+        private final Continuation continuation;
+
+        private ContinuationWrapper(Continuation continuation) {
+            super();
+            this.continuation = continuation;
+        }
+
+        public Object getObject() {
+            return continuation.getObject();
+        }
+
+        public boolean isNew() {
+            return continuation.isNew();
+        }
+
+        public boolean isPending() {
+            return continuation.isPending();
+        }
+
+        public boolean isResumed() {
+            return continuation.isResumed();
+        }
+
+        public void reset() {
+            continuation.reset();
+        }
+
+        public void resume() {
+            continuation.resume();
+        }
+
+        public void setObject(Object o) {
+            continuation.setObject(o);            
+        }
+
+        public boolean suspend(long timeout) {
+            return continuation.suspend(timeout);
         }
     }
 }
