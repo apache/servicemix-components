@@ -27,9 +27,6 @@
         passes on slow machines.
     -->
     <jms:conduit name="{http://apache.org/hello_world_soap_http}HelloWorldPort.jms-conduit" abstract="true">
-        <jms:clientConfig clientReceiveTimeout="20000"/>
-    </jms:conduit>
-    <jms:conduit name="{http://apache.org/hello_world_soap_http}HelloWorldPortProxy.jms-conduit" abstract="true">
         <jms:clientConfig clientReceiveTimeout="200000"/>
     </jms:conduit>
 
