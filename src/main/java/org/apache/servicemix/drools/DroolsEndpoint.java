@@ -273,24 +273,13 @@ public class DroolsEndpoint extends ProviderEndpoint {
     }
 
     protected void drools(MessageExchange exchange) throws Exception {
-        DroolsExecutionContext drools1 = startDroolsExecutionContext(exchange);
-        if (drools1.getRulesFired() < 1) {
-            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
-        } else {
-            //the exchange has been answered or faulted by the drools endpoint
-            if (drools1.isExchangeHandled() && exchange instanceof InOnly) {
-                //only removing InOnly
-                pending.remove(exchange.getExchangeId());
-            }
-            if (!drools1.isExchangeHandled() && autoReply) {
-                reply(exchange, drools1);
-            }
-        }
-    }
-
-    protected void drools(MessageExchange exchange, DroolsExecutionContext drools) throws Exception {
+        DroolsExecutionContext drools = startDroolsExecutionContext(exchange);
         if (drools.getRulesFired() < 1) {
-            fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+            if (getDefaultTargetService() == null) {
+                fail(exchange, new Exception("No rules have handled the exchange. Check your rule base."));
+            } else {
+                drools.getHelper().route(getDefaultRouteURI());
+            }
         } else {
             //the exchange has been answered or faulted by the drools endpoint
             if (drools.isExchangeHandled() && exchange instanceof InOnly) {
