@@ -426,8 +426,12 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     protected void processExchange(final MessageExchange exchange, final Session session, final JmsContext context) throws Exception {
-        // Ignore InOnly exchanges which are currently handled in fire-and-forget mode
         if (exchange instanceof InOnly) {
+            // throw an exception when the exchange is transacted to ensure correct rollback of the transaction
+            if (exchange.isTransacted() && ExchangeStatus.ERROR.equals(exchange.getStatus())) {
+                throw exchange.getError();
+            }
+            // ignore non-transacted and/or DONE exchanges
             return;
         }
         // Create session if needed

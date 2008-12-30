@@ -256,14 +256,14 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setListenerType("default");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
-        endpoint.setTransacted("xa");
+        endpoint.setTransacted("jms");
         component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
         jmsTemplate.convertAndSend("destination", "<hello>world</hello>");
         receiver.getMessageList().assertMessagesReceived(1);
         Thread.sleep(500);
-    }
+    } 
 
     public void testConsumerServer() throws Exception {
         JmsComponent component = new JmsComponent();
