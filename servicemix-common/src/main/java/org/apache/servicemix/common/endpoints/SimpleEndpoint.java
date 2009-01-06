@@ -29,8 +29,12 @@ import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.ServiceUnit;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public abstract class SimpleEndpoint extends AbstractEndpoint {
+
+    private static final Log LOG = LogFactory.getLog(SimpleEndpoint.class);
 
     private DeliveryChannel channel;
     private MessageExchangeFactory exchangeFactory;
@@ -73,11 +77,19 @@ public abstract class SimpleEndpoint extends AbstractEndpoint {
     }
     
     protected void done(MessageExchange me) throws MessagingException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("SimpleEndpoint.done called: ");
+        }
+
         me.setStatus(ExchangeStatus.DONE);
         send(me);
     }
     
     protected void fail(MessageExchange me, Exception error) throws MessagingException {
+        if (LOG.isWarnEnabled()) {
+            LOG.warn("SimpleEndpoint.fail called: ");
+        }
+
         me.setError(error);
         send(me);
     }
