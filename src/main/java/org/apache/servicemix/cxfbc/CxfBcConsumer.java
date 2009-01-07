@@ -50,6 +50,7 @@ import com.ibm.wsdl.extensions.soap.SOAPAddressImpl;
 import com.ibm.wsdl.extensions.soap.SOAPBindingImpl;
 
 import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
 import org.apache.cxf.attachment.AttachmentImpl;
 import org.apache.cxf.binding.AbstractBindingFactory;
 import org.apache.cxf.binding.soap.SoapFault;
@@ -552,6 +553,11 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             if (bus == null) {
                 SpringBusFactory bf = new SpringBusFactory();
                 bus = bf.createBus(getBusCfg());
+                if (locationURI != null && locationURI.startsWith("/")) {
+                    //it's in the servlet container
+                    //set this bus so that it could be used in CXFManagerServlet
+                    BusFactory.setDefaultBus(bus);
+                }
             }
             return bus;
         } else {
