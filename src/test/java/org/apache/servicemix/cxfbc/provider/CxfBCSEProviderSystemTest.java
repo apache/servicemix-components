@@ -148,6 +148,11 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         serversStarted = false;
     }
 
+    public void testGreetMeProviderWithJBIWrapperWithoutOperationName() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_with_jbi_wrapper.xml");
+        greetMeProviderWithoutOperationNameTestBase();
+    }    
+
     public void testGreetMeProviderWithOutJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_without_jbi_wrapper.xml");
         greetMeProviderTestBase(false);
@@ -189,7 +194,6 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         io = client.createInOutExchange();
         io.setService(new QName("http://apache.org/hello_world_soap_http_provider", "SOAPService"));
         io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http_provider", "Greeter"));
-        io.setOperation(new QName("http://apache.org/hello_world_soap_http_provider", "greetMe"));
         //send message to proxy
         io.getInMessage().setContent(new StringSource(
               "<greetMe xmlns='http://apache.org/hello_world_soap_http_provider/types'><requestType>"
@@ -203,6 +207,27 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         client.done(io);
         assertTrue(txt.indexOf("Hello Edell") >= 0);
         
+    }
+
+    private void greetMeProviderWithoutOperationNameTestBase() throws Exception {
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http_provider", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http_provider", "Greeter"));
+        //send message to proxy
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+                + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http_provider/types'><requestType>"
+              + "ffang"
+              + "</requestType></greetMe>"
+              + "</part>"
+              + "</message>"));
+        
+        client.sendSync(io);
+        
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello ffang") >= 0);
     }
     
     private void greetMeProviderJmsTestBase(boolean sync, String name) throws Exception {

@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.cxfbc;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -37,7 +38,9 @@ import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
@@ -48,15 +51,20 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.binding.AbstractBindingFactory;
 
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
+import org.apache.cxf.binding.soap.model.SoapBindingInfo;
+import org.apache.cxf.binding.soap.model.SoapBodyInfo;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.catalog.OASISCatalogManager;
 import org.apache.cxf.endpoint.Client;
@@ -76,6 +84,7 @@ import org.apache.cxf.phase.PhaseChainCache;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.Service;
+import org.apache.cxf.service.model.BindingMessageInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.OperationInfo;
@@ -96,6 +105,7 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiFault;
 import org.apache.servicemix.cxfbc.interceptors.CxfJbiConstants;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.Resource;
 
@@ -178,9 +188,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
             if (ei.getBinding().getOperations().size() == 1) {
                 boi = ei.getBinding().getOperations().iterator().next();
             } else {
-                throw new Fault(new Exception(
-                        "Operation not bound on this MessageExchange"));
-
+                boi = findOperation(nm, message, boi, exchange);
+                cxfExchange.put(MessageExchange.class, exchange);
             }
         } else {
             boi = ei.getBinding().getOperation(exchange.getOperation());
@@ -493,6 +502,56 @@ public class CxfBcProvider extends ProviderEndpoint implements
         }
     }
 
+    private BindingOperationInfo findOperation(NormalizedMessage nm, 
+                                               Message message, 
+                                               BindingOperationInfo boi, 
+                                               MessageExchange exchange) 
+        throws TransformerException, ParserConfigurationException, IOException, SAXException {
+        //try to figure out the operationName based on the incoming message
+        //payload and wsdl if use doc/literal/wrapped
+        Element element = new SourceTransformer().toDOMElement(nm.getContent());
+        
+        if (!useJBIWrapper) {
+            SoapVersion soapVersion = ((SoapMessage)message).getVersion();                
+            if (element != null) {                                                      
+                Element bodyElement = (Element) element.getElementsByTagNameNS(
+                        element.getNamespaceURI(),
+                        soapVersion.getBody().getLocalPart()).item(0);
+                if (bodyElement != null) {
+                    element = (Element) bodyElement.getFirstChild();                           
+                } 
+            }
+        } else {
+            element = DomUtil.getFirstChildElement(DomUtil.getFirstChildElement(element));
+        }
+        
+        QName opeName = new QName(element.getNamespaceURI(), element.getLocalName());
+        SoapBindingInfo binding = (SoapBindingInfo) ei.getBinding();
+        for (BindingOperationInfo op : binding.getOperations()) {
+            String style = binding.getStyle(op.getOperationInfo());
+            if (style == null) {
+                style = binding.getStyle();
+            }
+            if ("document".equals(style)) {
+                BindingMessageInfo msg = op.getInput();
+                if (msg.getExtensor(SoapBodyInfo.class)
+                            .getParts().get(0).getElementQName().equals(opeName)) {
+                    boi = op;
+                    exchange.setOperation(new QName(boi.getName().getNamespaceURI(), opeName.getLocalPart()));
+                    break;
+                }
+            } else {
+                throw new Fault(new Exception(
+                    "Operation must bound on this MessageExchange if use rpc mode"));
+            }
+        }
+        if (boi == null) {
+            throw new Fault(new Exception(
+                "Operation not bound on this MessageExchange"));
+        }
+        return boi;
+    }
+
     @Override
     public void start() throws Exception {
         applyFeatures();
@@ -645,5 +704,5 @@ public class CxfBcProvider extends ProviderEndpoint implements
     public List<AbstractFeature> getFeatures() {
         return features;
     }
-
+ 
 }
