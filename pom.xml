@@ -58,9 +58,9 @@
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
         org.apache.servicemix.bundles.jaxp-ri,
-        org.springframework.bundle.spring.core,
-        org.springframework.bundle.spring.beans,
-        org.springframework.bundle.spring.context,
+        org.springframework.core,
+        org.springframework.beans,
+        org.springframework.context,
     </servicemix.osgi.bundles>
   </properties>
 
