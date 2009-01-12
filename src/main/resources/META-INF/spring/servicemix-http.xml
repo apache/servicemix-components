@@ -19,12 +19,15 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:ctx="http://www.springframework.org/schema/context"
        xmlns:osgi="http://www.springframework.org/schema/osgi"
        xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="
   http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context.xsd
   http://www.springframework.org/schema/util
   http://www.springframework.org/schema/util/spring-util.xsd
   http://www.springframework.org/schema/osgi
@@ -86,25 +89,25 @@
         </osgi:service-properties>
     </osgi:service>
 
-    <osgix:property-placeholder persistent-id="servicemix-http">
-        <osgix:default-properties>
-            <prop key="connectorMaxIdleTime">30000</prop>
-            <prop key="consumerProcessorSuspendTime">60000</prop>
-            <prop key="jettyClientThreadPoolSize">16</prop>
-            <prop key="jettyConnectorClassName">org.mortbay.jetty.nio.SelectChannelConnector</prop>
-            <prop key="jettyThreadPoolSize">255</prop>
-            <prop key="jettyManagement">false</prop>
-            <prop key="maxConnectionsPerHost">65536</prop>
-            <prop key="maxTotalConnections">65536</prop>
-            <prop key="proxyHost"></prop>
-            <prop key="proxyPort">0</prop>
-            <prop key="retryCount">3</prop>
-            <prop key="streamingEnabled">false</prop>
-            <prop key="threadPoolCorePoolSize">8</prop>
-            <prop key="threadPoolMaximumPoolSize">32</prop>
-            <prop key="threadPoolQueueSize">256</prop>
-            <prop key="wantHeadersFromHttpIntoExchange">false</prop>
-        </osgix:default-properties>
-    </osgix:property-placeholder>
+    <osgix:cm-properties id="cmProps" persistent-id="servicemix-http">
+        <prop key="connectorMaxIdleTime">30000</prop>
+        <prop key="consumerProcessorSuspendTime">60000</prop>
+        <prop key="jettyClientThreadPoolSize">16</prop>
+        <prop key="jettyConnectorClassName">org.mortbay.jetty.nio.SelectChannelConnector</prop>
+        <prop key="jettyThreadPoolSize">255</prop>
+        <prop key="jettyManagement">false</prop>
+        <prop key="maxConnectionsPerHost">65536</prop>
+        <prop key="maxTotalConnections">65536</prop>
+        <prop key="proxyHost"></prop>
+        <prop key="proxyPort">0</prop>
+        <prop key="retryCount">3</prop>
+        <prop key="streamingEnabled">false</prop>
+        <prop key="threadPoolCorePoolSize">8</prop>
+        <prop key="threadPoolMaximumPoolSize">32</prop>
+        <prop key="threadPoolQueueSize">256</prop>
+        <prop key="wantHeadersFromHttpIntoExchange">false</prop>
+    </osgix:cm-properties>
 
+    <ctx:property-placeholder properties-ref="cmProps" />
+    
 </beans>
