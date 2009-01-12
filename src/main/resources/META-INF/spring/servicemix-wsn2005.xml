@@ -19,12 +19,15 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:ctx="http://www.springframework.org/schema/context"
        xmlns:osgi="http://www.springframework.org/schema/osgi"
        xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="
   http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context.xsd
   http://www.springframework.org/schema/util
   http://www.springframework.org/schema/util/spring-util.xsd
   http://www.springframework.org/schema/osgi
@@ -66,12 +69,12 @@
 
     <osgi:reference id="connectionFactory" interface="javax.jms.ConnectionFactory" />
 
-    <osgix:property-placeholder persistent-id="servicemix-wsn2005">
-        <osgix:default-properties>
-            <prop key="threadPoolCorePoolSize">8</prop>
-            <prop key="threadPoolMaximumPoolSize">32</prop>
-            <prop key="threadPoolQueueSize">256</prop>
-        </osgix:default-properties>
-    </osgix:property-placeholder>
+    <osgix:cm-properties id="cmProps" persistent-id="servicemix-wsn2005">
+        <prop key="threadPoolCorePoolSize">8</prop>
+        <prop key="threadPoolMaximumPoolSize">32</prop>
+        <prop key="threadPoolQueueSize">256</prop>
+    </osgix:cm-properties>
 
+    <ctx:property-placeholder properties-ref="cmProps" />
+    
 </beans>
