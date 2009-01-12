@@ -95,6 +95,79 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         assertNotNull(msg);
     }
     
+    public void testProviderInOnlyWithoutReplyDest() throws Exception {
+        JmsComponent component = new JmsComponent();
+
+        JmsProviderEndpoint endpoint = new JmsProviderEndpoint();
+        endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
+        endpoint.setEndpoint("HelloPort");
+        endpoint.setDestinationName("destination");
+        endpoint.setConnectionFactory(connectionFactory);
+        component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
+        container.activateComponent(component, "servicemix-jms");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Input-OneWay.xml").getInputStream(), baos);
+        InOnly me = client.createInOnlyExchange();
+        me.getInMessage().setContent(new StringSource(baos.toString()));
+
+        me.setOperation(new QName("uri:HelloWorld", "OneWay"));
+        me.setService(new QName("uri:HelloWorld", "HelloService"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+
+        Message msg = jmsTemplate.receive("destination");
+        assertNotNull(msg);
+        System.err.println(((TextMessage) msg).getText());
+    }
+
+    public void testProviderInOutWithoutReplyDest() throws Exception {
+        JmsComponent component = new JmsComponent();
+
+        JmsProviderEndpoint endpoint = new JmsProviderEndpoint();
+        endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
+        endpoint.setEndpoint("HelloPort");
+        endpoint.setDestinationName("destination");
+        endpoint.setConnectionFactory(connectionFactory);
+        component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
+        container.activateComponent(component, "servicemix-jms");
+
+        Thread th = new Thread() {
+            public void run() {
+                try {
+                    final Message msg = jmsTemplate.receive("destination");
+                    assertNotNull(msg);
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Output.xml")
+                                .getInputStream(), baos);
+                    jmsTemplate.send(msg.getJMSReplyTo(), new MessageCreator() {
+                        public Message createMessage(Session session) throws JMSException {
+                            TextMessage rep = session.createTextMessage(baos.toString());
+                            rep.setJMSCorrelationID(msg.getJMSCorrelationID() != null ? msg.getJMSCorrelationID() : msg.getJMSMessageID());
+                            return rep;
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        th.start();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtil.copyInputStream(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC-Input-OneWay.xml").getInputStream(), baos);
+        InOut me = client.createInOutExchange();
+        me.getInMessage().setContent(new StringSource(baos.toString()));
+        me.setOperation(new QName("uri:HelloWorld", "OneWay"));
+        me.setService(new QName("uri:HelloWorld", "HelloService"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        assertNotNull(me.getOutMessage());
+        assertNotNull(me.getOutMessage().getContent());
+        System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
+        client.done(me);
+    }
+
     public void testSoapProviderInOnly() throws Exception {
         JmsComponent component = new JmsComponent();
         
@@ -116,10 +189,6 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         me.setService(new QName("uri:HelloWorld", "HelloService"));
         client.sendSync(me);
         assertEquals(ExchangeStatus.DONE, me.getStatus());
-        
-        Message msg = jmsTemplate.receive("destination");
-        assertNotNull(msg);
-        System.err.println(((TextMessage) msg).getText());
     }
     
     public void testSoapProviderInOut() throws Exception {
@@ -169,7 +238,6 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         assertNotNull(me.getOutMessage().getContent());
         System.err.println(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
-        
     }
 
     public void testSoapProviderInOutWithoutReplyDest() throws Exception {
