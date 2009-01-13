@@ -59,7 +59,7 @@ public class CxfBcJmsTransactionWsdlConfigTest extends SpringTestSupport {
                   System.getProperty("java.util.logging.config.file"));
         
         assertTrue("server did not launch correctly", 
-                   launchServer(EmbededJMSBrokerLauncher.class, props, false));
+                   launchServer(EmbededJMSBrokerLauncher.class, props, true));
         embeddedLauncher =  sl;
         assertTrue("server did not launch correctly", 
                 launchServer(MyJMSServer.class, null, false));
@@ -90,13 +90,7 @@ public class CxfBcJmsTransactionWsdlConfigTest extends SpringTestSupport {
     }
     
     protected void tearDown() throws Exception {
-        try {
-            embeddedLauncher.stopServer();         
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            fail("failed to stop server " + embeddedLauncher.getClass());
-        }
-        try {
+    	try {
             jmsLauncher.stopServer();         
         } catch (IOException ex) {
             ex.printStackTrace();
