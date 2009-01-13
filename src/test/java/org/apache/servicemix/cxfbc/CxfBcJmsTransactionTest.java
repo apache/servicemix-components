@@ -47,6 +47,7 @@ public class CxfBcJmsTransactionTest extends SpringTestSupport {
 
     
     
+       
     public void startServers() throws Exception {
         if (serversStarted) {
             return;
@@ -59,7 +60,7 @@ public class CxfBcJmsTransactionTest extends SpringTestSupport {
                   System.getProperty("java.util.logging.config.file"));
         
         assertTrue("server did not launch correctly", 
-                   launchServer(EmbededJMSBrokerLauncher.class, props, false));
+                   launchServer(EmbededJMSBrokerLauncher.class, props, true));
         embeddedLauncher =  sl;
         assertTrue("server did not launch correctly", 
                 launchServer(MyJMSServer.class, null, false));
