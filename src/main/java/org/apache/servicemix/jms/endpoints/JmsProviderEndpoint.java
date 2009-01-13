@@ -16,46 +16,41 @@
  */
 package org.apache.servicemix.jms.endpoints;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.Fault;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.Session;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.jms.MessageProducer;
+import javax.jms.Session;
 
-import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jms.JmsEndpointType;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
-import org.springframework.jms.UncategorizedJmsException;
 import org.springframework.jms.JmsException;
+import org.springframework.jms.UncategorizedJmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.JmsTemplate102;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.jms.core.SessionCallback;
-import org.springframework.jms.listener.AbstractPollingMessageListenerContainer;
 import org.springframework.jms.listener.AbstractMessageListenerContainer;
-import org.springframework.jms.listener.DefaultMessageListenerContainer102;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.jms.listener.DefaultMessageListenerContainer102;
 import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
-import org.springframework.jms.support.JmsUtils;
 
 /**
  * A Spring-based JMS provider endpoint
@@ -478,22 +473,23 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 return;
             // Exchange is active
             } else {
-                NormalizedMessage in;
                 // Fault message
                 if (exchange.getFault() != null) {
                     done(exchange);
                 // In message
-                } else if ((in = exchange.getMessage("in")) != null) {
-                    if (exchange instanceof InOnly) {
-                        processInOnly(exchange, in);
-                        done(exchange);
-                    }
-                    else {
-                        processInOut(exchange, in);
-                    }
-                // This is not compliant with the default MEPs
                 } else {
-                    throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
+                    NormalizedMessage in = exchange.getMessage("in");
+                    if (in != null) {
+                        if (exchange instanceof InOnly) {
+                            processInOnly(exchange, in);
+                            done(exchange);
+                        } else {
+                            processInOut(exchange, in);
+                        }
+                    // This is not compliant with the default MEPs
+                    } else {
+                        throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
+                    }
                 }
             }
         // Unsupported role: this should never happen has we never create exchanges
@@ -515,18 +511,18 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     protected void processInOnly(final MessageExchange exchange,
                                  final NormalizedMessage in) throws Exception {
         SessionCallback callback = new SessionCallback() {
-          public Object doInJms(Session session) throws JMSException {
-              try {
-                  processInOnlyInSession(exchange, in, session);
-                  return null;
-              } catch (JMSException e) {
-                  throw e;
-              } catch (RuntimeException e) {
-                  throw e;
-              } catch (Exception e) {
-                  throw new UncategorizedJmsException(e);
-              }
-          }
+            public Object doInJms(Session session) throws JMSException {
+                try {
+                    processInOnlyInSession(exchange, in, session);
+                    return null;
+                } catch (JMSException e) {
+                    throw e;
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new UncategorizedJmsException(e);
+                }
+            }
         };
         template.execute(callback, true);
     }
@@ -666,18 +662,17 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         }
     }
 
-    private void send(final Session session, final Destination destination, final Message message) throws JmsException {
+    private void send(final Session session, final Destination dest, final Message message) throws JmsException {
         // Do not call directly the template to avoid the cost of creating a new connection / session
-//            template.send(dest, new MessageCreator() {
-//                public Message createMessage(Session session)
-//                    throws JMSException {
-//                    return sendJmsMsg;
-//                }
-//            });
+//        template.send(dest, new MessageCreator() {
+//            public Message createMessage(Session session) throws JMSException {
+//                return message;
+//            }
+//        });
         try {
             Method method = JmsTemplate.class.getDeclaredMethod("doSend", Session.class, Destination.class, MessageCreator.class);
             method.setAccessible(true);
-            method.invoke(template, session, destination, new MessageCreator() {
+            method.invoke(template, session, dest, new MessageCreator() {
                 public Message createMessage(Session session) throws JMSException {
                     return message;
                 }
@@ -691,13 +686,15 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         }
     }
 
-    private Message receiveSelected(final Session session, final Destination destination, final String messageSelector) throws JMSException {
+    private Message receiveSelected(final Session session, 
+                                    final Destination dest, 
+                                    final String messageSelector) throws JMSException {
         // Do not call directly the template to avoid the cost of creating a new connection / session
-//        return template.doReceive(session, destination, messageSelector);
+//        return template.doReceive(session, dest, messageSelector);
         try {
             Method method = JmsTemplate.class.getDeclaredMethod("doReceive", Session.class, Destination.class, String.class);
             method.setAccessible(true);
-            return (Message) method.invoke(template, session, destination, messageSelector);
+            return (Message) method.invoke(template, session, dest, messageSelector);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -776,7 +773,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      * @throws JMSException
      */
     protected Destination getDestination(MessageExchange exchange, Object message, Session session) throws JMSException {
-        Destination dest = chooseDestination(exchange, message, session, destinationChooser, destination != null ? destination : destinationName);
+        Destination dest = chooseDestination(exchange, message, session, destinationChooser, 
+                                             destination != null ? destination : destinationName);
         if (dest == null) {
             throw new IllegalStateException("Unable to choose a destination for exchange " + exchange);
         }
@@ -795,7 +793,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      * @throws JMSException
      */
     protected Destination getReplyDestination(MessageExchange exchange, Object message, Session session) throws JMSException {
-        Destination dest = chooseDestination(exchange, message, session, replyDestinationChooser, replyDestination != null ? replyDestination : replyDestinationName);
+        Destination dest = chooseDestination(exchange, message, session, replyDestinationChooser, 
+                                             replyDestination != null ? replyDestination : replyDestinationName);
         if (dest == null) {
             if (isPubSubDomain()) {
                 return session.createTemporaryQueue();
