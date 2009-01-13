@@ -91,13 +91,7 @@ public class CxfBcJmsTransactionTest extends SpringTestSupport {
     }
     
     protected void tearDown() throws Exception {
-        try {
-            embeddedLauncher.stopServer();         
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            fail("failed to stop server " + embeddedLauncher.getClass());
-        }
-        try {
+    	try {
             jmsLauncher.stopServer();         
         } catch (IOException ex) {
             ex.printStackTrace();
