@@ -128,7 +128,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
         endpoint.setEndpoint("HelloPort");
         endpoint.setDestinationName("destination");
-        endpoint.setConnectionFactory(connectionFactory);
+        endpoint.setConnectionFactory(new PooledConnectionFactory(connectionFactory));
         component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
