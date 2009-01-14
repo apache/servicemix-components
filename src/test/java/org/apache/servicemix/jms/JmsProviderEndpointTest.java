@@ -31,7 +31,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
-import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -128,7 +127,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
         endpoint.setEndpoint("HelloPort");
         endpoint.setDestinationName("destination");
-        endpoint.setConnectionFactory(new PooledConnectionFactory(connectionFactory));
+        endpoint.setConnectionFactory(connectionFactory);
         component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
 
@@ -246,7 +245,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         JmsSoapProviderEndpoint endpoint = new JmsSoapProviderEndpoint();
         endpoint.setService(new QName("uri:HelloWorld", "HelloService"));
         endpoint.setEndpoint("HelloPort");
-        endpoint.setConnectionFactory(new PooledConnectionFactory(connectionFactory));
+        endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
         endpoint.setWsdl(new ClassPathResource("org/apache/servicemix/jms/HelloWorld-RPC.wsdl"));
         component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
