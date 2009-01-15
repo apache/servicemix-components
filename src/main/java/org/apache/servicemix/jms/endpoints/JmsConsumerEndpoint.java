@@ -79,6 +79,8 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     private int concurrentConsumers = 1;
     
     // default listener properties
+    private int idleTaskExecutionLimit = 1;
+    private int maxConcurrentConsumers = 1;
     private int cacheLevel = DefaultMessageListenerContainer.CACHE_NONE;
     private long receiveTimeout = DefaultMessageListenerContainer.DEFAULT_RECEIVE_TIMEOUT;
     private long recoveryInterval = DefaultMessageListenerContainer.DEFAULT_RECOVERY_INTERVAL;
@@ -260,6 +262,40 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
     }
 
     /**
+     * @return the idleTaskExecutionLimit
+     */
+    public int getIdleTaskExecutionLimit() {
+        return idleTaskExecutionLimit;
+    }
+     
+    /**
+     * Specifies the limit for idle executions of a receive task, not having received any message within its execution. 
+     * If this limit is reached, the task will shut down and leave receiving to other executing tasks 
+     * (in case of dynamic scheduling; see the "maxConcurrentConsumers" setting).
+     * Within each task execution, a number of message reception attempts (according to the "maxMessagesPerTask" setting) 
+     * will each wait for an incoming message (according to the "receiveTimeout" setting). 
+     * If all of those receive attempts in a given task return without a message, 
+     * the task is considered idle with respect to received messages. 
+     * Such a task may still be rescheduled; however, once it reached the specified "idleTaskExecutionLimit", 
+     * it will shut down (in case of dynamic scaling).
+     * Raise this limit if you encounter too frequent scaling up and down. 
+     * With this limit being higher, an idle consumer will be kept around longer, 
+     * avoiding the restart of a consumer once a new load of messages comes in. 
+     * Alternatively, specify a higher "maxMessagePerTask" and/or "receiveTimeout" value, 
+     * which will also lead to idle consumers being kept around for a longer time 
+     * (while also increasing the average execution time of each scheduled task). 
+     * 
+     * This property is only used for consumers whose <code>listenerType</code> 
+     * property is set to <code>default</code>.
+     * 
+     * @param idleTaskExecutionLimit the number of concurrent consumers to create
+     * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setIdleTaskExecutionLimit(int)
+     */
+    public void setIdleTaskExecutionLimit(int idleTaskExecutionLimit) {
+        this.idleTaskExecutionLimit = idleTaskExecutionLimit;
+    }
+
+    /**
      * @return the listenerType
      */
     public String getListenerType() {
@@ -274,6 +310,29 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
      */
     public void setListenerType(String listenerType) {
         this.listenerType = listenerType;
+    }
+
+    /**
+     * @return the maxConcurrentConsumers
+     */
+    public int getMaxConcurrentConsumers() {
+        return maxConcurrentConsumers;
+    }
+
+    /**
+     * Specifies the maximum number of concurrent consumers created by the listener.
+     * If this setting is higher than "concurrentConsumers", the listener container 
+     * will dynamically schedule new consumers at runtime, provided that enough incoming 
+     * messages are encountered. Once the load goes down again, the number of consumers 
+     * will be reduced to the standard level ("concurrentConsumers") again.
+     * This property is only used for consumers whose <code>listenerType</code> 
+     * property is set to <code>default</code>.
+     * 
+     * @param maxConcurrentConsumers the maximum number of concurrent consumers to create
+     * @see org.springframework.jms.listener.DefaultMessageListenerContainer#setMaxConcurrentConsumers(int)
+     */
+    public void setMaxConcurrentConsumers(int maxConcurrentConsumers) {
+        this.maxConcurrentConsumers = maxConcurrentConsumers;
     }
 
     /**
@@ -569,6 +628,8 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
         }
         cont.setCacheLevel(cacheLevel);
         cont.setConcurrentConsumers(concurrentConsumers);
+        cont.setIdleTaskExecutionLimit(idleTaskExecutionLimit);
+        cont.setMaxConcurrentConsumers(maxConcurrentConsumers);
         cont.setMaxMessagesPerTask(maxMessagesPerTask);
         cont.setPubSubNoLocal(pubSubNoLocal);
         cont.setReceiveTimeout(receiveTimeout);

@@ -147,6 +147,9 @@ public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setListenerType("default");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
+        endpoint.setConcurrentConsumers(1);
+        endpoint.setIdleTaskExecutionLimit(1);
+        endpoint.setMaxConcurrentConsumers(1);
         component.setEndpoints(new JmsConsumerEndpoint[] {endpoint});
         container.activateComponent(component, "servicemix-jms");
         
