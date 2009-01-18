@@ -37,7 +37,7 @@ public class EmbededJMSBrokerLauncher extends AbstractBusTestServerBase {
         try {                
             broker = new BrokerService();
             broker.setPersistenceAdapter(new MemoryPersistenceAdapter());
-            broker.setTmpDataDirectory(new File("./target"));
+            broker.setTmpDataDirectory(new File("./jms/target"));
             broker.addConnector(brokerUrl1);
             broker.start();            
         } catch (Exception e) {
