@@ -48,6 +48,7 @@ import org.apache.cxf.service.model.BindingMessageInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.service.model.SchemaInfo;
+import org.apache.cxf.staxutils.DepthXMLStreamReader;
 import org.apache.cxf.staxutils.PartialXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.servicemix.soap.util.DomUtil;
@@ -313,6 +314,8 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                     .getContent(XMLStreamReader.class);
             XMLStreamReader filteredReader = new PartialXMLStreamReader(
                     xmlReader, message.getVersion().getBody());
+            //ensure the whitespace is passed
+            StaxUtils.toNextElement((DepthXMLStreamReader) filteredReader);
             return StaxUtils.read(filteredReader).getDocumentElement();
         } catch (XMLStreamException e) {
             throw new Fault(e);
