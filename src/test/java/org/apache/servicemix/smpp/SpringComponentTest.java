@@ -1,8 +1,7 @@
 package org.apache.servicemix.smpp;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.InOnly;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -25,13 +24,12 @@ public class SpringComponentTest extends SpringTestSupport {
 
     public void testSending() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOut me = client.createInOutExchange();
+        InOnly me = client.createInOnlyExchange();
         me.setService(new QName("http://test", "service"));
-        NormalizedMessage message = me.getInMessage();
-        message.setContent(new StringSource(MESSAGE));
+        me.getInMessage().setContent(new StringSource(MESSAGE));
         client.sendSync(me);
         if (me.getStatus() == ExchangeStatus.ERROR) {
-            fail("Received ERROR status: " + me.getError().getMessage());
+            fail("Received ERROR status: " + me.getError());
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }

@@ -4,7 +4,8 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
-import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
@@ -13,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
 /**
@@ -24,6 +26,16 @@ public class SmppXBeanDeployerTest extends TestCase {
 
     private final static transient Log log = LogFactory.getLog(SmppXBeanDeployerTest.class);
 
+    private static final String SOURCE = "0123456789";
+    private static final String DESTINATION = "9876543210";
+    private static final String TEXT = "This is a SMPP test ...";
+    private static final String NPI = "NATIONAL";
+    private static final String TON = "INTERNATIONAL";
+
+    private static final String MSG_VALID = "<message><source>" + SOURCE + "</source><destination>"
+                                            + DESTINATION + "</destination><text>" + TEXT + "</text><npi>"
+                                            + NPI + "</npi><ton>" + TON + "</ton></message>";
+    
     protected JBIContainer container;
 
     protected void setUp() throws Exception {
@@ -78,12 +90,15 @@ public class SmppXBeanDeployerTest extends TestCase {
 
         // main test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-        InOut me = client.createInOutExchange();
+        InOnly me = client.createInOnlyExchange();
         me.setService(new QName("http://test", "service"));
-        me.getInMessage().setContent(new StringSource("<test>Test</test>"));
+        me.getInMessage().setContent(new StringSource(MSG_VALID));
         client.sendSync(me);
-        // TODO test the MessageExchange ERROR status and fault
-        client.done(me);
+        
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            fail("Received ERROR status: " + me.getError());
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        } 
     }
-
 }
