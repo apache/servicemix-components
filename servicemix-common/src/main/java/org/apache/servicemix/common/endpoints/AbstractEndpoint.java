@@ -59,10 +59,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
-     * Sets the name of the endpoint.
+     * The name of the endpoint.
      *
      * @param endpoint a string specifiying the name of the endpoint
-     * @org.apache.xbean.Property description="the name of the endpoint"
+     * @org.apache.xbean.Property
      */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
@@ -77,10 +77,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
-     * Sets the name of the service the endpoint exposes.
+     * The qualified name of the service the endpoint exposes.
      *
      * @param service a QName specifiying the name of the service
-     * @org.apache.xbean.Property description="the QName of the service exposed by the endpoint"
+     * @org.apache.xbean.Property
      */
     public void setService(QName service) {
         this.service = service;
@@ -104,7 +104,7 @@ public abstract class AbstractEndpoint implements Endpoint {
      * unit packaging.
      *
      * @param description a <code>Document</code> describing the endpoint
-     * @org.apache.xbean.Property description="an XML document describing the endpoint"
+     * @org.apache.xbean.Property description="an XML document describing the endpoint" hidden="true"
      */
     public void setDescription(Document description) {
         this.description = description;
@@ -118,10 +118,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
-     * Sets the QName of the interface exposed by the endpoint.
+     * The qualified name of the interface exposed by the endpoint.
      *
      * @param interfaceName a QName specifiying the name of the interface
-     * @org.apache.xbean.Property description="the QName of the interface exposed by the endpoint"
+     * @org.apache.xbean.Property
      */
     public void setInterfaceName(QName interfaceName) {
         this.interfaceName = interfaceName;
@@ -138,7 +138,7 @@ public abstract class AbstractEndpoint implements Endpoint {
      * Associates an endpoint with a service unit. The service unit is used by the container to manage the endpoint's lifecycle.
      *
      * @param serviceUnit a <code>ServiceUnit</code> to which the endpoint will be associated
-     * @org.apache.xbean.Property description="the service unit responsible for the endpoint"
+     * @org.apache.xbean.Property description="the service unit responsible for the endpoint" hidden="true
      */
     public void setServiceUnit(ServiceUnit serviceUnit) {
         this.serviceUnit = serviceUnit;
@@ -181,6 +181,10 @@ public abstract class AbstractEndpoint implements Endpoint {
         return definition;
     }
 
+    /**
+     * @param definition
+     * @org.apache.xbean.Property hidden="true"
+     */
     public void setDefinition(Definition definition) {
         this.definition = definition;
     }

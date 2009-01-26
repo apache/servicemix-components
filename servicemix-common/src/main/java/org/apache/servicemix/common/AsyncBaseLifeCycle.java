@@ -107,6 +107,9 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         return container;
     }
 
+    /**
+     * @org.apache.xbean.Property hidden="true"
+     */
     protected void setComponent(ServiceMixComponent component) {
         this.component = component;
         this.logger = component.getLogger();
@@ -136,7 +139,10 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
     public String getCurrentState() {
         return currentState;
     }
-    
+
+    /**
+     * @org.apache.xbean.Property hidden="true"
+     */
     protected void setCurrentState(String currentState) {
         this.currentState = currentState;
     }
@@ -409,6 +415,13 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         return executor;
     }
 
+    /**
+     * The executor to use for various tasks that need to be performed by the component.
+     * If none is provided, one will be created from the executorFactory.
+     *
+     * @param executor
+     * @see #setExecutorFactory(ExecutorFactory)
+     */
     public void setExecutor(Executor executor) {
         this.executor = executor;
     }
@@ -417,6 +430,14 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         return executorFactory;
     }
 
+    /**
+     * The executor factory to use to create the executor.
+     * If none is provided, one will be retrieved from the JBI container when the component
+     * is deployed into ServiceMix 3.x, or a default implementation will be used.
+     *
+     * @param executorFactory
+     * @see #setExecutor(Executor)
+     */
     public void setExecutorFactory(ExecutorFactory executorFactory) {
         this.executorFactory = executorFactory;
     }
