@@ -39,11 +39,10 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 
 /**
  * Implementation of the 
- * <a href="http://www.enterpriseintegrationpatterns.com/DataEnricher.html">'Content-Enricher'</a> 
+ * <a href="http://www.enterpriseintegrationpatterns.com/DataEnricher.html">Content-Enricher</a> 
  * Pattern. 
  *  
  * @org.apache.xbean.XBean element="content-enricher"
- *                  description="A Content Enricher"
  */
 public class ContentEnricher extends EIPEndpoint {
 
@@ -294,10 +293,21 @@ public class ContentEnricher extends EIPEndpoint {
         return node;
     }
 
+    /**
+     * The target where the enriched exchanges are sent.
+     *
+     * @param target
+     */
     public void setTarget(ExchangeTarget target) {
         this.target = target;
     }
 
+    /**
+     * The target that will receive a copy of the input message and return
+     * an addtitional content.
+     * 
+     * @param enricherTarget
+     */
     public void setEnricherTarget(ExchangeTarget enricherTarget) {
         this.enricherTarget = enricherTarget;
     }

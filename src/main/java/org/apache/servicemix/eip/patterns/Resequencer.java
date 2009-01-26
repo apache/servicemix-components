@@ -34,6 +34,9 @@ import org.apache.servicemix.eip.support.resequence.SequenceSender;
 import org.apache.servicemix.executors.Executor;
 
 /**
+ * This pattern implements the <a href="http://www.enterpriseintegrationpatterns.com/Resequencer.html">Resequencer</a> EIP
+ * pattern. The aim of this pattern is to put back into correct order a flow of out-of-sequence messages.
+ *
  * @author Martin Krasser
  * 
  * @org.apache.xbean.XBean element="resequencer"
@@ -56,15 +59,32 @@ public class Resequencer extends ResequencerBase implements SequenceSender {
         this.reader = new SequenceReader(this);
         this.comparator = new DefaultComparator();
     }
-    
+
+    /**
+     * The capacity of this resequencer.  The capacity determines the maximum number of message
+     * that will be kept in memory to put the messages back in sequence.  This determine how far
+     * two messages can be in the list of messages while still being put back in sequence.
+     *
+     * @param capacity
+     */
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
-    
+
+    /**
+     * Set the timeout of this resequencer.  This specifies the maximum number of milliseconds
+     * that can elapse between two out-of-sync messages.
+     * @param timeout
+     */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
 
+    /**
+     * The comparator used to determine the sequence order of elements.
+     *
+     * @param comparator
+     */
     public void setComparator(SequenceElementComparator<MessageExchange> comparator) {
         this.comparator = comparator;
     }

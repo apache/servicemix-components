@@ -29,18 +29,17 @@ import org.apache.servicemix.common.util.MessageUtil;
 /**
  * A RoutingSlip component can be used to route an incoming In-Out exchange
  * through a series of target services.
- * This component implements the 
+ * This endpoint implements the 
  * <a href="http://www.enterpriseintegrationpatterns.com/RoutingTable.html">Routing Slip</a> 
  * pattern, with the limitation that the routing table is static.
- * This component only uses In-Out MEPs and errors or faults sent by targets are reported
+ * This endpoint only uses In-Out MEPs and errors or faults sent by targets are reported
  * back to the consumer, thus interrupting the routing process.
- * In addition, this component is fully asynchronous and uses an exchange store to provide
+ * In addition, this endpoint is fully asynchronous and uses an exchange store to provide
  * full HA and recovery for clustered / persistent flows. 
  *  
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="static-routing-slip"
- *                  description="A static Routing Slip"
  */
 public class StaticRoutingSlip extends EIPEndpoint {
 
@@ -69,6 +68,8 @@ public class StaticRoutingSlip extends EIPEndpoint {
     }
 
     /**
+     * List of target endpoints used in the RoutingSlip
+     *
      * @param targets The targets to set.
      */
     public void setTargets(ExchangeTarget[] targets) {

@@ -47,7 +47,6 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="pipeline"
- *                  description="A Pipeline"
  */
 public class Pipeline extends EIPEndpoint {
 
@@ -66,7 +65,7 @@ public class Pipeline extends EIPEndpoint {
     private ExchangeTarget target;
     
     /**
-     * The addres of the endpoint to send faults to
+     * The address of the endpoint to send faults to
      */
     private ExchangeTarget faultsTarget;
     
@@ -110,6 +109,7 @@ public class Pipeline extends EIPEndpoint {
     }
 
     /**
+     * The address of the target endpoint
      * @param target The target to set.
      */
     public void setTarget(ExchangeTarget target) {
@@ -124,6 +124,7 @@ public class Pipeline extends EIPEndpoint {
     }
 
     /**
+     * The address of the endpoint to send faults to
      * @param faultsTarget the faultsTarget to set
      */
     public void setFaultsTarget(ExchangeTarget faultsTarget) {
@@ -138,6 +139,10 @@ public class Pipeline extends EIPEndpoint {
     }
 
     /**
+     * When the faultsTarget is not specified,
+     * faults may be sent to the target endpoint
+     * if this flag is set to <code>true</code>
+     *
      * @param sendFaultsToTarget the sendFaultsToTarget to set
      */
     public void setSendFaultsToTarget(boolean sendFaultsToTarget) {
@@ -152,6 +157,8 @@ public class Pipeline extends EIPEndpoint {
     }
 
     /**
+     * The adress of the in-out endpoint acting as a transformer
+     *
      * @param transformer The transformer to set.
      */
     public void setTransformer(ExchangeTarget transformer) {
@@ -162,6 +169,11 @@ public class Pipeline extends EIPEndpoint {
         return copyProperties;
     }
 
+    /**
+     * Should message properties be copied ?
+     *
+     * @param copyProperties
+     */
     public void setCopyProperties(boolean copyProperties) {
         this.copyProperties = copyProperties;
     }
@@ -170,6 +182,11 @@ public class Pipeline extends EIPEndpoint {
         return copyAttachments;
     }
 
+    /**
+     * Should message attachments be copied ?
+     *
+     * @param copyAttachments
+     */
     public void setCopyAttachments(boolean copyAttachments) {
         this.copyAttachments = copyAttachments;
     }

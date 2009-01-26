@@ -38,7 +38,6 @@ import org.apache.servicemix.eip.support.Predicate;
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="message-filter"
- *                  description="A Message Filter"
  */
 public class MessageFilter extends EIPEndpoint {
 
@@ -73,6 +72,7 @@ public class MessageFilter extends EIPEndpoint {
     }
 
     /**
+     * The main target destination which will receive the exchange
      * @param target The target to set.
      */
     public void setTarget(ExchangeTarget target) {
@@ -87,6 +87,7 @@ public class MessageFilter extends EIPEndpoint {
     }
 
     /**
+     * The filter to use on incoming messages
      * @param filter The filter to set.
      */
     public void setFilter(Predicate filter) {
@@ -101,6 +102,14 @@ public class MessageFilter extends EIPEndpoint {
     }
 
     /**
+     * Indicates if faults and errors from recipients should be sent
+     * back to the consumer.  In such a case, only the first fault or
+     * error received will be reported.
+     * Note that if the consumer is synchronous, it will be blocked
+     * until all recipients successfully acked the exchange, or
+     * a fault or error is reported, and the exchange will be kept in the
+     * store for recovery.
+     *  
      * @param reportErrors The reportErrors to set.
      */
     public void setReportErrors(boolean reportErrors) {

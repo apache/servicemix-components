@@ -41,6 +41,8 @@ public class EIPComponent extends DefaultComponent {
     }
 
     /**
+     * A list of endpoints to activate on this component.
+     * 
      * @param endpoints The endpoints to set.
      */
     public void setEndpoints(EIPEndpoint[] endpoints) {

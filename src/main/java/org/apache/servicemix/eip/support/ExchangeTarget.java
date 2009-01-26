@@ -54,8 +54,9 @@ public class ExchangeTarget implements InitializingBean {
     }
 
     /**
-     * @param endpoint
-     *            The endpoint to set.
+     * The endpoint name of the target.
+     *
+     * @param endpoint The endpoint to set.
      */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
@@ -69,14 +70,17 @@ public class ExchangeTarget implements InitializingBean {
     }
 
     /**
-     * @param interface name
-     *            The interface name to set.
+     * The interface QName implemented by the target
+     *
+     * @param itf The interface name to set.
      */
     public void setInterface(QName itf) {
         this.interf = itf;
     }
 
     /**
+     * The operation QName that will be set on the exchange
+     *
      * @return Returns the operation name.
      */
     public QName getOperation() {
@@ -84,8 +88,9 @@ public class ExchangeTarget implements InitializingBean {
     }
 
     /**
-     * @param operation
-     *            The operation to set.
+     * The operation QName invoked on this target.
+     *
+     * @param operation The operation to set.
      */
     public void setOperation(QName operation) {
         this.operation = operation;
@@ -99,8 +104,9 @@ public class ExchangeTarget implements InitializingBean {
     }
 
     /**
-     * @param service
-     *            The service to set.
+     * The service QName of the target
+     *
+     * @param service The service to set.
      */
     public void setService(QName service) {
         this.service = service;
@@ -114,6 +120,8 @@ public class ExchangeTarget implements InitializingBean {
     }
 
     /**
+     * An URI identifying the target
+     *
      * @param uri the uri to set
      */
     public void setUri(String uri) {

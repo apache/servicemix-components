@@ -20,9 +20,9 @@ import javax.jbi.messaging.MessageExchange;
 
 /**
  * Compares {@link MessageExchange} sequence elements based on sequence numbers
- * defined by their in-{@link NormalizedMessage}s. This comparator works on
+ * defined by their in-{@link javax.jbi.messaging.NormalizedMessage}s. This comparator works on
  * sequence numbers of type {@link Long}. Sequence numbers must be stored as
- * {@link NormalizedMessage} properties. The property name under which the
+ * {@link javax.jbi.messaging.NormalizedMessage} properties. The property name under which the
  * sequence number is stored is configured via this comparator's
  * <code>sequenceNumberKey</code> property.
  * 
@@ -38,27 +38,28 @@ public class DefaultComparator implements SequenceElementComparator<MessageExcha
     
     private String sequenceNumberKey;
     
-    private boolean sequenceNumberAsString;
-    
     public DefaultComparator() {
         sequenceNumberKey = SEQUENCE_NUMBER_KEY;
-        sequenceNumberAsString = false;
     }
     
     public String getSequenceNumberKey() {
         return sequenceNumberKey;
     }
 
+    /**
+     * The property name on the input message containing the sequence number
+     * 
+     * @param sequenceNumberPropertyName
+     */
     public void setSequenceNumberKey(String sequenceNumberPropertyName) {
         this.sequenceNumberKey = sequenceNumberPropertyName;
     }
 
-    public boolean isSequenceNumberAsString() {
-        return sequenceNumberAsString;
-    }
-
+    /**
+     * @org.apache.xbean.Property hidden="true
+     */
+    @Deprecated
     public void setSequenceNumberAsString(boolean sequenceNumberAsString) {
-        this.sequenceNumberAsString = sequenceNumberAsString;
     }
 
     public boolean predecessor(MessageExchange o1, MessageExchange o2) {
@@ -81,10 +82,10 @@ public class DefaultComparator implements SequenceElementComparator<MessageExcha
 
     private Long getSequenceNumber(MessageExchange exchange) {
         Object number = exchange.getMessage(IN).getProperty(sequenceNumberKey);
-        if (sequenceNumberAsString) {
-            return new Long((String)number);
+        if (number instanceof Long) {
+            return (Long) number;
         } else {
-            return (Long)number;
+            return Long.parseLong(number.toString());
         }
     }
     

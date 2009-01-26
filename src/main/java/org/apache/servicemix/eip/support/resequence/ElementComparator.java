@@ -41,14 +41,14 @@ class ElementComparator<E> implements SequenceElementComparator<Element<E>> {
     }
     
     /**
-     * @see com.icw.ehf.integration.common.collection.SequenceElementComparator#predecessor(java.lang.Object, java.lang.Object)
+     * @see SequenceElementComparator#predecessor(java.lang.Object, java.lang.Object)
      */
     public boolean predecessor(Element<E> o1, Element<E> o2) {
         return comparator.predecessor(o1.getObject(), o2.getObject());
     }
 
     /**
-     * @see com.icw.ehf.integration.common.collection.SequenceElementComparator#successor(java.lang.Object, java.lang.Object)
+     * @see SequenceElementComparator#successor(java.lang.Object, java.lang.Object)
      */
     public boolean successor(Element<E> o1, Element<E> o2) {
         return comparator.successor(o1.getObject(), o2.getObject());

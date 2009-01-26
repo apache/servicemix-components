@@ -40,7 +40,6 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="xpath-splitter"
- *                  description="An XPath Splitter"
  */
 public class XPathSplitter extends AbstractSplitter {
 
@@ -120,47 +119,54 @@ public class XPathSplitter extends AbstractSplitter {
         return xpathExpression.getXPath();
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setFactory(
-     *      javax.xml.xpath.XPathFactory)
+    /**
+     * The XPath factory.  If no factory is explicitely configured, a defaut one will be created
+     * using <code>XPathFactory.newInstance()</code>.
+     *
+     * @org.apache.xbean.Property
      */
     public void setFactory(XPathFactory factory) {
         xpathExpression.setFactory(factory);
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setFunctionResolver(
-     *      javax.xml.xpath.XPathFunctionResolver)
+    /**
+     * The function resolver.
+     *
+     * @org.apache.xbean.Property
      */
     public void setFunctionResolver(XPathFunctionResolver functionResolver) {
         xpathExpression.setFunctionResolver(functionResolver);
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setNamespaceContext(
-     *      javax.xml.namespace.NamespaceContext)
+    /**
+     * The namespace context to use when evaluating the xpath expression
+     *
+     * @org.apache.xbean.Property
      */
     public void setNamespaceContext(NamespaceContext namespaceContext) {
         xpathExpression.setNamespaceContext(namespaceContext);
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setTransformer(
-     *      org.apache.servicemix.jbi.jaxp.SourceTransformer)
+    /**
+     * @org.apache.xbean.Property hidden="true"
      */
     public void setTransformer(SourceTransformer transformer) {
         xpathExpression.setTransformer(transformer);
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.expression.JAXPXPathExpression#setVariableResolver(
-     *      org.apache.servicemix.expression.MessageVariableResolver)
+    /**
+     * The variable resolver.  The default one will enable the use of properties on the message, exchange,
+     * as well as making system properties and environment properties available.
+     *
+     * @org.apache.xbean.Property
      */
     public void setVariableResolver(MessageVariableResolver variableResolver) {
         xpathExpression.setVariableResolver(variableResolver);
     }
 
     /**
+     * The xpath expression used to split the input message.
+     * 
      * @org.apache.xbean.Property alias="xpath"
      */
     public void setXPath(String xpath) {

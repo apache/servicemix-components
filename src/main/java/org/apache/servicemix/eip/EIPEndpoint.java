@@ -88,7 +88,12 @@ public abstract class EIPEndpoint extends ProviderEndpoint {
         return store;
     }
     /**
+     * Configure the store to use.  If none is explicitely configured,
+     * the storeFactory will be used to create one.
+     *
      * @param store The store to set.
+     * @org.apache.xbean.Property
+     *                                         "
      */
     public void setStore(Store store) {
         this.store = store;
@@ -100,13 +105,23 @@ public abstract class EIPEndpoint extends ProviderEndpoint {
         return storeFactory;
     }
     /**
+     * The store factory to use when creating a store.  If no factory
+     * is explicitely defined, an in-memory only factory will be created.
+     *
      * @param storeFactory The storeFactory to set.
+     * @org.apache.xbean.Property
+     *                                         "
      */
     public void setStoreFactory(StoreFactory storeFactory) {
         this.storeFactory = storeFactory;
     }
     /**
+     * The lock manager to use for this endpoint.  If none is explicitely specified
+     * a default implementation will be provided.
+     *
      * @return the lockManager
+     * @org.apache.xbean.Property
+     *                                         "
      */
     public LockManager getLockManager() {
         return lockManager;
@@ -124,7 +139,12 @@ public abstract class EIPEndpoint extends ProviderEndpoint {
         return timerManager;
     }
     /**
+     * The timer manager to use for this endpoint.  If none is explicitely configured,
+     * a default implementation will be provided.
+     *
      * @param timerManager the timerManager to set
+     * @org.apache.xbean.Property
+     *                                         "
      */
     public void setTimerManager(TimerManager timerManager) {
         this.timerManager = timerManager;
@@ -250,6 +270,17 @@ public abstract class EIPEndpoint extends ProviderEndpoint {
     public Resource getWsdlResource() {
         return wsdlResource;
     }
+
+    /**
+     * When specified, this spring resource will be used to load the
+     * WSDL that will be exposed as a description for this endpoint.
+     * This property can be used to explicitely define the WSDL to be
+     * exposed by this endpoint.  This property takes precedence over
+     * the wsdlExchangeTarget property.
+     *
+     * @param wsdlResource
+     * @org.apache.xbean.Property
+     */
     public void setWsdlResource(Resource wsdlResource) {
         this.wsdlResource = wsdlResource;
     }
@@ -308,6 +339,13 @@ public abstract class EIPEndpoint extends ProviderEndpoint {
     public ExchangeTarget getWsdlExchangeTarget() {
         return wsdlExchangeTarget;
     }
+
+    /**
+     * An exchange target pointing to a JBI endpoint that
+     * will be used to load the WSDL describing this endpoint.
+     * This can be used when the endpoint proxies another endpoint
+     * so that the same WSDL definition will be exposed."
+     */
     public void setWsdlExchangeTarget(ExchangeTarget wsdlExchangeTarget) {
         this.wsdlExchangeTarget = wsdlExchangeTarget;
     }

@@ -52,6 +52,11 @@ public abstract class AbstractContentBasedRouter extends EIPEndpoint {
         return forwardOperation;
     }
 
+    /**
+     * Forward the operation qname when sending the exchange to the target.
+     * 
+     * @param forwardOperation
+     */
     public void setForwardOperation(boolean forwardOperation) {
         this.forwardOperation = forwardOperation;
     }

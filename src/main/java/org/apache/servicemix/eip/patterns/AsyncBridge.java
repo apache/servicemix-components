@@ -38,8 +38,20 @@ import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
 
 /**
- * 
+ * The async bridge pattern is used to bridge an In-Out exchange with two In-Only
+ * (or Robust-In-Only) exchanges. This pattern is the opposite of the {@link Pipeline}.
+  <br/>
+ * The AsyncBridge uses a correlation identifier to be able to correlate the received
+ * In-Out exchange, the In-Only sent as the request and the In-Only received as the response.
+ * Defaults values are provided to configure those correlation ids.  The default behavior
+ * is to use the exchange id of the incoming In-Out exchange as the correlation id and set
+ * it on the request exchange.  The same property with the same value should be present on the
+ * response exchange in order for the AsyncBridge to work.  ServiceMix components usually take
+ * care of propagating such properties, but failing to propagate it will result in errors.
+ *
  * @author gnodet
+ * @see Pipeline
+ *
  * @org.apache.xbean.XBean element="async-bridge"
  */
 public class AsyncBridge extends EIPEndpoint {
@@ -67,6 +79,13 @@ public class AsyncBridge extends EIPEndpoint {
     }
 
     /**
+     * The timeout property controls the amount of time that the async bridge will wait for the response
+     * after having sent the request.  The default value is 0 which means that no timeout apply.  If set
+     * to a non zero value, a timer will be started when after the request is sent.  When the timer
+     * expires, the In-Out exchange will be sent back with an error status and a
+     * {@link java.util.concurrent.TimeoutException} as the cause of the error.
+     * The value represents the number of milliseconds to wait.
+     *
      * @param timeout the timeout to set
      */
     public void setTimeout(long timeout) {
@@ -81,6 +100,12 @@ public class AsyncBridge extends EIPEndpoint {
     }
 
     /**
+     * The target which will be used to send an In-Only or Robust-In-Only exchange to.
+     * When receiving an In-Out exchange, the async bridge will create an In-Only request
+     * and send it to the specified target.  It then expects another In-Only exchange to
+     * come back as the response, which will be set as the Out message on the In-Out exchange.
+     * This property is mandatory and must be set to a valid target.
+     *
      * @param target the target to set
      */
     public void setTarget(ExchangeTarget target) {
@@ -95,7 +120,13 @@ public class AsyncBridge extends EIPEndpoint {
     }
 
     /**
+     * The expression used to compute the correlation id used to correlate the response and
+     * the request.  The default behavior is to use the exchange id of the incoming In-Out
+     * exchange as the correlation id.
+     *
      * @param requestCorrId the requestCorrId to set
+     * @see #setResponseCorrId(org.apache.servicemix.expression.Expression)
+     * @see #setResponseCorrIdProperty(String)
      */
     public void setRequestCorrId(Expression requestCorrId) {
         this.requestCorrId = requestCorrId;
@@ -109,7 +140,12 @@ public class AsyncBridge extends EIPEndpoint {
     }
 
     /**
+     * Name of the property used by default to compute the correlation id on the response
+     * exchange.
+     *
      * @param responseCorrIdProperty the responseCorrIdProperty to set
+     * @see #setRequestCorrId(org.apache.servicemix.expression.Expression)
+     * @see #setResponseCorrId(org.apache.servicemix.expression.Expression)
      */
     public void setResponseCorrIdProperty(String responseCorrIdProperty) {
         this.responseCorrIdProperty = responseCorrIdProperty;
@@ -123,7 +159,15 @@ public class AsyncBridge extends EIPEndpoint {
     }
 
     /**
+     * The expression used to compute the correlation id from the response exchange.
+     * The value computed by this expression must match the one from the {@link #setRequestCorrId}
+     * expression.  The default value is null, but if no specific expression is configured,
+     * an expression will be created which will extract the response correlation id from the
+     * {@link #setResponseCorrIdProperty(String)} property on the exchange.
+     *
      * @param responseCorrId the responseCorrId to set
+     * @see #setResponseCorrIdProperty(String)
+     * @see #setRequestCorrId(org.apache.servicemix.expression.Expression)
      */
     public void setResponseCorrId(Expression responseCorrId) {
         this.responseCorrId = responseCorrId;
@@ -137,6 +181,14 @@ public class AsyncBridge extends EIPEndpoint {
     }
 
     /**
+     * Boolean flag to control if In-Only or Robust-In-Only exchange should be used
+     * when sending the request.  The default value is <code>false</code> which means
+     * that an In-Only exchange will be used.  When using a Robust-In-Only exchange and
+     * when a fault is received, this fault will be sent back to the consumer on the In-Out
+     * exchange and the response exchange (if any) would be discarded.
+     * For both In-Only and Robust-In-Only, if the request exchange comes back with an Error
+     * status, this error will be conveyed back to the consumer in the same way.
+     *
      * @param useRobustInOnly the useRobustInOnly to set
      */
     public void setUseRobustInOnly(boolean useRobustInOnly) {

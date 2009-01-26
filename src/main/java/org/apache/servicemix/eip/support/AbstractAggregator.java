@@ -90,6 +90,10 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     /**
+     * Boolean flag that Controls whether the aggregate (when ready) will be sent synchronously or not.
+     * On ServiceMix 3.x, this can have an effect upon the flow and transaction semantics.
+     * The default value is <code>false</code>.
+     *
      * @param synchronous the synchronous to set
      */
     public void setSynchronous(boolean synchronous) {
@@ -104,6 +108,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     /**
+     * Boolean flag controlling if aggregate timeouts are rescheduled each time a new message is added
+     * to the aggregate.  If <code>false</code>, the timeout will expire when the specified amount of
+     * time elapsed after the first message is received for this aggregate.  If <code>true</code>,
+     * the timeout will expire when the specified amount of time elapsed after the last message is received.
+     * The default value is <code>false</code>.
+     *
      * @param rescheduleTimeouts the rescheduleTimeouts to set
      */
     public void setRescheduleTimeouts(boolean rescheduleTimeouts) {
@@ -118,6 +128,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     /**
+     * The exchange target that will be used to send the aggregate to.
+     *
      * @param target the target to set
      */
     public void setTarget(ExchangeTarget target) {
@@ -128,6 +140,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         return copyProperties;
     }
 
+    /**
+     * Copy all properties from the incoming messages to the aggregated
+     * message.  Default value is <code>true</code>.
+     *
+     * @param copyProperties
+     */
     public void setCopyProperties(boolean copyProperties) {
         this.copyProperties = copyProperties;
     }
@@ -136,6 +154,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         return copyAttachments;
     }
 
+    /**
+     * Copy all attachments from the incoming messages to the aggregated
+     * message.  Default value is <code>true</code>.
+     *
+     * @param copyAttachments
+     */
     public void setCopyAttachments(boolean copyAttachments) {
         this.copyAttachments = copyAttachments;
     }
@@ -210,7 +234,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     /**
-     * Set a new {@link StoreFactory} for creating the {@link Store} to hold closed aggregations
+     * Set a new {@link StoreFactory} for creating the {@link Store} to hold closed aggregations.
      * 
      * If it hasn't been set, a simple {@link MemoryStoreFactory} will be used by default.
      * 

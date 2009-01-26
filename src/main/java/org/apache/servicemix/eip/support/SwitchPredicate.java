@@ -30,16 +30,11 @@ import org.springframework.core.io.Resource;
 
 
 /**
- * switch (on/off) predicate based on a property that can come from
- * 1. a system property
- * 2. a property from a property file (specified as Spring resource)
- * 3. a property from the exchange
- * 4. swtich on/off via JMX MBean (not yet implemented)
+ * Switch (on/off) predicate based on a property that can come from
+ * a system property, a property from a property file (specified as Spring resource),
+ * or a property from the exchange.
  * <p/>
- * the property is interpreted as a boolean value
- * If fromExchange is true --> 3.
- * If propertyResource is specified --> 2.
- * else --> 1.
+ * The property is interpreted as a boolean value.
  *
  * @org.apache.xbean.XBean element="switch-predicate"
  */
@@ -92,6 +87,11 @@ public class SwitchPredicate implements InitializingBean, Predicate {
         return on.booleanValue();
     }
 
+    /**
+     * Default value of this predicate
+     *
+     * @org.apache.xbean.Property
+     */
     public void setOn(boolean status) {
         on = Boolean.valueOf(status);
     }
@@ -100,6 +100,11 @@ public class SwitchPredicate implements InitializingBean, Predicate {
         return propertyName;
     }
 
+    /**
+     * The name of the property to retrieve
+     *
+     * @org.apache.xbean.Property
+     */
     public void setPropertyName(String newPropertyName) {
         propertyName = newPropertyName;
         dirty = true;
@@ -109,6 +114,11 @@ public class SwitchPredicate implements InitializingBean, Predicate {
         return propertyResource;
     }
 
+    /**
+     * A spring resource to load a set of properties from.
+     *
+     * @org.apache.xbean.Property
+     */
     public void setPropertyResource(Resource newPropertyResource) {
         propertyResource = newPropertyResource;
     }
@@ -117,6 +127,11 @@ public class SwitchPredicate implements InitializingBean, Predicate {
         return fromExchange;
     }
 
+    /**
+     * Boolean flag indicating that the value is retrieved from the exchange properties.
+     *
+     * @org.apache.xbean.Property
+     */
     public void setFromExchange(boolean fromExchange) {
         this.fromExchange = fromExchange;
     }

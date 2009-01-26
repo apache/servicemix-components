@@ -54,14 +54,20 @@ public class RoutingRule {
     }
 
     /**
+     * The predicate associated to this routing rule.
+     *
      * @param predicate The predicate to set.
+     * @org.apache.xbean.Property
      */
     public void setPredicate(Predicate predicate) {
         this.predicate = predicate;
     }
 
     /**
+     * The target to send the routed exchange to if the predicate matches.
+     *
      * @param target The target to set.
+     * @org.apache.xbean.Property
      */
     public void setTarget(ExchangeTarget target) {
         this.target = target;

@@ -69,6 +69,10 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * The qualified name that will be used as the root xml element when building the aggregate.
+     * Messages contents will be appended to this root element as direct children or inside
+     * an element dependending on the <code>messageElementName</code> property.
+     *
      * @param aggregateElementName the aggregateElementName to set
      */
     public void setAggregateElementName(QName aggregateElementName) {
@@ -83,6 +87,10 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * An expression used to compute the correlation ids of incoming messages to find
+     * related messages.  The default value is to retrieve the same property as the
+     * splitter.
+     *
      * @param corrId the corrId to set
      */
     public void setCorrId(Expression corrId) {
@@ -97,6 +105,10 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * An expression used to compute the total number of message that the aggregate will contain.
+     * The default value is to retrieve the same property as the splitter.  This property is evaluated
+     * on each incoming message and must always have the same value for all messages in the same aggregate.
+     *
      * @param count the count to set
      */
     public void setCount(Expression count) {
@@ -111,6 +123,9 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * The name of the xml attribute attached to the root element that will contain the number of
+     * messages in this aggregate.
+     *
      * @param countAttribute the countAttribute to set
      */
     public void setCountAttribute(String countAttribute) {
@@ -125,6 +140,9 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * An expression used to compute the index of this message in the aggregate.
+     * For a given message, the index must be unique within the aggregate and must
+     * range between <code>0</code> and <code>count - 1</code> included.
      * @param index the index to set
      */
     public void setIndex(Expression index) {
@@ -139,6 +157,9 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * The name of the xml attribute attached to the message element that will contain the index of
+     * messages in this aggregate.
+     *
      * @param indexAttribute the indexAttribute to set
      */
     public void setIndexAttribute(String indexAttribute) {
@@ -153,6 +174,10 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * The qualified name of the xml element used to embed each message
+     * when building the aggregated message.  If <code>null</code>, messages
+     * contents will be appended directly as children of the root element.
+     *
      * @param messageElementName the messageElementName to set
      */
     public void setMessageElementName(QName messageElementName) {
@@ -167,6 +192,9 @@ public class SplitAggregator extends AbstractAggregator {
     }
 
     /**
+     * The maximum amount of time (in milliseconds) that can elapse between messages for a single aggregate.
+     * The default value is <code>0</code> which means that the timeout is not used at all. 
+     *
      * @param timeout the timeout to set
      */
     public void setTimeout(long timeout) {

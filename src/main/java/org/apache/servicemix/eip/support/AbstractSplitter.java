@@ -86,6 +86,8 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     }
 
     /**
+     * Specifies wether exchanges for all parts are sent synchronously or not.
+     *
      * @param synchronous the synchronous to set
      */
     public void setSynchronous(boolean synchronous) {
@@ -100,6 +102,14 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     }
 
     /**
+     * Indicates if faults and errors from splitted parts should be sent
+     * back to the consumer.  In such a case, only the first fault or
+     * error received will be reported.
+     * Note that if the consumer is synchronous, it will be blocked
+     * until all parts have been successfully acked, or
+     * a fault or error is reported, and the exchange will be kept in the
+     * store for recovery.
+     *
      * @param reportErrors The reportErrors to set.
      */
     public void setReportErrors(boolean reportErrors) {
@@ -114,6 +124,8 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     }
 
     /**
+     * The address of the target endpoint.
+     *
      * @param target The target to set.
      */
     public void setTarget(ExchangeTarget target) {
@@ -128,6 +140,8 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     }
 
     /**
+     * Indicates if incoming attachments should be forwarded with the new exchanges.
+     *
      * @param forwardAttachments The forwardAttachments to set.
      */
     public void setForwardAttachments(boolean forwardAttachments) {
@@ -142,6 +156,8 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     }
 
     /**
+     * Indicates if properties on the incoming message should be forwarded.
+     * 
      * @param forwardProperties The forwardProperties to set.
      */
     public void setForwardProperties(boolean forwardProperties) {

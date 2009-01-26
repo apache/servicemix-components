@@ -33,7 +33,6 @@ import org.apache.servicemix.eip.support.RoutingRule;
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="content-based-router"
- *                  description="A Content-Based Router"
  */
 public class ContentBasedRouter extends AbstractContentBasedRouter {
 
@@ -50,6 +49,8 @@ public class ContentBasedRouter extends AbstractContentBasedRouter {
     }
 
     /**
+     * The list of routing rules.
+     * 
      * @param rules The rules to set.
      */
     public void setRules(RoutingRule[] rules) {

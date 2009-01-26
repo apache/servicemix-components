@@ -20,10 +20,9 @@ import java.util.Map;
 
 
 /**
- * A simple namespace context with a clean xbean configuration.
+ * A simple namespace context.
  *
  * @org.apache.xbean.XBean element="namespace-context"
- *                         description="A NamespaceContext implementation"
  * @author gnodet
  * @version $Revision: 397796 $
  */
@@ -39,7 +38,7 @@ public class NamespaceContextImpl extends org.apache.servicemix.jbi.jaxp.Namespa
     }
 
     /**
-     * Keep the getter/setter to keep xbean annotation
+     * Map of namespaces.
      * @param namespaces The namespaces to set.
      */
     public void setNamespaces(Map<String, String> namespaces) {

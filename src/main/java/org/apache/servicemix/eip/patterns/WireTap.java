@@ -43,7 +43,6 @@ import org.apache.servicemix.store.Store;
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="wire-tap"
- *                  description="A WireTap"
  */
 public class WireTap extends EIPEndpoint {
 
@@ -82,6 +81,8 @@ public class WireTap extends EIPEndpoint {
     }
 
     /**
+     * The main target destination which will receive the exchange
+     *
      * @param target The target to set.
      */
     public void setTarget(ExchangeTarget target) {
@@ -97,6 +98,8 @@ public class WireTap extends EIPEndpoint {
     }
 
     /**
+     * The listener destination for fault messages
+     *
      * @param faultListener The faultListener to set.
      */
     public void setFaultListener(ExchangeTarget faultListener) {
@@ -111,6 +114,8 @@ public class WireTap extends EIPEndpoint {
     }
 
     /**
+     * The listener destination for in messages
+     *
      * @param inListener The inListener to set.
      */
     public void setInListener(ExchangeTarget inListener) {
@@ -125,6 +130,8 @@ public class WireTap extends EIPEndpoint {
     }
 
     /**
+     * The listener destination for out messages
+     *
      * @param outListener The outListener to set.
      */
     public void setOutListener(ExchangeTarget outListener) {
@@ -139,6 +146,10 @@ public class WireTap extends EIPEndpoint {
     }
 
     /**
+     * If copyProperties is <code>true</code>, properties
+     * on the in message will be copied to the out / fault
+     * message before it is sent.
+     * 
      * @param copyProperties the copyProperties to set
      */
     public void setCopyProperties(boolean copyProperties) {

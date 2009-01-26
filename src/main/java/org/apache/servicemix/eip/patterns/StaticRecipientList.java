@@ -39,7 +39,6 @@ import org.apache.servicemix.common.util.MessageUtil;
  * @author gnodet
  * @version $Revision: 376451 $
  * @org.apache.xbean.XBean element="static-recipient-list"
- *                  description="A static Recipient List"
  */
 public class StaticRecipientList extends EIPEndpoint {
 
@@ -74,6 +73,8 @@ public class StaticRecipientList extends EIPEndpoint {
     }
 
     /**
+     * A list of recipients that will each receive a copy of the input message.
+     *
      * @param recipients The recipients to set.
      */
     public void setRecipients(ExchangeTarget[] recipients) {
@@ -88,6 +89,14 @@ public class StaticRecipientList extends EIPEndpoint {
     }
 
     /**
+     * Indicates if faults and errors from recipients should be sent
+     * back to the consumer.  In such a case, only the first fault or
+     * error received will be reported.
+     * Note that if the consumer is synchronous, it will be blocked
+     * until all recipients successfully acked the exchange, or
+     * a fault or error is reported, and the exchange will be kept in the
+     * store for recovery.
+     *
      * @param reportErrors The reportErrors to set.
      */
     public void setReportErrors(boolean reportErrors) {
