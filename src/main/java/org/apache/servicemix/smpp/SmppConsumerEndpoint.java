@@ -43,14 +43,14 @@ import org.jsmpp.session.SMPPSession;
  * A polling component which bind with jSMPP and receive SMPP messages and sends
  * the SMPPs into the JBI bus as messages.
  * 
- * @org.apache.xbean.XBean element="poller"
+ * @org.apache.xbean.XBean element="consumer"
  * @author jbonofre
  * @author lhein
  */
-public class SmppPollerEndpoint extends ConsumerEndpoint implements SmppEndpointType {
+public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpointType {
 
     // logging facility
-    private final static transient Log log = LogFactory.getLog(SmppPollerEndpoint.class);
+    private final static transient Log log = LogFactory.getLog(SmppConsumerEndpoint.class);
 
     // default SMPP port
     private static final int SMPP_DEFAULT_PORT = 2775;
@@ -110,14 +110,6 @@ public class SmppPollerEndpoint extends ConsumerEndpoint implements SmppEndpoint
         // check for valid system ID
         if (this.systemId == null || this.systemId.trim().length() <= 0) {
             throw new IllegalArgumentException("The SMPP system ID is mandatory.");
-        }
-        // check the marshaler
-        if (this.getMarshaler() == null) {
-            this.setMarshaler(new DefaultSmppMarshaler());
-        } else {
-            if (!(this.getMarshaler() instanceof SmppMarshalerSupport)) {
-                throw new IllegalArgumentException("The provided marshaler is not a valid SMPP marshaler.");
-            }
         }
     }
 
