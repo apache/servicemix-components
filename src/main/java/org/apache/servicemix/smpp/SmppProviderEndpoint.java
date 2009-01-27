@@ -54,14 +54,14 @@ import org.jsmpp.util.TimeFormatter;
  * A provider component receives XML message from the NMR and converts into SMPP
  * packet and sends it to SMS.
  * 
- * @org.apache.xbean.XBean element="sender"
+ * @org.apache.xbean.XBean element="provider"
  * @author jbonofre
  * @author lhein
  */
-public class SmppSenderEndpoint extends ProviderEndpoint implements SmppEndpointType {
+public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpointType {
 
     // logging facility
-    private final static transient Log log = LogFactory.getLog(SmppSenderEndpoint.class);
+    private final static transient Log log = LogFactory.getLog(SmppProviderEndpoint.class);
 
     // SMPP default port number
     private final static int SMPP_DEFAULT_PORT = 2775;
@@ -124,14 +124,6 @@ public class SmppSenderEndpoint extends ProviderEndpoint implements SmppEndpoint
         // check for valid password
         if (this.password == null || this.password.trim().length() <= 0) {
             throw new IllegalArgumentException("The SMPP system password is mandatory.");
-        }
-        // check the marshaler
-        if (this.getMarshaler() == null) {
-            this.setMarshaler(new DefaultSmppMarshaler());
-        } else {
-            if (!(this.getMarshaler() instanceof SmppMarshalerSupport)) {
-                throw new IllegalArgumentException("The provided marshaler is not a valid SMPP marshaler");
-            }
         }
     }
 

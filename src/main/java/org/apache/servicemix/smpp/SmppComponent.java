@@ -65,6 +65,6 @@ public class SmppComponent extends DefaultComponent {
      * @see org.apache.servicemix.common.DefaultComponent#getEndpointClasses()
      */
     protected Class[] getEndpointClasses() {
-        return new Class[] {SmppConsumerEndpoint.class, SmppSenderEndpoint.class};
+        return new Class[] {SmppConsumerEndpoint.class, SmppProviderEndpoint.class};
     }
 }
