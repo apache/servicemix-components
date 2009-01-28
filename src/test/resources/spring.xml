@@ -29,7 +29,7 @@
                 <sm:component>
                     <smpp:component>
                         <smpp:endpoints>
-                            <smpp:sender service="test:service" endpoint="endpoint"
+                            <smpp:provider service="test:service" endpoint="endpoint"
                                 host="localhost"
                                 port="2700"
                                 systemId="test"

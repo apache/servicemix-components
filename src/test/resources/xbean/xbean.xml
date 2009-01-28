@@ -20,7 +20,7 @@
 <beans xmlns:smpp="http://servicemix.apache.org/smpp/1.0"
        xmlns:test="http://test">
        
-    <smpp:sender service="test:service"
+    <smpp:provider service="test:service"
                  endpoint="sender"
                  host="localhost"
                  port="2700"

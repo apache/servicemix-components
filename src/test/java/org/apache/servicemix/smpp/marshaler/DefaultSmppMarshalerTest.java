@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.smpp;
+package org.apache.servicemix.smpp.marshaler;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  * 
  * @author jbonofre
  */
-public class SmppMarshalerTest extends TestCase {
+public class DefaultSmppMarshalerTest extends TestCase {
 
     private static final String SOURCE = "0123456789";
     private static final String DESTINATION = "9876543210";

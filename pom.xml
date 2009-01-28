@@ -76,14 +76,6 @@
         </servicemix.osgi.bundles>
     </properties>
     
-    <repositories>
-        <repository>
-            <id>nanthrax</id>
-            <name>Nanthrax Maven Repository</name>
-            <url>http://maven.nanthrax.net</url>
-        </repository>
-    </repositories>
-    
     <dependencies>
         <dependency>
             <groupId>org.apache.servicemix</groupId>

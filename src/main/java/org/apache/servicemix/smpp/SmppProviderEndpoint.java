@@ -125,6 +125,10 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
         if (this.password == null || this.password.trim().length() <= 0) {
             throw new IllegalArgumentException("The SMPP system password is mandatory.");
         }
+		// check the marshaler
+		if (this.getMarshaler() == null) {
+			this.setMarshaler(new DefaultSmppMarshaler());
+		}
     }
 
     /**
