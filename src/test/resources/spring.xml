@@ -31,7 +31,10 @@
             	<ftp:endpoints>
             		<ftp:sender service="test:service"
                             endpoint="endpoint" 
-                            uri="ftp://servicemix:rocks@localhost/smx/test" />
+                            uri="ftp://servicemix:rocks@localhost/smx/test"
+                            overwrite="true" 
+                            uploadPrefix="."
+                            uploadSuffix=".tmp"/>
             	</ftp:endpoints>
             </ftp:component>
         </sm:component>

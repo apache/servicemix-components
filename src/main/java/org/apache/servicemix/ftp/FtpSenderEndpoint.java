@@ -44,6 +44,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     private String uniqueFileName = "ServiceMix";
     private boolean overwrite;
     private URI uri;
+    private String uploadPrefix;
     private String uploadSuffix;
     private boolean checkDuplicates = true;
 
@@ -136,6 +137,20 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         this.overwrite = overwrite;
     }
 
+    public String getUploadPrefix() {
+        return uploadPrefix;
+    }
+
+    /**
+     * Set the file name prefix used during upload.  The prefix will be automatically removed as soon as the upload has completed.  
+     * This allows other processes to discern completed files from files that are being uploaded.
+     * 
+     * @param uploadPrefix
+     */
+    public void setUploadPrefix(String uploadPrefix) {
+        this.uploadPrefix = uploadPrefix;
+    }
+
     public String getUploadSuffix() {
         return uploadSuffix;
     }
@@ -183,7 +198,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                                 + " : file already exists and overwrite has not been enabled");
                     }
                 }
-                uploadName = uploadSuffix == null ? name : name + uploadSuffix;
+                uploadName = getUploadName(name);
                 out = client.storeFileStream(uploadName);
             }
             if (out == null) {
@@ -204,6 +219,12 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
             }
             returnClient(client);
         }
+    }
+
+    protected String getUploadName(String name) {
+        String result = uploadPrefix == null ? name : uploadPrefix + name;
+        result = uploadSuffix == null ? result : result + uploadSuffix;
+        return result;
     }
 
     protected FTPClientPool createClientPool() throws Exception {

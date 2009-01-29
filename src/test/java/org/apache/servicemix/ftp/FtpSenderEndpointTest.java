@@ -16,30 +16,29 @@
  */
 package org.apache.servicemix.ftp;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.jbi.management.DeploymentException;
-import javax.xml.namespace.QName;
-
 import junit.framework.TestCase;
 
 /**
- * Test cases for {@link FtpPollerEndpoint} 
+ * Test cases for {@link FtpSenderEndpoint} 
  */
-public class FtpPollerEndpointTest extends TestCase {
+public class FtpSenderEndpointTest extends TestCase {
 
-    public void testValidateNoCwdWhenRecursive() throws URISyntaxException {
-        FtpPollerEndpoint endpoint = new FtpPollerEndpoint();
-        endpoint.setUri(new URI("ftp://anonymous@just.a.server/test"));
-        endpoint.setTargetService(new QName("test", "service"));
-        endpoint.setChangeWorkingDirectory(true);
-        try {
-            endpoint.validate();
-            fail("validate() should throw exception when changeWorkingDirectory='true' and recursive='true'");
-        } catch (DeploymentException e) {
-            //this is what we expect
-        }
+    public void testGetUploadNameWithPrefix() {
+        FtpSenderEndpoint endpoint = new FtpSenderEndpoint();
+        endpoint.setUploadPrefix("work/");
+        assertEquals("work/myfile.xml", endpoint.getUploadName("myfile.xml"));
     }
+    
+    public void testGetUploadNameWithSuffix() {
+        FtpSenderEndpoint endpoint = new FtpSenderEndpoint();
+        endpoint.setUploadSuffix(".tmp");
+        assertEquals("myfile.xml.tmp", endpoint.getUploadName("myfile.xml"));
+    }
+    
+    public void testGetUploadNameWithPrefixAndSuffix() {
+        FtpSenderEndpoint endpoint = new FtpSenderEndpoint();
+        endpoint.setUploadPrefix("work/");
+        endpoint.setUploadSuffix(".tmp");
+        assertEquals("work/myfile.xml.tmp", endpoint.getUploadName("myfile.xml"));
+    } 
 }
-

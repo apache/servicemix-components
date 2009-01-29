@@ -143,12 +143,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <includes>
-            <include>**/*Test.*</include>
-          </includes>
           <excludes>
             <!--  TODO - need an embedded FTP server to be able to properly test -->
-            <exclude>**/*Test.*</exclude>
+            <exclude>**/DynamicEndpointTest.java</exclude>
+            <exclude>**/PollDirectoryTest.java</exclude>
+            <exclude>**/SpringComponentTest.java</exclude>
           </excludes>
         </configuration>
       </plugin>
