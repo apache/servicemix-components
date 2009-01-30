@@ -74,6 +74,7 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         jbi.setCreateMBeanServer(false);
         jbi.setTransactionManager(tm);
         jbi.setAutoEnlistInTransaction(true);
+        configureThreadPool(jbi);
         listener = new ExchangeCompletedListener();
         jbi.addListener(listener);
         jbi.init();

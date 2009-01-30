@@ -37,6 +37,7 @@ import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.eip.support.ExchangeTarget;
+import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.store.memory.MemoryStore;
@@ -55,6 +56,7 @@ public abstract class AbstractEIPTest extends TestCase {
         jbi.setUseMBeanServer(false);
         jbi.setCreateMBeanServer(false);
         configureContainer();
+        configureThreadPool(jbi);
         listener = new ExchangeCompletedListener();
         jbi.addListener(listener);
      
@@ -73,6 +75,15 @@ public abstract class AbstractEIPTest extends TestCase {
     
     protected void configureContainer() throws Exception {
         jbi.setFlowName("st");
+    }
+    
+    protected void configureThreadPool(JBIContainer container) {
+        ExecutorFactoryImpl factory = new ExecutorFactoryImpl();
+        // disable queuing and increase maximum thread pool size to 16 instead
+        // to avoid deadlocking the unit tests (they use sendSync extensively)
+        factory.getDefaultConfig().setMaximumPoolSize(16);
+        factory.getDefaultConfig().setQueueSize(0);
+        container.setExecutorFactory(factory);
     }
     
     protected void configurePattern(EIPEndpoint endpoint) {
