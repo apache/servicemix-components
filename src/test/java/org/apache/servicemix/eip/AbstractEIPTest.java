@@ -79,10 +79,11 @@ public abstract class AbstractEIPTest extends TestCase {
     
     protected void configureThreadPool(JBIContainer container) {
         ExecutorFactoryImpl factory = new ExecutorFactoryImpl();
-        // disable queuing and increase maximum thread pool size to 16 instead
+        // increase thread pool size to the level that's used in the distribution
         // to avoid deadlocking the unit tests (they use sendSync extensively)
-        factory.getDefaultConfig().setMaximumPoolSize(16);
-        factory.getDefaultConfig().setQueueSize(0);
+        factory.getDefaultConfig().setCorePoolSize(16);
+        factory.getDefaultConfig().setMaximumPoolSize(32);
+        factory.getDefaultConfig().setQueueSize(256);
         container.setExecutorFactory(factory);
     }
     
