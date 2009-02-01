@@ -28,7 +28,6 @@ import javax.jbi.messaging.NormalizedMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
-import org.apache.servicemix.smpp.marshaler.DefaultSmppMarshaler;
 import org.apache.servicemix.smpp.marshaler.SmppMarshalerSupport;
 import org.jsmpp.bean.AlertNotification;
 import org.jsmpp.bean.BindType;
@@ -65,6 +64,8 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     private int port;
     private String systemId;
     private String password;
+    private int enquireLinkTimer = 50000;
+    private int transactionTimer = 100000;
 
     private SmppMarshalerSupport marshaler;
 
@@ -111,11 +112,21 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
         if (this.systemId == null || this.systemId.trim().length() <= 0) {
             throw new IllegalArgumentException("The SMPP system ID is mandatory.");
         }
+        // check the enquireLinkTimer
+        if (this.enquireLinkTimer <= 0) {
+            throw new IllegalArgumentException("The enquireLinkTimer value must be greater than 0.");
+        }
+        // check the transactionTimer
+        if (this.transactionTimer <= 0) {
+            throw new IllegalArgumentException("The transactionTimer value must be greater than 0.");
+        }
     }
 
     /*
      * (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.AbstractEndpoint#process(javax.jbi.messaging.MessageExchange)
+     * @see
+     * org.apache.servicemix.common.endpoints.AbstractEndpoint#process(javax
+     * .jbi.messaging.MessageExchange)
      */
     @Override
     public void process(MessageExchange exchange) throws Exception {
@@ -123,7 +134,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
             // received DONE for a sent message
             return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            // received ERROR state for a sent message 
+            // received ERROR state for a sent message
             // there is no real error handling here for now
             return;
         } else {
@@ -137,11 +148,17 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     private void connect() {
         // create the SMPP session
         session = new SMPPSession();
+        // define the enquireLinkTimer
+        session.setEnquireLinkTimer(this.enquireLinkTimer);
+        // define the transactionTimer
+        session.setTransactionTimer(this.transactionTimer);
         // define a message receiver listener on the SMPP connection
         session.setMessageReceiverListener(new MessageReceiverListener() {
             /*
              * (non-Javadoc)
-             * @see org.jsmpp.session.MessageReceiverListener#onAcceptAlertNotification(org.jsmpp.bean.AlertNotification)
+             * @see
+             * org.jsmpp.session.MessageReceiverListener#onAcceptAlertNotification
+             * (org.jsmpp.bean.AlertNotification)
              */
             public void onAcceptAlertNotification(AlertNotification alertNotification) {
                 // nothing to do
@@ -149,7 +166,9 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
 
             /*
              * (non-Javadoc)
-             * @see org.jsmpp.session.MessageReceiverListener#onAcceptDeliverSm(org.jsmpp.bean.DeliverSm)
+             * @see
+             * org.jsmpp.session.MessageReceiverListener#onAcceptDeliverSm(org
+             * .jsmpp.bean.DeliverSm)
              */
             public void onAcceptDeliverSm(DeliverSm deliverSm) {
                 try {
@@ -163,7 +182,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
             }
 
         });
-        
+
         // connect and bind to the SMPP server
         try {
             session.connectAndBind(this.host, this.port, new BindParameter(BindType.BIND_RX, this.systemId,
@@ -188,18 +207,18 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
         this.session.unbindAndClose();
     }
 
-    
     public int getPort() {
         return port;
     }
 
     /**
-     * <p>This attribute specifies the port number to use for connecting to the
-     * server.<br/><p>
-     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>2775</b></i> 
+     * <p>
+     * This attribute specifies the port number to use for connecting to the
+     * server.<br/>
+     * <p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>2775</b></i>
      * 
-     * @param port 
-     *                  a <code>int</code> value representing the port number
+     * @param port a <code>int</code> value representing the port number
      */
     public void setPort(int port) {
         this.port = port;
@@ -210,12 +229,13 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>This attribute specifies the host name to use for connecting to the
-     * server.<br/><p>
+     * <p>
+     * This attribute specifies the host name to use for connecting to the
+     * server.<br/>
+     * <p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i>
      * 
-     * @param host
-     *                  a <code>String</code> value representing the host name 
+     * @param host a <code>String</code> value representing the host name
      */
     public void setHost(String host) {
         this.host = host;
@@ -226,12 +246,13 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>This attribute specifies the system id to use for connecting to the
-     * server.<br/><p>
+     * <p>
+     * This attribute specifies the system id to use for connecting to the
+     * server.<br/>
+     * <p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i>
      * 
-     * @param systemId
-     *                  a <code>String</code> value representing the system id
+     * @param systemId a <code>String</code> value representing the system id
      */
     public void setSystemId(String systemId) {
         this.systemId = systemId;
@@ -242,12 +263,13 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>This attribute specifies the password to use for connecting to the
-     * server.<br/><p>
+     * <p>
+     * This attribute specifies the password to use for connecting to the
+     * server.<br/>
+     * <p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i>
      * 
-     * @param password 
-     *                  a <code>String</code> value representing the password
+     * @param password a <code>String</code> value representing the password
      */
     public void setPassword(String password) {
         this.password = password;
@@ -258,15 +280,55 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>With this method you can specify a marshaler class which provides the
-     * logic for converting a sms message into a normalized message. This class has
-     * to implement the interface class <code>SmppMarshaler</code>. 
-     * If you don't specify a marshaler, the <code>DefaultSmppMarshaler</code> will be used.</p>
+     * <p>
+     * With this method you can specify a marshaler class which provides the
+     * logic for converting a sms message into a normalized message. This class
+     * has to implement the interface class <code>SmppMarshaler</code>. If you
+     * don't specify a marshaler, the <code>DefaultSmppMarshaler</code> will be
+     * used.
+     * </p>
      * 
-     * @param marshaler
-     *                  a <code>SmppMarshaler</code> class representing the marshaler
+     * @param marshaler a <code>SmppMarshaler</code> class representing the
+     *            marshaler
      */
     public void setMarshaler(SmppMarshalerSupport marshaler) {
         this.marshaler = marshaler;
     }
+
+    public int getEnquireLinkTimer() {
+        return enquireLinkTimer;
+    }
+
+    /**
+     * <p>
+     * This attribute specifies the enquire link timer defining the SMSC time
+     * interval.<br/>
+     * </p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>50000</b></i>
+     * 
+     * @param enquireLinkTimer a <code>int</code> value representing the enquire
+     *            link timer
+     */
+    public void setEnquireLinkTimer(int enquireLinkTimer) {
+        this.enquireLinkTimer = enquireLinkTimer;
+    }
+
+    public int getTransactionTimer() {
+        return transactionTimer;
+    }
+
+    /**
+     * <p>
+     * This attribute specifies the transaction timer defining the SMSC timeout.
+     * <br/>
+     * </p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>100000</b></i>
+     * 
+     * @param transactionTimer a <code>int</code> value representing the
+     *            transaction timer (timeout)
+     */
+    public void setTransactionTimer(int transactionTimer) {
+        this.transactionTimer = transactionTimer;
+    }
+
 }

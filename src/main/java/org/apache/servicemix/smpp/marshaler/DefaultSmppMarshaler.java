@@ -27,6 +27,7 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.jsmpp.bean.MessageRequest;
 import org.jsmpp.bean.NumberingPlanIndicator;
+import org.jsmpp.bean.SMSCDeliveryReceipt;
 import org.jsmpp.bean.SubmitSm;
 import org.jsmpp.bean.TypeOfNumber;
 import org.w3c.dom.Document;
@@ -37,19 +38,21 @@ import org.w3c.dom.NodeList;
  * 
  * @author jbonofre
  * @author lhein
+ * @author mullerc
  */
 public class DefaultSmppMarshaler implements SmppMarshalerSupport {
 
-    // logging facility
     private static final transient Log log = LogFactory.getLog(DefaultSmppMarshaler.class);
 
-    // message tags
     private final static String TAG_MESSAGE = "message";
     private final static String TAG_SOURCE = "source";
     private final static String TAG_DESTINATION = "destination";
     private final static String TAG_TEXT = "text";
     private final static String TAG_TON = "ton";
     private final static String TAG_NPI = "npi";
+    private final static String TAG_REGISTERED_DELIVERY = "registeredDelivery";
+    private final static String TAG_SCHEDULE_DELIVERY_TIME = "scheduleDeliveryTime";
+    private final static String TAG_VALIDITY_PERIOD = "validityPeriod";
 
     private final static String TAG_MESSAGE_OPEN = "<" + TAG_MESSAGE + ">";
     private final static String TAG_MESSAGE_CLOSE = "</" + TAG_MESSAGE + ">";
@@ -63,86 +66,100 @@ public class DefaultSmppMarshaler implements SmppMarshalerSupport {
     private final static String TAG_TON_CLOSE = "</" + TAG_TON + ">";
     private final static String TAG_NPI_OPEN = "<" + TAG_NPI + ">";
     private final static String TAG_NPI_CLOSE = "</" + TAG_NPI + ">";
-
-    // source transformer
+    private final static String TAG_REGISTERED_DELIVERY_OPEN = "<" + TAG_REGISTERED_DELIVERY + ">";
+    private final static String TAG_REGISTERED_DELIVERY_CLOSE = "</" + TAG_REGISTERED_DELIVERY + ">";
+    private final static String TAG_SCHEDULE_DELIVERY_TIME_OPEN = "<" + TAG_SCHEDULE_DELIVERY_TIME + ">";
+    private final static String TAG_SCHEDULE_DELIVERY_TIME_CLOSE = "</" + TAG_SCHEDULE_DELIVERY_TIME + ">";
+    private final static String TAG_VALIDITY_PERIOD_OPEN = "<" + TAG_VALIDITY_PERIOD + ">";
+    private final static String TAG_VALIDITY_PERIOD_CLOSE = "</" + TAG_VALIDITY_PERIOD + ">";
+    
     private SourceTransformer transformer = new SourceTransformer();
 
    /*
     * (non-Javadoc)
     * @see org.apache.servicemix.smpp.marshaler.SmppMarshalerSupport#fromNMS(javax.jbi.messaging.MessageExchange, javax.jbi.messaging.NormalizedMessage)
     */
-    public MessageRequest fromNMS(MessageExchange exchange, NormalizedMessage message)
-        throws TransformerException {
+    public MessageRequest fromNMS(MessageExchange exchange, NormalizedMessage message) throws TransformerException {
         SubmitSm sm = new SubmitSm();
         String ton = null;
         String npi = null;
+        
         try {
-            log.debug("Convert normalized message content to DOM document");
             Document document = transformer.toDOMDocument(message);
-            log.debug("Normalize test representation");
             document.getDocumentElement().normalize();
-            log.debug("Get the normalized message source");
-            NodeList node = document.getElementsByTagName(TAG_SOURCE);
-            if (node != null && node.getLength() > 0) {
-                log.debug("The source exists in the normalized message");
-                sm.setSourceAddr(node.item(0).getChildNodes().item(0).getNodeValue());
+            NodeList node = null;
+            
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_SOURCE)) != null) {
+                sm.setSourceAddr(getFirstNodeValue(node));
                 log.debug(TAG_SOURCE + ": " + sm.getSourceAddr());
             }
-            log.debug("Get the normalized message destination");
-            node = document.getElementsByTagName(TAG_DESTINATION);
-            if (node != null && node.getLength() > 0) {
-                log.debug("The destination exists in the normalized message");
-                sm.setDestAddress(node.item(0).getChildNodes().item(0).getNodeValue());
-                log.debug(TAG_DESTINATION + ": " + sm.getDestAddress());
+
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_DESTINATION)) != null) {
+            	sm.setDestAddress(getFirstNodeValue(node));
+            	log.debug(TAG_DESTINATION + ": " + sm.getDestAddress());
             }
-            log.debug("Get the normalized message text");
-            node = document.getElementsByTagName(TAG_TEXT);
-            if (node != null && node.getLength() > 0) {
-                log.debug("The text exists in the normalized message");
-                sm.setShortMessage(node.item(0).getChildNodes().item(0).getNodeValue().getBytes());
-                log.debug(TAG_TEXT + ": " + new String(sm.getShortMessage()));
+
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_TEXT)) != null) {
+            	sm.setShortMessage(getFirstNodeValue(node).getBytes());
+            	log.debug(TAG_TEXT + ": " + new String(sm.getShortMessage()));
             }
-            log.debug("Get the normalized message TON");
-            node = document.getElementsByTagName(TAG_TON);
-            if (node != null && node.getLength() > 0) {
-                log.debug("The TON exists in the normalized message");
-                ton = node.item(0).getChildNodes().item(0).getNodeValue();
+            
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_TON)) != null) {
+            	ton = getFirstNodeValue(node);
                 sm.setDestAddrTon(TypeOfNumber.valueOf(ton).value());
                 sm.setSourceAddrTon(TypeOfNumber.valueOf(ton).value());
                 log.debug(TAG_TON + ": " + ton);
             }
-            log.debug("Get the normalized message NPI");
-            node = document.getElementsByTagName(TAG_NPI);
-            if (node != null && node.getLength() > 0) {
-                log.debug("The NPI exists in the normalized message");
-                npi = node.item(0).getChildNodes().item(0).getNodeValue();
+
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_NPI)) != null) {
+            	npi = getFirstNodeValue(node);
                 sm.setDestAddrNpi(NumberingPlanIndicator.valueOf(npi).value());
                 sm.setSourceAddrNpi(NumberingPlanIndicator.valueOf(npi).value());
                 log.debug(TAG_NPI + ": " + npi);
             }
+            
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_REGISTERED_DELIVERY)) != null) {
+                String registeredDelivery = getFirstNodeValue(node);
+                sm.setRegisteredDelivery(SMSCDeliveryReceipt.valueOf(registeredDelivery).value());
+                log.debug(TAG_REGISTERED_DELIVERY + ": " + registeredDelivery);
+            } else {
+            	sm.setRegisteredDelivery(SMSCDeliveryReceipt.DEFAULT.value());
+            	log.debug(TAG_REGISTERED_DELIVERY + ": DEFAULT");
+            }
 
-            log.debug("Check the mandatory attribute 'source'");
-            if (sm.getSourceAddr() == null) {
-                throw new TransformerException("Invalid message content. Missing tag: " + TAG_SOURCE);
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_SCHEDULE_DELIVERY_TIME)) != null) {
+                sm.setScheduleDeliveryTime(getFirstNodeValue(node));
+                log.debug(TAG_SCHEDULE_DELIVERY_TIME + ": " + sm.getScheduleDeliveryTime());
             }
-            log.debug("Check the mandatory attribute 'destination'");
-            if (sm.getDestAddress() == null) {
-                throw new TransformerException("Invalid message content. Missing tag: " + TAG_DESTINATION);
-            }
-            log.debug("Check the mandatory attribute 'ton'");
-            if (ton == null) {
-                throw new TransformerException("Invalid message content. Missing tag: " + TAG_TON);
-            }
-            if (npi == null) {
-                throw new TransformerException("Invalid message content. Missing tag: " + TAG_NPI);
+            
+            if ((node = getNotEmptyNodeListOrNull(document, TAG_VALIDITY_PERIOD)) != null) {
+                sm.setValidityPeriod(getFirstNodeValue(node));
+                log.debug(TAG_VALIDITY_PERIOD + ": " + sm.getValidityPeriod());
             }
         } catch (Exception exception) {
             throw new TransformerException(exception);
         }
+        
+        if (sm.getSourceAddr() == null) {
+            throw new TransformerException("Invalid message content. Missing tag: " + TAG_SOURCE);
+        }
+
+        if (sm.getDestAddress() == null) {
+            throw new TransformerException("Invalid message content. Missing tag: " + TAG_DESTINATION);
+        }
+
+        if (ton == null) {
+            throw new TransformerException("Invalid message content. Missing tag: " + TAG_TON);
+        }
+        
+        if (npi == null) {
+            throw new TransformerException("Invalid message content. Missing tag: " + TAG_NPI);
+        }
+        
         return sm;
     }
 
-    /*
+	/*
      * (non-Javadoc)
      * @see org.apache.servicemix.smpp.marshaler.SmppMarshalerSupport#toNMS(javax.jbi.messaging.NormalizedMessage, org.jsmpp.bean.MessageRequest)
      */
@@ -150,76 +167,115 @@ public class DefaultSmppMarshaler implements SmppMarshalerSupport {
         if (message == null) {
             throw new MessagingException("The NormalizedMessage is null");
         }
+        
         if (mr == null) {
             throw new MessagingException("The MessageRequest is null");
         }
 
-        log.debug("Check if the MessageRequest is valid");
-        log.debug("Check the MessageRequest source address");
         if (mr.getSourceAddr() == null || mr.getSourceAddr().trim().length() < 1) {
             log.error("The MessageRequest source address is not defined");
             throw new MessagingException("The MessageRequest source address is not defined");
         }
-        log.debug("Check the MessageRequest destination address");
+        
         if (mr.getDestAddress() == null || mr.getDestAddress().trim().length() < 1) {
             log.error("The MessageRequest destination address is not defined");
             throw new MessagingException("The MessageRequest destination address is not defined");
         }
-        log.debug("Check the MessageRequest destination numbering plan indicator");
+        
         try {
             NumberingPlanIndicator.valueOf(mr.getDestAddrNpi());
         } catch (IllegalArgumentException illegalArgumentException) {
             log.error("The MessageRequest destination numbering plan indicator is not valid");
-            throw new MessagingException(
-                                         "The MessageRequest destination numbering plan indicator is not valid");
+            throw new MessagingException("The MessageRequest destination numbering plan indicator is not valid");
         }
-        log.debug("Check the MessageRequest destination type of numbner");
+        
         try {
             TypeOfNumber.valueOf(mr.getDestAddrTon());
         } catch (IllegalArgumentException illegalArgumentException) {
             log.error("The MessageRequest destination type of number is not valid");
             throw new MessagingException("The MessageRequest destination type of number is not valid");
         }
-
-        String text = null;
+        
         try {
-            text = new String(mr.getShortMessage());
-        } catch (NullPointerException exception) {
-            log.warn("The MessageRequest Short Message is null");
+        	determineSMSCDeliveryReceipt(mr.getRegisteredDelivery());
+        } catch (IllegalArgumentException illegalArgumentException) {
+            log.error("The MessageRequest registered delivery is not valid");
+            throw new MessagingException("The MessageRequest registered delivery is not valid");
+        }
+        
+        if (mr.getShortMessage() == null || mr.getShortMessage().length == 0) {
+        	log.warn("Received message without text content. Ignore the message");
+        	return;
         }
 
-        if (text != null && text.trim().length() > 0) {
-            StringBuffer data = new StringBuffer();
+        StringBuffer data = new StringBuffer();
+        data.append(TAG_MESSAGE_OPEN);
 
-            // build the message content
-            data.append(TAG_MESSAGE_OPEN);
+        data.append(TAG_SOURCE_OPEN);
+        data.append(mr.getSourceAddr());
+        data.append(TAG_SOURCE_CLOSE);
 
-            data.append(TAG_SOURCE_OPEN);
-            data.append(mr.getSourceAddr());
-            data.append(TAG_SOURCE_CLOSE);
+        data.append(TAG_DESTINATION_OPEN);
+        data.append(mr.getDestAddress());
+        data.append(TAG_DESTINATION_CLOSE);
 
-            data.append(TAG_DESTINATION_OPEN);
-            data.append(mr.getDestAddress());
-            data.append(TAG_DESTINATION_CLOSE);
+        data.append(TAG_TEXT_OPEN);
+        data.append(new String(mr.getShortMessage()));
+        data.append(TAG_TEXT_CLOSE);
 
-            data.append(TAG_TEXT_OPEN);
-            data.append(text);
-            data.append(TAG_TEXT_CLOSE);
+        data.append(TAG_NPI_OPEN);
+        data.append(NumberingPlanIndicator.valueOf(mr.getDestAddrNpi()).toString());
+        data.append(TAG_NPI_CLOSE);
 
-            data.append(TAG_NPI_OPEN);
-            data.append(NumberingPlanIndicator.valueOf(mr.getDestAddrNpi()).toString());
-            data.append(TAG_NPI_CLOSE);
-
-            data.append(TAG_TON_OPEN);
-            data.append(TypeOfNumber.valueOf(mr.getDestAddrTon()).toString());
-            data.append(TAG_TON_CLOSE);
-
-            data.append(TAG_MESSAGE_CLOSE);
-
-            // put the content to message body
-            message.setContent(new StringSource(data.toString()));
-        } else {
-            log.debug("Received message without text content. Ignore the message");
+        data.append(TAG_TON_OPEN);
+        data.append(TypeOfNumber.valueOf(mr.getDestAddrTon()).toString());
+        data.append(TAG_TON_CLOSE);
+        
+        data.append(TAG_REGISTERED_DELIVERY_OPEN);
+        data.append(determineSMSCDeliveryReceipt(mr.getRegisteredDelivery()).toString());
+        data.append(TAG_REGISTERED_DELIVERY_CLOSE);
+        
+        if (mr.getScheduleDeliveryTime() != null && mr.getScheduleDeliveryTime().trim().length() > 0) {
+            data.append(TAG_SCHEDULE_DELIVERY_TIME_OPEN);
+            data.append(mr.getScheduleDeliveryTime());
+            data.append(TAG_SCHEDULE_DELIVERY_TIME_CLOSE);            	
         }
+
+        if (mr.getValidityPeriod() != null && mr.getValidityPeriod().trim().length() > 0) {
+            data.append(TAG_VALIDITY_PERIOD_OPEN);
+            data.append(mr.getValidityPeriod());
+            data.append(TAG_VALIDITY_PERIOD_CLOSE);            	
+        }
+        
+        data.append(TAG_MESSAGE_CLOSE);
+
+        message.setContent(new StringSource(data.toString()));
     }
+    
+    private String getFirstNodeValue(NodeList node) {
+    	return node.item(0).getChildNodes().item(0).getNodeValue();
+    }
+    
+    private NodeList getNotEmptyNodeListOrNull(Document document, String nodeName) {
+    	NodeList node = document.getElementsByTagName(nodeName);
+    	return (node != null && node.getLength() > 0) ? node : null;
+    }
+    
+	/**
+     * Get the <tt>SMSCDeliveryReceipt</tt> based on the specified byte value
+     * representation.
+     * 
+     * @param value is the byte value representation.
+     * @return is the enum const related to the specified byte value.
+     * @throws IllegalArgumentException if there is no enum const associated
+     *         with specified byte value.
+     */
+	private SMSCDeliveryReceipt determineSMSCDeliveryReceipt(byte value) {
+		for (SMSCDeliveryReceipt val : SMSCDeliveryReceipt.values()) {
+			if (val.value() == value)
+				return val;
+		}
+		
+		throw new IllegalArgumentException("No enum const SMSCDeliveryReceipt with value " + value);
+	}
 }

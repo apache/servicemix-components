@@ -75,6 +75,8 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
     private int port;
     private String systemId;
     private String password;
+    private int enquireLinkTimer = 50000;
+    private int transactionTimer = 100000;
 
     private SmppMarshalerSupport marshaler;
 
@@ -125,10 +127,18 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
         if (this.password == null || this.password.trim().length() <= 0) {
             throw new IllegalArgumentException("The SMPP system password is mandatory.");
         }
-		// check the marshaler
-		if (this.getMarshaler() == null) {
-			this.setMarshaler(new DefaultSmppMarshaler());
-		}
+        // check the marshaler
+        if (this.getMarshaler() == null) {
+            this.setMarshaler(new DefaultSmppMarshaler());
+        }
+        // check the enquire link timer
+        if (this.enquireLinkTimer <= 0) {
+            throw new IllegalArgumentException("The enquireLinkTimer value must be greater than 0.");
+        }
+        // check the transaction timer
+        if (this.transactionTimer <= 0) {
+            throw new IllegalArgumentException("The transactionTimer value must be greater than 0.");
+        }
     }
 
     /**
@@ -137,6 +147,10 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
     private void connect() {
         // create the SMPPSession
         session = new SMPPSession();
+        // define the enquireLinkTimer
+        session.setEnquireLinkTimer(this.enquireLinkTimer);
+        // define the transationTimer
+        session.setTransactionTimer(this.transactionTimer);
         // connect and bind to the SMPP server
         try {
             session.connectAndBind(this.host, this.port, new BindParameter(BindType.BIND_TX, this.systemId,
@@ -182,7 +196,8 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
      * javax.jbi.messaging.NormalizedMessage)
      */
     @Override
-    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+    protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
+        throws Exception {
         // we are reading the source of the NormalizedMessage multiple times
         // (else we receive a IOException: Stream closed)
         MessageUtil.enableContentRereadability(in);
@@ -202,7 +217,8 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
      * @throws TransformerException on transformation errors
      * @throws MessagingException on messaging errors
      */
-    private void process(MessageExchange exchange, NormalizedMessage in) throws TransformerException, MessagingException {
+    private void process(MessageExchange exchange, NormalizedMessage in) throws TransformerException,
+        MessagingException {
         // let the marshaler create a SM content
         MessageRequest sm = marshaler.fromNMS(exchange, in);
 
@@ -243,12 +259,13 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>This attribute specifies the host name to use for connecting to the
-     * server.<br/><p>
+     * <p>
+     * This attribute specifies the host name to use for connecting to the
+     * server.<br/>
+     * <p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i>
      * 
-     * @param host
-     *                  a <code>String</code> value representing the host name 
+     * @param host a <code>String</code> value representing the host name
      */
     public void setHost(String host) {
         this.host = host;
@@ -267,12 +284,13 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>This attribute specifies the system id to use for connecting to the
-     * server.<br/><p>
+     * <p>
+     * This attribute specifies the system id to use for connecting to the
+     * server.<br/>
+     * <p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i>
      * 
-     * @param systemId
-     *                  a <code>String</code> value representing the system id
+     * @param systemId a <code>String</code> value representing the system id
      */
     public void setSystemId(String systemId) {
         this.systemId = systemId;
@@ -283,12 +301,13 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>This attribute specifies the password to use for connecting to the
-     * server.<br/><p>
+     * <p>
+     * This attribute specifies the password to use for connecting to the
+     * server.<br/>
+     * <p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i>
      * 
-     * @param password 
-     *                  a <code>String</code> value representing the password
+     * @param password a <code>String</code> value representing the password
      */
     public void setPassword(String password) {
         this.password = password;
@@ -299,15 +318,55 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
     }
 
     /**
-     * <p>With this method you can specify a marshaler class which provides the
-     * logic for converting a sms message into a normalized message. This class has
-     * to implement the interface class <code>SmppMarshaler</code>. 
-     * If you don't specify a marshaler, the <code>DefaultSmppMarshaler</code> will be used.</p>
+     * <p>
+     * With this method you can specify a marshaler class which provides the
+     * logic for converting a sms message into a normalized message. This class
+     * has to implement the interface class <code>SmppMarshaler</code>. If you
+     * don't specify a marshaler, the <code>DefaultSmppMarshaler</code> will be
+     * used.
+     * </p>
      * 
-     * @param marshaler
-     *                  a <code>SmppMarshaler</code> class representing the marshaler
+     * @param marshaler a <code>SmppMarshaler</code> class representing the
+     *            marshaler
      */
     public void setMarshaler(SmppMarshalerSupport marshaler) {
         this.marshaler = marshaler;
     }
+
+    public int getEnquireLinkTimer() {
+        return enquireLinkTimer;
+    }
+
+    /**
+     * <p>
+     * This attribute specifies the enquire link timer defining the resend time
+     * interval.<br/>
+     * </p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>50000</b> milliseconds</i>
+     * 
+     * @param enquireLinkTimer a <code>int</code> value representing the enquire
+     *            link timer
+     */
+    public void setEnquireLinkTimer(int enquireLinkTimer) {
+        this.enquireLinkTimer = enquireLinkTimer;
+    }
+
+    public int getTransactionTimer() {
+        return transactionTimer;
+    }
+
+    /**
+     * <p>
+     * This attribute specifies the transaction timer defining the maximum
+     * lifetime of a message.<br/>
+     * </p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <b>100000</b> milliseconds</i>
+     * 
+     * @param transactionTimer a <code>int</code> value representing the
+     *            transaction timer
+     */
+    public void setTransactionTimer(int transactionTimer) {
+        this.transactionTimer = transactionTimer;
+    }
+
 }

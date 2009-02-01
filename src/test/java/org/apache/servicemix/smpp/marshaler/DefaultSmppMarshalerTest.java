@@ -16,14 +16,12 @@
  */
 package org.apache.servicemix.smpp.marshaler;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import junit.framework.TestCase;
@@ -33,171 +31,230 @@ import org.apache.servicemix.jbi.helper.MessageExchangePattern;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeFactoryImpl;
-import org.apache.servicemix.smpp.marshaler.DefaultSmppMarshaler;
-import org.apache.servicemix.smpp.marshaler.SmppMarshalerSupport;
 import org.jsmpp.bean.MessageRequest;
 import org.jsmpp.bean.NumberingPlanIndicator;
 import org.jsmpp.bean.SubmitSm;
 import org.jsmpp.bean.TypeOfNumber;
-import org.xml.sax.SAXException;
 
 /**
  * Unit tests on the SMPP marshaler
  * 
  * @author jbonofre
+ * @author mullerc
  */
 public class DefaultSmppMarshalerTest extends TestCase {
-
+	
     private static final String SOURCE = "0123456789";
     private static final String DESTINATION = "9876543210";
     private static final String TEXT = "This is a SMPP test ...";
     private static final String NPI = "NATIONAL";
     private static final String TON = "INTERNATIONAL";
+    private static final String REGISTERED_DELIVERY = "SUCCESS_FAILURE";
+    private static final String SCHEDULE_DELIVERY_TIME = "091231143301300+";
+    private static final String VALIDITY_PERIOD = "091231153301300+";
 
-    private static final String MSG_VALID = "<message><source>" + SOURCE + "</source><destination>"
-                                            + DESTINATION + "</destination><text>" + TEXT + "</text><npi>"
-                                            + NPI + "</npi><ton>" + TON + "</ton></message>";
+    private static final String MSG_VALID_MIN_ATTR = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<destination>" + DESTINATION + "</destination>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<npi>" + NPI + "</npi>" +
+    	"<ton>" + TON + "</ton>" +
+    	"</message>";
+    
+    private static final String MSG_VALID_MAX_ATTR = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<destination>" + DESTINATION + "</destination>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<npi>" + NPI + "</npi>" +
+    	"<ton>" + TON + "</ton>" +
+    	"<registeredDelivery>" + REGISTERED_DELIVERY + "</registeredDelivery>" +
+    	"<scheduleDeliveryTime>" + SCHEDULE_DELIVERY_TIME + "</scheduleDeliveryTime>" +
+    	"<validityPeriod>" + VALIDITY_PERIOD + "</validityPeriod>" +
+    	"</message>";
+    
+    private static final String MSG_VALID_MAX_DEF_ATTR = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<destination>" + DESTINATION + "</destination>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<npi>" + NPI + "</npi>" +
+    	"<ton>" + TON + "</ton>" +
+    	"<registeredDelivery>DEFAULT</registeredDelivery>" +
+    	"</message>";
+    
     private static final String MSG_INVALID = "Test breaker ...";
-    private static final String MSG_INVALID_DEST = "<message><source>" + SOURCE + "</source><text>" + TEXT
-                                                   + "</text><npi>" + NPI + "</npi><ton>" + TON
-                                                   + "</ton></message>";
-    private static final String MSG_INVALID_TON = "<message><source>" + SOURCE + "</source><destination>"
-                                                  + DESTINATION + "</destination><text>" + TEXT
-                                                  + "</text><npi>" + NPI + "</npi></message>";
-    private static final String MSG_INVALID_NPI = "<message><source>" + SOURCE + "</source><destination>"
-                                                  + DESTINATION + "</destination><text>" + TEXT
-                                                  + "</text><ton>" + TON + "</ton></message>";
+    
+    private static final String MSG_INVALID_DEST = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<npi>" + NPI + "</npi>" +
+    	"<ton>" + TON + "</ton>" +
+    	"</message>";
+    
+    private static final String MSG_INVALID_TON = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<destination>" + DESTINATION + "</destination>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<npi>" + NPI + "</npi>" +
+    	"</message>";
+    
+    private static final String MSG_INVALID_NPI = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<destination>" + DESTINATION + "</destination>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<ton>" + TON + "</ton>" +
+    	"</message>";
+    
+    private static final String MSG_INVALID_REGISTERED_DELIVERY = 
+    	"<message>" +
+    	"<source>" + SOURCE + "</source>" +
+    	"<destination>" + DESTINATION + "</destination>" +
+    	"<text>" + TEXT + "</text>" +
+    	"<npi>" + NPI + "</npi>" +
+    	"<ton>" + TON + "</ton>" +
+    	"<registeredDelivery>xxx</registeredDelivery>" +
+    	"</message>";
 
     private SmppMarshalerSupport marshaler;
     private MessageExchangeFactory factory;
 
-    /**
-     * @see junit.framework.TestCase#setUp()
-     */
     public void setUp() throws Exception {
         this.marshaler = new DefaultSmppMarshaler();
         this.factory = new MessageExchangeFactoryImpl(new IdGenerator(), new AtomicBoolean(false));
     }
 
-    /**
-     * @see junit.framework.TestCase#tearDown()
-     */
-    public void tearDown() {
-        this.marshaler = null;
-        this.factory = null;
-    }
-
     // UNIT TESTS
 
-    public void testFromNMSValid() {
-        try {
-            // construct the MessageExchange and NormalizedMessage
-            MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
-            NormalizedMessage message = exchange.createMessage();
-            message.setContent(new StringSource(MSG_VALID));
-            exchange.setMessage(message, "in");
-            // use the marshaler to converts the NormalizedMessage to a
-            // MessageRequest
-            MessageRequest mr = marshaler.fromNMS(exchange, message);
-            assertEquals("The message text is not the same: ", TEXT, new String(mr.getShortMessage()));
-            assertEquals("The destination address is not the same: ", mr.getDestAddress(), DESTINATION);
-            assertEquals("The source address is not the same: ", SOURCE, mr.getSourceAddr());
-            assertEquals("The destination type of number is not the same: ", TON, TypeOfNumber
-                .valueOf(mr.getDestAddrTon()).toString());
-            assertEquals("The source type of number is not the same: ", TON, TypeOfNumber
-                .valueOf(mr.getSourceAddrTon()).toString());
-            assertEquals("The destination numbering plan indicator is not the same: ", NPI,
-                         NumberingPlanIndicator.valueOf(mr.getDestAddrNpi()).toString());
-            assertEquals("The source numbering plan indicator is not the same: ", NPI, NumberingPlanIndicator
-                .valueOf(mr.getSourceAddrNpi()).toString());
-        } catch (MessagingException messagingException) {
-            fail("Messaging exception occurs when constructing the exchange and the normalized message : "
-                 + messagingException.getMessage());
-        } catch (TransformerException transformerException) {
-            fail("Transformer exception occurs while using the marshaler to converts the normalized message to the message request : "
-                 + transformerException.getMessage());
-        }
+    public void testFromNMSValidMinAttr() throws Exception {
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        message.setContent(new StringSource(MSG_VALID_MIN_ATTR));
+        exchange.setMessage(message, "in");
+        
+        MessageRequest mr = this.marshaler.fromNMS(exchange, message);
+        
+        assertEquals(TEXT, new String(mr.getShortMessage()));
+        assertEquals(mr.getDestAddress(), DESTINATION);
+        assertEquals(SOURCE, mr.getSourceAddr());
+        assertEquals(TON, TypeOfNumber.valueOf(mr.getDestAddrTon()).toString());
+        assertEquals(TON, TypeOfNumber.valueOf(mr.getSourceAddrTon()).toString());
+        assertEquals(NPI, NumberingPlanIndicator.valueOf(mr.getDestAddrNpi()).toString());
+        assertEquals(NPI, NumberingPlanIndicator.valueOf(mr.getSourceAddrNpi()).toString());
+        assertEquals((byte)0x00, mr.getRegisteredDelivery());
+        assertNull(mr.getScheduleDeliveryTime());
+        assertNull(mr.getValidityPeriod());
     }
 
+    public void testFromNMSValidMaxAttr() throws Exception {
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        message.setContent(new StringSource(MSG_VALID_MAX_ATTR));
+        exchange.setMessage(message, "in");
+
+        MessageRequest mr = this.marshaler.fromNMS(exchange, message);
+        
+        assertEquals(TEXT, new String(mr.getShortMessage()));
+        assertEquals(mr.getDestAddress(), DESTINATION);
+        assertEquals(SOURCE, mr.getSourceAddr());
+        assertEquals(TON, TypeOfNumber.valueOf(mr.getDestAddrTon()).toString());
+        assertEquals(TON, TypeOfNumber.valueOf(mr.getSourceAddrTon()).toString());
+        assertEquals(NPI, NumberingPlanIndicator.valueOf(mr.getDestAddrNpi()).toString());
+        assertEquals(NPI, NumberingPlanIndicator.valueOf(mr.getSourceAddrNpi()).toString());
+        assertEquals((byte)0x01, mr.getRegisteredDelivery());
+        assertEquals(SCHEDULE_DELIVERY_TIME, mr.getScheduleDeliveryTime());
+        assertEquals(VALIDITY_PERIOD, mr.getValidityPeriod());
+    }
+    
     public void testFromNMSNullExchange() {
         try {
-            marshaler.fromNMS(null, null);
+            this.marshaler.fromNMS(null, null);
             fail("Seems we processed a message with null exchange...");
         } catch (TransformerException transformerException) {
-            // fine
+            // expected
         }
     }
 
-    public void testFromNMSInvalid() {
+    public void testFromNMSInvalid() throws Exception {
         try {
             MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
             NormalizedMessage message = exchange.createMessage();
             message.setContent(new StringSource(MSG_INVALID));
             exchange.setMessage(message, "in");
-            // use the marshaler to converts the NormalizedMessage to a
-            // MessageRequest
-            MessageRequest mr = marshaler.fromNMS(exchange, message);
+
+            this.marshaler.fromNMS(exchange, message);
+            
             fail("Seems we processed a invalid message...");
-        } catch (MessagingException messagingException) {
-            fail("Messaging exception occurs : " + messagingException.getMessage());
         } catch (TransformerException transformerException) {
-            // fine
+            // expected
         }
     }
 
-    public void testFromNMSInvalidDest() {
+    public void testFromNMSInvalidDest() throws Exception {
         try {
             MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
             NormalizedMessage message = exchange.createMessage();
             message.setContent(new StringSource(MSG_INVALID_DEST));
             exchange.setMessage(message, "in");
-            // use the marshaler to converts the NormalizedMessage to a
-            // MessageRequest
-            MessageRequest mr = marshaler.fromNMS(exchange, message);
+
+            this.marshaler.fromNMS(exchange, message);
+            
             fail("Seems we processed a message with a invalid destination...");
-        } catch (MessagingException messagingException) {
-            fail("Messaging exception occurs : " + messagingException.getMessage());
         } catch (TransformerException transformerException) {
-            // fine
+            // expected
         }
     }
 
-    public void testFromNMSInvalidTon() {
+    public void testFromNMSInvalidTon() throws Exception {
         try {
             MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
             NormalizedMessage message = exchange.createMessage();
             message.setContent(new StringSource(MSG_INVALID_TON));
             exchange.setMessage(message, "in");
-            // use the marshaler to converts the NormalizedMessage to a
-            // MessageRequest
-            MessageRequest mr = marshaler.fromNMS(exchange, message);
+
+            this.marshaler.fromNMS(exchange, message);
+            
             fail("Seems we processed a message with a invlid type of number...");
-        } catch (MessagingException messagingException) {
-            fail("Messaging exception occurs : " + messagingException.getMessage());
         } catch (TransformerException transformerException) {
-            // fine
+            // expected
         }
     }
 
-    public void testFromNMSInvalidNpi() {
+    public void testFromNMSInvalidNpi() throws Exception {
         try {
             MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
             NormalizedMessage message = exchange.createMessage();
             message.setContent(new StringSource(MSG_INVALID_NPI));
             exchange.setMessage(message, "in");
-            // use the marshaler to converts the NormalizedMessage to a
-            // MessageRequest
-            MessageRequest mr = marshaler.fromNMS(exchange, message);
+
+            this.marshaler.fromNMS(exchange, message);
+            
             fail("Seems we processed a message with a invlid numbering plan indicator...");
-        } catch (MessagingException messagingException) {
-            fail("Messaging exception occurs : " + messagingException.getMessage());
         } catch (TransformerException transformerException) {
-            // fine
+            // expected
+        }
+    }
+    
+    public void testFromNMSInvalidRegisteredDelivery() throws MessagingException {
+        try {
+            MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+            NormalizedMessage message = exchange.createMessage();
+            message.setContent(new StringSource(MSG_INVALID_REGISTERED_DELIVERY));
+            exchange.setMessage(message, "in");
+            
+            this.marshaler.fromNMS(exchange, message);
+            
+            fail("Seems we processed a message with a invlid registered delivery value...");
+        } catch (TransformerException transformerException) {
+            // expected
         }
     }
 
-    public void testToNMSValid() {
-        // constructs the MessageRequest
+    public void testToNMSValidMinAttr() throws Exception {
         MessageRequest mr = new SubmitSm();
         mr.setDestAddress(DESTINATION);
         mr.setDestAddrNpi(NumberingPlanIndicator.valueOf(NPI).value());
@@ -206,68 +263,80 @@ public class DefaultSmppMarshalerTest extends TestCase {
         mr.setSourceAddrNpi(NumberingPlanIndicator.valueOf(NPI).value());
         mr.setSourceAddrTon(TypeOfNumber.valueOf(TON).value());
         mr.setShortMessage(TEXT.getBytes());
-        try {
-            MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
-            NormalizedMessage message = exchange.createMessage();
-            exchange.setMessage(message, "in");
-            marshaler.toNMS(message, mr);
-            SourceTransformer sourceTransformer = new SourceTransformer();
-            assertEquals("Message not correct: ", MSG_VALID, sourceTransformer.contentToString(message));
-        } catch (MessagingException messagingException) {
-            fail("Messaging exception occurs during the construction of the MessageExchange and NormalizedMessage: "
-                 + messagingException.getMessage());
-        } catch (TransformerException transformerException) {
-            fail("Transformer exception occurs using the marshaler: " + transformerException.getMessage());
-        } catch (ParserConfigurationException parserConfigurationException) {
-            fail("Parser configuration exception occurs using the SourceTransformer: "
-                 + parserConfigurationException.getMessage());
-        } catch (SAXException saxException) {
-            fail("SAX exception occurs using the SourceTransformer: " + saxException.getMessage());
-        } catch (IOException ioException) {
-            fail("IO exception occurs using the SourceTransformer: " + ioException.getMessage());
-        }
+        
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        exchange.setMessage(message, "in");
+        
+        this.marshaler.toNMS(message, mr);
+        
+        assertEquals(MSG_VALID_MAX_DEF_ATTR, new SourceTransformer().contentToString(message));
+    }
+    
+    public void testToNMSValidMaxAttr() throws Exception {
+        MessageRequest mr = new SubmitSm();
+        mr.setDestAddress(DESTINATION);
+        mr.setDestAddrNpi(NumberingPlanIndicator.valueOf(NPI).value());
+        mr.setDestAddrTon(TypeOfNumber.valueOf(TON).value());
+        mr.setSourceAddr(SOURCE);
+        mr.setSourceAddrNpi(NumberingPlanIndicator.valueOf(NPI).value());
+        mr.setSourceAddrTon(TypeOfNumber.valueOf(TON).value());
+        mr.setShortMessage(TEXT.getBytes());
+        mr.setRegisteredDelivery((byte)0x01);
+        mr.setScheduleDeliveryTime(SCHEDULE_DELIVERY_TIME);
+        mr.setValidityPeriod(VALIDITY_PERIOD);
+        
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        exchange.setMessage(message, "in");
+        
+        this.marshaler.toNMS(message, mr);
+        
+        assertEquals(MSG_VALID_MAX_ATTR, new SourceTransformer().contentToString(message));
     }
 
-    public void testToNMSInvalid() {
-        // constructs a invalid MessageRequest (without destination, source,
-        // NPI, TON)
+    public void testToNMSInvalid() throws Exception {
         MessageRequest mr = new SubmitSm();
         mr.setShortMessage(TEXT.getBytes());
+
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        exchange.setMessage(message, "in");
+        
         try {
-            MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
-            NormalizedMessage message = exchange.createMessage();
-            exchange.setMessage(message, "in");
-            marshaler.toNMS(message, mr);
+            this.marshaler.toNMS(message, mr);
+            
             fail("Seems we processed an invalid MessageRequest...");
         } catch (MessagingException messagingException) {
-            // fine
+            // expected
         }
     }
 
-    public void testToNMSNullMessageRequest() {
+    public void testToNMSNullMessageRequest() throws Exception {
         MessageRequest mr = null;
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        exchange.setMessage(message, "in");
+        
         try {
-            MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
-            NormalizedMessage message = exchange.createMessage();
-            exchange.setMessage(message, "in");
-            marshaler.toNMS(message, mr);
+            this.marshaler.toNMS(message, mr);
+            
             fail("Seems we processed a Null MessageRequest...");
         } catch (MessagingException messagingException) {
-            // fine
+            // expected
         }
     }
 
     public void testToNMSNullMessage() {
-        // constructs a invalid MessageRequest (without destination, source,
-        // NPI, TON)
         MessageRequest mr = new SubmitSm();
         mr.setShortMessage(TEXT.getBytes());
+        
         try {
             marshaler.toNMS(null, mr);
+            
             fail("Seems we processed a MessageRequest with a Null NormalizedMessage...");
         } catch (MessagingException messagingException) {
-            // fine
+            // expected
         }
     }
-
 }
