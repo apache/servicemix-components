@@ -314,6 +314,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 if (tm == null) {
                     throw new IllegalStateException("No TransactionManager available");
                 } else if (tm instanceof PlatformTransactionManager) {
+                    jmsConfig.setSessionTransacted(true);
                     jmsConfig.setTransactionManager((PlatformTransactionManager)tm);
                     setSynchronous(true);
                     transactionEnabled = true;
@@ -836,7 +837,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 }
                 //this exception is undefined in the wsdl, so tell the transactionManager injected into
                 //jms transport need rollback
-                throw new RuntimeException("rollback");
+                throw new Error("rollback");
             }
         }
 
