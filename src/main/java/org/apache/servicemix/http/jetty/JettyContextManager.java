@@ -60,7 +60,9 @@ import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletMapping;
 import org.mortbay.management.MBeanContainer;
-import org.mortbay.thread.BoundedThreadPool;
+
+import org.mortbay.thread.QueuedThreadPool;
+
 import org.mortbay.thread.ThreadPool;
 import org.mortbay.util.ByteArrayISO8859Writer;
 import org.mortbay.util.LazyList;
@@ -73,7 +75,7 @@ public class JettyContextManager implements ContextManager {
 
     private Map<String, Server> servers;
     private HttpConfiguration configuration;
-    private BoundedThreadPool threadPool;
+    private QueuedThreadPool threadPool;
     private Map<String, SslParameters> sslParams;
     private MBeanServer mBeanServer;
     private MBeanContainer mbeanContainer;
@@ -102,9 +104,9 @@ public class JettyContextManager implements ContextManager {
         }
         servers = new HashMap<String, Server>();
         sslParams = new HashMap<String, SslParameters>();
-        BoundedThreadPool btp = new BoundedThreadPool();
-        btp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
-        threadPool = btp;
+        QueuedThreadPool qtp = new QueuedThreadPool();
+        qtp.setMaxThreads(this.configuration.getJettyThreadPoolSize());
+        threadPool = qtp;
     }
 
     public void shutDown() throws Exception {

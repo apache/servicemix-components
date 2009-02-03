@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.mortbay.thread.BoundedThreadPool;
+import org.mortbay.thread.QueuedThreadPool;
 
 public class ServerManagerTest extends TestCase {
     private static transient Log log = LogFactory.getLog(ServerManagerTest.class);
@@ -110,8 +110,8 @@ public class ServerManagerTest extends TestCase {
         int maxThreads = 512;
         configuration.setJettyThreadPoolSize(maxThreads);
         server.init();
-        assertTrue(server.getThreadPool() instanceof BoundedThreadPool);
-        int threads = ((BoundedThreadPool) server.getThreadPool()).getMaxThreads();
+        assertTrue(server.getThreadPool() instanceof QueuedThreadPool);
+        int threads = ((QueuedThreadPool) server.getThreadPool()).getMaxThreads();
         assertEquals("The max number of threads is incorrect!", maxThreads, threads);
     }
 
