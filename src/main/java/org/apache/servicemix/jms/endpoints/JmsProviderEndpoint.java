@@ -33,6 +33,20 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.Connection;
+import javax.jms.TopicConnection;
+import javax.jms.QueueConnection;
+import javax.jms.TopicSession;
+import javax.jms.QueueSession;
+import javax.jms.MessageProducer;
+import javax.jms.Topic;
+import javax.jms.Queue;
+import javax.jms.MessageConsumer;
+import javax.jms.QueueBrowser;
+import javax.jms.TopicPublisher;
+import javax.jms.QueueSender;
 
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
@@ -42,6 +56,7 @@ import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
 import org.springframework.jms.JmsException;
 import org.springframework.jms.UncategorizedJmsException;
+import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.JmsTemplate102;
 import org.springframework.jms.core.MessageCreator;
@@ -51,6 +66,7 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.DefaultMessageListenerContainer102;
 import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
+import org.springframework.jms.support.converter.SimpleMessageConverter102;
 
 /**
  * A Spring-based JMS provider endpoint
@@ -67,7 +83,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private JmsProviderMarshaler marshaler = new DefaultProviderMarshaler();
     private DestinationChooser destinationChooser = new SimpleDestinationChooser();
     private DestinationChooser replyDestinationChooser = new SimpleDestinationChooser();
-    private JmsTemplate template;
+    private JmsTemplateUtil template;
 
     private boolean jms102;
     private ConnectionFactory connectionFactory;
@@ -685,45 +701,17 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     }
 
     private void send(final Session session, final Destination dest, final Message message) throws JmsException {
-        // Do not call directly the template to avoid the cost of creating a new connection / session
-//        template.send(dest, new MessageCreator() {
-//            public Message createMessage(Session session) throws JMSException {
-//                return message;
-//            }
-//        });
-        try {
-            Method method = JmsTemplate.class.getDeclaredMethod("doSend", Session.class, Destination.class, MessageCreator.class);
-            method.setAccessible(true);
-            method.invoke(template, session, dest, new MessageCreator() {
+        template.send(session, dest, new MessageCreator() {
                 public Message createMessage(Session session) throws JMSException {
                     return message;
                 }
             });
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Message receiveSelected(final Session session,
                                     final Destination dest,
                                     final String messageSelector) throws JMSException {
-        // Do not call directly the template to avoid the cost of creating a new connection / session
-//        return template.doReceive(session, dest, messageSelector);
-        try {
-            Method method = JmsTemplate.class.getDeclaredMethod("doReceive", Session.class, Destination.class, String.class);
-            method.setAccessible(true);
-            return (Message) method.invoke(template, session, dest, messageSelector);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        return template.receiveSelected(session, dest, messageSelector);
     }
 
     /**
@@ -905,12 +893,12 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      *
      * @return
      */
-    protected JmsTemplate createTemplate() {
-        JmsTemplate tplt;
+    protected JmsTemplateUtil createTemplate() {
+        JmsTemplateUtil tplt;
         if (isJms102()) {
-            tplt = new JmsTemplate102();
+            tplt = new JmsTemplate102Util();
         } else {
-            tplt = new JmsTemplate();
+            tplt = new JmsTemplateUtil();
         }
         tplt.setConnectionFactory(getConnectionFactory());
         if (getDestination() != null) {
@@ -965,4 +953,112 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         return cont;
     }
 
+    public static class JmsTemplateUtil extends JmsTemplate {
+        public void send(Session session, Destination destination, MessageCreator messageCreator) throws JmsException {
+            try {
+                doSend(session, destination, messageCreator);
+            } catch (JMSException ex) {
+                throw convertJmsAccessException(ex);
+            }
+        }
+        public Message receiveSelected(Session session, Destination destination, String messageSelector) throws JmsException {
+            try {
+                return doReceive(session, destination, messageSelector);
+            } catch (JMSException ex) {
+                throw convertJmsAccessException(ex);
+            }
+        }
+    }
+
+    public static class JmsTemplate102Util extends JmsTemplateUtil {
+        protected void initDefaultStrategies() {
+            setMessageConverter(new SimpleMessageConverter102());
+        }
+
+        public void afterPropertiesSet() {
+            super.afterPropertiesSet();
+            if (isPubSubDomain()) {
+                if (!(getConnectionFactory() instanceof TopicConnectionFactory)) {
+                    throw new IllegalArgumentException(
+                            "Specified a Spring JMS 1.0.2 template for topics " +
+                            "but did not supply an instance of TopicConnectionFactory");
+                }
+            } else {
+                if (!(getConnectionFactory() instanceof QueueConnectionFactory)) {
+                    throw new IllegalArgumentException(
+                            "Specified a Spring JMS 1.0.2 template for queues " +
+                            "but did not supply an instance of QueueConnectionFactory");
+                }
+            }
+        }
+
+        protected Connection getConnection(JmsResourceHolder holder) {
+            return holder.getConnection(isPubSubDomain() ? (Class) TopicConnection.class : QueueConnection.class);
+        }
+
+        protected Session getSession(JmsResourceHolder holder) {
+            return holder.getSession(isPubSubDomain() ? (Class) TopicSession.class : QueueSession.class);
+        }
+
+        protected Connection createConnection() throws JMSException {
+            if (isPubSubDomain()) {
+                return ((TopicConnectionFactory) getConnectionFactory()).createTopicConnection();
+            } else {
+                return ((QueueConnectionFactory) getConnectionFactory()).createQueueConnection();
+            }
+        }
+
+        protected Session createSession(Connection con) throws JMSException {
+            if (isPubSubDomain()) {
+                return ((TopicConnection) con).createTopicSession(isSessionTransacted(), getSessionAcknowledgeMode());
+            } else {
+                return ((QueueConnection) con).createQueueSession(isSessionTransacted(), getSessionAcknowledgeMode());
+            }
+        }
+
+        protected MessageProducer doCreateProducer(Session session, Destination destination) throws JMSException {
+            if (isPubSubDomain()) {
+                return ((TopicSession) session).createPublisher((Topic) destination);
+            } else {
+                return ((QueueSession) session).createSender((Queue) destination);
+            }
+        }
+
+        protected MessageConsumer createConsumer(Session session, Destination destination, String messageSelector) throws JMSException {
+            if (isPubSubDomain()) {
+                return ((TopicSession) session).createSubscriber((Topic) destination, messageSelector, isPubSubNoLocal());
+            } else {
+                return ((QueueSession) session).createReceiver((Queue) destination, messageSelector);
+            }
+        }
+
+        protected QueueBrowser createBrowser(Session session, Queue queue, String messageSelector) throws JMSException {
+            if (isPubSubDomain()) {
+                throw new javax.jms.IllegalStateException("Cannot create QueueBrowser for a TopicSession");
+            } else {
+                return ((QueueSession) session).createBrowser(queue, messageSelector);
+            }
+        }
+
+        protected void doSend(MessageProducer producer, Message message) throws JMSException {
+            if (isPubSubDomain()) {
+                if (isExplicitQosEnabled()) {
+                    ((TopicPublisher) producer).publish(message, getDeliveryMode(), getPriority(), getTimeToLive());
+                } else {
+                    ((TopicPublisher) producer).publish(message);
+                }
+            } else {
+                if (isExplicitQosEnabled()) {
+                    ((QueueSender) producer).send(message, getDeliveryMode(), getPriority(), getTimeToLive());
+                } else {
+                    ((QueueSender) producer).send(message);
+                }
+            }
+        }
+
+        protected boolean isClientAcknowledge(Session session) throws JMSException {
+            return (getSessionAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE);
+        }
+
+    }
 }
