@@ -38,6 +38,8 @@ public abstract class AbstractJmsMarshaler {
 
     public static final String ERROR_JMS_PROPERTY = "JBIError";
 
+    public static final String CONTENT_TYPE_PROPERTY = "ContentType";
+
     /**
      * Should marshaler copy properties set in messages?
      */

@@ -78,8 +78,10 @@ public class DefaultProviderMarshaler extends AbstractJmsMarshaler implements
         }
         chain.doIntercept(msg);
         TextMessage text = session.createTextMessage(baos.toString());
-        text.setStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE,
-                               (String) msg.get(org.apache.servicemix.soap.api.Message.CONTENT_TYPE));
+        if (msg.get(org.apache.servicemix.soap.api.Message.CONTENT_TYPE) != null) {
+            text.setStringProperty(CONTENT_TYPE_PROPERTY,
+                                   (String) msg.get(org.apache.servicemix.soap.api.Message.CONTENT_TYPE));
+        }
         if (jmsProperties != null) {
             for (Map.Entry<String, Object> e : jmsProperties.entrySet()) {
                 text.setObjectProperty(e.getKey(), e.getValue());
@@ -100,9 +102,8 @@ public class DefaultProviderMarshaler extends AbstractJmsMarshaler implements
             chain.add(new StaxInInterceptor());
             org.apache.servicemix.soap.api.Message msg = new MessageImpl();
             msg.setContent(InputStream.class, new ByteArrayInputStream(((TextMessage) message).getText().getBytes()));
-            String contentType = message.getStringProperty(org.apache.servicemix.soap.api.Message.CONTENT_TYPE);
-            if (contentType != null) {
-                msg.put(org.apache.servicemix.soap.api.Message.CONTENT_TYPE, contentType);
+            if (message.propertyExists(CONTENT_TYPE_PROPERTY)) {
+                msg.put(org.apache.servicemix.soap.api.Message.CONTENT_TYPE, message.getStringProperty(CONTENT_TYPE_PROPERTY));
             }
             chain.doIntercept(msg);
             XMLStreamReader xmlReader = msg.getContent(XMLStreamReader.class);
