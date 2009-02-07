@@ -186,7 +186,22 @@ public class CxfBCSEProviderAsyncSystemTest extends SpringTestSupport {
         assertTrue(success);
     }
 
+    public void testGreetMeProviderWithJmsTransportSpecifyReplyDest() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/provider/xbean_provider_with_reply_dest.xml");
+        greetMeProviderJmsSpecifyReplyDest();
+        assertTrue(success);
+    }
 
+    private void greetMeProviderJmsSpecifyReplyDest() throws Exception {
+        ClientInvocationForJmsWithTwoProviderEndpoint thread1 = new ClientInvocationForJmsWithTwoProviderEndpoint("wait");
+        thread1.start();
+        Thread.sleep(1000);
+        ClientInvocationForJmsWithTwoProviderEndpoint thread2 = new ClientInvocationForJmsWithTwoProviderEndpoint("fang");
+        thread2.start();
+        thread1.join();
+        thread2.join();
+        
+    }
         
     private void greetMeProviderHttpTestBase() throws Exception {
        ClientInvocationForHttp thread1 = new ClientInvocationForHttp("wait");
@@ -293,5 +308,71 @@ public class CxfBCSEProviderAsyncSystemTest extends SpringTestSupport {
     	
     	
 	}
+    
+    class ClientInvocationForJmsWithTwoProviderEndpoint extends Thread {
+        private String greeting;
+
+        public ClientInvocationForJmsWithTwoProviderEndpoint(String greeting) {
+            this.greeting = greeting;
+        }
+
+        public void run() {
+            //two cxf bc provider means two JMSConduit used, but these two conduit share same replyDest
+            //this can prove the conduit based Selector from Cxf works 
+            DefaultServiceMixClient client;
+            try {
+                client = new DefaultServiceMixClient(jbi);
+                InOut io = client.createInOutExchange();
+                io.setService(new QName(
+                        "http://apache.org/hello_world_soap_http",
+                        "HelloWorldService"));
+                io.setInterfaceName(new QName(
+                        "http://apache.org/hello_world_soap_http", "Greeter"));
+                io.setOperation(new QName(
+                        "http://apache.org/hello_world_soap_http", "greetMe"));
+                // send message to proxy
+                io.getInMessage()
+                        .setContent(
+                                new StringSource(
+                                        "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+                                                + greeting
+                                                + "</requestType></greetMe>"));
+
+                client.send(io);
+                client.receive(100000);
+                client.done(io);
+                if (io.getFault() != null) {
+                    success = false;
+                } 
+                client = new DefaultServiceMixClient(jbi);
+                io = client.createInOutExchange();
+                io.setService(new QName(
+                        "http://apache.org/hello_world_soap_http",
+                        "HelloWorldService1"));
+                io.setInterfaceName(new QName(
+                        "http://apache.org/hello_world_soap_http", "Greeter"));
+                io.setOperation(new QName(
+                        "http://apache.org/hello_world_soap_http", "greetMe"));
+                // send message to proxy
+                io.getInMessage()
+                        .setContent(
+                                new StringSource(
+                                        "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+                                                + greeting
+                                                + "</requestType></greetMe>"));
+
+                client.send(io);
+                client.receive(100000);
+                client.done(io);
+                if (io.getFault() != null) {
+                    success = false;
+                } 
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
 
 }
