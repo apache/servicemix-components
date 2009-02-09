@@ -26,7 +26,7 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-jms</artifactId>
-  <version>2008.02-SNAPSHOT</version>
+  <version>2009.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: JMS</name>
@@ -42,7 +42,7 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <!-- Due to the use of: JBIContainer.setUseNewTransactionModel(boolean) -->
     <servicemix-version>3.3</servicemix-version>
-    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
     <activemq-version>5.2.0</activemq-version>
     <jencks-version>2.1</jencks-version>
 
