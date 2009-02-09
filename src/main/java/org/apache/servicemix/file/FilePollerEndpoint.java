@@ -402,7 +402,8 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
             } catch (Exception ex) {
                 // can't release the lock
                 logger.error(ex);
-            }
+            } 
+            lockManager.removeLock(uri);
         }
     }
 
