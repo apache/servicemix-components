@@ -28,7 +28,7 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-bean</artifactId>
-  <version>2008.02-SNAPSHOT</version>
+  <version>2009.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: Bean</name>
@@ -37,7 +37,7 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.3</servicemix-version>
-    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
     <servicemix.osgi.import>
       org.apache.commons.jexl*;resolution:=optional,
       org.apache.servicemix;resolution:=optional,
