@@ -206,12 +206,19 @@ public class TrueZipPollerEndpoint extends PollingEndpoint implements TrueZipEnd
                     try {
                         processFileAndDelete(aFile);
                     } finally {
-                        lock.unlock();
+                        try {
+							lock.unlock();
+                        } catch (Exception ex) {
+                            // can't release the lock
+                            logger.error(ex);
+                        } 
+                        lockManager.removeLock(uri);
                     }
                 } else {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Unable to acquire lock on " + aFile);
                     }
+                    lockManager.removeLock(uri);
                 }
             }
         });
