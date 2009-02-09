@@ -25,7 +25,10 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
+import org.apache.servicemix.eip.support.AbstractAggregator;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.common.util.MessageUtil;
 
@@ -42,6 +45,8 @@ import org.apache.servicemix.common.util.MessageUtil;
  */
 public class StaticRecipientList extends EIPEndpoint {
 
+    private static final Log LOG = LogFactory.getLog(StaticRecipientList.class);
+    
     public static final String RECIPIENT_LIST_COUNT = "org.apache.servicemix.eip.recipientList.count";
     public static final String RECIPIENT_LIST_INDEX = "org.apache.servicemix.eip.recipientList.index";
     public static final String RECIPIENT_LIST_CORRID = "org.apache.servicemix.eip.recipientList.corrid";
@@ -154,10 +159,12 @@ public class StaticRecipientList extends EIPEndpoint {
         if (exchange.getRole() == MessageExchange.Role.CONSUMER) {
             String corrId = (String) exchange.getMessage("in").getProperty(RECIPIENT_LIST_CORRID);
             int count = (Integer) exchange.getMessage("in").getProperty(RECIPIENT_LIST_COUNT);
+            Integer acks = null;
             Lock lock = lockManager.getLock(corrId);
             lock.lock();
+            boolean removeLock = true;
             try {
-                Integer acks = (Integer) store.load(corrId + ".acks");
+                acks = (Integer) store.load(corrId + ".acks");
                 if (exchange.getStatus() == ExchangeStatus.DONE) {
                     // If the acks integer is not here anymore, the message response has been sent already
                     if (acks != null) {
@@ -166,6 +173,7 @@ public class StaticRecipientList extends EIPEndpoint {
                             done(me);
                         } else {
                             store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                            removeLock = false;
                         }
                     }
                 } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
@@ -179,6 +187,7 @@ public class StaticRecipientList extends EIPEndpoint {
                             done(me);
                         } else {
                             store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                            removeLock = false;
                         }
                     }
                 } else if (exchange.getFault() != null) {
@@ -194,13 +203,21 @@ public class StaticRecipientList extends EIPEndpoint {
                             done(me);
                         } else {
                             store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                            removeLock = false;
                         }
                     } else {
                         done(exchange);
                     }
                 }
             } finally {
-                lock.unlock();
+                try {
+                    lock.unlock();
+                } catch (Exception ex) {
+                    LOG.info("Caught exception while attempting to release lock", ex);
+                }
+                if (removeLock) {
+                    lockManager.removeLock(corrId);
+                }
             }
         } else {
             if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {

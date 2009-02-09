@@ -206,7 +206,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
      * a DONE status.
      *  
      * @param reportTimeoutAsErrors <code>boolean</code> indicating if exchanges received prior to a
-     * 			timeout should be sent back with an ERROR status
+     *             timeout should be sent back with an ERROR status
      */
     public void setReportTimeoutAsErrors(boolean reportTimeoutAsErrors) {
         this.reportTimeoutAsErrors = reportTimeoutAsErrors;
@@ -259,8 +259,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         }
         closedAggregates = closedAggregatesStoreFactory.open(getService().toString() + getEndpoint() + "-closed-aggregates");
         if (reportTimeoutAsErrors && !reportErrors) {
-        	throw new IllegalArgumentException(
-        			"ReportTimeoutAsErrors property may only be set if ReportTimeout property is also set!");
+            throw new IllegalArgumentException(
+                    "ReportTimeoutAsErrors property may only be set if ReportTimeout property is also set!");
         }
     }
 
@@ -312,6 +312,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         // Load existing aggregation
         Lock lock = getLockManager().getLock(correlationId);
         lock.lock();
+        boolean removeLock = true;
         try {
             Object aggregation = store.load(correlationId);
             Date timeout = null;
@@ -335,6 +336,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                     }
                     exchanges.add(exchange);
                     store.store(correlationId + "-exchanges", exchanges);
+                    removeLock = false;
                 }
                 if (addMessage(aggregation, in, exchange)) {
                     sendAggregate(processCorrelationId, correlationId, aggregation, false, isSynchronous(exchange));
@@ -351,6 +353,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                         }, timeout);
                         timers.put(correlationId, t);
                     }
+                    removeLock = false;
                 }
                 if (!reportErrors) {
                     done(exchange);
@@ -363,7 +366,14 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                 }
             }
         } finally {
-            lock.unlock();
+            try {
+                lock.unlock();
+            } catch (Exception ex) {
+                LOG.info("Caught exception while attempting to release aggregation lock", ex);
+            }
+            if (removeLock) {
+                lockManager.removeLock(correlationId);
+            }
         }
     }
 
@@ -415,7 +425,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                         }
                     }
                     closeAggregation(correlationId);
-            	} else {
+                } else {
                     sendAggregate(processCorrelationId, correlationId, aggregation, true, isSynchronous());
                 }
             } else if (!isAggregationClosed(correlationId)) {
@@ -428,7 +438,12 @@ public abstract class AbstractAggregator extends EIPEndpoint {
         } catch (Exception e) {
             LOG.info("Caught exception while processing timeout aggregation", e);
         } finally {
-            lock.unlock();
+            try {
+                lock.unlock();
+            } catch (Exception ex) {
+                LOG.info("Caught exception while attempting to release timeout aggregation lock", ex);
+            } 
+            lockManager.removeLock(correlationId);
         }
     }
 

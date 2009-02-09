@@ -125,10 +125,19 @@ public class WireTapTest extends AbstractEIPTest {
         assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
         assertNotNull(me.getFault());
         client.done(me);
+
+        me = client.createRobustInOnlyExchange();
+        me.setService(new QName("wireTap"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.send(me);
+        me = (RobustInOnly) client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        assertNotNull(me.getFault());
+        client.done(me);
         
-        inReceiver.getMessageList().assertMessagesReceived(1);
+        inReceiver.getMessageList().assertMessagesReceived(2);
         outReceiver.getMessageList().assertMessagesReceived(0);
-        faultReceiver.getMessageList().assertMessagesReceived(1);
+        faultReceiver.getMessageList().assertMessagesReceived(2);
         
         listener.assertExchangeCompleted();
     }
@@ -144,9 +153,19 @@ public class WireTapTest extends AbstractEIPTest {
         assertNotNull(me.getFault());
         client.fail(me, new Exception("I do not like faults"));
         
-        inReceiver.getMessageList().assertMessagesReceived(1);
+        me = client.createRobustInOnlyExchange();
+        me.setService(new QName("wireTap"));
+        me.getInMessage().setContent(createSource("<hello/>"));
+        client.send(me);
+        
+        me = (RobustInOnly) client.receive(); 
+        assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
+        assertNotNull(me.getFault());
+        client.fail(me, new Exception("I do not like faults"));
+        
+        inReceiver.getMessageList().assertMessagesReceived(2);
         outReceiver.getMessageList().assertMessagesReceived(0);
-        faultReceiver.getMessageList().assertMessagesReceived(1);
+        faultReceiver.getMessageList().assertMessagesReceived(2);
         
         listener.assertExchangeCompleted();
     }
