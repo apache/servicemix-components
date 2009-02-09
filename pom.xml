@@ -27,7 +27,7 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-bc</artifactId>
-  <version>2008.02-SNAPSHOT</version>
+  <version>2009.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: CXF Binding Component</name>
@@ -46,8 +46,8 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.3</servicemix-version>
-    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
-    <servicemix-cxf-se-version>2008.02-SNAPSHOT</servicemix-cxf-se-version>
+    <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
+    <servicemix-cxf-se-version>2009.01-SNAPSHOT</servicemix-cxf-se-version>
     <cxf-version>2.1.4-SNAPSHOT</cxf-version>
     <jetty-version>6.1.14</jetty-version>
     <spring-version>2.5.6</spring-version>
