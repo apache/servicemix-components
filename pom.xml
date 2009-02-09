@@ -26,7 +26,7 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-vfs</artifactId>
-  <version>2008.01-SNAPSHOT</version>
+  <version>2009.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: VFS</name>
@@ -41,7 +41,7 @@
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.3</servicemix-version>
-    <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
 
       <servicemix.osgi.import>
           org.apache.servicemix;resolution:=optional,
@@ -159,6 +159,42 @@
   </dependencies>
   
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>target/generated</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.x*</include>
+          <include>**/*.wsdl</include>
+          <include>**/*.jks</include>
+          <include>**/*.zip</include>
+          <include>**/*.txt</include>
+          <include>**/*.csv</include>
+          <include>**/*.png</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>src/test/java</directory>
+        <includes>
+          <include>**/*.jar</include>
+          <include>**/*.zip</include>
+        </includes>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.servicemix.tooling</groupId>
@@ -187,10 +223,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <excludes>
-            <!-- exclude abstract test cases -->
-            <exclude>**/Abstract*.*</exclude>
-          </excludes>
+          <forkMode>always</forkMode>
         </configuration>
       </plugin>
     </plugins>
