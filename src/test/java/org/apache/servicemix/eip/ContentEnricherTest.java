@@ -19,6 +19,7 @@ package org.apache.servicemix.eip;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
@@ -26,20 +27,24 @@ import javax.xml.transform.dom.DOMSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.servicemix.components.util.TransformComponentSupport;
 import org.apache.servicemix.eip.patterns.ContentEnricher;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class ContentEnricherTest extends AbstractEIPTest {
 
+    private static final Logger ROOT_LOGGER = Logger.getRootLogger();
     protected ContentEnricher enricher;
 
     protected void setUp() throws Exception {
         super.setUp();
 
         enricher = new ContentEnricher();
-        enricher.setEnricherTarget(createServiceExchangeTarget(new QName(
-                "enricherTarget")));
+        enricher.setEnricherTarget(createServiceExchangeTarget(new QName("enricherTarget")));
         enricher.setTarget(createServiceExchangeTarget(new QName("target")));
 
         configurePattern(enricher);
@@ -47,10 +52,35 @@ public class ContentEnricherTest extends AbstractEIPTest {
     }
 
     public void testInOnly() throws Exception {
+        activateComponent(new ReturnMockComponent("<halloMock/>"), "enricherTarget");
+        sendAndAssertInOnly();
+    }
+    
+    public void testInOnlyEnricherTargetConsumerStreamSource() throws Exception {
+        //disable debug level to avoid StreamSource conversion
+        Level original = ROOT_LOGGER.getLevel();
+        ROOT_LOGGER.setLevel(Level.INFO);
+        try {
+            activateComponent(new TransformComponentSupport() {
+                
+                private final SourceTransformer transformer = new SourceTransformer();
+                
+                public boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws Exception {
+                    //let's consume the in message's content stream and set the out message's content to another stream
+                    transformer.toString(in.getContent());
+                    out.setContent(createSource("<halloMock/>"));
+                    return true;
+                }
+                
+            }, "enricherTarget");
+            sendAndAssertInOnly();
+        } finally {
+            //restore the original log level
+            ROOT_LOGGER.setLevel(original);
+        }
+    }
 
-        activateComponent(new ReturnMockComponent("<halloMock/>"),
-                "enricherTarget");
-
+    private void sendAndAssertInOnly() throws Exception {
         ReceiverComponent rec = activateReceiver("target");
 
         InOnly me = client.createInOnlyExchange();
@@ -63,8 +93,7 @@ public class ContentEnricherTest extends AbstractEIPTest {
 
         assertEquals(1, rec.getMessageList().getMessageCount());
 
-        NormalizedMessage object = (NormalizedMessage) rec.getMessageList()
-                .getMessages().get(0);
+        NormalizedMessage object = (NormalizedMessage) rec.getMessageList().getMessages().get(0);
 
         DOMSource domSource = (DOMSource) object.getContent();
         Document doc = (Document) domSource.getNode();
@@ -103,8 +132,7 @@ public class ContentEnricherTest extends AbstractEIPTest {
 
         enricher.setCopyProperties(true);
         
-        activateComponent(new ReturnMockComponent("<helloMock/>"),
-                "enricherTarget");
+        activateComponent(new ReturnMockComponent("<helloMock/>"), "enricherTarget");
 
         ReceiverComponent rec = activateReceiver("target");
 

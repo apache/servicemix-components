@@ -194,6 +194,9 @@ public class ContentEnricher extends EIPEndpoint {
 
         InOut enricherTargetME = getExchangeFactory().createInOutExchange();
         enricherTarget.configureTarget(enricherTargetME, getContext());
+        
+        //ensure that both this class and the enricher target can read the message content
+        MessageUtil.enableContentRereadability(exchange.getMessage("in"));
         MessageUtil.transferInToIn(exchange, enricherTargetME);
 
         sendSync(enricherTargetME);
