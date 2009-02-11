@@ -178,7 +178,7 @@ public class CamelJbiComponent extends DefaultComponent implements Component<Exc
     public void deactivateJbiEndpoint(CamelProviderEndpoint jbiEndpoint) throws Exception {
         // this will be done by the ServiceUnit
         if (jbiEndpoint.getServiceUnit() == serviceUnit) {
-            jbiEndpoint.deactivate();
+            removeEndpoint(jbiEndpoint);
         }
     }
 
