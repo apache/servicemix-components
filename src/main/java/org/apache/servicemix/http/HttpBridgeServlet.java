@@ -51,22 +51,7 @@ public class HttpBridgeServlet extends HttpServlet {
         }
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            getProcessor().process(request, response);
-        } catch (IOException e) {
-            throw e;
-        } catch (ServletException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ServletException("Failed to process request: " + e, e);
-        }
-    }
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-                    IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             getProcessor().process(request, response);
         } catch (IOException e) {
