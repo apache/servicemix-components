@@ -19,6 +19,7 @@ package org.apache.servicemix.ftp;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.StringTokenizer;
 
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
@@ -47,7 +48,8 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     private String uploadPrefix;
     private String uploadSuffix;
     private boolean checkDuplicates = true;
-
+    private boolean autoCreateDirectory = true;
+    
     public FtpSenderEndpoint() {
     }
 
@@ -96,6 +98,37 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                 }
             }
         }
+        
+        // borrow client from pool
+        FTPClient ftp = borrowClient();
+        String folderName = "";
+        try {
+            StringTokenizer strTok = null;
+            if (isAutoCreateDirectory() && !ftp.changeWorkingDirectory(getWorkingPath())) {
+                // it seems the folder isn't there, so create it
+                strTok = new StringTokenizer(getWorkingPath(), "/");
+                
+                while (strTok.hasMoreTokens()) {
+                    folderName += '/';
+                    folderName += strTok.nextToken();
+                    if (!ftp.changeWorkingDirectory(folderName)) {
+                        if (ftp.makeDirectory(folderName)) {
+                            // the folder now exists
+                        } else {
+                            // unable to create the folder
+                            throw new IOException("The defined folder " + getWorkingPath() + " doesn't exist on the server and it can't be created automatically.");
+                        }
+                    }
+                }
+            }
+        } finally {
+            // give back the client
+            returnClient(ftp);
+        }
+    }
+    
+    private String getWorkingPath() {
+        return (uri != null && uri.getPath() != null) ? uri.getPath() : ".";
     }
 
     // Properties
@@ -163,6 +196,23 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
      */
     public void setUploadSuffix(String uploadSuffix) {
         this.uploadSuffix = uploadSuffix;
+    }
+    
+    /**
+     * Specifies if the endpoint should create the target directory, if it does
+     * not already exist. If you set this to <code>false</code> and the
+     * directory does not exist, the endpoint will not do anything. Default
+     * value is <code>true</code>.
+     * 
+     * @param autoCreateDirectory a boolean specifying if the endpoint creates
+     *            directories.
+     */
+    public void setAutoCreateDirectory(boolean autoCreateDirectory) {
+        this.autoCreateDirectory = autoCreateDirectory;
+    }
+
+    public boolean isAutoCreateDirectory() {
+        return autoCreateDirectory;
     }
 
     // Implementation methods
