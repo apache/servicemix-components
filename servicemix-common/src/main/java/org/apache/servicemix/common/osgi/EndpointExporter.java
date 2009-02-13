@@ -84,7 +84,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
         Map<String, String> sus = new HashMap<String, String>();
         for (Endpoint ep : getEndpoints()) {
             if (ep.getServiceUnit() == null) {
-                throw new IllegalStateException("Endpoint has not been ");
+                throw new IllegalStateException("Endpoint has not been initialized.  Check that the component is started.");
             }
             sus.put(ep.getServiceUnit().getName(), ep.getServiceUnit().getComponent().getComponentName());
         }

@@ -22,7 +22,7 @@ import org.apache.servicemix.common.Endpoint;
  * The EndpointWrapper is a very simple interface that wraps an Endpoint.
  * The main purpose of this wrapper is that Spring-DM creates proxy when using
  * collections, so that we don't have access to the real class anymore and can not
- * do anything based on the clas itself.  Going through a wrapper works around
+ * do anything based on the class itself.  Going through a wrapper works around
  * this problem.
  */
 public interface EndpointWrapper {
