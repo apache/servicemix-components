@@ -108,7 +108,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
                 if (!persistent) {
                     su = doDeploy(serviceUnitName, serviceUnitRootPath);
                     if (su == null) {
-                        throw failure("deploy", "Unable to find suitable deployer for Service Unit '" + serviceUnitName + "'", null);
+                        throw failure("init", "Unable to find suitable deployer for Service Unit '" + serviceUnitName + "'", null);
                     }
                     component.getRegistry().registerServiceUnit(su);
                 } else {
@@ -215,7 +215,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
                 throw failure("shutDown", "Service Unit '" + serviceUnitName + "' is not deployed", null);
             }
             if (!LifeCycleMBean.STOPPED.equals(su.getCurrentState())) {
-                throw failure("start", "ServiceUnit should be in a STOPPED state", null);
+                throw failure("shutDown", "ServiceUnit should be in a STOPPED state", null);
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.shutDown();
