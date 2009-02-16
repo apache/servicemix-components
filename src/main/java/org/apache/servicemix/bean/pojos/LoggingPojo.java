@@ -140,11 +140,11 @@ public class LoggingPojo extends BeanSupport implements MessageExchangeListener 
                     Node node = sourceTransformer.toDOMNode(message.getContent());
                     message.setContent(new DOMSource(node));
                     String str = sourceTransformer.toString(node);
-                    if (str.length() > maxMsgDisplaySize) {
-                        sb.append(str.substring(0, maxMsgDisplaySize)).append("...");
-                    } else {
+                    if (maxMsgDisplaySize < 0 || str.length() <= maxMsgDisplaySize) { 
                         sb.append(str);
-                    }
+                    } else {
+                        sb.append(str.substring(0, maxMsgDisplaySize)).append("...");
+                    }                                         
                 } else {
                     sb.append("null");
                 }
