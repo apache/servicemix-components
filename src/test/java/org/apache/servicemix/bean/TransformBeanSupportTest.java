@@ -16,10 +16,8 @@
  */
 package org.apache.servicemix.bean;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.jbi.messaging.DeliveryChannel;
@@ -29,7 +27,6 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.xml.namespace.QName;
 
 import org.apache.servicemix.bean.support.ExchangeTarget;
@@ -332,7 +329,7 @@ public class TransformBeanSupportTest extends AbstractBeanComponentTest {
     
     public static class MyDestinationTransformer implements MessageExchangeListener {
         
-        @org.apache.servicemix.bean.ExchangeTarget(uri="service:test:receiver")
+        @org.apache.servicemix.bean.ExchangeTarget(uri = "service:test:receiver")
         private Destination receiver;
         
         @Resource

@@ -23,14 +23,12 @@ import junit.framework.TestCase;
 
 import org.apache.servicemix.bean.BeanEndpoint;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
-import org.junit.Test;
 
 /**
  * Test cases for {@link Request}
  */
 public class RequestTest extends TestCase {
     
-    @Test
     public void testIsFinishedOnStatus() throws Exception {
         MessageExchange exchange = createMockExchange("my-exchange-id");
         Request request = new Request("my-correlation-id", new Object(), exchange);
@@ -39,7 +37,6 @@ public class RequestTest extends TestCase {
         assertTrue(request.isFinished());
     }
     
-    @Test
     public void testIsFinishedWhenAllExchangesDoneOrError() throws Exception {
         MessageExchange exchange = createMockExchange("my-exchange-id");
         Request request = new Request("my-correlation-id", new Object(), exchange);
