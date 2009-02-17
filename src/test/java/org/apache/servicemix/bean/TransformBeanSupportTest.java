@@ -16,58 +16,38 @@
  */
 package org.apache.servicemix.bean;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.xml.namespace.QName;
 
-import junit.framework.TestCase;
-
-import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.bean.support.ExchangeTarget;
 import org.apache.servicemix.bean.support.TransformBeanSupport;
-import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.components.util.ComponentSupport;
-import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.expression.JAXPXPathExpression;
+import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.tck.ExchangeCompletedListener;
+import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.w3c.dom.Element;
 
-public class TransformBeanSupportTest extends TestCase {
+public class TransformBeanSupportTest extends AbstractBeanComponentTest {
 
-    protected DefaultServiceMixClient client;
-    protected JBIContainer container;
-    protected ExchangeCompletedListener listener;
-    protected BeanComponent component;
-
-    protected void setUp() throws Exception {
-        container = new JBIContainer();
-        container.setEmbedded(true);
-        container.setUseMBeanServer(false);
-        container.setCreateMBeanServer(false);
-        configureContainer();
-        listener = new ExchangeCompletedListener();
-        container.addListener(listener);
-        
-        container.init();
-        container.start();
-
-        component = new BeanComponent();
-        container.activateComponent(component, "servicemix-bean");
-        
-        client = new DefaultServiceMixClient(container);
-    }
-
-    protected void tearDown() throws Exception {
-        listener.assertExchangeCompleted();
-        container.shutDown();
-    }
-
-    protected void configureContainer() throws Exception {
+    protected void configureContainer() {
         container.setFlowName("st");
     }
     
@@ -83,11 +63,54 @@ public class TransformBeanSupportTest extends TestCase {
         
         io = client.receive();
         assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
-        assertEquals("<hello/>", new SourceTransformer().contentToString(io.getMessage("out")));
+        Element e = new SourceTransformer().toDOMElement(io.getMessage("out"));
+        assertEquals("hello", e.getNodeName());
         
         client.done(io);
         assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
     }
+    
+    public void testInOutWithFault() throws Exception {
+        TransformBeanSupport transformer = new MyTransformer();
+        BeanEndpoint transformEndpoint = createBeanEndpoint(transformer);
+        component.addEndpoint(transformEndpoint);
+
+        MessageExchange io = client.createInOutExchange();
+        io.setService(new QName("transform"));
+        io.getMessage("in").setContent(new StringSource("<hello/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        Element e = new SourceTransformer().toDOMElement(io.getMessage("out"));
+        assertEquals("hello", e.getNodeName());
+        
+        client.fail(io, new Exception("We failed to handle the reponse"));
+        assertEquals(ExchangeStatus.ERROR, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
+    }
+    
+    public void testInOutWithBeanType() throws Exception {
+        BeanEndpoint endpoint = createBeanEndpoint(AssertSameInstancePojo.class);
+        component.addEndpoint(endpoint);
+        
+        MessageExchange io = client.createInOutExchange();
+        io.setService(new QName("transform"));
+        io.getMessage("in").setContent(new StringSource("<hello/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        Element e = new SourceTransformer().toDOMElement(io.getMessage("out"));
+        assertEquals("hello", e.getNodeName());
+        
+        client.done(io);
+        assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(endpoint);        
+    }
+    
+    
 
     public void testInOnly() throws Exception {
         TransformBeanSupport transformer = createTransformer("receiver");
@@ -104,6 +127,28 @@ public class TransformBeanSupportTest extends TestCase {
         
         io = client.receive();
         assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
+        
+        receiver.getMessageList().assertMessagesReceived(1);
+    }
+    
+    public void testInOnlyWithCorrelation() throws Exception {
+        TransformBeanSupport transformer = createTransformer("receiver");
+        BeanEndpoint transformEndpoint = createBeanEndpoint(transformer);
+        transformEndpoint.setCorrelationExpression(new JAXPXPathExpression("/message/@id"));
+        component.addEndpoint(transformEndpoint);
+
+        ReceiverComponent receiver = new ReceiverComponent();
+        activateComponent(receiver, "receiver");
+        
+        MessageExchange io = client.createInOnlyExchange();
+        io.setService(new QName("transform"));
+        io.getMessage("in").setContent(new StringSource("<message id='1'/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
         
         receiver.getMessageList().assertMessagesReceived(1);
     }
@@ -122,6 +167,26 @@ public class TransformBeanSupportTest extends TestCase {
         
         io = client.receive();
         assertEquals(ExchangeStatus.ERROR, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
+    }
+    
+    public void testInOnlyWithDestination() throws Exception {
+        BeanEndpoint endpoint = createBeanEndpoint(MyDestinationTransformer.class);
+        component.addEndpoint(endpoint);
+
+        ActivationSpec spec = new ActivationSpec(new EchoComponent());
+        spec.setService(new QName("test", "receiver"));
+        spec.setComponentName("receiver");
+        container.activateComponent(spec);
+        
+        MessageExchange io = client.createInOnlyExchange();
+        io.setService(new QName("transform"));
+        io.getMessage("in").setContent(new StringSource("<hello/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(endpoint);
     }
 
     public void testRobustInOnly() throws Exception {
@@ -139,6 +204,7 @@ public class TransformBeanSupportTest extends TestCase {
         
         io = client.receive();
         assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
         
         receiver.getMessageList().assertMessagesReceived(1);
     }
@@ -159,6 +225,7 @@ public class TransformBeanSupportTest extends TestCase {
         assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
         assertNotNull(io.getFault());
         client.done(io);
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
     }
 
     public void testRobustInOnlyWithFaultAndError() throws Exception {
@@ -177,6 +244,7 @@ public class TransformBeanSupportTest extends TestCase {
         assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
         assertNotNull(io.getFault());
         client.fail(io, new Exception("I do not like faults"));
+        assertBeanEndpointRequestsMapEmpty(transformEndpoint);
     }
 
     private MyTransformer createTransformer(String targetService) {
@@ -195,6 +263,14 @@ public class TransformBeanSupportTest extends TestCase {
         return transformEndpoint;
     }
     
+    private BeanEndpoint createBeanEndpoint(Class<?> type) {
+        BeanEndpoint endpoint = new BeanEndpoint();
+        endpoint.setBeanType(type);
+        endpoint.setService(new QName("transform"));
+        endpoint.setEndpoint("endpoint");
+        return endpoint;
+    }
+    
     protected void activateComponent(ComponentSupport comp, String name) throws Exception {
         comp.setService(new QName(name));
         comp.setEndpoint("endpoint");
@@ -207,8 +283,8 @@ public class TransformBeanSupportTest extends TestCase {
             return true;
         }
     }
-
-    public static class ReturnErrorComponent extends ComponentSupport implements MessageExchangeListener {
+    
+    public static class ReturnErrorComponent extends ComponentSupport implements org.apache.servicemix.MessageExchangeListener {
 
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
@@ -217,7 +293,7 @@ public class TransformBeanSupportTest extends TestCase {
         }
     }
 
-    public static class ReturnFaultComponent extends ComponentSupport implements MessageExchangeListener {
+    public static class ReturnFaultComponent extends ComponentSupport implements org.apache.servicemix.MessageExchangeListener {
         
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
@@ -228,4 +304,57 @@ public class TransformBeanSupportTest extends TestCase {
         }
     }
     
+    public static class AssertSameInstancePojo implements MessageExchangeListener {
+        
+        @Resource 
+        private DeliveryChannel channel;
+        
+        private String id;
+
+        public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            assertId(exchange);
+            if (ExchangeStatus.ACTIVE.equals(exchange.getStatus())) {
+                MessageUtil.enableContentRereadability(exchange.getMessage("in"));
+                MessageUtil.transferInToOut(exchange, exchange);
+                channel.send(exchange);
+            }
+        }
+
+        private void assertId(MessageExchange exchange) {
+            if (exchange.getStatus().equals(ExchangeStatus.ACTIVE)) {
+                id = exchange.getExchangeId();
+            } else {
+                // make sure that the same object is being used to handle the Exchange with status DONE 
+                assertEquals(id, exchange.getExchangeId());
+            }
+        }        
+    }
+    
+    public static class MyDestinationTransformer implements MessageExchangeListener {
+        
+        @org.apache.servicemix.bean.ExchangeTarget(uri="service:test:receiver")
+        private Destination receiver;
+        
+        @Resource
+        private DeliveryChannel channel;
+        
+        public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            if (exchange.getStatus() == ExchangeStatus.ACTIVE && exchange instanceof InOnly) {
+                NormalizedMessage forward = receiver.createMessage();
+                forward.setContent(exchange.getMessage("in").getContent());
+                Future<NormalizedMessage> response = receiver.send(forward);
+                //let's wait for the response to come back
+                try {
+                    response.get();
+                    exchange.setStatus(ExchangeStatus.DONE);
+                } catch (InterruptedException e) {
+                    exchange.setError(e);
+                } catch (ExecutionException e) {
+                    exchange.setError(e);
+                } finally {
+                    channel.send(exchange);
+                }
+            }
+        }
+    }
 }

@@ -41,45 +41,41 @@ public class SenderBean implements MessageExchangeListener {
 	private DeliveryChannel channel;
 
 	@PostConstruct
-	public void init() {
-		senderThread = new Thread(
+    public void init() {
+        senderThread = new Thread(
 
-		new Runnable() {
-			public void run() {
-				while (keepRunning.get()) {
-
-					try {
-						String text = "<Hello/>";
-						InOnly exchange = channel
-								.createExchangeFactoryForService(target)
-								.createInOnlyExchange();
-						NormalizedMessage msg = exchange.createMessage();
-						msg.setContent(new StringSource(text));
+        new Runnable() {
+            public void run() {
+                while (keepRunning.get()) {
+                    try {
+                        String text = "<Hello/>";
+                        InOnly exchange = channel.createExchangeFactoryForService(target).createInOnlyExchange();
+                        NormalizedMessage msg = exchange.createMessage();
+                        msg.setContent(new StringSource(text));
                         exchange.setInMessage(msg);
-                        System.out.println("Sending message: " + text);
-						channel.send(exchange);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+                        channel.send(exchange);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						// ignore
-					}
-				}
-			}
-		});
-		senderThread.start();
-	}
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
+            }
+        });
+        senderThread.start();
+    }
 
-	@PreDestroy
-	public void destroy() {
-		keepRunning.set(false);
-		if (senderThread != null && senderThread.isAlive()) {
-			senderThread.interrupt();
-		}
-	}
+    @PreDestroy
+    public void destroy() {
+        keepRunning.set(false);
+        if (senderThread != null && senderThread.isAlive()) {
+            senderThread.interrupt();
+        }
+    }
 
     public void onMessageExchange(MessageExchange messageExchange) throws MessagingException {
         // Do nothing

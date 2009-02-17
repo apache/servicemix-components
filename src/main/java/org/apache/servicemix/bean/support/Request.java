@@ -17,27 +17,32 @@
 package org.apache.servicemix.bean.support;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+
+import org.apache.servicemix.bean.BeanEndpoint;
 
 public class Request {
     private Object bean;
-    private MessageExchange exchange;
-    private Set<String> sentExchanges;
     // Keep track of callbacks already called, so that the same callback
     // can not be called twice
     private Map<Method, Boolean> callbacks;
+    private Object correlationId;
+    private final Set<MessageExchange> exchanges = new HashSet<MessageExchange>();
     
     public Request() {
     }
     
-    public Request(Object bean, MessageExchange exchange) {
+    public Request(Object correlationId, Object bean, MessageExchange exchange) {
+        this.correlationId = correlationId;
         this.bean = bean;
-        this.exchange = exchange;
+        exchanges.add(exchange);
     }
     
     /**
@@ -53,26 +58,9 @@ public class Request {
     public void setBean(Object bean) {
         this.bean = bean;
     }
-    /**
-     * @return the exchange
-     */
-    public MessageExchange getExchange() {
-        return exchange;
-    }
-    /**
-     * @param exchange the exchange to set
-     */
-    public void setExchange(MessageExchange exchange) {
-        this.exchange = exchange;
-    }
-    /**
-     * @param id the id of the exchange sent 
-     */
-    public void addSentExchange(String id) {
-        if (sentExchanges == null) {
-            sentExchanges = new HashSet<String>();
-        }
-        sentExchanges.add(id);
+    
+    public Object getCorrelationId() {
+        return correlationId;
     }
 
     /**
@@ -85,4 +73,35 @@ public class Request {
         return callbacks;
     }
 
+    /**
+     * Check if this request is completely finished.  
+     *  
+     * @return <code>true</code> if both the Exchange is DONE and there are no more outstanding sent exchanges
+     */
+    public boolean isFinished() {
+        for (MessageExchange exchange : exchanges) {
+            if (ExchangeStatus.ACTIVE.equals(exchange.getStatus())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Add an exchange to this request.  All exchanges that are added to the request have to be finished 
+     * @param exchange
+     */
+    public void addExchange(MessageExchange exchange) {
+        exchanges.add(exchange);
+        exchange.setProperty(BeanEndpoint.CORRELATION_ID, correlationId);
+    }
+    
+    /**
+     * Get all the MessageExchanges that are involved in this request
+     * 
+     * @return an unmodifiable list of {@link MessageExchange}s
+     */
+    public Set<MessageExchange> getExchanges() {
+        return Collections.unmodifiableSet(exchanges);
+    }
 }

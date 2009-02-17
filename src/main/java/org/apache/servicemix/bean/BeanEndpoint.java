@@ -75,6 +75,11 @@ import org.w3c.dom.DocumentFragment;
  * @org.apache.xbean.XBean element="endpoint"
  */
 public class BeanEndpoint extends ProviderEndpoint implements ApplicationContextAware {
+    
+    /**
+     * Property name for the correlation id that is being set on exchanges by the BeanEndpoint 
+     */
+    public static final String CORRELATION_ID = BeanEndpoint.class.getName().replaceAll("\\.", "_") + "_correlation";
 
     private ApplicationContext applicationContext;
     private String beanName;
@@ -102,7 +107,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     public void start() throws Exception {
         super.start();
         if (serviceEndpoint == null) {
-        	serviceEndpoint = getContext().getEndpoint(getService(), getEndpoint());
+            serviceEndpoint = getContext().getEndpoint(getService(), getEndpoint());
         }
         Object pojo = getBean();
         if (pojo != null) {
@@ -216,7 +221,6 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     }
 
     protected void onProviderExchange(MessageExchange exchange) throws Exception {
-        Object corId = getCorrelation(exchange);
         Request req = getOrCreateCurrentRequest(exchange);
         currentRequest.set(req);
         synchronized (req) {
@@ -257,14 +261,16 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                     }
                 }
             }
-            checkEndOfRequest(req, corId);
+            checkEndOfRequest(req);
             currentRequest.set(null);
         }
     }
 
     protected Request getOrCreateCurrentRequest(MessageExchange exchange) throws ClassNotFoundException, InstantiationException, IllegalAccessException, MessagingException {
-        Object corId = getCorrelation(exchange);
-        Request req = requests.get(corId);
+        if (currentRequest.get() != null) {
+            return currentRequest.get();
+        }
+        Request req = getRequest(exchange);
         if (req == null) {
             Object pojo = getBean();
             if (pojo == null) {
@@ -272,32 +278,40 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                 injectBean(pojo);
                 ReflectionUtils.callLifecycleMethod(pojo, PostConstruct.class);
             }
-            req = new Request(pojo, exchange);
-            requests.put(corId, req);
+            req = new Request(getCorrelation(exchange), pojo, exchange);
+            requests.put(req.getCorrelationId(), req);
         }
         return req;
     }
+    
+    protected Request getRequest(MessageExchange exchange) throws MessagingException {
+        Object correlation = getCorrelation(exchange);
+        return correlation == null ? null : requests.get(correlation);
+    }
 
     protected void onConsumerExchange(MessageExchange exchange) throws Exception {
-        Object corId = exchange.getExchangeId();
-        Request req = requests.remove(corId);
+        Request req = getOrCreateCurrentRequest(exchange);
         if (req == null) {
             throw new IllegalStateException("Receiving unknown consumer exchange: " + exchange);
         }
         currentRequest.set(req);
-        // If the bean implements MessageExchangeListener,
-        // just call the method
-        if (req.getBean() instanceof MessageExchangeListener) {
+        
+        // if there's a holder for this exchange, act upon that
+        // else invoke the MessageExchangeListener interface
+        if (exchanges.containsKey(exchange.getExchangeId())) {
+            exchanges.remove(exchange.getExchangeId()).set(exchange);
+            evaluateCallbacks(req);
+            
+            //we should done() the consumer exchange here on behalf of the Destination who sent it
+            if (exchange instanceof InOut && ExchangeStatus.ACTIVE.equals(exchange.getStatus())) {
+                done(exchange);
+            }
+        } else if (req.getBean() instanceof MessageExchangeListener) {
             ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
         } else {
-            Holder me = exchanges.get(exchange.getExchangeId());
-            if (me == null) {
-                throw new IllegalStateException("Consumer exchange not found");
-            }
-            me.set(exchange);
-            evaluateCallbacks(req);
+            throw new IllegalStateException("No known consumer exchange found and bean does not implement MessageExchangeListener");
         }
-        checkEndOfRequest(req, corId);
+        checkEndOfRequest(req);
         currentRequest.set(null);
     }
 
@@ -403,7 +417,7 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             URIResolver.configureExchange(me, getServiceUnit().getComponent().getComponentContext(), uri);
             MessageUtil.transferTo(message, me, "in");
             final Holder h = new Holder();
-            requests.put(me.getExchangeId(), currentRequest.get());
+            getOrCreateCurrentRequest(me).addExchange(me);
             exchanges.put(me.getExchangeId(), h);
             BeanEndpoint.this.send(me);
             return h;
@@ -411,16 +425,40 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
             throw new RuntimeException(e);
         }
     }
+    
+    @Override
+    protected void send(MessageExchange me) throws MessagingException {
+        checkEndOfRequest(me);
+        super.send(me);
+    }
 
-    protected void checkEndOfRequest(Request request, Object corId) {
-        if (request.getExchange().getStatus() != ExchangeStatus.ACTIVE) {
-            Object beanFromRequest = request.getBean();
-            if (beanFromRequest != bean) {
-                ReflectionUtils.callLifecycleMethod(beanFromRequest, PreDestroy.class);
+    /*
+     * Checks if the request has ended with the given MessageExchange.  It will only perform the check on non-ACTIVE exchanges
+     */
+    private void checkEndOfRequest(MessageExchange me) throws MessagingException {
+        if (!ExchangeStatus.ACTIVE.equals(me.getStatus())) {
+            Request request = getRequest(me);
+            if (request != null) {
+                checkEndOfRequest(request);
             }
-            //request.setBean(null);
-            //request.setExchange(null);
-            requests.remove(corId);
+        }
+    }
+
+    /**
+     * Checks if the request has ended.  If the request has ended, 
+     * <ul>
+     * <li>the request object is being removed from the list of pending requests</li> 
+     * <li>if the bean was created for that request, it is now being destroyed</li>
+     * </ul>
+     * 
+     * @param req the Request instance to check
+     */
+    protected void checkEndOfRequest(Request req) {
+        if (req.isFinished()) {
+            requests.remove(req.getCorrelationId());
+            if (req.getBean() != bean) {
+                ReflectionUtils.callLifecycleMethod(req.getBean(), PreDestroy.class);
+            }
         }
     }
 
@@ -442,6 +480,9 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
                 correlationExpression = new org.apache.servicemix.expression.Expression() {
                     public Object evaluate(MessageExchange exchange, NormalizedMessage message) 
                         throws MessagingException {
+                        if (exchange.getProperty(CORRELATION_ID) != null) {
+                            return exchange.getProperty(CORRELATION_ID);
+                        }
                         return exchange.getExchangeId();
                     }
                 };
@@ -573,12 +614,16 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
 
         public void send(MessageExchange messageExchange) throws MessagingException {
             try {
+                Request req = getOrCreateCurrentRequest(messageExchange);
                 if (messageExchange.getRole() == MessageExchange.Role.CONSUMER
                         && messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
-                    Request req = getOrCreateCurrentRequest(messageExchange);
                     if (!(req.getBean() instanceof MessageExchangeListener)) {
                         throw new IllegalStateException("A bean acting as a consumer and using the channel to send exchanges must implement the MessageExchangeListener interface");
                     }
+                    req.addExchange(messageExchange);
+                }
+                if (messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
+                    checkEndOfRequest(req);
                 }
                 getChannel().send(messageExchange);
             } catch (MessagingException e) {
@@ -589,12 +634,13 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         }
 
         public boolean sendSync(MessageExchange messageExchange) throws MessagingException {
+            checkEndOfRequest(messageExchange);
             return getChannel().sendSync(messageExchange);
         }
 
         public boolean sendSync(MessageExchange messageExchange, long l) throws MessagingException {
+            checkEndOfRequest(messageExchange);
             return getChannel().sendSync(messageExchange, l);
         }
-
     }
 }

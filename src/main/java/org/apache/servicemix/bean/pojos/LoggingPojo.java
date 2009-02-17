@@ -23,7 +23,6 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.ExchangeStatus;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 

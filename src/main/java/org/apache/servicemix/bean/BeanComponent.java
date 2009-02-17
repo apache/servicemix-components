@@ -40,7 +40,7 @@ import org.springframework.context.ApplicationContextAware;
  * @org.apache.xbean.XBean element="component" description="Bean Component"
  */
 public class BeanComponent extends DefaultComponent implements ApplicationContextAware {
-
+    
     private BeanEndpoint[] endpoints;
     private String[] searchPackages;
     private ApplicationContext applicationContext;
