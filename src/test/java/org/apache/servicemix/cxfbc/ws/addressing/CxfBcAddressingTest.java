@@ -164,6 +164,7 @@ public class CxfBcAddressingTest extends SpringTestSupport implements Verificati
             jbi = null;
         }
         BusFactory.setDefaultBus(null);
+        Thread.sleep(10000);
         super.tearDown();
     }
     

@@ -366,6 +366,11 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             bus.shutdown(false);
             bus = null;
         }
+        if (!isComponentBus()) {
+            //if use the endpoint own bus, then shutdown it
+            bus.shutdown(true);
+            bus = null;
+        }
         super.deactivate();
     }
 
@@ -564,6 +569,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         } else {
             return ((CxfBcComponent) getServiceUnit().getComponent()).getBus();
         }
+    }
+
+    private boolean isComponentBus() {
+        return getBus() ==  ((CxfBcComponent) getServiceUnit().getComponent()).getBus();
     }
 
     /**

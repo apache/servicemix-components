@@ -144,6 +144,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
             jbi.destroy();
             jbi = null;
         }
+        Thread.sleep(10000);
     }
 
     /**
