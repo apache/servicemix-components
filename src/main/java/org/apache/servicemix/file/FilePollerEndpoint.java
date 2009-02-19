@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
 import javax.jbi.JBIException;
@@ -67,6 +68,9 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private LockManager lockManager;
     private ConcurrentMap<String, InputStream> openExchanges = new ConcurrentHashMap<String, InputStream>();
+    private int maxConcurrent = -1;
+    private Object monitor = new Object();
+    private AtomicLong throttleCounter = new AtomicLong(0);
 
     public FilePollerEndpoint() {
     }
@@ -92,7 +96,12 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     }
 
     public void poll() throws Exception {
-        pollFileOrDirectory(file);
+        if (!this.isThrottled()) {
+            pollFileOrDirectory(file);
+        } else {
+            if (logger.isDebugEnabled())
+                logger.info("Poller is throttled, skipping this cycle");
+        }
     }
 
     public void validate() throws DeploymentException {
@@ -125,6 +134,20 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
 
     // Properties
     // -------------------------------------------------------------------------
+
+    /**
+     * How many open exchanges can be pending.  Default is -1 for unbounded pending exchanges.
+     * Set to 1...n to engage throttling of polled file processing.
+     * 
+     * @param maxConcurrent
+     */
+    public void setMaxConcurrent(int maxConcurrent) {
+        this.maxConcurrent = maxConcurrent;
+    }
+
+    public int getMaxConcurrent() {
+        return maxConcurrent;
+    }
 
     /**
      * Specifies the file or directory to be polled. If it is a directory, all
@@ -286,6 +309,9 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
             // skip the file because it is not yet fully copied over
             return;
         }
+
+        checkThrottle();
+
         getExecutor().execute(new Runnable() {
             public void run() {
                 String uri = file.toURI().relativize(aFile.toURI()).toString();
@@ -299,6 +325,41 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                 }
             }
         });
+    }
+
+    /**
+     * Check the throttling criteria and either execute or block
+     * until pending exchanges are processed.
+     */
+    private void checkThrottle() {
+        if (maxConcurrent > 0 && this.openExchanges.size() >= maxConcurrent) {
+            throttleCounter.addAndGet(1);
+            synchronized (this.monitor) {
+                boolean interrupt = false;
+                while (this.openExchanges.size() >= this.maxConcurrent) {
+                    if (interrupt) {
+                        throw new IllegalStateException("Throttle block has been interrupted");
+                    }
+                    try {
+                        this.monitor.wait();
+                    }
+                    catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        interrupt = true;
+                    }
+                }
+            }
+            throttleCounter.decrementAndGet();
+        }
+    }
+
+    /**
+     * Is this endpoint currently throttling throughput.
+     *  
+     * @return
+     */
+    private boolean isThrottled() {
+        return (throttleCounter.get() > 0);
     }
 
     protected void processFileNow(File aFile) {
@@ -374,6 +435,9 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                     throw new JBIException("Unexpectedly received an exchange with status ACTIVE");
                 }
             } finally {
+
+                notifyThrottledThreads();
+
                 // remove the open exchange
                 openExchanges.remove(exchange.getExchangeId());
                 // unlock the file
@@ -384,6 +448,15 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
             // strange, we don't know this exchange
             logger.debug("Received unknown exchange. Will be ignored...");
             return;
+        }
+    }
+
+    private void notifyThrottledThreads() {
+        // notify the throttled threads monitor
+        if (maxConcurrent > 0) {
+            synchronized (this.monitor) {
+                this.monitor.notifyAll();
+            }
         }
     }
 
