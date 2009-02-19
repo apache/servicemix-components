@@ -52,7 +52,7 @@ public class JbiEndpointWithMepSpecifiedTest extends JbiTestSupport {
             }
             
         });
-        assertEquals(1, component.count);
+        assertEquals(1, component.getCount());
     }
 
     @Override
@@ -77,6 +77,10 @@ public class JbiEndpointWithMepSpecifiedTest extends JbiTestSupport {
     private class MyReceiverComponent extends ReceiverComponent {
         
         private int count;
+        
+        public int getCount() {
+        	return count;
+        }
         
         @Override
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {

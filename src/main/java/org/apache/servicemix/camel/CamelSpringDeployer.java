@@ -53,6 +53,12 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
         return "camel-context";
     }
 
+    public void undeploy(ServiceUnit su) throws DeploymentException {
+        // Remove the jbiComponent form CamelJbiComponent
+        component.removeJbiComponent(su.getName());
+        super.undeploy(su);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -69,7 +75,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
 
         // lets install the context class loader
         ServiceUnit serviceUnit = super.deploy(suName, serviceUnitRootPath);
-//        Thread.currentThread().setContextClassLoader(serviceUnit.getConfigurationClassLoader());
+        // Thread.currentThread().setContextClassLoader(serviceUnit.getConfigurationClassLoader());
         return serviceUnit;
     }
 
@@ -85,27 +91,34 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
 
         SpringCamelContext camelContext = SpringCamelContext.springCamelContext(applicationContext);
 
+        JbiComponent jbiComponent = camelContext.getComponent("jbi", JbiComponent.class);
         // now lets iterate through all the endpoints
         Collection<Endpoint> endpoints = camelContext.getSingletonEndpoints();
 
-        for (Endpoint endpoint : endpoints) {
-            if (component.isEndpointExposedOnNmr(endpoint)) {
-                services.add(component.createJbiEndpointFromCamel(endpoint));
+        if (jbiComponent != null) {
+            // set the SU Name
+            jbiComponent.setSuName(serviceUnitName);
+            for (Endpoint endpoint : endpoints) {
+                if (component.isEndpointExposedOnNmr(endpoint)) {
+                    services.add(jbiComponent.createJbiEndpointFromCamel(endpoint));
+                }
             }
+            // lets add a control bus endpoint to ensure we have at least one endpoint to deploy
+            BeanComponent beanComponent = camelContext.getComponent("bean", BeanComponent.class);
+            Endpoint endpoint = beanComponent.createEndpoint(new CamelControlBus(camelContext),
+                                                             "camel:" + serviceUnitName + "-controlBus");
+            services.add(jbiComponent.createJbiEndpointFromCamel(endpoint));
         }
 
-        // lets add a control bus endpoint to ensure we have at least one endpoint to deploy
-        BeanComponent beanComponent = camelContext.getComponent("bean", BeanComponent.class);
-        Endpoint endpoint = beanComponent.createEndpoint(new CamelControlBus(camelContext),
-                                                         "camel:" + serviceUnitName + "-controlBus");
-        services.add(component.createJbiEndpointFromCamel(endpoint));
+
 
         return services;
     }
 
     protected Map getParentBeansMap() {
         Map beans =  super.getParentBeansMap();
-        beans.put("jbi", component);
+        beans.put("servicemix-camel", component);
+        beans.put("jbi", new JbiComponent(component));
         return beans;
     }
 

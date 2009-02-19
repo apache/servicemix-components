@@ -22,6 +22,9 @@ import org.apache.camel.RuntimeCamelException;
  * @version $Revision: 563665 $
  */
 public class JbiException extends RuntimeCamelException {
+
+    private static final long serialVersionUID = -939254443652090476L;
+
     public JbiException(Throwable cause) {
         super(cause);
     }

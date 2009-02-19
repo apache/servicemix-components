@@ -48,9 +48,9 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
 
     private JbiProducer producer;
 
-    private final CamelJbiComponent jbiComponent;
+    private final JbiComponent jbiComponent;
 
-    public JbiEndpoint(CamelJbiComponent jbiComponent, String uri) {
+    public JbiEndpoint(JbiComponent jbiComponent, String uri) {
         super(uri, jbiComponent);
         this.jbiComponent = jbiComponent;
         parseUri(uri);
@@ -76,7 +76,7 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         @Override
         public void start() throws Exception {
             consumer = new CamelConsumerEndpoint(jbiComponent.getBinding(), JbiEndpoint.this);
-            jbiComponent.addEndpoint(consumer);
+            jbiComponent.getCamelJbiComponent().addEndpoint(consumer);
             super.start();
         }
         @Override
@@ -85,7 +85,7 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
                 log.debug("Camel producer for " + super.getEndpoint() + " has already been stopped");
             } else {
                 log.debug("Stopping Camel producer for " + super.getEndpoint());
-                jbiComponent.removeEndpoint(consumer);
+                jbiComponent.getCamelJbiComponent().removeEndpoint(consumer);
                 super.stop();
             }
         }
@@ -148,13 +148,14 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
             @Override
             protected void doStart() throws Exception {
                 super.doStart();
-                jbiEndpoint = jbiComponent.activateJbiEndpoint(JbiEndpoint.this, processor);
+                jbiEndpoint = jbiComponent.createJbiEndpointFromCamel(JbiEndpoint.this, processor);
+                jbiComponent.getCamelJbiComponent().activateJbiEndpoint(jbiEndpoint);
             }
 
             @Override
             protected void doStop() throws Exception {
                 if (jbiEndpoint != null) {
-                    jbiComponent.deactivateJbiEndpoint(jbiEndpoint);
+                    jbiComponent.getCamelJbiComponent().deactivateJbiEndpoint(jbiEndpoint);
                 }
                 super.doStop();
             }

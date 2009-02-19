@@ -62,6 +62,13 @@ public class SendFromCamelToJbiAndBackToCamelTest extends JbiTestSupport {
         };
     }
 
+    protected void configureComponent(CamelJbiComponent component) throws Exception {
+        // add the ServiceMix Camel component to the CamelContext
+        JbiComponent jbiComponent = new JbiComponent(component);
+        jbiComponent.setSuName("su_test");
+        camelContext.addComponent("jbi", jbiComponent);
+    }
+
     @Override
     protected void appendJbiActivationSpecs(
             List<ActivationSpec> activationSpecList) {
@@ -73,7 +80,7 @@ public class SendFromCamelToJbiAndBackToCamelTest extends JbiTestSupport {
         activationSpec.setEndpoint("endpointA");
 
         // lets setup the sender to talk directly to camel
-        senderComponent.setResolver(new URIResolver("camel:seda:receiver"));
+        senderComponent.setResolver(new URIResolver("camel:su_test:seda:receiver"));
         activationSpec.setComponent(senderComponent);
 
         activationSpecList.add(activationSpec);

@@ -210,7 +210,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
+        <configuration>          
           <childDelegation>false</childDelegation>
           <useFile>true</useFile>
           <excludes>

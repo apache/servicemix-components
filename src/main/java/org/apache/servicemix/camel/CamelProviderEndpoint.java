@@ -134,7 +134,7 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
                     }
                 }
             }
-        // This is not compliant with the default MEPs
+        // This is not complaint with the default MEPs
         } else {
             throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
         }
