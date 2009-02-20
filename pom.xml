@@ -62,7 +62,7 @@
         org.apache.servicemix.bundles.jaxp-ri,
         org.springframework.core,
         org.springframework.beans,
-        org.springframework.context,
+        org.springframework.context
     </servicemix.osgi.bundles>
   </properties>
 
