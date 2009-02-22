@@ -28,6 +28,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
+import org.apache.servicemix.smpp.marshaler.DefaultSmppMarshaler;
 import org.apache.servicemix.smpp.marshaler.SmppMarshalerSupport;
 import org.jsmpp.bean.AlertNotification;
 import org.jsmpp.bean.BindType;
@@ -120,6 +121,10 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
         if (this.transactionTimer <= 0) {
             throw new IllegalArgumentException("The transactionTimer value must be greater than 0.");
         }
+		// check the marshaler
+		if (this.marshaler == null) {
+			this.marshaler = new DefaultSmppMarshaler();
+		}
     }
 
     /*
@@ -330,5 +335,4 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     public void setTransactionTimer(int transactionTimer) {
         this.transactionTimer = transactionTimer;
     }
-
 }

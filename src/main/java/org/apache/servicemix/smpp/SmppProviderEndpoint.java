@@ -123,22 +123,18 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
         if (this.systemId == null || this.systemId.trim().length() <= 0) {
             throw new IllegalArgumentException("The SMPP system ID is mandatory.");
         }
-        // check for valid password
-        if (this.password == null || this.password.trim().length() <= 0) {
-            throw new IllegalArgumentException("The SMPP system password is mandatory.");
-        }
-        // check the marshaler
-        if (this.getMarshaler() == null) {
-            this.setMarshaler(new DefaultSmppMarshaler());
-        }
-        // check the enquire link timer
-        if (this.enquireLinkTimer <= 0) {
-            throw new IllegalArgumentException("The enquireLinkTimer value must be greater than 0.");
-        }
-        // check the transaction timer
-        if (this.transactionTimer <= 0) {
-            throw new IllegalArgumentException("The transactionTimer value must be greater than 0.");
-        }
+		// check the marshaler
+		if (this.marshaler == null) {
+			this.marshaler = new DefaultSmppMarshaler();
+		}
+		// check the enquire link timer
+		if (this.enquireLinkTimer <= 0) {
+		    throw new IllegalArgumentException("The enquireLinkTimer value must be greater than 0.");
+		}
+		// check the transaction timer
+		if (this.transactionTimer <= 0) {
+		    throw new IllegalArgumentException("The transactionTimer value must be greater than 0.");
+		}
     }
 
     /**
@@ -367,6 +363,5 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
      */
     public void setTransactionTimer(int transactionTimer) {
         this.transactionTimer = transactionTimer;
-    }
-
+    }   
 }
