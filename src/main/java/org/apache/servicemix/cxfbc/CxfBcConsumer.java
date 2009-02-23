@@ -692,7 +692,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             	} else if (CxfBcConsumer.this.isSynchronous()
                         && !CxfBcConsumer.this.isOneway) {
                     context.getDeliveryChannel().sendSync(exchange,
-                            timeout);
+                            timeout * 1000);
                     process(exchange);
                 } else {
                     synchronized (((ContinuationProvider) message.get(
@@ -949,8 +949,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
           * Specifies the interval for which the endpoint will wait for a 
           * response, This is specified in seconds.
           *
-          * @param  timeout the number of millis to wait for a response
-          * @org.apache.xbean.Property description="the number of millis the endpoint will wait for a response. The default is 1 hour."
+          * @param  timeout the number of second to wait for a response
+          * @org.apache.xbean.Property description="the number of second the endpoint will wait for a response. The default is unlimited."
           **/
     public void setTimeout(long timeout) {
         this.timeout = timeout;
