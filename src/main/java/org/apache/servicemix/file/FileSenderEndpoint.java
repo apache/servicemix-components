@@ -63,17 +63,25 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             throw new DeploymentException("The directory property must be a directory but was: " + directory);
         }
     }
+    
+    protected String getFileName(String name) {
+        String result = tempFilePrefix == null ? name : tempFilePrefix + name;
+        result = tempFileSuffix == null ? result : result + tempFileSuffix;
+        return result;
+    }
 
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
         OutputStream out = null;
         File newFile = null;
+        String fileName = null;
         boolean success = false;
         try {
             String name = marshaler.getOutputName(exchange, in);
             if (name == null) {
                 newFile = File.createTempFile(tempFilePrefix, tempFileSuffix, directory);
             } else {
-                newFile = new File(directory, name);
+                fileName = this.getFileName(name);
+                newFile = new File(directory, fileName);
             }
             if (!newFile.getParentFile().exists() && isAutoCreateDirectory()) {
                 newFile.getParentFile().mkdirs();
@@ -144,11 +152,10 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
     }
 
     /**
-     * Specifies a string to prefix to the beginning of generated temporary file
-     * names. Temporary file names are generated when the endpoint cannot
-     * determine the name of the file from the message.
+     * Specifies a string to prefix to the beginning of generated file
+     * names.
      * 
-     * @param tempFilePrefix a string to prefix to generated file names
+     * @param filePrefix a string to prefix to generated file names
      */
     public void setTempFilePrefix(String tempFilePrefix) {
         this.tempFilePrefix = tempFilePrefix;
@@ -159,11 +166,9 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
     }
 
     /**
-     * Specifies a string to append to generated temporary file names. Temporary
-     * file names are generated when the endpoint cannot determine the name of
-     * the file from the message.
+     * Specifies a string to append to generated file names.
      * 
-     * @param tempFileSuffix a string to append to generated file names
+     * @param fileSuffix a string to append to generated file names
      */
     public void setTempFileSuffix(String tempFileSuffix) {
         this.tempFileSuffix = tempFileSuffix;
