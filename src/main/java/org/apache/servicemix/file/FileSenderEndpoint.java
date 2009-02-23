@@ -102,11 +102,13 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             }
             // cleaning up incomplete files after things went wrong
             if (!success) {
-                logger.debug("An error occurred while writing file " + newFile.getCanonicalPath()
-                             + ", deleting the invalid file");
-                if (!newFile.delete()) {
-                    logger.warn("Unable to delete the file " + newFile.getCanonicalPath()
-                                + " after an error had occurred");
+                if (newFile != null) {
+                    logger.error("An error occured while writing file " + newFile.getCanonicalPath() + ", deleting the invalid file");
+                    if (!newFile.delete()) {
+                        logger.warn("Unable to delete file " + newFile.getCanonicalPath() + " after an error had occured");
+                    }
+                } else {
+                    logger.error("An error occured while creating file or creating name of this file");
                 }
             }
         }
