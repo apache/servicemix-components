@@ -35,7 +35,6 @@
     <osgi:service ref="servicemix-camel">
         <osgi:interfaces>
             <value>javax.jbi.component.Component</value>
-            <value>org.apache.camel.Component</value>
         </osgi:interfaces>
         <osgi:service-properties>
             <entry key="NAME" value="servicemix-camel" />
