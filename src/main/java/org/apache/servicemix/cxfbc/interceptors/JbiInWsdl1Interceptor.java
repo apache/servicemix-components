@@ -40,6 +40,7 @@ import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapHeaderInfo;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.headers.Header;
+import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
@@ -316,7 +317,9 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
                     xmlReader, message.getVersion().getBody());
             //ensure the whitespace is passed
             StaxUtils.toNextElement((DepthXMLStreamReader) filteredReader);
-            return StaxUtils.read(filteredReader).getDocumentElement();
+            Document doc = DOMUtils.createDocument();
+            StaxUtils.readDocElements(doc, filteredReader, false);
+            return doc.getDocumentElement();
         } catch (XMLStreamException e) {
             throw new Fault(e);
         }
