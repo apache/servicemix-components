@@ -19,6 +19,7 @@ package org.apache.servicemix.cxfbc.interceptors;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.cxf.attachment.LazyAttachmentCollection;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.binding.soap.model.SoapBodyInfo;
 import org.apache.cxf.endpoint.Endpoint;
@@ -44,6 +45,7 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
     public void handleMessage(Message message) {
+        loadAttachments(message);
         if (isGET(message)) {
             return;
         }
@@ -90,6 +92,14 @@ public class JbiOperationInterceptor extends AbstractPhaseInterceptor<Message> {
             message.getExchange().put(OperationInfo.class,
                     operation.getOperationInfo());
             message.getExchange().setOneWay(operation.getOperationInfo().isOneWay());
+        }
+    }
+
+    private void loadAttachments(Message message) {
+        //get chance to cache the attachments
+        if (message.getAttachments() != null) {
+            LazyAttachmentCollection attachments = (LazyAttachmentCollection) message.getAttachments();
+            attachments.size();
         }
     }
 
