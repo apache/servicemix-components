@@ -39,7 +39,7 @@ import org.apache.servicemix.common.util.URISupport;
  *
  * @version $Revision: 426415 $
  */
-public class CamelJbiComponent extends DefaultComponent {
+public class CamelJbiComponent extends DefaultComponent implements CamelComponent {
 
     protected CamelSpringDeployer deployer;
 

@@ -29,12 +29,13 @@
   http://www.springframework.org/schema/osgi
   http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-    <bean id="servicemix-camel" class="org.apache.servicemix.camel.osgi.CamelComponentFactoryBean">
+    <bean id="servicemix-camel" class="org.apache.servicemix.camel.osgi.OsgiCamelJbiComponent">
     </bean>
 
     <osgi:service ref="servicemix-camel">
         <osgi:interfaces>
             <value>javax.jbi.component.Component</value>
+            <value>org.apache.servicemix.camel.CamelComponent</value>
         </osgi:interfaces>
         <osgi:service-properties>
             <entry key="NAME" value="servicemix-camel" />

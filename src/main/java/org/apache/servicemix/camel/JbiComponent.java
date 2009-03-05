@@ -28,16 +28,20 @@ import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.id.IdGenerator;
 
 public class JbiComponent implements Component<Exchange> {
-    private final CamelJbiComponent camelJbiComponent;
+
+    private CamelComponent camelJbiComponent;
     private JbiBinding binding;
     private CamelContext camelContext;
     private IdGenerator idGenerator;
     private String suName;
 
-    public JbiComponent(CamelJbiComponent component) {
-        camelJbiComponent = component;
-        camelJbiComponent.addJbiComponent(this);
+    public JbiComponent(CamelComponent component) {
+        setCamelJbiComponent(component);
     }
+
+    protected JbiComponent() {
+    }
+
 
     public CamelContext getCamelContext() {
         return camelContext;
@@ -47,7 +51,13 @@ public class JbiComponent implements Component<Exchange> {
         camelContext = context;
     }
 
-    public CamelJbiComponent getCamelJbiComponent() {
+    public void setCamelJbiComponent(CamelComponent component) {
+        this.camelJbiComponent = component;
+        this.camelJbiComponent.addJbiComponent(this);
+
+    }
+
+    public CamelComponent getCamelJbiComponent() {
         return camelJbiComponent;
     }
 
