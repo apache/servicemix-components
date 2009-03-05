@@ -31,6 +31,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
         <property name="bus" ref="cxf"/>
     </bean>
     <bean id="rmCodec" class="org.apache.cxf.ws.rm.soap.RMSoapInterceptor"/>
+    <bean id="bareOut" class="org.apache.cxf.interceptor.BareOutInterceptor"/>
 
 
     <bean id="cxf" class="org.apache.cxf.bus.CXFBusImpl">
@@ -56,6 +57,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
                 <ref bean="mapCodec"/>
                 <ref bean="rmLogicalOut"/>
                 <ref bean="rmCodec"/>
+                <ref bean="bareOut"/>
             </list>
         </property>
         <property name="outFaultInterceptors">
