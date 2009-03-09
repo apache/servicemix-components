@@ -16,7 +16,14 @@
  */
 package org.apache.servicemix.file;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
@@ -25,6 +32,7 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
+import org.apache.servicemix.util.FileUtil;
 
 /**
  * An endpoint which receives messages from the NMR and writes the message to
@@ -41,6 +49,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
     private String tempFileSuffix = ".xml";
     private boolean autoCreateDirectory = true;
     private boolean append = true;
+    private boolean overwrite;
 
     public FileSenderEndpoint() {
         append = false;
@@ -62,19 +71,39 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
         if (!directory.isDirectory()) {
             throw new DeploymentException("The directory property must be a directory but was: " + directory);
         }
+        if (isOverwrite() && isAppend()) {
+        	throw new DeploymentException("You can't have 'append' and 'overwrite' active at the same time.");
+        }        	
     }
     
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
         OutputStream out = null;
         File newFile = null;
+        String name = null;
+        String writeTempName = null;
         boolean success = false;
         try {
-            String name = marshaler.getOutputName(exchange, in);
+            name = marshaler.getOutputName(exchange, in);
             if (name == null) {
                 newFile = File.createTempFile(tempFilePrefix, tempFileSuffix, directory);
             } else {
                 newFile = new File(directory, name);
+                if (newFile.exists()) {
+                	if (isOverwrite()) {
+                		// overwrite active
+                		newFile.delete();
+                	} else if (isAppend()) {
+                		// all fine, we append
+                	} else {
+                		// no overwrite and no append
+                		throw new IOException("Can not write " + name
+                                + " : file already exists and overwrite has not been enabled");
+                	}
+                }
+                writeTempName = getTemporaryName(name);
+                newFile = new File(directory, writeTempName);
             }
+            
             if (!newFile.getParentFile().exists() && isAutoCreateDirectory()) {
                 newFile.getParentFile().mkdirs();
             }
@@ -92,8 +121,36 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                     logger.error("Caught exception while closing stream on error: " + e, e);
                 }
             }
-            // cleaning up incomplete files after things went wrong
-            if (!success) {
+            if (success) {
+            	if (name != null && !name.equals(newFile.getName())) {
+            		if (isAppend()) {
+            			// append mode...now we need to transfer the file content into the original file
+            			File targetFile = new File(directory, name);
+            			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(newFile));
+            			out = new BufferedOutputStream(new FileOutputStream(targetFile, append));
+            			try {
+            				FileUtil.copyInputStream(bis, out);
+            			} catch (IOException ioex) {
+            				logger.error("Unable to append to file " + targetFile.getName(), ioex);
+            			} finally {
+            				try {
+                                out.close();
+                            } catch (IOException e) {
+                                logger.error("Caught exception while closing stream on error: " + e, e);
+                            }
+                            if (!newFile.delete()) {
+                            	throw new IOException("File " + newFile.getName() + " could not be deleted...");          
+                            }
+            			}            			
+            		} else {
+            			// no append mode, so just rename it
+            			if (!newFile.renameTo(new File(directory, name))) {
+            				throw new IOException("File " + newFile.getName() + " could not be renamed to " + name);            				
+            			}           				
+            		}
+            	}
+            } else {
+                // cleaning up incomplete files after things went wrong
                 if (newFile != null) {
                     logger.error("An error occured while writing file " + newFile.getCanonicalPath() + ", deleting the invalid file");
                     if (!newFile.delete()) {
@@ -106,6 +163,18 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
         }
     }
 
+    /**
+     * provides a temporary unique file name for writing
+     *  
+     * @param name	the original name
+     * @return		a temporary unique file name
+     */
+    protected String getTemporaryName(String name) {
+        String result = tempFilePrefix == null ? name : tempFilePrefix + name;
+        result = tempFileSuffix == null ? result : result + tempFileSuffix;
+        return result;
+    }
+    
     protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
         throws Exception {
         /** TODO list the files? */
@@ -206,4 +275,20 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
         return append;
     }
 
+    /**
+     * Specifies if the endpoint overwrites existing files or not. 
+     * The default is for the endpoint to not overwrite
+     * existing files. Setting this to <code>true</code> instructs the endpoint
+     * to overwrite existing files. Default value is <code>false</code>.
+     * 
+     * @param append a boolean specifying if the endpoint appends data to
+     *            existing files
+     */
+    public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
+	}
+    
+    public boolean isOverwrite() {
+		return overwrite;
+	}
 }
