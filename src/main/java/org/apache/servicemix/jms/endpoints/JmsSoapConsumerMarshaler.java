@@ -44,7 +44,8 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     private Binding<?> binding;
     private boolean useJbiWrapper = true;
     private Policy[] policies;
-    
+    private boolean rollbackOnError;
+
     /**
      * @return the binding
      */
@@ -85,6 +86,17 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
      */
     public void setUseJbiWrapper(boolean useJbiWrapper) {
         this.useJbiWrapper = useJbiWrapper;
+    }
+
+    public boolean isRollbackOnError() {
+        return rollbackOnError;
+    }
+
+    /**
+     * @param rollbackOnError if exchange in errors should cause a rollback on the JMS side
+     */
+    public void setRollbackOnError(boolean rollbackOnError) {
+        this.rollbackOnError = rollbackOnError;
     }
 
     public JmsContext createContext(Message message) throws Exception {
@@ -135,23 +147,27 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     }
 
     public Message createError(MessageExchange exchange, Exception error, Session session, JmsContext context) throws Exception {
-        org.apache.servicemix.soap.api.Message in = ((Context) context).msg;
-        org.apache.servicemix.soap.api.Message msg = binding.createMessage(in);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        msg.setContent(OutputStream.class, baos);
-        msg.setContent(MessageExchange.class, exchange);
-        msg.put(SoapVersion.class, in.get(SoapVersion.class));
-        msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
-        InterceptorChain phase = getChain(Phase.ServerOutFault);
-        SoapFault soapFault;
-        if (error instanceof SoapFault) {
-            soapFault = (SoapFault) error;
+        if (rollbackOnError) {
+            throw error;
         } else {
-            soapFault = new SoapFault(error);
+            org.apache.servicemix.soap.api.Message in = ((Context) context).msg;
+            org.apache.servicemix.soap.api.Message msg = binding.createMessage(in);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            msg.setContent(OutputStream.class, baos);
+            msg.setContent(MessageExchange.class, exchange);
+            msg.put(SoapVersion.class, in.get(SoapVersion.class));
+            msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
+            InterceptorChain phase = getChain(Phase.ServerOutFault);
+            SoapFault soapFault;
+            if (error instanceof SoapFault) {
+                soapFault = (SoapFault) error;
+            } else {
+                soapFault = new SoapFault(error);
+            }
+            msg.setContent(Exception.class, soapFault);
+            phase.doIntercept(msg);
+            return session.createTextMessage(baos.toString());
         }
-        msg.setContent(Exception.class, soapFault);
-        phase.doIntercept(msg);
-        return session.createTextMessage(baos.toString());
     }
 
     protected InterceptorChain getChain(Phase phase) {
