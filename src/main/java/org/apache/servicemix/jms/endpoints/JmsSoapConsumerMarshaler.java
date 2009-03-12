@@ -44,7 +44,7 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     private Binding<?> binding;
     private boolean useJbiWrapper = true;
     private Policy[] policies;
-    private boolean rollbackOnError;
+    private boolean rollbackOnError = true;
 
     /**
      * @return the binding

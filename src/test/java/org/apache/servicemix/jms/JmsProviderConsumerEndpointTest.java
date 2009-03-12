@@ -117,6 +117,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setEndpoint("endpoint");
         DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
         marshaler.setMep(new URI("http://www.w3.org/2004/08/wsdl/in-out"));
+        marshaler.setRollbackOnError(false);
         endpoint.setMarshaler(marshaler);
         endpoint.setListenerType("simple");
         endpoint.setConnectionFactory(connFactory);
