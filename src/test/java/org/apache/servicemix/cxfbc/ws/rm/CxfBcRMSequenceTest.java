@@ -165,9 +165,9 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         control = cs.getControlPort();
 
         assertTrue("Failed to start greeter",
-            control.startGreeter("org/apache/cxf/systest/ws/rm/rminterceptors.xml"));
+            control.startGreeter("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml"));
 
-        greeterBus = bf.createBus("org/apache/cxf/systest/ws/rm/rminterceptors.xml");
+        greeterBus = bf.createBus("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         BusFactory.setDefaultBus(greeterBus);
         removeRMInterceptors(greeterBus.getOutInterceptors());
         removeRMInterceptors(greeterBus.getOutFaultInterceptors());
