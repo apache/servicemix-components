@@ -64,6 +64,7 @@ public class AbstractXBeanDeployer extends AbstractDeployer {
      */
     public ServiceUnit deploy(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
         AbstractXmlApplicationContext applicationContext = null;
+        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
         try {
             // Create service unit
             XBeanServiceUnit su = new XBeanServiceUnit();
@@ -116,7 +117,7 @@ public class AbstractXBeanDeployer extends AbstractDeployer {
                 throw failure("deploy", "Could not deploy xbean service unit", e);
             }
         } finally {
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(oldCl);
         }
     }
 
