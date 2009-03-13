@@ -56,7 +56,6 @@
       META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.quartz
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
-        org.apache.servicemix.bundles.jaxp-ri,
         org.springframework.core,
         org.springframework.beans,
         org.springframework.context
