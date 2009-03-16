@@ -148,10 +148,11 @@ public class QuartzEndpoint extends ConsumerEndpoint {
     public void validate() throws DeploymentException {
         super.validate();
         if (trigger instanceof JobDetailAwareTrigger) {
-            if (jobDetail != null) {
-                throw new DeploymentException("jobDetail can not be set on endpoint and trigger at the same time");
+            JobDetail jb = ((JobDetailAwareTrigger) trigger).getJobDetail();
+            if (jobDetail != null && jb != null && jobDetail != jb) {
+                throw new DeploymentException("trigger and jobDetail can not be set on endpoint at the same time");
             }
-            jobDetail = ((JobDetailAwareTrigger) trigger).getJobDetail();
+            jobDetail = jb;
         }
         if (jobDetail == null) {
             JobDetailBean j = new JobDetailBean();
@@ -162,9 +163,11 @@ public class QuartzEndpoint extends ConsumerEndpoint {
             triggers = new ArrayList<Trigger>();
         }
         if (trigger != null && triggers != null && triggers.size() > 0) {
-            throw new DeploymentException("trigger and triggers can not be set at the same time");
+            if (triggers.size() != 1 || triggers.get(0) != trigger) {
+                throw new DeploymentException("trigger and triggers can not be set at the same time");
+            }
         }
-        if (trigger != null) {
+        if (trigger != null && !triggers.contains(trigger)) {
             triggers.add(trigger);
         }
         if (calendars == null) {
