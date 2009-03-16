@@ -18,7 +18,7 @@ package org.apache.servicemix.common.osgi;
 
 import org.apache.servicemix.common.Endpoint;
 
-public class EndpointWrapperImpl implements EndpointWrapper {
+public abstract class EndpointWrapperImpl implements EndpointWrapper {
 
     private final Endpoint endpoint;
     private final ClassLoader classLoader;

@@ -37,7 +37,6 @@ public class EndpointTracker {
     private static final Log LOGGER = LogFactory.getLog(EndpointTracker.class);
 
     protected DefaultComponent component;
-    protected Map<EndpointWrapper, OsgiServiceUnit> endpoints = new ConcurrentHashMap<EndpointWrapper, OsgiServiceUnit>();
 
     public DefaultComponent getComponent() {
         return component;
@@ -57,8 +56,8 @@ public class EndpointTracker {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
             OsgiServiceUnit su = new OsgiServiceUnit(component, endpoint, wrapper.getClassLoader());
-            endpoints.put(wrapper, su);
             component.getRegistry().registerServiceUnit(su);
+            wrapper.setDeployed();
         }
     }
 

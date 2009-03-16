@@ -31,4 +31,6 @@ public interface EndpointWrapper {
 
     ClassLoader getClassLoader();
 
+    void setDeployed();
+
 }

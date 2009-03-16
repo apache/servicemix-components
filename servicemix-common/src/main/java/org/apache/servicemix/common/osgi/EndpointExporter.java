@@ -22,11 +22,15 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
-
-import javax.jbi.management.DeploymentException;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.jbi.deployer.DeployedAssembly;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.springframework.osgi.context.BundleContextAware;
@@ -37,11 +41,17 @@ import org.springframework.context.ApplicationContext;
 
 public class EndpointExporter implements BundleContextAware, ApplicationContextAware, InitializingBean, DisposableBean, DeployedAssembly {
 
+    private static final Log LOG = LogFactory.getLog(EndpointExporter.class);
+
     private BundleContext bundleContext;
     private ApplicationContext applicationContext;
     private Collection<Endpoint> endpoints;
+    private Set<Endpoint> deployed;
     private String assemblyName;
     private Collection<ServiceRegistration> endpointRegistrations;
+    private ServiceRegistration assemblyRegistration;
+    private Timer timer;
+    private boolean scheduled;
 
     public void setBundleContext(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
@@ -67,16 +77,6 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
         return assemblyName;
     }
 
-    public void deploy() {
-        endpointRegistrations = new ArrayList<ServiceRegistration>();
-        for (Endpoint ep : getEndpoints()) {
-            EndpointWrapper wrapper = new EndpointWrapperImpl(ep, applicationContext.getClassLoader());
-            Dictionary props = new Properties();
-            ServiceRegistration reg = bundleContext.registerService(EndpointWrapper.class.getName(), wrapper, props);
-            endpointRegistrations.add(reg);
-        }
-    }
-
     public Map<String, String> getServiceUnits() {
         if (endpointRegistrations == null) {
             throw new IllegalStateException("Service assembly has not been deployed");
@@ -84,23 +84,93 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
         Map<String, String> sus = new HashMap<String, String>();
         for (Endpoint ep : getEndpoints()) {
             if (ep.getServiceUnit() == null) {
-                throw new IllegalStateException("Endpoint has not been initialized.  Check that the component is started.");
+                // This should not happen, as we only register the SA after all endpoints have been deployed
+                throw new IllegalStateException("Endpoint has not been initialized.  Check that the component is installed.");
             }
             sus.put(ep.getServiceUnit().getName(), ep.getServiceUnit().getComponent().getComponentName());
         }
         return sus;
     }
 
-    public void afterPropertiesSet() throws Exception {
-        this.assemblyName = bundleContext.getBundle().getSymbolicName();
-        bundleContext.registerService(DeployedAssembly.class.getName(), this, new Properties());
-    }
-
-    public void destroy() throws Exception {
+    public void undeploy(boolean restart) {
         if (endpointRegistrations != null) {
             for (ServiceRegistration reg : endpointRegistrations) {
                 reg.unregister();
             }
+            endpointRegistrations = null;
+        }
+        if (assemblyRegistration != null) {
+            assemblyRegistration.unregister();
+            assemblyRegistration = null;
+        }
+        if (restart) {
+            deploy();
         }
     }
+
+    public void deploy() {
+        this.assemblyName = bundleContext.getBundle().getSymbolicName();
+        endpointRegistrations = new ArrayList<ServiceRegistration>();
+        deployed = new HashSet<Endpoint>();
+        for (final Endpoint ep : getEndpoints()) {
+            EndpointWrapper wrapper = new EndpointWrapperImpl(ep, applicationContext.getClassLoader()) {
+                public void setDeployed() {
+                    checkAndRegisterSA(ep);
+                }
+            };
+            Dictionary props = new Properties();
+            ServiceRegistration reg = bundleContext.registerService(EndpointWrapper.class.getName(), wrapper, props);
+            endpointRegistrations.add(reg);
+        }
+        if (assemblyRegistration == null) {
+            LOG.info("Waiting for all endpoints to be deployed before registering service assembly");
+        }
+    }
+
+    protected void checkAndRegisterSA(Endpoint ep) {
+        if (ep != null) {
+            deployed.add(ep);
+        }
+        Collection<Endpoint> endpoints = getEndpoints();
+        if (deployed.size() == endpoints.size()) {
+            boolean initialized = true;
+            for (Endpoint e : endpoints) {
+                if (e.getServiceUnit().getComponent().getComponentContext() == null) {
+                    initialized = false;
+                    break;
+                }
+            }
+            if (!initialized) {
+                if (timer == null) {
+                    timer = new Timer();
+                    LOG.info("All endpoints have been deployed but waiting for components initialization");
+                }
+                synchronized (this) {
+                    if (!scheduled) {
+                        timer.schedule(new TimerTask() {
+                            public void run() {
+                                checkAndRegisterSA(null);
+                            }
+                        }, 500);
+                        scheduled = true;
+                    }
+                }
+            } else {
+                if (timer != null) {
+                    timer.cancel();
+                    timer = null;
+                }
+                LOG.info("All endpoints have been deployed and components initialized. Registering service assembly.");
+                assemblyRegistration = bundleContext.registerService(DeployedAssembly.class.getName(), this, new Properties());
+            }
+        }
+    }
+
+    public void afterPropertiesSet() {
+        deploy();
+    }
+
+    public void destroy() throws Exception {
+    }
+
 }
