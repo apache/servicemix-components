@@ -81,6 +81,14 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
     public void onMessage(Message message) {
         try {
             MessageExchange messageExchange = message.getExchange().get(MessageExchange.class);
+            if (messageExchange == null) {
+                // probably, that's a WS-RM Response; use the messageObserver defined in exchange
+                MessageObserver messageObserver = message.getExchange().get(MessageObserver.class);
+                if (messageObserver != null) {
+                    messageObserver.onMessage(message);
+                }
+                return;
+            }
             if (messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
                 return;
             }

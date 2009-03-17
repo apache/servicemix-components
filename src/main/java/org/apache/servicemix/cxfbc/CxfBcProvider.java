@@ -60,6 +60,7 @@ import org.apache.cxf.binding.AbstractBindingFactory;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.SoapVersion;
+import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapActionOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapOutInterceptor;
 import org.apache.cxf.binding.soap.interceptor.SoapPreProtocolOutInterceptor;
@@ -75,6 +76,7 @@ import org.apache.cxf.feature.AbstractFeature;
 import org.apache.cxf.interceptor.AttachmentOutInterceptor;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.interceptor.StaxInInterceptor;
 import org.apache.cxf.interceptor.StaxOutInterceptor;
 
 import org.apache.cxf.message.Exchange;
@@ -493,6 +495,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 conduit = conduitInit.getConduit(ei);
                 CxfBcProviderMessageObserver obs = new CxfBcProviderMessageObserver(this);
                 conduit.setMessageObserver(obs);
+                checkWSRMInterceptors();
                 super.validate();
             }
         } catch (DeploymentException e) {
@@ -501,6 +504,21 @@ public class CxfBcProvider extends ProviderEndpoint implements
             throw new DeploymentException(e);
         }
     }
+
+    private void checkWSRMInterceptors() {
+        //to handle WS-RM requests and responses
+        for (Interceptor interceptor : getBus().getOutInterceptors()) {
+            if (interceptor.getClass().getName().equals("org.apache.cxf.ws.rm.RMOutInterceptor")) {
+                ep.getOutInterceptors().add(new SoapOutInterceptor(getBus()));
+                ep.getOutInterceptors().add(new StaxOutInterceptor());
+                ep.getInInterceptors().add(new StaxInInterceptor());
+                ep.getInInterceptors().add(new ReadHeadersInterceptor(getBus()));
+                break;
+            }
+        }
+
+    }
+
 
     private BindingOperationInfo findOperation(NormalizedMessage nm, 
                                                Message message, 
