@@ -27,6 +27,7 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.Fault;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -205,21 +206,25 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
             }
         }
         if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            if (exchange.getError() != null) {
-                throw new Exception(exchange.getError());
-            } else {
-                throw new Exception("Unknown Error");
+            Exception e = exchange.getError();
+            if (e == null) {
+                e = new Exception("Unkown error (exchange aborted ?)");
             }
+            throw e;
         } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             try {
-                if (exchange.getFault() != null) {
+                Fault fault = exchange.getFault();
+                if (fault != null) {
                     processFault(exchange, request, response);
                 } else {
                     processResponse(exchange, request, response);
                 }
-            } finally {
                 exchange.setStatus(ExchangeStatus.DONE);
                 channel.send(exchange);
+            } catch (Exception e) {
+                exchange.setError(e);
+                channel.send(exchange);
+                throw e;
             }
         } else if (exchange.getStatus() == ExchangeStatus.DONE) {
             // This happens when there is no response to send back
