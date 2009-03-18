@@ -51,7 +51,6 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
     private Collection<ServiceRegistration> endpointRegistrations;
     private ServiceRegistration assemblyRegistration;
     private Timer timer;
-    private boolean scheduled;
 
     public void setBundleContext(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
@@ -127,7 +126,10 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
         }
     }
 
-    protected void checkAndRegisterSA(Endpoint ep) {
+    protected synchronized void checkAndRegisterSA(Endpoint ep) {
+        if (assemblyRegistration != null) {
+            return;
+        }
         if (ep != null) {
             deployed.add(ep);
         }
@@ -141,25 +143,27 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
                 }
             }
             if (!initialized) {
+                // Create the timer if not already done
                 if (timer == null) {
                     timer = new Timer();
                     LOG.info("All endpoints have been deployed but waiting for components initialization");
                 }
+                // Retry a bit later to allow some time for the components to be initialized
+                // by the JBI container
                 synchronized (this) {
-                    if (!scheduled) {
-                        timer.schedule(new TimerTask() {
-                            public void run() {
-                                checkAndRegisterSA(null);
-                            }
-                        }, 500);
-                        scheduled = true;
-                    }
+                    timer.schedule(new TimerTask() {
+                        public void run() {
+                            checkAndRegisterSA(null);
+                        }
+                    }, 500);
                 }
             } else {
+                // Everything is ok, cancel the timer ...
                 if (timer != null) {
                     timer.cancel();
                     timer = null;
                 }
+                // ... and register the SA in OSGi
                 LOG.info("All endpoints have been deployed and components initialized. Registering service assembly.");
                 assemblyRegistration = bundleContext.registerService(DeployedAssembly.class.getName(), this, new Properties());
             }
