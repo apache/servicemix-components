@@ -470,6 +470,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
     }
 
     protected void processExchangeInTx(MessageExchange exchange, Transaction tx) {
+        ExchangeStatus oldStatus = exchange.getStatus();
         try {
             if (tx != null) {
                 transactionManager.resume(tx);
@@ -488,8 +489,10 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                         transactionManager.suspend();
                     }
                 }
-                exchange.setError(t instanceof Exception ? (Exception) t : new Exception(t));
-                channel.send(exchange);
+                if (oldStatus == ExchangeStatus.ACTIVE) {
+                    exchange.setError(t instanceof Exception ? (Exception) t : new Exception(t));
+                    channel.send(exchange);
+                }
             } catch (Exception inner) {
                 logger.error("Error setting exchange status to ERROR", inner);
             }
@@ -527,23 +530,26 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             processExchangeInTx(exchange, tx);
             return;
         }
+        ExchangeStatus oldStatus = exchange.getStatus();
         try {
             processExchange(exchange);
-        } catch (Exception e) {
-            logger.error("Error processing exchange " + exchange, e);
+        } catch (Throwable t) {
+            logger.error("Error processing exchange " + exchange, t);
             try {
                 // If we are transacted and this is a runtime exception
                 // try to mark transaction as rollback
-                if (transactionManager != null &&
-                    transactionManager.getStatus() == Status.STATUS_ACTIVE &&
-                    exceptionShouldRollbackTx(e)) {
+                if (transactionManager != null
+                        && transactionManager.getStatus() == Status.STATUS_ACTIVE
+                        && exceptionShouldRollbackTx(t)) {
                     transactionManager.setRollbackOnly();
                     if (!container.handleTransactions()) {
                         transactionManager.suspend();
                     }
                 }
-                exchange.setError(e);
-                channel.send(exchange);
+                if (oldStatus == ExchangeStatus.ACTIVE) {
+                    exchange.setError(t instanceof Exception ? (Exception) t : new Exception(t));
+                    channel.send(exchange);
+                }
             } catch (Exception inner) {
                 logger.error("Error setting exchange status to ERROR", inner);
             }
