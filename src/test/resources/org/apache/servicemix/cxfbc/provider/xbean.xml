@@ -32,6 +32,9 @@
               <property name="calculator">
                   <cxfse:proxy service="calculator:CalculatorService" context="#context" type="org.apache.cxf.calculator.CalculatorPortType"/>
               </property>
+              <property name="calculatorNotExist">
+                  <cxfse:proxy service="calculator:ServiceNotExist" endpoint="notExist" context="#context" type="org.apache.servicemix.cxfbc.NoServicePortType"/>
+              </property>
               <property name="greeter">
                   <cxfse:proxy service="greetr:SOAPService" context="#context" type="org.apache.hello_world_soap_http.Greeter"/>
               </property>

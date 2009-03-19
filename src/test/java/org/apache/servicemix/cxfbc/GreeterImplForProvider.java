@@ -47,6 +47,7 @@ import uri.helloworld.HelloRequest;
 public class GreeterImplForProvider implements Greeter {
     private ComponentContext context;
     private CalculatorPortType calculator;
+    private NoServicePortType calculatorNotExist;
     private Greeter greeter;
     private Greeter securityGreeter;
     private HelloPortType hello;
@@ -90,7 +91,10 @@ public class GreeterImplForProvider implements Greeter {
                 }
             } else if ("ffang with no server".equals(me)) {
                 //should catch exception since external server is stop
+                ret = "no server";
                 getCalculator().add(1, 2);
+            } else if ("ffang with no targetServie".equals(me)) {
+                getCalculatorNotExist().add(1, 2);
             }
                         
         } catch (AddNumbersFault e) {
@@ -101,7 +105,11 @@ public class GreeterImplForProvider implements Greeter {
         } catch (InterruptedException e) {
             //
         } catch (Exception e) {
-            ret = ret + "server is stop";
+            if (ret.equals("no server")) {
+                ret = "server is stop";
+            } else {
+                ret = e.getMessage();
+            }
         }
         return "Hello " + me  + " " + ret;
     }
@@ -234,6 +242,15 @@ public class GreeterImplForProvider implements Greeter {
     public Future<?> testNillableAsync(String nillElem, int intElem, AsyncHandler<TestNillableResponse> asyncHandler) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+
+    public void setCalculatorNotExist(NoServicePortType calculatorNotExist) {
+        this.calculatorNotExist = calculatorNotExist;
+    }
+
+    public NoServicePortType getCalculatorNotExist() {
+        return calculatorNotExist;
     }
 
 
