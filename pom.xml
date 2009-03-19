@@ -42,7 +42,7 @@
     <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
     <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
-    <cxf-version>2.1.4</cxf-version>
+    <cxf-version>2.1.5-SNAPSHOT</cxf-version>
 
     <servicemix.osgi.import>
         javax.jws,
