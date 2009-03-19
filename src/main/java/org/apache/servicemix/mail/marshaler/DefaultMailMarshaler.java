@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -43,6 +44,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.logging.Log;
@@ -487,7 +489,19 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                             // from part.getDisposition() are clearly attachments
                             DataHandler att = part.getDataHandler();
                             // this is clearly a attachment
-                            nmsg.addAttachment(att.getName(), att);
+                            // Try to find the correct name to work around some bugs in the geronimo javamail
+                            String name = att.getName();
+                            if (name == null || name.length() == 0) {
+                                name = part.getFileName();
+                            }
+                            if (name != null) {
+                                try {
+                                    name = MimeUtility.decodeText(name);
+                                } catch (UnsupportedEncodingException e) {
+                                    // ignore it
+                                }
+                            }
+                            nmsg.addAttachment(name, att);
                         } else {
                             // inline part without name?
                             text = part.getContent() != null ? part.getContent().toString() : "null";
