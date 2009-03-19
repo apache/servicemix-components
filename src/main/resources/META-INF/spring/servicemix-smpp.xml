@@ -39,11 +39,11 @@
         <property name="executorFactory" ref="executorFactory"/>
     </bean>
     
-    <bean id="executeFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
+    <bean id="executorFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
         <property name="defaultConfig">
             <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
                 <property name="corePoolSize" value="${threadPoolCorePoolSize}"/>
-                <property name="maximumPoolSize" value="${threadPoolMaximumPoolSize"}/>
+                <property name="maximumPoolSize" value="${threadPoolMaximumPoolSize}"/>
                 <property name="queueSize" value="${threadPoolQueueSize}"/>
             </bean>
         </property>
