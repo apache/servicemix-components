@@ -26,16 +26,16 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-se</artifactId>
-  <version>2009.01</version>
+  <version>2009.02-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: CXF Service Engine</name>
   <description>A CXF Service Engine</description>
     
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-cxf-se/tags/servicemix-cxf-se-2009.01</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-cxf-se/tags/servicemix-cxf-se-2009.01</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-cxf-se/tags/servicemix-cxf-se-2009.01</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-cxf-se/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-cxf-se/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-cxf-se/trunk</url>
   </scm>
 
   <properties>
