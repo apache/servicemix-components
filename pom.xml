@@ -21,27 +21,27 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>3-SNAPSHOT</version>
+    <version>3</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-eip</artifactId>
-  <version>2009.01-SNAPSHOT</version>
+  <version>2009.01</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: EIP</name>
   <description>EIP Service Engine</description>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-eip/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/tags/servicemix-eip-2009.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/tags/servicemix-eip-2009.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-eip/tags/servicemix-eip-2009.01</url>
   </scm>
 
   <properties>
-    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01</previous.releases>
     <servicemix-version>3.3</servicemix-version>
-    <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2009.01</servicemix-shared-version>
 
     <servicemix.osgi.import>
         org.apache.commons.jexl*;resolution:=optional,
