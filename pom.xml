@@ -21,12 +21,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>3-SNAPSHOT</version>
+    <version>3</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-snmp</artifactId>
-  <version>2009.01</version>
+  <version>2009.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: SNMP</name>
