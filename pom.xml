@@ -26,16 +26,16 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-truezip</artifactId>
-  <version>2009.01</version>
+  <version>2009.02-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: TrueZIP</name>
   <description>A File TrueZIP component</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/tags/servicemix-truezip-2009.01</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/tags/servicemix-truezip-2009.01</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-truezip/tags/servicemix-truezip-2009.01</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-truezip/trunk</url>
   </scm>
 
   <properties>
