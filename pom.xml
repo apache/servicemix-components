@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaInstance="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaInstance="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 <!--
 
     Licensed to the Apache Software Foundation (ASF) under one or more
@@ -26,7 +26,7 @@
     
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-smpp</artifactId>
-    <version>2009.01-SNAPSHOT</version>
+    <version>2009.01</version>
     <packaging>jbi-component</packaging>
     
     <name>ServiceMix :: SMPP</name>
@@ -39,9 +39,9 @@
     </description>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/trunk</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-smpp/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2009.01</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2009.01</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2009.01</url>
     </scm>
     
     <properties>
