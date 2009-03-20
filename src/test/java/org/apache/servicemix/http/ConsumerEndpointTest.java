@@ -164,7 +164,7 @@ public class ConsumerEndpointTest extends TestCase {
         container.activateComponent(http, "http");
 
         EchoComponent echo = new EchoComponent() {
-            public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+            public void onMessageExchange(MessageExchange exchange) {
                 super.onMessageExchange(exchange);
             }
             protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
