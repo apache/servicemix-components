@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.file;
 
+import java.io.File;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -26,10 +28,16 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
+import org.apache.servicemix.util.FileUtil;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class SpringComponentTest extends SpringTestSupport {
+
+    protected void setUp() throws Exception {
+	    FileUtil.deleteFile(new File("target/componentOutput"));
+	    super.setUp();
+    }
 
     public void testSendingToStaticEndpoint() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);

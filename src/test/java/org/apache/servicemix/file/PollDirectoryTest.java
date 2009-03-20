@@ -38,9 +38,14 @@ public class PollDirectoryTest extends SpringTestSupport {
 
     private static final int NUMBER = 10;
     
+    protected void setUp() throws Exception {
+	    FileUtil.deleteFile(new File("target/archive"));
+	    FileUtil.deleteFile(new File("target/pollerFiles"));
+	    FileUtil.deleteFile(new File("target/pollerFiles2"));
+	    super.setUp();
+    }
+
     public void testSendToWriterSoItCanBePolled() throws Exception {
-        FileUtil.deleteFile(new File("target/pollerFiles"));
-        
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
@@ -60,8 +65,6 @@ public class PollDirectoryTest extends SpringTestSupport {
     }
     
     public void testArchive() throws Exception {
-        FileUtil.deleteFile(new File("./target/pollerFiles2/"));
-        
         // now lets make a request on this endpoint
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
 
