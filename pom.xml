@@ -26,16 +26,16 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-jsr181</artifactId>
-  <version>2009.01-SNAPSHOT</version>
+  <version>2009.01</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: JSR-181 Service Engine</name>
   <description>JSR-181 service engine</description>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-jsr181/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/tags/servicemix-jsr181-2009.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-jsr181/tags/servicemix-jsr181-2009.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-jsr181/tags/servicemix-jsr181-2009.01</url>
   </scm>
 
   <properties>
