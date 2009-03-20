@@ -28,15 +28,15 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>shared-libraries-pom</artifactId>
-  <version>2009.01-SNAPSHOT</version>
+  <version>2009.01</version>
   <packaging>pom</packaging>
   
   <name>ServiceMix :: Shared Libraries</name>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/shared-libraries/tags/shared-libraries-pom-2008.01</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/shared-libraries/tags/shared-libraries-pom-2008.01</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/shared-libraries/tags/shared-libraries-pom-2008.01</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/shared-libraries/tags/shared-libraries-pom-2009.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/shared-libraries/tags/shared-libraries-pom-2009.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/shared-libraries/tags/shared-libraries-pom-2009.01</url>
   </scm>
 
   <properties>
