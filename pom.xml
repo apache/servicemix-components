@@ -22,12 +22,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>3-SNAPSHOT</version>
+    <version>3</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-bc</artifactId>
-  <version>2009.01-SNAPSHOT</version>
+  <version>2009.01</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: CXF Binding Component</name>
@@ -38,16 +38,16 @@
   </prerequisites>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/servicemix-cxf-bc-2009.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/servicemix-cxf-bc-2009.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/tags/servicemix-cxf-bc-2009.01</url>
   </scm>
 
   <properties>
-    <previous.releases>3.1.2,3.2,3.2.1</previous.releases>
+    <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01</previous.releases>
     <servicemix-version>3.3</servicemix-version>
-    <servicemix-shared-version>2009.01-SNAPSHOT</servicemix-shared-version>
-    <servicemix-cxf-se-version>2009.01-SNAPSHOT</servicemix-cxf-se-version>
+    <servicemix-shared-version>2009.01</servicemix-shared-version>
+    <servicemix-cxf-se-version>2009.01</servicemix-cxf-se-version>
     <cxf-version>2.1.4</cxf-version>
     <jetty-version>6.1.14</jetty-version>
     <spring-version>2.5.6</spring-version>
