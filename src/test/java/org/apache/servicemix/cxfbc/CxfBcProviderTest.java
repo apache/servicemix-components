@@ -92,7 +92,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
         client.done(io);
     }
 
-    public void xtestTargetServiceNotExist() throws Exception {
+    public void testTargetServiceNotExist() throws Exception {
         client = new DefaultServiceMixClient(jbi);
         io = client.createInOutExchange();
         io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));

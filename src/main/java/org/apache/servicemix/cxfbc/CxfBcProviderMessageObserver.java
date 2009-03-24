@@ -30,6 +30,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.apache.cxf.Bus;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
@@ -120,6 +121,7 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             soapMessage
                     .put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
             Exchange cxfExchange = new ExchangeImpl();
+            cxfExchange.put(Bus.class, this.providerEndpoint.getBus());
             soapMessage.setExchange(cxfExchange);
 
             cxfExchange.put(BindingOperationInfo.class, boi);
@@ -139,9 +141,6 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);
             inChain.add(providerEndpoint.getInInterceptors());
-            inChain.add(providerEndpoint.getInFaultInterceptors());
-            inChain.add(this.providerEndpoint.getInInterceptors());
-            inChain.add(this.providerEndpoint.getInFaultInterceptors());
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
            

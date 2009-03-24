@@ -221,9 +221,6 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
         
     }
 
-    private boolean isRequestor(org.apache.cxf.message.Message message) {
-        return Boolean.TRUE.equals(message
-                .containsKey(org.apache.cxf.message.Message.REQUESTOR_ROLE));
-    }
+    
 
 }

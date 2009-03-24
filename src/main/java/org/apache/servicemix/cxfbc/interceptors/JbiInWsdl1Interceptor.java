@@ -403,8 +403,4 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         return param;
     }
     
-    protected boolean isRequestor(Message message) {
-        return Boolean.TRUE.equals(message.get(Message.REQUESTOR_ROLE));
-    }
-
 }

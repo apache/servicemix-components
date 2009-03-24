@@ -236,7 +236,7 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
     }
     
 
-    protected String addOperationNode(Message message, XMLStreamWriter xmlWriter)
+    protected String addOperationNode(SoapMessage message, XMLStreamWriter xmlWriter)
         throws XMLStreamException {
         String responseSuffix = !isRequestor(message) ? "Response" : "";
         BindingOperationInfo boi = message.getExchange().get(

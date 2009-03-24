@@ -316,6 +316,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 } else if (tm instanceof PlatformTransactionManager) {
                     jmsConfig.setSessionTransacted(true);
                     jmsConfig.setTransactionManager((PlatformTransactionManager)tm);
+                    jmsConfig.setUseJms11(false);
                     setSynchronous(true);
                     transactionEnabled = true;
                 }
