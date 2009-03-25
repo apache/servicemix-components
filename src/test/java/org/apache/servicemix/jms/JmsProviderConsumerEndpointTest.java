@@ -21,7 +21,10 @@ import java.net.URISyntaxException;
 
 import javax.activation.DataHandler;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.ConnectionFactory;
 import javax.mail.util.ByteArrayDataSource;
@@ -39,6 +42,7 @@ import org.apache.servicemix.jms.endpoints.DefaultConsumerMarshaler;
 import org.apache.servicemix.jms.endpoints.DefaultProviderMarshaler;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
+import org.springframework.jms.core.JmsTemplate;
 
 public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
 
@@ -61,7 +65,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         InOut inout = null;
         boolean result = false;
         DataHandler dh = null;
-        
+
         // Test successful return
         inout = client.createInOutExchange();
         inout.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
@@ -76,16 +80,16 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         assertNotNull(src);
         dh = out.getAttachment("myImage");
         assertNotNull(dh);
-        
+
         logger.info(new SourceTransformer().toString(src));
 
-        // Test fault return 
+        // Test fault return
         container.deactivateComponent("receiver");
         ReturnFaultComponent fault = new ReturnFaultComponent();
         ActivationSpec asFault = new ActivationSpec("receiver", fault);
         asFault.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
         container.activateComponent(asFault);
-        
+
         inout = client.createInOutExchange();
         inout.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
         inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
@@ -101,7 +105,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         ActivationSpec asError = new ActivationSpec("receiver", error);
         asError.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
         container.activateComponent(asError);
-        
+
         inout = client.createInOutExchange();
         inout.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
         inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
@@ -109,6 +113,69 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         assertEquals(ExchangeStatus.ERROR, inout.getStatus());
         assertTrue("An IllegalArgumentException was expected", inout.getError() instanceof IllegalArgumentException);
 
+    }
+
+    public void testProviderInOnlyWithJmsTransactions() throws Exception {
+        ConnectionFactory connFactory = new PooledConnectionFactory(connectionFactory);
+        JmsComponent jmsComponent = new JmsComponent();
+        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory, true);
+        consumerEndpoint.setTransacted("jms");
+        JmsProviderEndpoint providerEndpoint = createProviderEndpoint(connFactory);
+        jmsComponent.setEndpoints(new JmsEndpointType[] {consumerEndpoint, providerEndpoint});
+        container.activateComponent(jmsComponent, "servicemix-jms");
+
+        final int[] receiveCount = new int[]{0};
+
+        ReturnErrorComponent error = new ReturnErrorComponent(new RuntimeException("Error: abort... abort...!!")) {
+            public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+                receiveCount[0]++;
+                super.onMessageExchange(exchange);
+            }
+        };
+
+        ActivationSpec asError = new ActivationSpec("receiver", error);
+        asError.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        container.activateComponent(asError);
+
+        InOnly exchange = client.createInOnlyExchange();
+        exchange.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
+        exchange.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(exchange);
+
+        // Loop and wait for at least one attempt to process the message
+        for (int i = 0; i < 5; i++) {
+            Thread.sleep(1000);
+            if (receiveCount[0] > 0) {
+                break;
+            }
+        }
+
+        assertTrue("The message was never processed by servicemix-jms", receiveCount[0] > 0);
+
+        // Deactivate the JMS component so that it stops
+        // trying to get the message from the queue
+        container.deactivateComponent("servicemix-jms");
+
+        JmsTemplate template = new JmsTemplate(connFactory);
+        template.setReceiveTimeout(2000);
+        assertNotNull("Message should still be on the queue", template.receive("destination"));
+    }
+
+
+    private JmsConsumerEndpoint createInOnlyConsumerEndpoint(ConnectionFactory connFactory,
+                                                             boolean rollbackOnError) throws URISyntaxException {
+        JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
+        endpoint.setService(new QName("http://jms.servicemix.org/Test", "Consumer"));
+        endpoint.setEndpoint("endpoint");
+        DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
+        marshaler.setMep(new URI("http://www.w3.org/2004/08/wsdl/in-only"));
+        marshaler.setRollbackOnError(rollbackOnError);
+        endpoint.setMarshaler(marshaler);
+        endpoint.setListenerType("simple");
+        endpoint.setConnectionFactory(connFactory);
+        endpoint.setDestinationName("destination");
+        endpoint.setTargetService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        return endpoint;
     }
 
     private JmsConsumerEndpoint createConsumerEndpoint(ConnectionFactory connFactory) throws URISyntaxException {
@@ -125,7 +192,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setTargetService(new QName("http://jms.servicemix.org/Test", "Echo"));
         return endpoint;
     }
-    
+
     private JmsProviderEndpoint createProviderEndpoint(ConnectionFactory connFactory) {
         JmsProviderEndpoint endpoint = new JmsProviderEndpoint();
         endpoint.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
