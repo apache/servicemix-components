@@ -154,6 +154,12 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
                 if (soapMessage.get("faultstring") != null) {
                     messageExchange.setProperty("faultstring", soapMessage.get("faultstring"));
                 }
+                if (soapMessage.get("faultcode") != null) {
+                    messageExchange.setProperty("faultcode", soapMessage.get("faultcode"));
+                }
+                if (soapMessage.get("hasdetail") != null) {
+                    messageExchange.setProperty("hasdetail", soapMessage.get("hasdetail"));
+                }
 
             } else if (messageExchange instanceof InOut) {
                 NormalizedMessage msg = messageExchange.createMessage();

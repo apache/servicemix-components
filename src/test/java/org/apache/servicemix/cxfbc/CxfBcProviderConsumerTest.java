@@ -24,12 +24,10 @@ import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorImpl;
 import org.apache.cxf.calculator.CalculatorPortType;
 import org.apache.cxf.calculator.CalculatorService;
-import org.apache.cxf.endpoint.Endpoint;
-import org.apache.cxf.endpoint.Server;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
-import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
-import org.apache.cxf.service.model.ServiceInfo;
+import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -40,21 +38,14 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
         
         URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
         // start external service
-        JaxWsServerFactoryBean factory = new JaxWsServerFactoryBean();
-        factory.setServiceClass(CalculatorPortType.class);
-        factory.setServiceBean(new CalculatorImpl());
-        factory.setWsdlURL(wsdl.toString());
-        factory.setServiceName(new QName("http://apache.org/cxf/calculator", 
-                "CalculatorService"));
-        factory.setBindingId("http://schemas.xmlsoap.org/wsdl/soap12/");
-        String address = "http://localhost:9001/bridgetest";
-        factory.setAddress(address);
-        Server server = factory.create();
-        Endpoint endpoint = server.getEndpoint();
+        EndpointImpl endpoint =
+            (EndpointImpl)javax.xml.ws.Endpoint.publish("http://localhost:9001/bridgetest", 
+                new CalculatorImpl());
+                        
         endpoint.getInInterceptors().add(new LoggingInInterceptor());
         endpoint.getOutInterceptors().add(new LoggingOutInterceptor());
-        ServiceInfo service = endpoint.getEndpointInfo().getService();
-        assertNotNull(service);
+        endpoint.getInFaultInterceptors().add(new LoggingInInterceptor());
+        endpoint.getOutFaultInterceptors().add(new LoggingOutInterceptor());
 
         // start external client
         
@@ -62,6 +53,10 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
         CalculatorService service1 = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));
         CalculatorPortType port = service1.getCalculatorPort();
+        ClientProxy.getClient(port).getInFaultInterceptors().add(new LoggingInInterceptor());
+        ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
+        ClientProxy.getClient(port).getOutFaultInterceptors().add(new LoggingOutInterceptor());
+        ClientProxy.getClient(port).getOutInterceptors().add(new LoggingInInterceptor());
         int ret = port.add(1, 2);
         assertEquals(ret, 3);
         try {
