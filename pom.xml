@@ -41,7 +41,11 @@
     <camel-version>1.6.0</camel-version>
     <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2009.01</servicemix-shared-version>
-    <servicemix.osgi.import>
+    <servicemix.osgi.import>      
+      org.apache.camel.converter,
+      org.apache.camel.converter.jaxp,
+      org.apache.camel.converter.stream,
+      org.apache.servicemix.nmr.core.converter;resolution:=optional, 
       org.apache.commons.jexl*;resolution:=optional,
       org.apache.servicemix;resolution:=optional,
       org.apache.servicemix.client*;resolution:=optional,
