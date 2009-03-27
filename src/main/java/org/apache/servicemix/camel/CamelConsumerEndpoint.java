@@ -89,9 +89,13 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
             send(messageExchange);
             return false;
         } catch (MessagingException e) {
-            throw new JbiException(e);
+            exchange.setException(e);
+            asyncCallback.done(true);
+            return true;
         } catch (URISyntaxException e) {
-            throw new JbiException(e);
+            exchange.setException(e);
+            asyncCallback.done(true);
+            return true;
         }
     }
 
@@ -124,8 +128,10 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
             }
 
         } catch (MessagingException e) {
+            exchange.setException(e);
             throw new JbiException(e);
         } catch (URISyntaxException e) {
+            exchange.setException(e);
             throw new JbiException(e);
         }
     }
