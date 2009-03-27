@@ -85,7 +85,12 @@ public class EndpointDeliveryChannel implements DeliveryChannel {
     public void send(MessageExchange exchange) throws MessagingException {
         prepareExchange(exchange);
         handleExchange(exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
-        channel.send(exchange);
+        try {
+            channel.send(exchange);
+        } catch (MessagingException e) {
+            handleExchange(exchange, false);
+            throw e;
+        }
     }
 
     public boolean sendSync(MessageExchange exchange, long timeout) throws MessagingException {

@@ -681,6 +681,9 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         Set<String> exchanges = getKnownExchanges(endpoint);
         synchronized (exchanges) {
             if (!exchanges.isEmpty()) {
+                for (String id : exchanges) {
+                    logger.debug("Waiting for exchange " + id + " in " + endpoint);
+                }
                 exchanges.wait();
             }
         }
