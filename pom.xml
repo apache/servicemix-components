@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>3</version>
+    <version>4-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
