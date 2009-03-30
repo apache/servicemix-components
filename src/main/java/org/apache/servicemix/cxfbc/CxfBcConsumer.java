@@ -277,6 +277,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     public void process(MessageExchange exchange) throws Exception {
+        if (exchange.getStatus() != ExchangeStatus.ACTIVE) {
+            return;
+        }
         Message message = messages.remove(exchange.getExchangeId());
         synchronized (message.getInterceptorChain()) {
             boolean oneway = message.getExchange().get(
