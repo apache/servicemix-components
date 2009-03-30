@@ -174,6 +174,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private List<AbstractFeature> features = new CopyOnWriteArrayList<AbstractFeature>();
 
     private boolean transactionEnabled;
+ 
+    private boolean isSTFlow;
 
     /**
      * @return the wsdl
@@ -286,8 +288,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     BindingOperationInfo.class).getOperationInfo().isOneWay();
             if (!isSynchronous() && !oneway) {
                 ContinuationProvider continuationProvider = (ContinuationProvider) message
-                    .get(ContinuationProvider.class.getName());
-                continuationProvider.getContinuation().resume();
+                        .get(ContinuationProvider.class.getName());
+                Continuation continuation = continuationProvider.getContinuation();
+                if (continuation.isPending()) {
+                    continuation.resume();
+                    isSTFlow = false;
+                } else {
+                    isSTFlow = true;
+                }
             }
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                 exchange.setStatus(ExchangeStatus.DONE);
@@ -706,14 +714,16 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         Continuation continuation = continuationProvider.getContinuation();
                         if (!continuation.isPending()) {
                             context.getDeliveryChannel().send(exchange);
-                            continuation.suspend(timeout * 1000);
+                            if (!isSTFlow) {
+                                continuation.suspend(timeout * 1000);
+                            }
                         } else {
                             //retry or timeout
                             if (!continuation.isResumed()) {
                                 //exchange timeout
                                 throw new Exception("Exchange timed out: " + exchange.getExchangeId());
                             }
-
+                                                       
                         }
 
                      }
