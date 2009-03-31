@@ -64,7 +64,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
                 exchange.getFault().setBody(messageExchange.getFault().getContent());
                 addHeaders(messageExchange.getFault(), exchange.getFault());
                 addAttachments(messageExchange.getFault(), exchange.getFault());
-            } else {
+            } else if (messageExchange.getMessage("out") != null) {
                 exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
                 addHeaders(messageExchange.getMessage("out"), exchange.getOut());
                 addAttachments(messageExchange.getMessage("out"), exchange.getOut());
@@ -88,11 +88,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
 
             send(messageExchange);
             return false;
-        } catch (MessagingException e) {
-            exchange.setException(e);
-            asyncCallback.done(true);
-            return true;
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             exchange.setException(e);
             asyncCallback.done(true);
             return true;
@@ -119,7 +115,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
                     exchange.getFault().setBody(messageExchange.getFault().getContent());
                     addHeaders(messageExchange.getFault(), exchange.getFault());
                     addAttachments(messageExchange.getFault(), exchange.getFault());
-                } else {
+                } else if (messageExchange.getMessage("out") != null) {
                     exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
                     addHeaders(messageExchange.getMessage("out"), exchange.getOut());
                     addAttachments(messageExchange.getMessage("out"), exchange.getOut());
@@ -141,6 +137,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         // No validation required
     }
 
+    @SuppressWarnings("unchecked")
     private void addHeaders(MessageExchange messageExchange, Exchange camelExchange) {
         Set entries = messageExchange.getPropertyNames();
         for (Object o : entries) {
@@ -149,6 +146,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void addHeaders(NormalizedMessage normalizedMessage, Message camelMessage) {
         Set entries = normalizedMessage.getPropertyNames();
         for (Object o : entries) {
@@ -157,6 +155,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void addAttachments(NormalizedMessage normalizedMessage, Message camelMessage) {
         Set entries = normalizedMessage.getAttachmentNames();
         for (Object o : entries) {

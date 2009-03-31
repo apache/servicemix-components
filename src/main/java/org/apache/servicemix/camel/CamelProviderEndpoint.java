@@ -127,6 +127,9 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
                     fail(exchange, e);
                 } else {
                     boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+//                    if (camelExchange.getOut(false) == null) {
+//                        camelExchange.getOut().copyFrom(camelExchange.getIn());
+//                    }
                     if (txSync) {
                         sendSync(exchange);
                     } else {
