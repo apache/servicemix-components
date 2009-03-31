@@ -71,6 +71,7 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
     protected Map<String, MessageExchange> exchanges;
     protected int suspentionTime = 60000;
     protected boolean started = false;
+    private boolean isSTFlow;
         
     public ConsumerProcessor(HttpEndpoint endpoint) {
         super(endpoint);
@@ -96,21 +97,27 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
         if (cont == null) {
             throw new Exception("HTTP request has timed out");
         }
-        synchronized (cont) {
-            if (locks.remove(exchange.getExchangeId()) == null) {
-                throw new Exception("HTTP request has timed out");
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
-            }
-            exchanges.put(exchange.getExchangeId(), exchange);
-            cont.resume();
-            if (!cont.isResumed()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
+
+        if (!cont.isPending()) {
+            isSTFlow = true;
+        } else {
+            isSTFlow = false;
+            synchronized (cont) {
+                if (locks.remove(exchange.getExchangeId()) == null) {
+                    throw new Exception("HTTP request has timed out");
                 }
-                exchanges.remove(exchange.getExchangeId());
-                throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
+                if (log.isDebugEnabled()) {
+                    log.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
+                }
+                exchanges.put(exchange.getExchangeId(), exchange);
+                cont.resume();
+                if (!cont.isResumed()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
+                    }
+                    exchanges.remove(exchange.getExchangeId());
+                    throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
+                }
             }
         }
     }
@@ -168,15 +175,22 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 synchronized (cont) {
                     channel.send(exchange);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
-                    }
-                    boolean result = cont.suspend(suspentionTime);
-                    exchange = exchanges.remove(exchange.getExchangeId());
-                    request.removeAttribute(MessageExchange.class.getName());
-                    if (!result) {
-                        locks.remove(exchange.getExchangeId());
-                        throw new Exception("Exchange timed out");
+                    if (!isSTFlow) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
+                        }
+                        boolean result = cont.suspend(suspentionTime);
+                        exchange = exchanges.remove(exchange.getExchangeId());
+                        request.removeAttribute(MessageExchange.class.getName());
+                        if (!result) {
+                            locks.remove(exchange.getExchangeId());
+                            throw new Exception("Exchange timed out");
+                        }
+                    } else {
+                        String id = (String) request.getAttribute(MessageExchange.class.getName());
+                        locks.remove(id);
+                        exchange = exchanges.remove(id);
+                        request.removeAttribute(MessageExchange.class.getName());
                     }
                 }
             } catch (RetryRequest retry) {
