@@ -160,6 +160,16 @@ public class ControlImpl {
         // never called
         return null;
     }
+    
+    public Response<?> setFaultLocationAsync(FaultLocation in) {
+        // never called
+        return null;
+    }
+
+    public Future<?> setFaultLocationAsync(FaultLocation in, AsyncHandler<?> asyncHandler) {
+        // never called
+        return null;
+    } 
 
   
 }

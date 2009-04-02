@@ -271,7 +271,8 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
 
         SchemaInfo schemaInfo = 
             getOperation(message).getBinding().getService().getSchema(jbiFaultDetail.getNamespaceURI());
-        if (schemaInfo != null && !schemaInfo.isElementFormQualified()) {
+        if (schemaInfo != null && !schemaInfo.isElementFormQualified() 
+            && (jbiFaultDetail instanceof Element)) {
             //that's unquailied fault
             jbiFaultDetail = addEmptyDefaultTns((Element)jbiFaultDetail);
         }
