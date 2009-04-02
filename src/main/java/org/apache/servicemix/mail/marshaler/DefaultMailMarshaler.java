@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -44,13 +43,13 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.mail.utils.MailUtils;
 
 /**
  * this is the default marshaler for conversion between the normalized message
@@ -108,6 +107,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
      */
     protected void fillMailBodyAndAttachments(MimeMessage mimeMessage, MessageExchange exchange,
                                               NormalizedMessage nmsg) throws Exception {
+        
         // if there are attachments, then a multipart mime mail with
         // attachments will be sent
         if (nmsg.getAttachmentNames().size() > 0) {
@@ -456,9 +456,8 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     protected void copyBodyAndAttachments(MessageExchange exchange, NormalizedMessage nmsg,
                                           MimeMessage mailMsg) throws javax.mail.MessagingException {
         // now convert the mail body and attachments and put it to the msg
-        Multipart mp;
         Object content;
-        Multipart subMP;
+        Multipart mp;
         String text = null;
         String html = null;
 
@@ -471,42 +470,15 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             } else if (content instanceof Multipart) {
                 // mail with attachment
                 mp = (Multipart)content;
-                int nbMP = mp.getCount();
-                log.debug("MultiPart count: " + nbMP);
-                for (int i = 0; i < nbMP; i++) {
+                // first grab all attachments
+                MailUtils.extractFromMultipart(mp, nmsg);
+                log.debug("Attachments found: " + nmsg.getAttachmentNames().size());
+                
+                for (int i = 0; i < mp.getCount(); i++) {
                     Part part = mp.getBodyPart(i);
                     String disposition = part.getDisposition();
 
-                    log.debug("MultiPart " + i + ": " + part);
-                    log.debug("Disposition: " + disposition);
-
-                    if (disposition != null
-                        && (disposition.equalsIgnoreCase(Part.ATTACHMENT) || disposition
-                            .equalsIgnoreCase(Part.INLINE))) {
-                        // only add named attachments
-                        if (part.getFileName() != null) {
-                            // Parts marked with a disposition of Part.ATTACHMENT
-                            // from part.getDisposition() are clearly attachments
-                            DataHandler att = part.getDataHandler();
-                            // this is clearly a attachment
-                            // Try to find the correct name to work around some bugs in the geronimo javamail
-                            String name = att.getName();
-                            if (name == null || name.length() == 0) {
-                                name = part.getFileName();
-                            }
-                            if (name != null) {
-                                try {
-                                    name = MimeUtility.decodeText(name);
-                                } catch (UnsupportedEncodingException e) {
-                                    // ignore it
-                                }
-                            }
-                            nmsg.addAttachment(name, att);
-                        } else {
-                            // inline part without name?
-                            text = part.getContent() != null ? part.getContent().toString() : "null";
-                        }
-                    } else if (disposition == null) {
+                    if (disposition == null) {
                         // Check if plain
                         MimeBodyPart mbp = (MimeBodyPart)part;
                         if (mbp.isMimeType("text/plain")) {
@@ -518,9 +490,8 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                         } else {
                             // Special non-attachment cases (image/gif, ...)
                             if (mbp.getContent() instanceof MimeMultipart) {
-                                subMP = (MimeMultipart)mbp.getContent();
-                                int nbsubMP = subMP.getCount();
-                                for (int j = 0; j < nbsubMP; j++) {
+                                MimeMultipart subMP = (MimeMultipart)mbp.getContent();
+                                for (int j = 0; j < subMP.getCount(); j++) {
                                     MimeBodyPart subMBP = (MimeBodyPart)subMP.getBodyPart(j);
 
                                     if (subMBP.getContent() instanceof InputStream) {
@@ -604,12 +575,13 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         log.debug("Parsing: " + subContent.getClass().getName());
 
         if (subContent instanceof InputStream) {
-            String altName = mbp.getContentID() + "."
-                             + mbp.getContentType().substring(mbp.getContentType().lastIndexOf('/') + 1);
-            altName = altName.replaceAll("<", "").replaceAll(">", "").toLowerCase();
+            String cid = mbp.getContentID();
+            if (cid != null) {
+                cid = cid.replaceAll("<", "").replaceAll(">", "").toLowerCase();
+            }
 
             log.debug("Adding special attachment: "
-                      + (mbp.getFileName() != null ? mbp.getFileName() : altName));
+                      + (mbp.getFileName() != null ? mbp.getFileName() : cid));
 
             // read the stream into a byte array
             byte[] data = new byte[mbp.getSize()];
@@ -618,12 +590,16 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
 
             // create a byte array data source for use in data handler
             ByteArrayDataSource bads = new ByteArrayDataSource(data, mbp.getContentType());
-
+            
             // remember the name of the attachment
-            bads.setName(mbp.getFileName() != null ? mbp.getFileName() : altName);
+            bads.setName(mbp.getFileName() != null ? mbp.getFileName() : cid);
 
             // add the attachment to the message
             nmsg.addAttachment(bads.getName(), new DataHandler(bads));
+            // add the cid2attachment mapping to properties
+            if (cid != null) {
+                nmsg.setProperty(cid, mbp.getFileName());
+            }
         }
     }
 

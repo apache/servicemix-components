@@ -16,9 +16,16 @@
  */
 package org.apache.servicemix.mail.utils;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Properties;
 
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.mail.Multipart;
+import javax.mail.Part;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
 import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
@@ -206,5 +213,50 @@ public final class MailUtils {
         }
 
         return mailConnectionProperties;
+    }
+    
+    /**
+     * extracts attachments from a multipart mail part
+     * 
+     * @param mp        the multipart
+     * @param map       the map to add the attachments to
+     * @throws javax.mail.MessagingException    on mail errors
+     * @throws MessagingException       on jbi messaging errors
+     * @throws IOException      on io errors
+     */
+    public static void extractFromMultipart(Multipart mp, NormalizedMessage nmsg)
+        throws javax.mail.MessagingException, MessagingException, IOException {
+
+        for (int i = 0; i < mp.getCount(); i++) {
+            Part part = mp.getBodyPart(i);
+            if (part.isMimeType("multipart/*")) {
+                extractFromMultipart((Multipart)part.getContent(), nmsg);
+            } else {
+                String disposition = part.getDisposition();
+                if (disposition != null) {
+                    if (disposition.equalsIgnoreCase(Part.ATTACHMENT)
+                        || disposition.equalsIgnoreCase(Part.INLINE)) {
+                        String name = part.getFileName();
+                        // only add named attachments
+                        if (name != null) {
+                            // Parts marked with a disposition of
+                            // Part.ATTACHMENT
+                            // are clearly attachments
+                            if (name != null) {
+                                try {
+                                    name = MimeUtility.decodeText(name);
+                                } catch (UnsupportedEncodingException e) {
+                                    // ignore it
+                                }
+                            }
+                            nmsg.addAttachment(name, part.getDataHandler());
+                        } else if (part.getDataHandler() != null) {
+                            // also add unnamed if there is a data handler
+                            nmsg.addAttachment(disposition, part.getDataHandler());                            
+                        }
+                    }
+                }
+            }
+        }
     }
 }
