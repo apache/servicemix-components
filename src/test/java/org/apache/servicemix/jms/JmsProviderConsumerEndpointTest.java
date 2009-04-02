@@ -42,6 +42,7 @@ import org.apache.servicemix.jms.endpoints.DefaultConsumerMarshaler;
 import org.apache.servicemix.jms.endpoints.DefaultProviderMarshaler;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
+import org.apache.servicemix.tck.ReceiverComponent;
 import org.springframework.jms.core.JmsTemplate;
 
 public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
@@ -115,8 +116,13 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
 
     }
 
-    public void testProviderInOnlyWithJmsTransactions() throws Exception {
+    public void testProviderInOnlyWithJmsTxRollback() throws Exception {
         ConnectionFactory connFactory = new PooledConnectionFactory(connectionFactory);
+        JmsTemplate template = new JmsTemplate(connFactory);
+        template.setReceiveTimeout(2000);
+        // Make sure there are no messages stuck on queue from previous tests
+        template.receive("destination");
+
         JmsComponent jmsComponent = new JmsComponent();
         JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory, true);
         consumerEndpoint.setTransacted("jms");
@@ -156,9 +162,40 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         // trying to get the message from the queue
         container.deactivateComponent("servicemix-jms");
 
+        assertNotNull("Message should still be on the queue", template.receive("destination"));
+    }
+
+    public void testProviderInOnlyWithJmsTx() throws Exception {
+        ConnectionFactory connFactory = new PooledConnectionFactory(connectionFactory);
         JmsTemplate template = new JmsTemplate(connFactory);
         template.setReceiveTimeout(2000);
-        assertNotNull("Message should still be on the queue", template.receive("destination"));
+        // Make sure there are no messages stuck on queue from previous tests
+        template.receive("destination");
+
+        JmsComponent jmsComponent = new JmsComponent();
+        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory, true);
+        consumerEndpoint.setTransacted("jms");
+        JmsProviderEndpoint providerEndpoint = createProviderEndpoint(connFactory);
+        jmsComponent.setEndpoints(new JmsEndpointType[] {consumerEndpoint, providerEndpoint});
+        container.activateComponent(jmsComponent, "servicemix-jms");
+
+        ReceiverComponent rcvr = new ReceiverComponent();
+        rcvr.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        rcvr.setEndpoint("endpoint");
+        ActivationSpec asRcvr = new ActivationSpec("receiver", rcvr);
+        container.activateComponent(asRcvr);
+
+        InOnly exchange;
+        exchange = client.createInOnlyExchange();
+        exchange.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
+        exchange.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(exchange);
+        rcvr.getMessageList().assertMessagesReceived(1);
+
+        container.deactivateComponent("servicemix-jms");
+
+        assertNull("Message should not be on the queue", template.receive("destination"));
+
     }
 
 
@@ -174,6 +211,8 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setListenerType("simple");
         endpoint.setConnectionFactory(connFactory);
         endpoint.setDestinationName("destination");
+        endpoint.setRecoveryInterval(10000);
+        endpoint.setConcurrentConsumers(1);
         endpoint.setTargetService(new QName("http://jms.servicemix.org/Test", "Echo"));
         return endpoint;
     }
