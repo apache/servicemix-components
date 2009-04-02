@@ -427,10 +427,11 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
 
     protected void processExchange(final MessageExchange exchange, final Session session, final JmsContext context) throws Exception {
         if (exchange instanceof InOnly) {
-            if ((ExchangeStatus.ERROR.equals(exchange.getStatus())) && (marshaler instanceof DefaultConsumerMarshaler)) {
-                if (((DefaultConsumerMarshaler)marshaler).isRollbackOnError()) {
-                    throw exchange.getError();
-                }
+            if ((ExchangeStatus.ERROR.equals(exchange.getStatus()))
+                && marshaler instanceof DefaultConsumerMarshaler
+                && ((DefaultConsumerMarshaler)marshaler).isRollbackOnError()) {
+
+                throw exchange.getError();
             }
             // For InOnly exchanges, ignore DONE exchanges or those where isRollbackOnError is false
             return;
