@@ -176,6 +176,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private boolean transactionEnabled;
  
     private boolean isSTFlow;
+   
+    private ClassLoader suClassLoader;
 
     /**
      * @return the wsdl
@@ -389,6 +391,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     @Override
     public void validate() throws DeploymentException {
         try {
+            suClassLoader = Thread.currentThread().getContextClassLoader();
             if (definition == null) {
                 
                 retrieveWSDL();
@@ -613,6 +616,20 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             exchange.put(ComponentContext.class, CxfBcConsumer.this
                     .getContext());
             exchange.put(CxfBcConsumer.class, CxfBcConsumer.this);
+        }
+      
+        public void onMessage(Message m) {
+            ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+            if (oldCl != suClassLoader) {
+                try {
+                    Thread.currentThread().setContextClassLoader(suClassLoader);
+                    super.onMessage(m);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(oldCl);
+                }
+            } else {
+                super.onMessage(m);
+            }
         }
 
     }
