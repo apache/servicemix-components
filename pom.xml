@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.apache.servicemix</groupId>
+        <artifactId>components-pom</artifactId>
+        <version>3-SNAPSHOT</version>
+    </parent>
+    
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>servicemix-exec</artifactId>
+    <version>2009.01-SNAPSHOT</version>
+    <packaging>jbi-component</packaging>
+    
+    <name>ServiceMix :: Exec</name>
+    <description>
+        A exec ServiceEngine component that launch a command using data into the incoming normalized message and return the command output in a new normalized message.
+    </description>
+    
+    <properties>
+        <servicemix-version>3.3</servicemix-version>
+        <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+        
+        <servicemix.osgi.import>
+            org.apache.servicemix;resolution:=optional,
+            org.apache.servicemix.client;resolution:=optional,
+            org.apache.servicemix.common,
+            org.apache.servicemix.common.osgi,
+            org.apache.servicemix.components*;resolution:=optional,
+            org.apache.servicemix.executors.impl,
+            org.apache.servicemix.expression*;resolution:=optional,
+            org.apache.servicemix.jbi*;resolution:=optional,
+            org.apache.xbean.spring.context.v2,
+            org.springframework.beans.factory.xml,
+            sun.misc;resolution:=optional,
+            *
+        </servicemix.osgi.import>
+        <servicemix.osgi.export>
+            org.apache.servicemix.exec*;version=${project.version},
+            META-INF.services.org.apache.xbean.spring.exec.servicemix.apache.org.exec
+        </servicemix.osgi.export>
+        <servicemix.osgi.bundles>
+            org.apache.servicemix.bundles.jaxrp-ri,
+            org.springframework.core,
+            org.springframework.beans,
+            org.springframework.context,
+        </servicemix.osgi.bundles>
+    </properties>
+    
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-exec/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-exec/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-exec/trunk</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-shared</artifactId>
+            <version>${servicemix-shared-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.specs</groupId>
+            <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jta_1.1_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        <!-- Testing stuff -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-core</artifactId>
+            <version>${servicemix-version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.servicemix.tooling</groupId>
+                <artifactId>jbi-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <type>service-engine</type>
+                    <component>org.apache.servicemix.exec.ExecComponent</component>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>maven-xbean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>mapping</goal>
+                        </goals>
+                        <configuration>
+                            <namespace>http://servicemix.apache.org/exec/1.0</namespace>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>always</forkMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>
