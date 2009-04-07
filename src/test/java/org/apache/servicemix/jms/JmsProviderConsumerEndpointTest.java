@@ -192,8 +192,6 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         client.sendSync(exchange);
         rcvr.getMessageList().assertMessagesReceived(1);
 
-        container.deactivateComponent("servicemix-jms");
-
         assertNull("Message should not be on the queue", template.receive("destination"));
 
     }
