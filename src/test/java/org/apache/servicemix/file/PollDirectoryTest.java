@@ -61,6 +61,7 @@ public class PollDirectoryTest extends SpringTestSupport {
         }
 
         Receiver receiver = (Receiver) getBean("receiver");
+        receiver.getMessageList().waitForMessagesToArrive(NUMBER, 10000);
         receiver.getMessageList().assertMessagesReceived(NUMBER);
     }
     
