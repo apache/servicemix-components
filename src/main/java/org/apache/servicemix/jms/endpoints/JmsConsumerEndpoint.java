@@ -549,6 +549,14 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
             && !TRANSACTED_XA.equals(transacted)) {
             throw new DeploymentException("transacted must be none, jms or xa");
         }
+
+        // Provide some intelligent defaults for rollback policy
+        if (TRANSACTED_XA.equals(transacted) || TRANSACTED_JMS.equals(transacted)) {
+            JmsConsumerMarshaler marshaler = getMarshaler();
+            if (marshaler instanceof DefaultConsumerMarshaler) {
+                ((DefaultConsumerMarshaler)marshaler).setRollbackOnError(true);
+            }
+        }
     }
     
     protected AbstractMessageListenerContainer createListenerContainer() {

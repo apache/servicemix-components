@@ -124,7 +124,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         template.receive("destination");
 
         JmsComponent jmsComponent = new JmsComponent();
-        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory, true);
+        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory);
         consumerEndpoint.setTransacted("jms");
         JmsProviderEndpoint providerEndpoint = createProviderEndpoint(connFactory);
         jmsComponent.setEndpoints(new JmsEndpointType[] {consumerEndpoint, providerEndpoint});
@@ -173,7 +173,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         template.receive("destination");
 
         JmsComponent jmsComponent = new JmsComponent();
-        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory, true);
+        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory); //, true);
         consumerEndpoint.setTransacted("jms");
         JmsProviderEndpoint providerEndpoint = createProviderEndpoint(connFactory);
         jmsComponent.setEndpoints(new JmsEndpointType[] {consumerEndpoint, providerEndpoint});
@@ -196,15 +196,59 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
 
     }
 
+    public void testProviderInOnlyWithNoneTx() throws Exception {
+        ConnectionFactory connFactory = new PooledConnectionFactory(connectionFactory);
+        JmsTemplate template = new JmsTemplate(connFactory);
+        template.setReceiveTimeout(2000);
+        // Make sure there are no messages stuck on queue from previous tests
+        template.receive("destination");
 
-    private JmsConsumerEndpoint createInOnlyConsumerEndpoint(ConnectionFactory connFactory,
-                                                             boolean rollbackOnError) throws URISyntaxException {
+        JmsComponent jmsComponent = new JmsComponent();
+        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory);
+        consumerEndpoint.setTransacted("none");
+        JmsProviderEndpoint providerEndpoint = createProviderEndpoint(connFactory);
+        jmsComponent.setEndpoints(new JmsEndpointType[] {consumerEndpoint, providerEndpoint});
+        container.activateComponent(jmsComponent, "servicemix-jms");
+
+        final int[] receiveCount = new int[]{0};
+
+        ReturnErrorComponent error = new ReturnErrorComponent(new RuntimeException("Error: abort... abort...!!")) {
+            public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+                receiveCount[0]++;
+                super.onMessageExchange(exchange);
+            }
+        };
+
+        ActivationSpec asError = new ActivationSpec("receiver", error);
+        asError.setService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        container.activateComponent(asError);
+
+        InOnly exchange = client.createInOnlyExchange();
+        exchange.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
+        exchange.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+        client.sendSync(exchange);
+
+        // Loop and wait for at least one attempt to process the message
+        for (int i = 0; i < 5; i++) {
+            Thread.sleep(1000);
+            if (receiveCount[0] > 0) {
+                break;
+            }
+        }
+
+        assertTrue("The message was never processed by servicemix-jms", receiveCount[0] > 0);
+
+        assertNull("Message should not be on the queue", template.receive("destination"));
+    }
+
+
+
+    private JmsConsumerEndpoint createInOnlyConsumerEndpoint(ConnectionFactory connFactory) throws URISyntaxException {
         JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
         endpoint.setService(new QName("http://jms.servicemix.org/Test", "Consumer"));
         endpoint.setEndpoint("endpoint");
         DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
         marshaler.setMep(new URI("http://www.w3.org/2004/08/wsdl/in-only"));
-        marshaler.setRollbackOnError(rollbackOnError);
         endpoint.setMarshaler(marshaler);
         endpoint.setListenerType("simple");
         endpoint.setConnectionFactory(connFactory);
@@ -221,7 +265,6 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setEndpoint("endpoint");
         DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
         marshaler.setMep(new URI("http://www.w3.org/2004/08/wsdl/in-out"));
-        marshaler.setRollbackOnError(false);
         endpoint.setMarshaler(marshaler);
         endpoint.setListenerType("simple");
         endpoint.setConnectionFactory(connFactory);

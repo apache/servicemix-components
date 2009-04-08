@@ -53,7 +53,7 @@ import org.apache.servicemix.soap.util.stax.StaxSource;
 public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements JmsConsumerMarshaler {
     
     private URI mep;
-    private boolean rollbackOnError = true;
+    private boolean rollbackOnError;
 
     public DefaultConsumerMarshaler() {
         this.mep = JbiConstants.IN_ONLY;
