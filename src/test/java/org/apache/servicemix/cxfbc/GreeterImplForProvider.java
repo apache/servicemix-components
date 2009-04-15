@@ -16,15 +16,21 @@
  */
 package org.apache.servicemix.cxfbc;
 
+import java.io.InputStream;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.Future;
 
+import javax.activation.DataHandler;
 import javax.jbi.component.ComponentContext;
 import javax.jws.WebService;
+import javax.mail.util.ByteArrayDataSource;
 import javax.xml.ws.AsyncHandler;
+import javax.xml.ws.Holder;
 import javax.xml.ws.Response;
 
 import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorPortType;
+import org.apache.cxf.mime.TestMtom;
 import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
 import org.apache.hello_world_soap_http.NoSuchCodeLitFault;
@@ -51,6 +57,7 @@ public class GreeterImplForProvider implements Greeter {
     private Greeter greeter;
     private Greeter securityGreeter;
     private HelloPortType hello;
+    private TestMtom mtom;
 
     public String greetMe(String me) {
         String ret = "";
@@ -95,6 +102,24 @@ public class GreeterImplForProvider implements Greeter {
                 getCalculator().add(1, 2);
             } else if ("ffang with no targetServie".equals(me)) {
                 getCalculatorNotExist().add(1, 2);
+            } else if ("ffang with mtom".equals(me)) {
+                try {
+                    
+                    Holder<DataHandler> param = new Holder<DataHandler>();
+                    
+                    param.value = new DataHandler(new ByteArrayDataSource("foobar".getBytes(), 
+                        "application/octet-stream"));
+                    
+                    Holder<String> name = new Holder<String>("call detail");
+                    getMtom().testXop(name, param);
+                    InputStream bis = param.value.getDataSource().getInputStream();
+                    byte b[] = new byte[10];
+                    bis.read(b, 0, 10);
+                    String attachContent = new String(b);
+                    ret = ret + attachContent;
+                } catch (UndeclaredThrowableException ex) {
+                    throw (Exception) ex.getCause();
+                }                
             }
                         
         } catch (AddNumbersFault e) {
@@ -105,7 +130,7 @@ public class GreeterImplForProvider implements Greeter {
         } catch (InterruptedException e) {
             //
         } catch (Exception e) {
-            if (ret.equals("no server")) {
+            if ("no server".equals(ret)) {
                 ret = "server is stop";
             } else {
                 ret = e.getMessage();
@@ -251,6 +276,15 @@ public class GreeterImplForProvider implements Greeter {
 
     public NoServicePortType getCalculatorNotExist() {
         return calculatorNotExist;
+    }
+
+
+    public void setMtom(TestMtom mtom) {
+        this.mtom = mtom;
+    }
+
+    public TestMtom getMtom() {
+        return mtom;
     }
 
 

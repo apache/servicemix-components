@@ -23,7 +23,8 @@
        xmlns:test="urn:test"
        xmlns:hello="uri:HelloWorld"
        xmlns:calculator="http://apache.org/cxf/calculator"
-       xmlns:greeter="http://apache.org/hello_world_soap_http">
+       xmlns:greeter="http://apache.org/hello_world_soap_http"
+       xmlns:mtom="http://cxf.apache.org/mime">
   
     
       <cxfse:endpoint>
@@ -41,6 +42,9 @@
               <property name="hello">
                   <cxfse:proxy service="hello:HelloService" context="#context" type="uri.helloworld.HelloPortType"/>
               </property>              
+              <property name="mtom">
+                  <cxfse:proxy service="mtom:TestMtomService" context="#context" type="org.apache.cxf.mime.TestMtom" mtomEnabled="true"/>
+              </property>
           </bean>
               
         </cxfse:pojo>
