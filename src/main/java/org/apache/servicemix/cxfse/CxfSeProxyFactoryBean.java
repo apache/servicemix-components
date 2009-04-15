@@ -30,6 +30,8 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
+import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
+import org.apache.servicemix.cxfse.interceptors.AttachmentOutInterceptor;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.api.ClientFactory;
 import org.apache.servicemix.jbi.api.Container;
@@ -74,6 +76,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     
     private boolean useSOAPEnvelope = true;
 
+    private boolean mtomEnabled;
+
     public Object getObject() throws Exception {
         if (proxy == null) {
             proxy = createProxy();
@@ -114,6 +118,12 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
 				"SoapOutInterceptor");
         	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutInterceptors(), 
         		"StaxOutInterceptor");
+        }
+        if (isMtomEnabled()) {
+            ClientProxy.getClient(proxy).getEndpoint()
+                .getBinding().getInInterceptors().add(new AttachmentInInterceptor());
+            ClientProxy.getClient(proxy).getEndpoint()
+                .getBinding().getOutInterceptors().add(new AttachmentOutInterceptor());
         }
         return proxy;
     }
@@ -299,5 +309,14 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
 	public boolean isUseSOAPEnvelope() {
 		return useSOAPEnvelope;
 	}
+
+        public void setMtomEnabled(boolean mtomEnabled) {
+            this.mtomEnabled = mtomEnabled;
+        }
+
+        public boolean isMtomEnabled() {
+            return mtomEnabled;
+        }
+
 
 }

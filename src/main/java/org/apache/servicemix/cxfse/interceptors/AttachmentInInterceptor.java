@@ -42,7 +42,12 @@ public class AttachmentInInterceptor extends AbstractPhaseInterceptor<Message> {
     public void handleMessage(Message message) {
         List<Attachment> attachmentList = new ArrayList<Attachment>();
         MessageExchange exchange = message.get(MessageExchange.class);
-        NormalizedMessage norMessage = exchange.getMessage("in");
+        NormalizedMessage norMessage = null;
+        if (isRequestor(message)) {
+            norMessage = (NormalizedMessage) exchange.getMessage("out");
+        } else { 
+            norMessage = (NormalizedMessage) exchange.getMessage("in");
+        }
         Set names = norMessage.getAttachmentNames();
         for (Object obj : names) {
             String id = (String)obj;
@@ -52,6 +57,9 @@ public class AttachmentInInterceptor extends AbstractPhaseInterceptor<Message> {
         
         message.setAttachments(attachmentList);
     }
-
+    
+    protected boolean isRequestor(Message message) {
+        return Boolean.TRUE.equals(message.get(Message.REQUESTOR_ROLE));
+    }
     
 }
