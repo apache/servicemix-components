@@ -50,7 +50,7 @@ public abstract class JbiTestSupport extends TestSupport {
 
     protected Exchange receivedExchange;
 
-    protected CamelContext camelContext = new DefaultCamelContext();
+    protected CamelContext camelContext;
 
     protected SpringJBIContainer jbiContainer = new SpringJBIContainer();
 
@@ -62,7 +62,7 @@ public abstract class JbiTestSupport extends TestSupport {
 
     protected String startEndpointUri = "jbi:endpoint:serviceNamespace:serviceA:endpointA";
 
-    protected ProducerTemplate<Exchange> client = camelContext.createProducerTemplate();
+    protected ProducerTemplate<Exchange> client;
 
     protected ServiceMixClient servicemixClient;
 
@@ -115,6 +115,11 @@ public abstract class JbiTestSupport extends TestSupport {
 
     @Override
     protected void setUp() throws Exception {
+        if (camelContext == null) {
+            camelContext = createCamelContext();
+            client = camelContext.createProducerTemplate();
+        }
+        
         configureContainer(jbiContainer);
         List<ActivationSpec> activationSpecList = new ArrayList<ActivationSpec>();
 
@@ -142,6 +147,10 @@ public abstract class JbiTestSupport extends TestSupport {
         endpoint = camelContext.getEndpoint(startEndpointUri);
 
         camelContext.start();
+    }
+
+    protected CamelContext createCamelContext() {
+        return new DefaultCamelContext();
     }
 
     protected void configureComponent(CamelJbiComponent component) throws Exception {
