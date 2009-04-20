@@ -68,10 +68,6 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         if (this.config == null || this.connection == null) {
             throw new DeploymentException("No valid connection uri provided.");
         }
-        if (this.sender == null) {
-            this.sender = this.marshaler != null
-                ? this.marshaler.getDefaultSenderForOutgoingMails() : AbstractMailMarshaler.DEFAULT_SENDER;
-        }
     }
 
     /*
