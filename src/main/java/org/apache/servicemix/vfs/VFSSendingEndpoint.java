@@ -60,22 +60,34 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax.jbi.messaging.MessageExchange)
-     */
     @Override
-    public void process(MessageExchange exchange) throws Exception {
-        NormalizedMessage message =exchange.getMessage("in");
+    protected void processInOnly(MessageExchange exchange, NormalizedMessage in)
+    		throws Exception {
         OutputStream out = null;
+        String tmpName = null;
+        String name = null;
+        FileObject tmpFile = null;
+        FileObject newFile = null;
+        FileContent content = null;
         try {
-            String name = marshaler.getOutputName(exchange, message);
+            name = marshaler.getOutputName(exchange, in);
             if (name == null) {
                 throw new MessagingException("No output name available. Cannot output message!");
             }
+            tmpName = marshaler.getTempOutputName(exchange, in);
             file.close(); // remove any cached informations
-            FileObject newFile = file.resolveFile(name);
-            newFile.close(); // remove any cached informations
-            FileContent content = newFile.getContent();
+            if (tmpName != null) {
+            	// writing to temp file first
+            	tmpFile = tmpName != null ? file.resolveFile(tmpName) : null;
+                tmpFile.close();
+                content = tmpFile.getContent();
+            } else {
+            	// writing to target file
+            	newFile = file.resolveFile(name);
+            	newFile.close(); // remove any cached informations
+                content = newFile.getContent();
+            }
+            // remove any cached informations
             content.close();
             if (content != null) {
                 out = content.getOutputStream();
@@ -83,8 +95,7 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
             if (out == null) {
                 throw new MessagingException("No output stream available for output name: " + name);
             }
-            marshaler.writeMessage(exchange, message, out, name);
-            done(exchange);
+            marshaler.writeMessage(exchange, in, out, name);
         }
         finally {
             if (out != null) {
@@ -94,6 +105,13 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
                 catch (IOException e) {
                     logger.error("Caught exception while closing stream on error: " + e, e);
                 }
+            }
+            if (name != null && !name.equals(tmpName)) {
+            	if (!tmpFile.canRenameTo(newFile)) {
+            		throw new IOException("File " + tmpName + " could not be renamed to " + name);
+            	} else {
+            		tmpFile.moveTo(newFile);
+            	}
             }
         }
     }
