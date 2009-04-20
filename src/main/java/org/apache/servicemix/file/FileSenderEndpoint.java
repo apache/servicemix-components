@@ -45,7 +45,9 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
 
     private File directory;
     private FileMarshaler marshaler = new DefaultFileMarshaler();
+    @Deprecated
     private String tempFilePrefix = "servicemix-";
+    @Deprecated
     private String tempFileSuffix = ".xml";
     private boolean autoCreateDirectory = true;
     private boolean append = true;
@@ -85,7 +87,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
         try {
             name = marshaler.getOutputName(exchange, in);
             if (name == null) {
-                newFile = File.createTempFile(tempFilePrefix, tempFileSuffix, directory);
+                newFile = File.createTempFile("" + System.currentTimeMillis(), "tmp", directory);
             } else {
                 newFile = new File(directory, name);
                 if (newFile.exists()) {
@@ -100,7 +102,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                                 + " : file already exists and overwrite has not been enabled");
                 	}
                 }
-                writeTempName = getTemporaryName(name);
+                writeTempName = marshaler.getTempOutputName(exchange, in) != null ? marshaler.getTempOutputName(exchange, in) : name;
                 newFile = new File(directory, writeTempName);
             }
             
@@ -163,18 +165,6 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
         }
     }
 
-    /**
-     * provides a temporary unique file name for writing
-     *  
-     * @param name	the original name
-     * @return		a temporary unique file name
-     */
-    protected String getTemporaryName(String name) {
-        String result = tempFilePrefix == null ? name : tempFilePrefix + name;
-        result = tempFileSuffix == null ? result : result + tempFileSuffix;
-        return result;
-    }
-    
     protected void processInOut(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out)
         throws Exception {
         /** TODO list the files? */
@@ -220,10 +210,12 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
      * 
      * @param filePrefix a string to prefix to generated file names
      */
+    @Deprecated
     public void setTempFilePrefix(String tempFilePrefix) {
         this.tempFilePrefix = tempFilePrefix;
     }
 
+    @Deprecated
     public String getTempFilePrefix() {
         return tempFilePrefix;
     }
@@ -233,10 +225,12 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
      * 
      * @param fileSuffix a string to append to generated file names
      */
+    @Deprecated
     public void setTempFileSuffix(String tempFileSuffix) {
         this.tempFileSuffix = tempFileSuffix;
     }
 
+    @Deprecated
     public String getTempFileSuffix() {
         return tempFileSuffix;
     }
