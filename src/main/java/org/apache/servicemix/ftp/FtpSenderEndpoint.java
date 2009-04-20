@@ -45,7 +45,9 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
     private String uniqueFileName = "ServiceMix";
     private boolean overwrite;
     private URI uri;
+    @Deprecated
     private String uploadPrefix;
+    @Deprecated
     private String uploadSuffix;
     private boolean checkDuplicates = true;
     private boolean autoCreateDirectory = true;
@@ -170,6 +172,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         this.overwrite = overwrite;
     }
 
+    @Deprecated
     public String getUploadPrefix() {
         return uploadPrefix;
     }
@@ -180,10 +183,12 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
      * 
      * @param uploadPrefix
      */
+    @Deprecated
     public void setUploadPrefix(String uploadPrefix) {
         this.uploadPrefix = uploadPrefix;
     }
 
+    @Deprecated
     public String getUploadSuffix() {
         return uploadSuffix;
     }
@@ -194,6 +199,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
      * 
      * @param uploadSuffix
      */
+    @Deprecated
     public void setUploadSuffix(String uploadSuffix) {
         this.uploadSuffix = uploadSuffix;
     }
@@ -248,7 +254,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                                 + " : file already exists and overwrite has not been enabled");
                     }
                 }
-                uploadName = getUploadName(name);
+                uploadName = marshaler.getTempOutputName(exchange, message) != null ? marshaler.getTempOutputName(exchange, message) : name;
                 out = client.storeFileStream(uploadName);
             }
             if (out == null) {
@@ -271,6 +277,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         }
     }
 
+    @Deprecated
     protected String getUploadName(String name) {
         String result = uploadPrefix == null ? name : uploadPrefix + name;
         result = uploadSuffix == null ? result : result + uploadSuffix;
