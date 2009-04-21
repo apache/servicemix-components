@@ -59,7 +59,7 @@ public class ExecMarshaler {
             
             NodeList argumentNodes = document.getElementsByTagName(TAG_ARGUMENT);
             for (int i = 0; i < argumentNodes.getLength(); i++) {
-                execString = execString + argumentNodes.item(i).getChildNodes().item(0).getNodeValue();
+                execString = execString + " " + argumentNodes.item(i).getChildNodes().item(0).getNodeValue();
             }
             
         } catch (Exception e) {

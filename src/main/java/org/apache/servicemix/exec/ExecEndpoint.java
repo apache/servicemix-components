@@ -26,7 +26,6 @@ import javax.jbi.messaging.MessageExchange.Role;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.exec.utils.ExecMarshaler;
 import org.apache.servicemix.exec.utils.ExecUtils;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
 /**
@@ -39,8 +38,14 @@ public class ExecEndpoint extends ProviderEndpoint {
     
     private String command; // the command can be static (define in the descriptor) or provided in the incoming message
     
-    private SourceTransformer transformer = new SourceTransformer();
-    
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
     @Override
     public void process(MessageExchange exchange) throws Exception {
         // The component acts as a provider, this means that another component has requested our service
