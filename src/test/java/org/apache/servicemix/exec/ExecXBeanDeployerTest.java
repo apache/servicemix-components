@@ -22,12 +22,11 @@ import java.net.URL;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -44,10 +43,10 @@ public class ExecXBeanDeployerTest extends TestCase {
         + "<command>ls</command>"
         + "<arguments>"
         + " <argument>-l</argument>"
+        + " <argument>/tmp</argument>"
         + "</arguments>"
         + "</message>";
-    
-    private static final transient Log LOG = LogFactory.getLog(ExecXBeanDeployerTest.class);
+    private static final String MSG_EMPTY = "<message></message>";
     
     protected JBIContainer container;
     
@@ -56,11 +55,24 @@ public class ExecXBeanDeployerTest extends TestCase {
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
+        // start SMX JBI container
         container = new JBIContainer();
         container.setUseMBeanServer(false);
         container.setCreateMBeanServer(false);
         container.setEmbedded(true);
         container.init();
+        // deploy the exec component
+        ExecComponent component = new ExecComponent();
+        container.activateComponent(component, "ExecComponent");
+        // start the JBI container
+        container.start();
+        // deploy an exec SU
+        URL url = getClass().getClassLoader().getResource("xbean/xbean.xml");
+        File path = new File(new URI(url.toString()));
+        path = path.getParentFile();
+        component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
+        component.getServiceUnitManager().init("xbean", path.getAbsolutePath());
+        component.getServiceUnitManager().start("xbean");
     }
     
     /*
@@ -75,47 +87,87 @@ public class ExecXBeanDeployerTest extends TestCase {
     
     /**
      * <p>
-     * Exec component test that deploys a SU into the JBI container.
+     * InOnly test using a valid in message.
      * </p>
      * 
      * @throws Exception if an error occurs during the test.
      */
-    public void test() throws Exception {
-        // creates exec component
-        ExecComponent component = new ExecComponent();
-        container.activateComponent(component, "ExecComponent");
-        
-        // starts the JBI container
-        container.start();
-        
-        // deploy SU
-        URL url = getClass().getClassLoader().getResource("xbean/xbean.xml");
-        File path = new File(new URI(url.toString()));
-        path = path.getParentFile();
-        component.getServiceUnitManager().deploy("xbean", path.getAbsolutePath());
-        component.getServiceUnitManager().init("xbean", path.getAbsolutePath());
-        component.getServiceUnitManager().start("xbean");
-        
+    public void testInOnlyWithValidMessage() throws Exception {
         // test if the endpoint is present
         assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
+        
         // test if the endpoint descriptor contains something
         // TODO add WSDLs support in the Exec component
         // assertNotNull("The endpoint http://test/service/exec descriptor is null",
         // container.getRegistry().getEndpointDescriptor(container.getRegistry().getEndpoint(new
         // QName("http://test", "service"), "exec")));
         
-        // main test
+        // InOnly MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
-        InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("http://test", "service"));
-        me.getInMessage().setContent(new StringSource(MSG_VALID));
-        client.sendSync(me);
+        InOnly inOnly = client.createInOnlyExchange();
+        inOnly.setService(new QName("http://test", "service"));
+        inOnly.getInMessage().setContent(new StringSource(MSG_VALID));
+        client.sendSync(inOnly);
         
-        if (me.getStatus() == ExchangeStatus.ERROR) {
+        if (inOnly.getStatus() == ExchangeStatus.ERROR) {
             fail("Received ERROR status.");
-        } else if (me.getFault() != null) {
-            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        } else if (inOnly.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(inOnly.getFault().getContent()));
         }
+    }
+    
+    /**
+     * <p>
+     * InOnly test without in message (using the static command).
+     * </p>
+     * 
+     * @throws Exception
+     */
+    public void testInOnlyWithEmptyMessage() throws Exception {
+        // test if the endpoint is present
+        assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
+        
+        // InOnly MEP test
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        InOnly inOnly = client.createInOnlyExchange();
+        inOnly.setService(new QName("http://test", "service"));
+        inOnly.getInMessage().setContent(new StringSource(MSG_EMPTY));
+        client.sendSync(inOnly);
+        
+        if (inOnly.getStatus() == ExchangeStatus.ERROR) {
+            fail("Received ERROR status.");
+        } else if (inOnly.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(inOnly.getFault().getContent()));
+        }
+    }
+    
+    /**
+     * <p>
+     * InOut test using a valid in message.
+     * </p>
+     * 
+     * @throws Exception if an error occurs during the test.
+     */
+    public void testInOutWithValidMessage() throws Exception {
+        // test if the endpoint is present
+        assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
+        
+        // InOut MEP test
+        DefaultServiceMixClient client = new DefaultServiceMixClient(container);
+        InOut inOut = client.createInOutExchange();
+        inOut.setService(new QName("http://test", "service"));
+        inOut.getInMessage().setContent(new StringSource(MSG_VALID));
+        client.sendSync(inOut);
+        
+        if (inOut.getStatus() == ExchangeStatus.ERROR) {
+            fail("Received ERROR status.");
+        } else if (inOut.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(inOut.getFault().getContent()));
+        } else {
+            System.out.println(new SourceTransformer().toString(inOut.getMessage("out").getContent()));
+        }
+        
+        client.done(inOut);
     }
 
 }

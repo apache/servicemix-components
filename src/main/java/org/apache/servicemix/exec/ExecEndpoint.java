@@ -17,11 +17,10 @@
 package org.apache.servicemix.exec;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.RobustInOnly;
-import javax.jbi.messaging.MessageExchange.Role;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.exec.utils.ExecMarshaler;
@@ -35,9 +34,10 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  * @org.apache.xbean.XBean element="endpoint"
  */
 public class ExecEndpoint extends ProviderEndpoint {
-    
-    private String command; // the command can be static (define in the descriptor) or provided in the incoming message
-    
+
+    private String command; // the command can be static (define in the
+                            // descriptor) or provided in the incoming message
+
     public String getCommand() {
         return command;
     }
@@ -48,32 +48,29 @@ public class ExecEndpoint extends ProviderEndpoint {
 
     @Override
     public void process(MessageExchange exchange) throws Exception {
-        // The component acts as a provider, this means that another component has requested our service
-        // As this exchange is active, this is either an in or a fault (out are sent by this component)
-        if (exchange.getRole() == Role.PROVIDER) {
-            if (exchange.getStatus() == ExchangeStatus.DONE) {
-                // exchange is finished
-                return;
-            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                // exchange has been aborted with an exception
-                return;
-            } else {
-                // exchange is active
-                this.handleProviderExchange(exchange);
-            }
-        }
-        // unsupported role
-        else {
-            throw new IllegalStateException("Unsupported role: " + exchange.getRole());
+        // The component acts as a provider, this means that another component
+        // has requested our service
+        // As this exchange is active, this is either an in or a fault (out are
+        // sent by this component)
+        if (exchange.getStatus() == ExchangeStatus.DONE) {
+            // exchange is finished
+            return;
+        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+            // exchange has been aborted with an exception
+            return;
+        } else {
+            // exchange is active
+            this.handleProviderExchange(exchange);
         }
     }
-    
+
     /**
      * <p>
      * Handles on the message exchange (provider role).
      * </p>
      * 
-     * @param exchange the <code>MessageExchange</code>.
+     * @param exchange
+     *            the <code>MessageExchange</code>.
      */
     protected void handleProviderExchange(MessageExchange exchange) throws Exception {
         // fault message
@@ -81,29 +78,42 @@ public class ExecEndpoint extends ProviderEndpoint {
             done(exchange);
         } else if (exchange.getMessage("in") != null) {
             // in message presents
-            if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
-                // the MEP is InOnly based
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Received exchange: " + exchange);
-                }
-                // gets the in message
-                NormalizedMessage in = exchange.getMessage("in");
-                // parses the in message and get the execution command
-                String exec = ExecMarshaler.constructExecCommand(in);
-                // executes the command
-                String output = ExecUtils.execute(exec);
-                // push the exec output in out message
+            if (logger.isDebugEnabled()) {
+                logger.debug("Received exchange: " + exchange);
+            }
+            // gets the in message
+            NormalizedMessage in = exchange.getMessage("in");
+            // parses the in message and get the execution command
+            String exec = ExecMarshaler.constructExecCommand(in);
+            if (exec == null || exec.trim().length() < 1) {
+                exec = command;
+            }
+            if (exec == null || exec.trim().length() < 1) {
+                throw new MessagingException("No command to execute.");
+            }
+            // executes the command
+            String output = ExecUtils.execute(exec);
+            if (exchange instanceof InOut) {
+                // pushes the execution output in out message
                 NormalizedMessage out = exchange.createMessage();
                 out.setContent(new StringSource("<output>" + output + "</output>"));
                 exchange.setMessage(out, "out");
+                // TODO send back the exchange
+            } else {
+                done(exchange);
             }
         } else {
             if (command != null) {
                 // executes the user-defined command
                 String output = ExecUtils.execute(command);
-                NormalizedMessage out = exchange.createMessage();
-                out.setContent(new StringSource("<output>" + output + "</output>"));
-                exchange.setMessage(out, "out");
+                if (exchange instanceof InOut) {
+                    NormalizedMessage out = exchange.createMessage();
+                    out.setContent(new StringSource("<output>" + output + "</output>"));
+                    exchange.setMessage(out, "out");
+                    // TODO send back the exchange
+                } else {
+                    done(exchange);
+                }
             } else {
                 throw new IllegalStateException("Provider exchange is ACTIVE, but no fault or command is provided.");
             }

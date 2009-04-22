@@ -24,7 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 /**
- * This utility class parse the content of a message coming from the NMR
+ * This utility class parses the content of a message coming from the NMR
  * and constructs the execution command.
  * 
  * @author jbonofre
@@ -52,10 +52,12 @@ public class ExecMarshaler {
             document.getDocumentElement().normalize();
             
             NodeList commandNode = document.getElementsByTagName(TAG_COMMAND);
-            if (commandNode == null || commandNode.getLength() != 1) {
-                throw new TransformerException("Invalid message content. Missing tag: " + TAG_COMMAND);
+            if (commandNode != null && commandNode.getLength() > 1) {
+                throw new TransformerException("Invalid message content. Only one command tag is supported.");
             }
-            execString = commandNode.item(0).getChildNodes().item(0).getNodeValue();
+            if (commandNode != null && commandNode.item(0) != null) {
+                execString = commandNode.item(0).getChildNodes().item(0).getNodeValue();
+            }
             
             NodeList argumentNodes = document.getElementsByTagName(TAG_ARGUMENT);
             for (int i = 0; i < argumentNodes.getLength(); i++) {
