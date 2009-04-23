@@ -98,7 +98,7 @@ public class ExecEndpoint extends ProviderEndpoint {
                 NormalizedMessage out = exchange.createMessage();
                 out.setContent(new StringSource("<output>" + output + "</output>"));
                 exchange.setMessage(out, "out");
-                // TODO send back the exchange
+                send(exchange);
             } else {
                 done(exchange);
             }
@@ -110,7 +110,7 @@ public class ExecEndpoint extends ProviderEndpoint {
                     NormalizedMessage out = exchange.createMessage();
                     out.setContent(new StringSource("<output>" + output + "</output>"));
                     exchange.setMessage(out, "out");
-                    // TODO send back the exchange
+                    send(exchange);
                 } else {
                     done(exchange);
                 }
