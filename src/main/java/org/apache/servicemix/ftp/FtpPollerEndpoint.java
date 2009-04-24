@@ -324,6 +324,22 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         return archive;
     }
 
+    /**
+     * Bean defining the class implementing the file locking strategy. This bean
+     * must be an implementation of the
+     * <code>org.apache.servicemix.locks.LockManager</code> interface. By
+     * default, this will be set to an instances of
+     * <code>org.apache.servicemix.common.locks.impl.SimpleLockManager</code>.
+     * 
+     * @param lockManager the <code>LockManager</code> implementation to use
+     */
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
+    }
+
+    public LockManager getLockManager() {
+        return lockManager;
+    }
 
     // Implementation methods
     //-------------------------------------------------------------------------
