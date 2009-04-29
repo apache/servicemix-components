@@ -63,20 +63,17 @@ public class StaxSource extends SAXSource implements XMLReader {
                 case XMLStreamConstants.CDATA:
                     break;
                 case XMLStreamConstants.CHARACTERS:
-                    if (!streamReader.isWhiteSpace()) {
-                        
-                        int length = streamReader.getTextLength();
-                        int start = streamReader.getTextStart();
-                        char[] chars = streamReader.getTextCharacters();
-                        contentHandler.characters(chars, start, length);
-                        /*
-                        for (int textLength = streamReader.getTextLength(); textLength > 0; textLength -= chars.length) {
-                            int l = Math.min(textLength, chars.length);
-                            streamReader.getTextCharacters(0, chars, 0, l);
-                            contentHandler.characters(chars, 0, l);
-                        }
-                        */
+                    int length = streamReader.getTextLength();
+                    int start = streamReader.getTextStart();
+                    char[] chars = streamReader.getTextCharacters();
+                    contentHandler.characters(chars, start, length);
+                    /*
+                    for (int textLength = streamReader.getTextLength(); textLength > 0; textLength -= chars.length) {
+                        int l = Math.min(textLength, chars.length);
+                        streamReader.getTextCharacters(0, chars, 0, l);
+                        contentHandler.characters(chars, 0, l);
                     }
+                    */
                     break;
                 case XMLStreamConstants.COMMENT:
                 case XMLStreamConstants.DTD:
