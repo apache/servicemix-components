@@ -253,7 +253,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
         factory.getBus().shutdown(true);
     }
     
-    public void testMtom() throws Exception {
+    public void xtestMtom() throws Exception {
         //start external service
         EndpointImpl endpointMtom =
             (EndpointImpl)javax.xml.ws.Endpoint.publish("http://localhost:9001/mtombridgetest", 
