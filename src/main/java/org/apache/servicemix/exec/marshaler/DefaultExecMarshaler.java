@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.exec.utils;
+package org.apache.servicemix.exec.marshaler;
 
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.TransformerException;
@@ -24,33 +24,29 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 /**
- * This utility class parses the content of a message coming from the NMR
- * and constructs the execution command.
+ * Default exec marshaler.
  * 
  * @author jbonofre
  */
-public class ExecMarshaler {
-
+public class DefaultExecMarshaler implements ExecMarshalerSupport {
+    
     private static final String TAG_COMMAND = "command";
     private static final String TAG_ARGUMENT = "argument";
     
-    /**
-     * <p>
-     * Parses the in normalized message, extracts command and arguments from the content
-     * and constructs the execution command.
-     * </p>
-     * 
-     * @param message the in <code>NormalizedMessage</code>.
-     * @return the execution command.
+    /*
+     * (non-Javadoc)
+     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#constructExecCommand(javax.jbi.messaging.NormalizedMessage)
      */
-    public static final String constructExecCommand(NormalizedMessage message) throws TransformerException {
+    public String constructExecCommand(NormalizedMessage message) throws TransformerException {
         String execString = null;
         // create a source transformer
         SourceTransformer transformer = new SourceTransformer();
         try {
+            // transform the message content into a DOM document
             Document document = transformer.toDOMDocument(message);
             document.getDocumentElement().normalize();
             
+            // get the command node
             NodeList commandNode = document.getElementsByTagName(TAG_COMMAND);
             if (commandNode != null && commandNode.getLength() > 1) {
                 throw new TransformerException("Invalid message content. Only one command tag is supported.");
@@ -59,6 +55,7 @@ public class ExecMarshaler {
                 execString = commandNode.item(0).getChildNodes().item(0).getNodeValue();
             }
             
+            // get the argument nodes
             NodeList argumentNodes = document.getElementsByTagName(TAG_ARGUMENT);
             for (int i = 0; i < argumentNodes.getLength(); i++) {
                 execString = execString + " " + argumentNodes.item(i).getChildNodes().item(0).getNodeValue();
@@ -69,6 +66,5 @@ public class ExecMarshaler {
         }
         return execString;
     }
-    
-    
+
 }

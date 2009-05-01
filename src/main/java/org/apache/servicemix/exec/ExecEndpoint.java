@@ -23,7 +23,8 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-import org.apache.servicemix.exec.utils.ExecMarshaler;
+import org.apache.servicemix.exec.marshaler.DefaultExecMarshaler;
+import org.apache.servicemix.exec.marshaler.ExecMarshalerSupport;
 import org.apache.servicemix.exec.utils.ExecUtils;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
@@ -37,15 +38,49 @@ public class ExecEndpoint extends ProviderEndpoint {
 
     private String command; // the command can be static (define in the
                             // descriptor) or provided in the incoming message
+    private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the marshaler that parse the in message
 
     public String getCommand() {
         return command;
     }
 
+    /**
+     * <p>
+     * This attribute specifies the default command to use if no is provided
+     * in the incoming message.
+     * </p>
+     * <i>&nbsp;&nbsp;&nbsp;The default value is <code>null</code>. 
+     * 
+     * @param command
+     */
     public void setCommand(String command) {
         this.command = command;
     }
+    
+    public ExecMarshalerSupport getMarshaler() {
+        return marshaler;
+    }
+    
+    /**     
+     * <p>
+     * With this method you can specify a marshaler class which provides the
+     * logic for converting a message into a execution command. This class
+     * has to implement the interface class <code>ExecMarshalerSupport</code>. 
+     * If you don't specify a marshaler, the <code>DefaultExecMarshaler</code> 
+     * will be used.
+     * </p>
+     * 
+     * @param marshaler a <code>ExecMarshalerSupport</code> class representing the
+     *            marshaler.
+     */
+    public void setMarshaler(ExecMarshalerSupport marshaler) {
+        this.marshaler = marshaler;
+    }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax.jbi.messaging.MessageExchange)
+     */
     @Override
     public void process(MessageExchange exchange) throws Exception {
         // The component acts as a provider, this means that another component
@@ -84,7 +119,7 @@ public class ExecEndpoint extends ProviderEndpoint {
             // gets the in message
             NormalizedMessage in = exchange.getMessage("in");
             // parses the in message and get the execution command
-            String exec = ExecMarshaler.constructExecCommand(in);
+            String exec = marshaler.constructExecCommand(in);
             if (exec == null || exec.trim().length() < 1) {
                 exec = command;
             }
