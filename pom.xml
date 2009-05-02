@@ -26,12 +26,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>components-pom</artifactId>
-        <version>3-SNAPSHOT</version>
+        <version>4-SNAPSHOT</version>
     </parent>
     
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-exec</artifactId>
-    <version>2009.01-SNAPSHOT</version>
+    <version>2009.02-SNAPSHOT</version>
     <packaging>jbi-component</packaging>
     
     <name>ServiceMix :: Exec</name>
@@ -41,7 +41,7 @@
     
     <properties>
         <servicemix-version>3.3</servicemix-version>
-        <servicemix-shared-version>2008.02-SNAPSHOT</servicemix-shared-version>
+        <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
         
         <servicemix.osgi.import>
             org.apache.servicemix;resolution:=optional,

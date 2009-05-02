@@ -37,5 +37,15 @@ public interface ExecMarshalerSupport {
      * @throws TransformerException in case of error during command construction.
      */
     public String constructExecCommand(NormalizedMessage message) throws TransformerException;
+    
+    /**
+     * <p>
+     * Formats the execution command output to be embedded in the exchange out message.
+     * </p>
+     * 
+     * @param output the command execution output.
+     * @return the command execution output formatted to be embedded in the exchagen out message.
+     */
+    public String formatExecutionOutput(String output);
 
 }

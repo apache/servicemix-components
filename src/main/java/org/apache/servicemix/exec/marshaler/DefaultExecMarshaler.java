@@ -67,4 +67,12 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
         return execString;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#formatExecutionOutput(java.lang.String)
+     */
+    public String formatExecutionOutput(String output) {
+        return "<output><![CDATA[" + output + "]></output>";
+    }
+
 }

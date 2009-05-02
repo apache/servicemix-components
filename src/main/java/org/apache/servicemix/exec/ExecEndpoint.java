@@ -143,7 +143,7 @@ public class ExecEndpoint extends ProviderEndpoint {
                 String output = ExecUtils.execute(command);
                 if (exchange instanceof InOut) {
                     NormalizedMessage out = exchange.createMessage();
-                    out.setContent(new StringSource("<output>" + output + "</output>"));
+                    out.setContent(new StringSource(marshaler.formatExecutionOutput(output)));
                     exchange.setMessage(out, "out");
                     send(exchange);
                 } else {
