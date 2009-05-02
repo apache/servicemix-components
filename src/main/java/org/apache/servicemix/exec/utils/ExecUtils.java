@@ -97,7 +97,7 @@ public class ExecUtils {
            if(exitValue != 0) {
               // an error occurs
               LOG.error("Command " + command + " execution failed: " + errorBuffer.toString());
-              throw new ExecException("Command " + command + " execution failed: " + errorBuffer.toString());
+              throw new ExecException(errorBuffer.toString());
            }
            // command is OK
            LOG.info("Command " + command + " execution completed: " + outputBuffer.toString());
