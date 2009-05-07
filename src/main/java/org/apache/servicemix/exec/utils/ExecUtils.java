@@ -30,86 +30,119 @@ import org.apache.commons.logging.LogFactory;
  * @author jbonofre
  */
 public class ExecUtils {
-    
-    private static final transient Log LOG = LogFactory.getLog(ExecUtils.class);
-    
-    /**
-     * <p>
-     * Executes a system command and return the output buffer.
-     * </p>
-     * 
-     * @param command the system command to execute.
-     * @return the command execution output buffer.
-     * @throws AutoDeployException
-     */
-    public static String execute(String command) throws ExecException {
-        LOG.info("Execute command " + command);
-        String[] shellCommand = null;
-        LOG.debug("Define the shell.");
-        LOG.debug("Get the OS name property.");
-        String osName = System.getProperty("os.name");
-        if(osName.startsWith("Windows")) {
-           LOG.debug("Microsoft Windows platform detected.");
-           String comSpec = System.getProperty("ComSpec");
-           if(comSpec != null) {
-              LOG.debug("The ComSpec MS Windows environment variable is defined, using it: " + comSpec + " /C " + command);
-              shellCommand = new String[]{ comSpec, "/C", command};
-           }
-           else {
-              LOG.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
-              if(osName.startsWith("Windows 3") || osName.startsWith("Windows 95") || osName.startsWith("Windows 98") || osName.startsWith("Windows ME")) {
-                 LOG.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C " + command);
-                 shellCommand = new String[]{ "command.com", "/C", command};
-              }
-              else {
-                 LOG.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C " + command);
-                 shellCommand = new String[]{ "cmd.exe", "/C", command};
-              }
-           }
-        }
-        else {
-           LOG.debug("Unix platform detected.");
-           String shell = System.getProperty("SHELL");
-           if(shell != null) {
-              LOG.debug("The SHELL Unix environment variable is defined, using it: " + shell + " -c " + command);
-              shellCommand = new String[]{ shell, "-c", command};
-           }
-           else {
-              LOG.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c " + command);
-              shellCommand = new String[]{ "/bin/sh", "-c", command};
-           }
-        }
-        try {
-           Runtime runtime = Runtime.getRuntime();
-           // launch the system command
-           Process process = runtime.exec(shellCommand);
-           // get the error stream gobbler
-           StringBuffer errorBuffer = new StringBuffer();
-           StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), errorBuffer);
-           // get the output stream gobbler
-           StringBuffer outputBuffer = new StringBuffer();
-           StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), outputBuffer);
-           // start both gobblers
-           errorGobbler.start();
-           outputGobbler.start();
-           // wait the end of the process
-           int exitValue = process.waitFor();
-           if(exitValue != 0) {
-              // an error occurs
-              LOG.error("Command " + command + " execution failed: " + errorBuffer.toString());
-              throw new ExecException(errorBuffer.toString());
-           }
-           // command is OK
-           LOG.info("Command " + command + " execution completed: " + outputBuffer.toString());
-           return outputBuffer.toString();
-        } catch(Exception exception) {
-           LOG.error("Command " + command + " execution failed.", exception);
-           throw new ExecException("Command " + command + " execution failed.", exception);
-        } 
-    }
 
+	private static final transient Log LOG = LogFactory.getLog(ExecUtils.class);
+
+	/**
+	 * <p>
+	 * Executes a command and returns the output and error buffer and also the
+	 * return value.
+	 * </p>
+	 * 
+	 * @param command
+	 *            the system command to execute.
+	 * @param outputBuffer
+	 *            the buffer for storing the command output
+	 * @param errorBuffer
+	 *            the buffer for storing the command error output
+	 * @return the command return value
+	 * @throws ExecException
+	 */
+	public static int execute(String command, StringBuffer outputBuffer,
+			StringBuffer errorBuffer) throws ExecException {
+		int exitValue = -1;
+
+		LOG.info("Execute command " + command);
+		String[] shellCommand = null;
+		LOG.debug("Define the shell.");
+		LOG.debug("Get the OS name property.");
+		String osName = System.getProperty("os.name");
+		if (osName.startsWith("Windows")) {
+			LOG.debug("Microsoft Windows platform detected.");
+			String comSpec = System.getProperty("ComSpec");
+			if (comSpec != null) {
+				LOG
+						.debug("The ComSpec MS Windows environment variable is defined, using it: "
+								+ comSpec + " /C " + command);
+				shellCommand = new String[] { comSpec, "/C", command };
+			} else {
+				LOG
+						.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
+				if (osName.startsWith("Windows 3")
+						|| osName.startsWith("Windows 95")
+						|| osName.startsWith("Windows 98")
+						|| osName.startsWith("Windows ME")) {
+					LOG
+							.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C "
+									+ command);
+					shellCommand = new String[] { "command.com", "/C", command };
+				} else {
+					LOG
+							.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C "
+									+ command);
+					shellCommand = new String[] { "cmd.exe", "/C", command };
+				}
+			}
+		} else {
+			LOG.debug("Unix platform detected.");
+			String shell = System.getProperty("SHELL");
+			if (shell != null) {
+				LOG
+						.debug("The SHELL Unix environment variable is defined, using it: "
+								+ shell + " -c " + command);
+				shellCommand = new String[] { shell, "-c", command };
+			} else {
+				LOG
+						.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c "
+								+ command);
+				shellCommand = new String[] { "/bin/sh", "-c", command };
+			}
+		}
+		try {
+			// check and create buffers if needed
+			if (errorBuffer == null) {
+				errorBuffer = new StringBuffer();
+			}
+			if (outputBuffer == null) {
+				outputBuffer = new StringBuffer();
+			}
+			
+			// launch the system command
+			Process process = Runtime.getRuntime().exec(shellCommand);
+			
+			// get and start the error stream gobbler
+			StreamGobbler errorGobbler = new StreamGobbler(process
+					.getErrorStream(), errorBuffer);
+			errorGobbler.start();
+
+			// get and start the output stream gobbler
+			StreamGobbler outputGobbler = new StreamGobbler(process
+					.getInputStream(), outputBuffer);
+			outputGobbler.start();
+			
+			// wait the end of the process
+			exitValue = process.waitFor();
+			
+			if (exitValue != 0) {
+				// an error occured
+				LOG.error("Command " + command
+						+ " execution failed with return code " + exitValue
+						+ " : " + errorBuffer.toString());
+			} else {
+				// command was successful
+				LOG.debug("Command " + command + " execution completed: "
+						+ outputBuffer.toString());
+			}
+		} catch (Exception exception) {
+			LOG.error("Command " + command + " execution failed.", exception);
+			throw new ExecException(
+					"Command " + command + " execution failed.", exception);
+		}
+
+		// return the exit value of the process (defaults to -1)
+		return exitValue;
+	}
 }
-
 
 /**
  * <p>
@@ -120,31 +153,36 @@ public class ExecUtils {
  */
 class StreamGobbler extends Thread {
 
-   // log facility
-   private final static transient Log LOG = LogFactory.getLog(StreamGobbler.class);
+	// log facility
+	private final static transient Log LOG = LogFactory
+			.getLog(StreamGobbler.class);
 
-   InputStream in;
-   StringBuffer response;
+	InputStream in;
+	StringBuffer response;
 
-   StreamGobbler(InputStream in, StringBuffer response) {
-      this.in = in;
-      this.response = response;
-   }
+	StreamGobbler(InputStream in, StringBuffer response) {
+		this.in = in;
+		this.response = response;
+	}
 
-   /*
-    * (non-Javadoc)
-    * @see java.lang.Thread#run()
-    */
-   public void run() {
-      try {
-         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-         String row = null;
-         while((row = reader.readLine()) != null) {
-            response.append(row + "\n");
-         }
-      } catch(IOException ioException) {
-         LOG.warn("System command stream gobbler error : " + ioException.getMessage());
-      }
-   }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Thread#run()
+	 */
+	public void run() {
+		try {
+			BufferedReader reader = new BufferedReader(
+					new InputStreamReader(in));
+			String row = null;
+			while ((row = reader.readLine()) != null) {
+				response.append(row);
+				response.append('\n');
+			}
+		} catch (IOException ioException) {
+			LOG.warn("System command stream gobbler error : "
+					+ ioException.getMessage());
+		}
+	}
 
 }

@@ -36,123 +36,138 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  */
 public class ExecEndpoint extends ProviderEndpoint {
 
-    private String command; // the command can be static (define in the
-                            // descriptor) or provided in the incoming message
-    private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the marshaler that parse the in message
+	private String command; // the command can be static (define in the
+	// descriptor) or provided in the incoming message
+	private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the
+																			// marshaler
+																			// that
+																			// parse
+																			// the
+																			// in
+																			// message
 
-    public String getCommand() {
-        return command;
-    }
+	public String getCommand() {
+		return command;
+	}
 
-    /**
-     * <p>
-     * This attribute specifies the default command to use if no is provided
-     * in the incoming message.
-     * </p>
-     * <i>&nbsp;&nbsp;&nbsp;The default value is <code>null</code>. 
-     * 
-     * @param command
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
-    
-    public ExecMarshalerSupport getMarshaler() {
-        return marshaler;
-    }
-    
-    /**     
-     * <p>
-     * With this method you can specify a marshaler class which provides the
-     * logic for converting a message into a execution command. This class
-     * has to implement the interface class <code>ExecMarshalerSupport</code>. 
-     * If you don't specify a marshaler, the <code>DefaultExecMarshaler</code> 
-     * will be used.
-     * </p>
-     * 
-     * @param marshaler a <code>ExecMarshalerSupport</code> class representing the
-     *            marshaler.
-     */
-    public void setMarshaler(ExecMarshalerSupport marshaler) {
-        this.marshaler = marshaler;
-    }
+	/**
+	 * <p>
+	 * This attribute specifies the default command to use if no is provided in
+	 * the incoming message.
+	 * </p>
+	 * <i>&nbsp;&nbsp;&nbsp;The default value is <code>null</code>.
+	 * 
+	 * @param command
+	 */
+	public void setCommand(String command) {
+		this.command = command;
+	}
 
-    /*
-     * (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax.jbi.messaging.MessageExchange)
-     */
-    @Override
-    public void process(MessageExchange exchange) throws Exception {
-        // The component acts as a provider, this means that another component
-        // has requested our service
-        // As this exchange is active, this is either an in or a fault (out are
-        // sent by this component)
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
-            // exchange is finished
-            return;
-        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            // exchange has been aborted with an exception
-            return;
-        } else {
-            // exchange is active
-            this.handleProviderExchange(exchange);
-        }
-    }
+	public ExecMarshalerSupport getMarshaler() {
+		return marshaler;
+	}
 
-    /**
-     * <p>
-     * Handles on the message exchange (provider role).
-     * </p>
-     * 
-     * @param exchange
-     *            the <code>MessageExchange</code>.
-     */
-    protected void handleProviderExchange(MessageExchange exchange) throws Exception {
-        // fault message
-        if (exchange.getFault() != null) {
-            done(exchange);
-        } else if (exchange.getMessage("in") != null) {
-            // in message presents
-            if (logger.isDebugEnabled()) {
-                logger.debug("Received exchange: " + exchange);
-            }
-            // gets the in message
-            NormalizedMessage in = exchange.getMessage("in");
-            // parses the in message and get the execution command
-            String exec = marshaler.constructExecCommand(in);
-            if (exec == null || exec.trim().length() < 1) {
-                exec = command;
-            }
-            if (exec == null || exec.trim().length() < 1) {
-                throw new MessagingException("No command to execute.");
-            }
-            // executes the command
-            String output = ExecUtils.execute(exec);
-            if (exchange instanceof InOut) {
-                // pushes the execution output in out message
-                NormalizedMessage out = exchange.createMessage();
-                out.setContent(new StringSource("<output>" + output + "</output>"));
-                exchange.setMessage(out, "out");
-                send(exchange);
-            } else {
-                done(exchange);
-            }
-        } else {
-            if (command != null) {
-                // executes the user-defined command
-                String output = ExecUtils.execute(command);
-                if (exchange instanceof InOut) {
-                    NormalizedMessage out = exchange.createMessage();
-                    out.setContent(new StringSource(marshaler.formatExecutionOutput(output)));
-                    exchange.setMessage(out, "out");
-                    send(exchange);
-                } else {
-                    done(exchange);
-                }
-            } else {
-                throw new IllegalStateException("Provider exchange is ACTIVE, but no fault or command is provided.");
-            }
-        }
-    }
+	/**
+	 * <p>
+	 * With this method you can specify a marshaler class which provides the
+	 * logic for converting a message into a execution command. This class has
+	 * to implement the interface class <code>ExecMarshalerSupport</code>. If
+	 * you don't specify a marshaler, the <code>DefaultExecMarshaler</code> will
+	 * be used.
+	 * </p>
+	 * 
+	 * @param marshaler
+	 *            a <code>ExecMarshalerSupport</code> class representing the
+	 *            marshaler.
+	 */
+	public void setMarshaler(ExecMarshalerSupport marshaler) {
+		this.marshaler = marshaler;
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.servicemix.common.endpoints.ProviderEndpoint#process(javax
+	 * .jbi.messaging.MessageExchange)
+	 */
+	@Override
+	public void process(MessageExchange exchange) throws Exception {
+		// The component acts as a provider, this means that another component
+		// has requested our service
+		// As this exchange is active, this is either an in or a fault (out are
+		// sent by this component)
+		if (exchange.getStatus() == ExchangeStatus.DONE) {
+			// exchange is finished
+			return;
+		} else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+			// exchange has been aborted with an exception
+			return;
+		} else {
+			// exchange is active
+			this.handleProviderExchange(exchange);
+		}
+	}
+
+	/**
+	 * <p>
+	 * Handles on the message exchange (provider role).
+	 * </p>
+	 * 
+	 * @param exchange
+	 *            the <code>MessageExchange</code>.
+	 */
+	protected void handleProviderExchange(MessageExchange exchange)
+			throws Exception {
+		// fault message
+		if (exchange.getFault() != null) {
+			done(exchange);
+			return;
+		} else {
+			// prepare the buffers
+			StringBuffer output = new StringBuffer();
+			StringBuffer error = new StringBuffer();
+
+			String exec = null;
+
+			// try to extract the command from the in message content
+			if (exchange.getMessage("in") != null) {
+				// in message presents
+				if (logger.isDebugEnabled()) {
+					logger.debug("Received exchange: " + exchange);
+				}
+				// gets the in message
+				NormalizedMessage in = exchange.getMessage("in");
+				// parses the in message and get the execution command
+				exec = marshaler.constructExecCommand(in);
+			}
+
+			// fall back to static command if extracted is null or empty
+			if (exec == null || exec.trim().length() < 1) {
+				exec = command;
+			}
+
+			// if even the fall back is empty then we can't do anything
+			if (exec == null || exec.trim().length() < 1) {
+				throw new MessagingException("No command to execute.");
+			}
+
+			// execute the command
+			int exitValue = ExecUtils.execute(exec, output, error);
+
+			// prepare the output
+			String result = marshaler.formatExecutionResult(exitValue, output
+					.toString(), error.toString());
+
+			if (exchange instanceof InOut) {
+				// pushes the execution output in out message
+				NormalizedMessage out = exchange.createMessage();
+				out.setContent(new StringSource(result));
+				exchange.setMessage(out, "out");
+				send(exchange);
+			} else {
+				done(exchange);
+			}
+		}
+	}
 }

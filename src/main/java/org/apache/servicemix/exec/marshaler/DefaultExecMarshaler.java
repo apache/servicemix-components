@@ -30,8 +30,14 @@ import org.w3c.dom.NodeList;
  */
 public class DefaultExecMarshaler implements ExecMarshalerSupport {
     
-    private static final String TAG_COMMAND = "command";
-    private static final String TAG_ARGUMENT = "argument";
+    public static final String TAG_COMMAND = "command";
+    public static final String TAG_ARGUMENT = "argument";
+    public static final String TAG_RESULT = "result";
+    public static final String TAG_EXITCODE = "exitcode";
+    public static final String TAG_OUTPUT = "output";
+    public static final String TAG_ERROR = "error";
+    
+    public static final String RESULT_FORMAT = "<%s><%s>%d</%s><%s><![CDATA[%s]]></%s><%s><![CDATA[%s]]></%s></%s>";
     
     /*
      * (non-Javadoc)
@@ -67,12 +73,26 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
         return execString;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#formatExecutionOutput(java.lang.String)
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#formatExecutionResult(int, java.lang.String, java.lang.String)
      */
-    public String formatExecutionOutput(String output) {
-        return "<output><![CDATA[" + output + "]></output>";
+    public String formatExecutionResult(int exitValue, String output,
+    		String error) {
+    	
+    	String result = String.format(RESULT_FORMAT, 
+    					TAG_RESULT,
+    					TAG_EXITCODE,
+    					exitValue,
+    					TAG_EXITCODE,
+    					TAG_OUTPUT,
+    					output != null ? output : "",
+						TAG_OUTPUT,
+						TAG_ERROR,
+    					error != null ? error : "",
+						TAG_ERROR,
+						TAG_RESULT
+    					);
+    	
+    	return result;
     }
-
 }

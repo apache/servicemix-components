@@ -43,9 +43,10 @@ public interface ExecMarshalerSupport {
      * Formats the execution command output to be embedded in the exchange out message.
      * </p>
      * 
+     * @param exitValue	the process exit value
      * @param output the command execution output.
-     * @return the command execution output formatted to be embedded in the exchagen out message.
+     * @param error the command execution error output.
+     * @return the command execution output formatted to be embedded in the exchange out message.
      */
-    public String formatExecutionOutput(String output);
-
+    public String formatExecutionResult(int exitValue, String output, String error);
 }
