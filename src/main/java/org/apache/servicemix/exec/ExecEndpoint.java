@@ -26,6 +26,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.exec.marshaler.DefaultExecMarshaler;
 import org.apache.servicemix.exec.marshaler.ExecMarshalerSupport;
 import org.apache.servicemix.exec.utils.ExecUtils;
+import org.apache.servicemix.exec.utils.ExecutionData;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
 /**
@@ -124,10 +125,6 @@ public class ExecEndpoint extends ProviderEndpoint {
 			done(exchange);
 			return;
 		} else {
-			// prepare the buffers
-			StringBuffer output = new StringBuffer();
-			StringBuffer error = new StringBuffer();
-
 			String exec = null;
 
 			// try to extract the command from the in message content
@@ -153,11 +150,10 @@ public class ExecEndpoint extends ProviderEndpoint {
 			}
 
 			// execute the command
-			int exitValue = ExecUtils.execute(exec, output, error);
+			ExecutionData resultData = ExecUtils.execute(exec);
 
 			// prepare the output
-			String result = marshaler.formatExecutionResult(exitValue, output
-					.toString(), error.toString());
+			String result = marshaler.formatExecutionResult(resultData);
 
 			if (exchange instanceof InOut) {
 				// pushes the execution output in out message

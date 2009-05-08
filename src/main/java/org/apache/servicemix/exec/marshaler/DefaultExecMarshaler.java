@@ -19,6 +19,7 @@ package org.apache.servicemix.exec.marshaler;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.TransformerException;
 
+import org.apache.servicemix.exec.utils.ExecutionData;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -36,8 +37,11 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
     public static final String TAG_EXITCODE = "exitcode";
     public static final String TAG_OUTPUT = "output";
     public static final String TAG_ERROR = "error";
+    public static final String TAG_START_TIME = "started";
+    public static final String TAG_END_TIME = "finished";
+    public static final String TAG_DURATION = "duration";
     
-    public static final String RESULT_FORMAT = "<%s><%s>%d</%s><%s><![CDATA[%s]]></%s><%s><![CDATA[%s]]></%s></%s>";
+    public static final String RESULT_FORMAT = "<%s><%s>%d</%s><%s>%d</%s><%s>%d</%s><%s>%d</%s><%s><![CDATA[%s]]></%s><%s><![CDATA[%s]]></%s></%s>";
     
     /*
      * (non-Javadoc)
@@ -74,25 +78,32 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#formatExecutionResult(int, java.lang.String, java.lang.String)
+     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#formatExecutionResult(org.apache.servicemix.exec.utils.ExecutionData)
      */
-    public String formatExecutionResult(int exitValue, String output,
-    		String error) {
-    	
+    public String formatExecutionResult(ExecutionData executionData) {
     	String result = String.format(RESULT_FORMAT, 
-    					TAG_RESULT,
-    					TAG_EXITCODE,
-    					exitValue,
-    					TAG_EXITCODE,
-    					TAG_OUTPUT,
-    					output != null ? output : "",
-						TAG_OUTPUT,
-						TAG_ERROR,
-    					error != null ? error : "",
-						TAG_ERROR,
-						TAG_RESULT
-    					);
-    	
+				TAG_RESULT,
+				TAG_START_TIME,
+				executionData.getStartTime(),
+				TAG_START_TIME,
+				TAG_END_TIME,
+				executionData.getEndTime(),
+				TAG_END_TIME,
+				TAG_DURATION,
+				executionData.getExecutionDuration(),
+				TAG_DURATION,
+				TAG_EXITCODE,
+				executionData.getExitCode(),
+				TAG_EXITCODE,
+				TAG_OUTPUT,
+				executionData.getOutputData() != null ? executionData.getOutputData().toString() : "",
+				TAG_OUTPUT,
+				TAG_ERROR,
+				executionData.getErrorData() != null ? executionData.getErrorData().toString() : "",
+				TAG_ERROR,
+				TAG_RESULT
+				);
+
     	return result;
     }
 }

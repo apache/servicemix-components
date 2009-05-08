@@ -41,17 +41,14 @@ public class ExecUtils {
 	 * 
 	 * @param command
 	 *            the system command to execute.
-	 * @param outputBuffer
-	 *            the buffer for storing the command output
-	 * @param errorBuffer
-	 *            the buffer for storing the command error output
-	 * @return the command return value
+	 * 
+	 * @return an execution data object containing all information
 	 * @throws ExecException
 	 */
-	public static int execute(String command, StringBuffer outputBuffer,
-			StringBuffer errorBuffer) throws ExecException {
-		int exitValue = -1;
+	public static ExecutionData execute(String command) throws ExecException {
 
+		ExecutionData result = new ExecutionData();
+		
 		LOG.info("Execute command " + command);
 		String[] shellCommand = null;
 		LOG.debug("Define the shell.");
@@ -99,39 +96,40 @@ public class ExecUtils {
 			}
 		}
 		try {
-			// check and create buffers if needed
-			if (errorBuffer == null) {
-				errorBuffer = new StringBuffer();
-			}
-			if (outputBuffer == null) {
-				outputBuffer = new StringBuffer();
-			}
+			// remember the start time
+			result.setStartTime(System.currentTimeMillis());
 			
 			// launch the system command
 			Process process = Runtime.getRuntime().exec(shellCommand);
 			
 			// get and start the error stream gobbler
 			StreamGobbler errorGobbler = new StreamGobbler(process
-					.getErrorStream(), errorBuffer);
+					.getErrorStream(), result.getErrorData());
 			errorGobbler.start();
 
 			// get and start the output stream gobbler
 			StreamGobbler outputGobbler = new StreamGobbler(process
-					.getInputStream(), outputBuffer);
+					.getInputStream(), result.getOutputData());
 			outputGobbler.start();
 			
 			// wait the end of the process
-			exitValue = process.waitFor();
+			int exitValue = process.waitFor();
+			
+			// remember the end time
+			result.setEndTime(System.currentTimeMillis());
+			
+			// store the exit code
+			result.setExitCode(exitValue);
 			
 			if (exitValue != 0) {
 				// an error occured
 				LOG.error("Command " + command
 						+ " execution failed with return code " + exitValue
-						+ " : " + errorBuffer.toString());
+						+ " : " + result.getErrorData().toString());
 			} else {
 				// command was successful
 				LOG.debug("Command " + command + " execution completed: "
-						+ outputBuffer.toString());
+						+ result.getOutputData().toString());
 			}
 		} catch (Exception exception) {
 			LOG.error("Command " + command + " execution failed.", exception);
@@ -139,8 +137,8 @@ public class ExecUtils {
 					"Command " + command + " execution failed.", exception);
 		}
 
-		// return the exit value of the process (defaults to -1)
-		return exitValue;
+		// return the result object
+		return result;
 	}
 }
 

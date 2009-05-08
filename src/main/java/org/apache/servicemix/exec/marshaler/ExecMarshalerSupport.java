@@ -19,6 +19,8 @@ package org.apache.servicemix.exec.marshaler;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.TransformerException;
 
+import org.apache.servicemix.exec.utils.ExecutionData;
+
 /**
  * This interface describes the behavior of an exec marshaler.
  * 
@@ -43,10 +45,8 @@ public interface ExecMarshalerSupport {
      * Formats the execution command output to be embedded in the exchange out message.
      * </p>
      * 
-     * @param exitValue	the process exit value
-     * @param output the command execution output.
-     * @param error the command execution error output.
+     * @param executionData	an object containing all needed information about execution
      * @return the command execution output formatted to be embedded in the exchange out message.
      */
-    public String formatExecutionResult(int exitValue, String output, String error);
+    public String formatExecutionResult(ExecutionData executionData);
 }
