@@ -29,7 +29,7 @@
 
 	<groupId>org.apache.servicemix</groupId>
 	<artifactId>servicemix-exec</artifactId>
-	<version>2009.02-SNAPSHOT</version>
+	<version>2009.01-SNAPSHOT</version>
 	<packaging>jbi-component</packaging>
 
 	<name>ServiceMix :: Exec</name>
@@ -39,7 +39,7 @@
 
 	<properties>
 		<servicemix-version>3.3</servicemix-version>
-		<servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
+		<servicemix-shared-version>2009.01</servicemix-shared-version>
 
 		<servicemix.osgi.import>
 			org.apache.servicemix;resolution:=optional,
