@@ -66,7 +66,27 @@
           <bean class="org.apache.servicemix.tck.ReceiverComponent" />
         </sm:component>
       </sm:activationSpec>
-      
+
+      <sm:activationSpec>
+        <sm:component>
+          <file:component>
+            <file:endpoints>
+              <file:sender service="test:serviceNotAppend"
+                           endpoint="endpoint"
+                           directory="file:target/pollerFilesNotAppend"
+                           append="false"
+                           autoCreateDirectory="true"/>
+              
+              <file:sender service="test:serviceAppend"
+                           endpoint="endpoint"
+                           directory="file:target/pollerFilesAppend" 
+                           append="true"
+                           autoCreateDirectory="true"/>
+            </file:endpoints>
+          </file:component>
+        </sm:component>
+      </sm:activationSpec>      
+
     </sm:activationSpecs>
   </sm:container>
 
