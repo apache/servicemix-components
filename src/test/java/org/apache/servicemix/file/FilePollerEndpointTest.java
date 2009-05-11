@@ -41,7 +41,7 @@ import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.util.FileUtil;
 
 public class FilePollerEndpointTest extends TestCase {
-    
+
     private static final File DATA = new File("target/test/data");
     private static final File ARCHIVE = new File("target/test/archive");
     private final List<MessageExchange> exchanges = new LinkedList<MessageExchange>();
@@ -53,16 +53,18 @@ public class FilePollerEndpointTest extends TestCase {
         endpoint = new FilePollerEndpoint() {
             {
                 logger = LogFactory.getLog(this.getClass());
-                
             }
+
             @Override
             protected void send(MessageExchange me) throws MessagingException {
                 exchanges.add(me);
             }
+
             @Override
             public Executor getExecutor() {
                 return new MockExecutor();
             }
+
             @Override
             public MessageExchangeFactory getExchangeFactory() {
                 return new MockExchangeFactory() {
@@ -70,6 +72,7 @@ public class FilePollerEndpointTest extends TestCase {
                     public InOnly createInOnlyExchange() throws MessagingException {
                         return new MockExchangeFactory.MockInOnly() {
                             private final String exchangeId = "id" + System.nanoTime();
+
                             @Override
                             public String getExchangeId() {
                                 return exchangeId;
@@ -82,13 +85,13 @@ public class FilePollerEndpointTest extends TestCase {
         endpoint.setTargetService(new QName("urn:test", "service"));
         endpoint.setLockManager(new org.apache.servicemix.common.locks.impl.SimpleLockManager());
     }
-    
+
     public void testValidateNoFile() throws Exception {
         try {
             endpoint.validate();
             fail("validate() should throw an exception when file has not been set");
         } catch (DeploymentException e) {
-            //test succeeds
+            // test succeeds
         }
     }
 
@@ -101,14 +104,14 @@ public class FilePollerEndpointTest extends TestCase {
             endpoint.validate();
             fail("validate() should throw an exception when archive doesn't refer to a directory");
         } catch (DeploymentException e) {
-            //test succeeds
+            // test succeeds
         } finally {
             if (archive != null) {
                 archive.delete();
             }
         }
     }
-    
+
     public void testValidateArchiveWithoutDelete() throws Exception {
         endpoint.setFile(DATA);
         endpoint.setArchive(ARCHIVE);
@@ -117,10 +120,10 @@ public class FilePollerEndpointTest extends TestCase {
             endpoint.validate();
             fail("validate() should throw an exception when archive was set without delete");
         } catch (DeploymentException e) {
-            //test succeeds
+            // test succeeds
         }
     }
-    
+
     public void testProcessError() throws Exception {
         createTestFile();
         endpoint.setFile(DATA);
@@ -131,14 +134,14 @@ public class FilePollerEndpointTest extends TestCase {
         try {
             endpoint.process(exchange);
         } catch (TestException e) {
-            //this is OK
+            // this is OK
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println(e);
             fail("we shouldn't be getting any other exceptions at this point");
         }
     }
-    
+
     public void testProcessSuccess() throws Exception {
         createTestFile();
         endpoint.setFile(DATA);
@@ -149,7 +152,7 @@ public class FilePollerEndpointTest extends TestCase {
         endpoint.process(exchange);
         assertFalse(file.exists());
     }
-    
+
     private void createTestFile() throws IOException {
         DATA.mkdirs();
         InputStream fis = new FileInputStream("target/test-classes/test-data.xml");
@@ -158,11 +161,24 @@ public class FilePollerEndpointTest extends TestCase {
         fis.close();
         fos.close();
     }
-    
-    private static class TestException extends Exception {
-        //nothing to do here
+
+    public void testMoveFileToNonExistentDirectory() throws Exception {
+        File srcFile = File.createTempFile("poller-test-", ".tmp");
+        try {
+            FilePollerEndpoint.moveFile(srcFile, new File("bogus"));
+            fail("moveFile() should fail when moving to non-existent directory");
+        } catch (IOException ioe) {
+            // test succeeds
+        } finally {
+            srcFile.delete();
+        }
     }
-    
+
+    @SuppressWarnings("serial")
+    private static class TestException extends Exception {
+        // nothing to do here
+    }
+
     private static class MockExecutor implements Executor {
 
         public int capacity() {
@@ -173,13 +189,12 @@ public class FilePollerEndpointTest extends TestCase {
             command.run();
         }
 
-        public void shutdown() {  
-            //graciously do nothing
+        public void shutdown() {
+            // graciously do nothing
         }
 
         public int size() {
             return 0;
         }
-        
     }
 }
