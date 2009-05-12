@@ -26,6 +26,13 @@ package org.apache.servicemix.cxfbc.ws.security;
 public class GreeterImpl 
     extends org.apache.hello_world_soap_http.GreeterImpl {
     public String greetMe(String me) {
+        if ("throttle".equals(me)) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                //
+            }
+        }
         System.out.println("\n\n*** GreetMe called with: " + me + "***\n\n");
         return "Hello " + me;
     }
