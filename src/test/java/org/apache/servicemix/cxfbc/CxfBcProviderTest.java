@@ -253,36 +253,6 @@ public class CxfBcProviderTest extends SpringTestSupport {
         factory.getBus().shutdown(true);
     }
     
-    public void xtestMtom() throws Exception {
-        //start external service
-        EndpointImpl endpointMtom =
-            (EndpointImpl)javax.xml.ws.Endpoint.publish("http://localhost:9001/mtombridgetest", 
-                new TestMtomImpl());
-             
-        SOAPBinding binding = (SOAPBinding)endpointMtom.getBinding();
-        binding.setMTOMEnabled(true);
-        endpointMtom.getInInterceptors().add(new LoggingInInterceptor());
-        endpointMtom.getOutInterceptors().add(new LoggingOutInterceptor());
-        client = new DefaultServiceMixClient(jbi);
-        io = client.createInOutExchange();
-        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
-        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
-        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
-        //send message to proxy
-        io.getInMessage().setContent(new StringSource(
-                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
-              + "<part> "
-              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
-              + "ffang with mtom"
-              + "</requestType></greetMe>"
-              + "</part> "
-              + "</message>"));
-        client.sendSync(io);
-        assertTrue(new SourceTransformer().contentToString(
-                io.getOutMessage()).indexOf("testfoobar") >= 0);
-        
-    }
-     
     
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
