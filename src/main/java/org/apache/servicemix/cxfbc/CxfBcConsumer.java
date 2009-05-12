@@ -710,16 +710,17 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             ComponentContext context = message.getExchange().get(
                     ComponentContext.class);
             CxfBcConsumer.this.configureExchangeTarget(exchange);
-            CxfBcConsumer.this.messages.put(exchange.getExchangeId(), message);
             CxfBcConsumer.this.isOneway = message.getExchange().get(
                     BindingOperationInfo.class).getOperationInfo().isOneWay();
             message.getExchange().setOneWay(CxfBcConsumer.this.isOneway);
 
             try {
             	if (CxfBcConsumer.this.isOneway) {
+                        CxfBcConsumer.this.messages.put(exchange.getExchangeId(), message);
             		context.getDeliveryChannel().send(exchange);
             	} else if (CxfBcConsumer.this.isSynchronous()
                         && !CxfBcConsumer.this.isOneway) {
+                    CxfBcConsumer.this.messages.put(exchange.getExchangeId(), message);
                     context.getDeliveryChannel().sendSync(exchange,
                             timeout * 1000);
                     process(exchange);
@@ -730,6 +731,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                             (ContinuationProvider) message.get(ContinuationProvider.class.getName());
                         Continuation continuation = continuationProvider.getContinuation();
                         if (!continuation.isPending()) {
+                            CxfBcConsumer.this.messages.put(exchange.getExchangeId(), message);
                             context.getDeliveryChannel().send(exchange);
                             if (!isSTFlow) {
                                 continuation.suspend(timeout * 1000);
@@ -737,6 +739,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         } else {
                             //retry or timeout
                             if (!continuation.isResumed()) {
+                                messages.remove(exchange.getExchangeId());
                                 //exchange timeout
                                 throw new Exception("Exchange timed out: " + exchange.getExchangeId());
                             }
