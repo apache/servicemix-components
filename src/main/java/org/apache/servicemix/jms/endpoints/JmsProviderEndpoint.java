@@ -16,9 +16,6 @@
  */
 package org.apache.servicemix.jms.endpoints;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
@@ -41,7 +38,9 @@ import javax.jms.QueueConnection;
 import javax.jms.TopicSession;
 import javax.jms.QueueSession;
 import javax.jms.MessageProducer;
+import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
+import javax.jms.TemporaryQueue;
 import javax.jms.Queue;
 import javax.jms.MessageConsumer;
 import javax.jms.QueueBrowser;
@@ -624,6 +623,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         // to indicate we will use the listener container
         boolean asynchronous = false;
         boolean useSelector = true;
+        // Indicate whether the replyTo destination is temporary or explicitely specified replyTo destination
+        boolean isReplyDestTemporary = false;
         Destination replyDest = chooseDestination(exchange, in, session, replyDestinationChooser, null);
         if (replyDest == null) {
             useSelector = false;
@@ -637,6 +638,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 } else {
                     replyDest = session.createTemporaryQueue();
                 }
+                isReplyDestTemporary = true;
             }
         }
         // Create message and send it
@@ -696,6 +698,15 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 sendSync(exchange);
             } else {
                 send(exchange);
+            }
+
+            // delete temporary queue/topic immediately to avoid accumulation in case that the connection is never destroyed
+            if (isReplyDestTemporary) {
+                if (isPubSubDomain()) {
+                    ((TemporaryTopic)replyDest).delete();
+                } else {
+                    ((TemporaryQueue)replyDest).delete();
+                }
             }
         }
     }

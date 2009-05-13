@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.apache.activemq.pool.PooledConnectionFactory;
+import org.apache.activemq.broker.region.RegionBroker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -68,19 +69,26 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         DataHandler dh = null;
 
         // Test successful return
-        inout = client.createInOutExchange();
-        inout.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
-        inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
-        dh = new DataHandler(new ByteArrayDataSource("myImage", "application/octet-stream"));
-        inout.getInMessage().addAttachment("myImage", dh);
-        result = client.sendSync(inout);
-        assertTrue(result);
-        NormalizedMessage out = inout.getOutMessage();
-        assertNotNull(out);
-        Source src = out.getContent();
-        assertNotNull(src);
-        dh = out.getAttachment("myImage");
-        assertNotNull(dh);
+        Source src = null;
+        for (int i = 0; i < 2; i++) {
+            inout = client.createInOutExchange();
+            inout.setService(new QName("http://jms.servicemix.org/Test", "Provider"));
+            inout.getInMessage().setContent(new StringSource("<hello>world</hello>"));
+            dh = new DataHandler(new ByteArrayDataSource("myImage", "application/octet-stream"));
+            inout.getInMessage().addAttachment("myImage", dh);
+            result = client.sendSync(inout);
+            assertTrue(result);
+            NormalizedMessage out = inout.getOutMessage();
+            assertNotNull(out);
+            src = out.getContent();
+            assertNotNull(src);
+            dh = out.getAttachment("myImage");
+            assertNotNull(dh);
+        }
+
+        // Ensure that only one temporary replyTo queue was created for multiple messages sent
+//
+        assertEquals(0, countBrokerTemporaryQueues());
 
         logger.info(new SourceTransformer().toString(src));
 
@@ -282,5 +290,9 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         endpoint.setConnectionFactory(connFactory);
         endpoint.setDestinationName("destination");
         return endpoint;
+    }
+
+    private int countBrokerTemporaryQueues() throws Exception {
+        return ((RegionBroker) broker.getRegionBroker()).getTempQueueRegion().getDestinationMap().size();
     }
 }
