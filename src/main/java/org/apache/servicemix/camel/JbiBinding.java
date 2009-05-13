@@ -82,7 +82,7 @@ public class JbiBinding {
             jbiExchange.setMessage(normalizedMessage, "in");
         }
         normalizedMessage.setContent(getJbiInContent(camelExchange));
-        addJbiHeaders(jbiExchange, normalizedMessage, camelExchange);
+        addJbiHeaders(jbiExchange, normalizedMessage, camelExchange.getIn());
         addJbiAttachments(jbiExchange, normalizedMessage, camelExchange);
         return jbiExchange;
     }
@@ -165,16 +165,39 @@ public class JbiBinding {
     }
 
     protected void addJbiHeaders(MessageExchange jbiExchange, NormalizedMessage normalizedMessage,
-                                 Exchange camelExchange) {
-        Set<Map.Entry<String, Object>> entries = camelExchange.getIn().getHeaders().entrySet();
+                                 Message camelMessage) {
+        // get headers from the Camel in message
+        Set<Map.Entry<String, Object>> entries = camelMessage.getHeaders().entrySet();
         for (Map.Entry<String, Object> entry : entries) {
-            normalizedMessage.setProperty(entry.getKey(), entry.getValue());
             //check if value is Serializable, and if value is Map or collection,
             //just exclude it since the entry of it may not be Serializable as well
             if (entry.getValue() instanceof Serializable
                     && !(entry.getValue() instanceof Map)
                     && !(entry.getValue() instanceof Collection)) {
                 normalizedMessage.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        // if there's a NormalizedMessage inside the Camel Message, copy those headers over as well
+        NormalizedMessage camelNormalizedMessage = getNormalizedMessage(camelMessage);
+        if (camelNormalizedMessage != null) {
+            copyNormalizedMessageHeaders(normalizedMessage, camelNormalizedMessage);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void copyNormalizedMessageHeaders(NormalizedMessage from, NormalizedMessage to) {
+        Set<String> propertyNames = to.getPropertyNames();
+        for (String propertyName : propertyNames) {
+            if (from.getProperty(propertyName) == null) {
+                Object propertyValue = to.getProperty(propertyName);
+                //check if value is Serializable, and if value is Map or collection,
+                //just exclude it since the entry of it may not be Serializable as well
+                if (propertyValue instanceof Serializable
+                        && !(propertyValue instanceof Map)
+                        && !(propertyValue instanceof Collection)) {
+                    from.setProperty(propertyName, propertyValue);
+                }
             }
         }
     }
@@ -187,6 +210,13 @@ public class JbiBinding {
         for (Map.Entry<String, DataHandler> entry : entries) {
             normalizedMessage.addAttachment(entry.getKey(), entry.getValue());
         }
+    }
+
+    protected NormalizedMessage getNormalizedMessage(Message message) {
+        if (message instanceof JbiMessage) {
+            return ((JbiMessage) message).getNormalizedMessage();
+        }
+        return null;
     }
 
 }

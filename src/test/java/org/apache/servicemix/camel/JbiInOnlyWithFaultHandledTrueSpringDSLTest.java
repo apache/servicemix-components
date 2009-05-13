@@ -27,11 +27,13 @@ import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.processor.DeadLetterChannel;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.springframework.util.Assert;
 
 /**
  * Tests on handling fault messages with the Camel Exception handler
@@ -45,7 +47,13 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
 
     @Override
     protected void setUp() throws Exception {
-        receiver = new ReceiverComponent();
+        receiver = new ReceiverComponent() {
+            public void onMessageExchange(MessageExchange exchange) throws MessagingException {
+                Object value = getInMessage(exchange).getProperty(DeadLetterChannel.CAUGHT_EXCEPTION_HEADER);
+                Assert.notNull(value, DeadLetterChannel.CAUGHT_EXCEPTION_HEADER + " property not set");
+                super.onMessageExchange(exchange);
+            }
+        };
         deadLetter = new ReceiverComponent();
 
         super.setUp();
@@ -58,8 +66,9 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
 
         smxClient.send(exchange);
 
-        exchange = (InOnly) smxClient.receive();
+        exchange = (InOnly)smxClient.receive();
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        assertNotNull(exchange.getMessage("in").getProperty(DeadLetterChannel.CAUGHT_EXCEPTION_HEADER));
 
         receiver.getMessageList().assertMessagesReceived(1);
         deadLetter.getMessageList().assertMessagesReceived(0);
@@ -72,13 +81,14 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
 
         smxClient.send(exchange);
 
-        exchange = (RobustInOnly) smxClient.receive();
+        exchange = (RobustInOnly)smxClient.receive();
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        assertNotNull(exchange.getMessage("in").getProperty(DeadLetterChannel.CAUGHT_EXCEPTION_HEADER));
 
         receiver.getMessageList().assertMessagesReceived(1);
         deadLetter.getMessageList().assertMessagesReceived(0);
     }
-    
+
     @Override
     protected String getServiceUnitName() {
         return "su9";
@@ -86,8 +96,7 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
 
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
-        activationSpecList.add(createActivationSpec(new ReturnFaultComponent(), 
-                                                    new QName("urn:test", "faulty-service")));
+        activationSpecList.add(createActivationSpec(new ReturnFaultComponent(), new QName("urn:test", "faulty-service")));
 
         activationSpecList.add(createActivationSpec(receiver, new QName("urn:test", "receiver-service")));
         activationSpecList.add(createActivationSpec(deadLetter, new QName("urn:test", "deadLetter-service")));
