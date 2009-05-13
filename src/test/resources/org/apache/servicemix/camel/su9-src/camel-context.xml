@@ -51,10 +51,9 @@
           <constant>true</constant>
         </handled>
         <to uri="jbi:service:urn:test:receiver-service"/>
-      </onException>      
-      <interceptor ref="handleFaultProcessor">
-        <to uri="jbi:service:urn:test:faulty-service"/>
-      </interceptor>
+      </onException>     
+      <handleFault/> 
+      <to uri="jbi:service:urn:test:faulty-service"/>
     </route>
   </camelContext>
 
@@ -69,7 +68,5 @@
     <property name="useExponentialBackOff" value="true" />
     <property name="backOffMultiplier" value="2" />
   </bean>
-
-  <bean id="handleFaultProcessor" class="org.apache.servicemix.camel.su9.HandleFaultProcessor" />
 
 </beans>

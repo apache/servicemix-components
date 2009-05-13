@@ -54,6 +54,6 @@
     <property name="backOffMultiplier" value="2" />
   </bean>
 
-  <bean id="handleFaultProcessor" class="org.apache.servicemix.camel.su8.HandleFaultProcessor" />
+  <bean id="handleFaultProcessor" class="org.apache.camel.processor.HandleFaultProcessor" />
 
 </beans>
