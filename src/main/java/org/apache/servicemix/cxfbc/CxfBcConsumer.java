@@ -619,6 +619,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         }
       
         public void onMessage(Message m) {
+            m.put("suClassloader", suClassLoader);
             ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
             if (oldCl != suClassLoader) {
                 try {
