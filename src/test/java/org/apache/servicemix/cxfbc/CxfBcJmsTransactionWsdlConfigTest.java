@@ -90,6 +90,7 @@ public class CxfBcJmsTransactionWsdlConfigTest extends SpringTestSupport {
     }
     
     protected void tearDown() throws Exception {
+        super.tearDown();
     	try {
             jmsLauncher.stopServer();         
         } catch (IOException ex) {
