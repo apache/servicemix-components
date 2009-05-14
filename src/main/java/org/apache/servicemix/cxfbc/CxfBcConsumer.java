@@ -433,7 +433,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             }
 
             ei.getBinding().setProperty(
-                    AbstractBindingFactory.DATABINDING_DISABLED, Boolean.TRUE);
+                    AbstractBindingFactory.SMX_DATABINDING_DISABLED, Boolean.TRUE);
 
             cxfService.getInInterceptors().add(new AbstractPhaseInterceptor<Message>(Phase.PRE_PROTOCOL) {
                 public void handleMessage(Message message) throws Fault {

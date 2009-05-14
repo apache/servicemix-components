@@ -478,7 +478,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                     endpoint = ei.getName().getLocalPart();
                 }
                 ei.getBinding().setProperty(
-                        AbstractBindingFactory.DATABINDING_DISABLED,
+                        AbstractBindingFactory.SMX_DATABINDING_DISABLED,
                         Boolean.TRUE);
 
                 ep = new EndpointImpl(getBus(), cxfService, ei);

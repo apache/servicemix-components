@@ -19,6 +19,7 @@ package org.apache.servicemix.cxfbc;
 import java.io.InputStream;
 
 import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.Provider;
 import javax.xml.ws.Service;
@@ -43,7 +44,7 @@ public class CalculatorSoapMessageProvider implements Provider<SOAPMessage> {
         SOAPMessage response = null;
         try {
             System.out.println("Incoming Client Request as a SOAPMessage");
-            MessageFactory factory = MessageFactory.newInstance();
+            MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
             InputStream is = getClass().getResourceAsStream("provider_rep.xml");
             response =  factory.createMessage(null, is);
             is.close();
