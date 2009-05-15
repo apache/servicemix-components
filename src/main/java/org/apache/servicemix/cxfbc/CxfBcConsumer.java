@@ -436,10 +436,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             if (locationURI != null) {
                 ei.setAddress(locationURI);
             }
-
-            ei.getBinding().setProperty(
-                    AbstractBindingFactory.SMX_DATABINDING_DISABLED, Boolean.TRUE);
-
             cxfService.getInInterceptors().add(new AbstractPhaseInterceptor<Message>(Phase.PRE_PROTOCOL) {
                 public void handleMessage(Message message) throws Fault {
                     if (!started) {
@@ -515,6 +511,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     getBus().getOutFaultInterceptors());
 
             chain = new JbiChainInitiationObserver(ep, getBus());
+            removeDatabindingInterceptprs();
             server = new ServerImpl(getBus(), ep, null, chain);
 
             super.validate();
@@ -525,6 +522,24 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         }
     }
 
+    private void removeDatabindingInterceptprs() {
+        for (Interceptor interceptor : ep.getBinding().getInInterceptors()) {
+            if (interceptor.getClass().getName().equals("org.apache.cxf.interceptor.DocLiteralInInterceptor")
+                || interceptor.getClass().getName().equals("org.apache.cxf.binding.soap.interceptor.SoapHeaderInterceptor")
+                || interceptor.getClass().getName().equals("org.apache.cxf.binding.soap.interceptor.RPCInInterceptor")) {
+                ep.getBinding().getInInterceptors().remove(interceptor);
+            }
+        }
+        
+        for (Interceptor interceptor : ep.getBinding().getOutInterceptors()) {
+            if (interceptor.getClass().getName().equals("org.apache.cxf.interceptor.WrappedOutInterceptor")
+                || interceptor.getClass().getName().equals("org.apache.cxf.interceptor.BareOutInterceptor")) {
+                ep.getBinding().getOutInterceptors().remove(interceptor);
+            }
+        }
+    }
+
+    
     private void retrieveWSDL() throws JBIException, WSDLException, DeploymentException, IOException {
         if (wsdl == null) {
             if (getTargetService() != null && getTargetEndpoint() != null) {
