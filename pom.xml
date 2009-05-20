@@ -346,6 +346,7 @@
             <exclude>**/JmsSpringJcaTest.*</exclude>
             <exclude>**/JmsNewTxConsumerEndpointTest.*</exclude>
           </excludes>
+          <forkedProcessTimeoutInSeconds>90</forkedProcessTimeoutInSeconds>
           <forkMode>pertest</forkMode>
         </configuration>
       </plugin>
