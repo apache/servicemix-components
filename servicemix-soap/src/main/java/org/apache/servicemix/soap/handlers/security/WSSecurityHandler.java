@@ -81,7 +81,8 @@ public class WSSecurityHandler extends WSHandler implements Handler {
     private static ThreadLocal currentHandler = new ThreadLocal();
 
     public WSSecurityHandler() {
-        WSSecurityEngine.setWssConfig(new ServiceMixWssConfig());
+        final WSSecurityEngine wssEng = new WSSecurityEngine();
+        wssEng.setWssConfig(new ServiceMixWssConfig());
     }
     
     static WSSecurityHandler getCurrentHandler() {
@@ -123,7 +124,7 @@ public class WSSecurityHandler extends WSHandler implements Handler {
             try {
                 WSSecurityHandler handler = WSSecurityHandler.getCurrentHandler();
                 lastPrincipalFound = verifyXMLSignature((Element) elem,
-                        crypto, returnCert, returnElements, null, signatureValue);
+                        crypto, returnCert, returnElements, null, signatureValue, null);
                 if (lastPrincipalFound instanceof WSUsernameTokenPrincipal) {
                     WSUsernameTokenPrincipal p = (WSUsernameTokenPrincipal) lastPrincipalFound;
                     handler.checkUser(p.getName(), p.getPassword());
