@@ -91,45 +91,22 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
                 MessageObserver messageObserver = message.getExchange().get(MessageObserver.class);
                 if (messageObserver != null) {
                     messageObserver.onMessage(message);
+                    return;
                 }
-                return;
             }
-            if (messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
+            if (messageExchange != null && messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
                 return;
             }
 
+                       
             contentType = (String) message.get(Message.CONTENT_TYPE);
             SoapMessage soapMessage = 
                 (SoapMessage) this.providerEndpoint.getCxfEndpoint().getBinding().createMessage(message);
             
-            EndpointInfo ei = this.providerEndpoint.getEndpointInfo();
-            QName opeName = messageExchange.getOperation();
-            BindingOperationInfo boi = null;
-            if (opeName == null) {
-                // if interface only have one operation, may not specify the opeName in MessageExchange
-                if (ei.getBinding().getOperations().size() == 1) {
-                    boi = ei.getBinding().getOperations().iterator().next();
-                } else {
-                    throw new org.apache.cxf.interceptor.Fault(
-                                new Exception("Operation not bound on this MessageExchange"));
-                    
-                }
-            } else {
-                boi = ei.getBinding().getOperation(messageExchange.getOperation());   
-            }
-            
-            if (boi.getOperationInfo().isOneWay()) {
-                return;
-            }
             
             soapMessage
                     .put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
-            Exchange cxfExchange = new ExchangeImpl();
-            cxfExchange.put(Bus.class, this.providerEndpoint.getBus());
-            soapMessage.setExchange(cxfExchange);
-
-            cxfExchange.put(BindingOperationInfo.class, boi);
-            cxfExchange.put(Endpoint.class, providerEndpoint.getCxfEndpoint());
+            
             // create Interceptor chain
 
             PhaseChainCache inboundChainCache = new PhaseChainCache();
@@ -148,7 +125,12 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
             closeConnectionStream(soapMessage);
-            if (boi.getOperationInfo().isOneWay()) {
+            if (soapMessage.getContent(Source.class) == null) {
+                return;
+            }
+          
+            messageExchange = soapMessage.getExchange().get(MessageExchange.class);
+            if (soapMessage.getExchange().get(BindingOperationInfo.class).getOperationInfo().isOneWay()) {
                 messageExchange.setStatus(ExchangeStatus.DONE);
             } else if (soapMessage.get("jbiFault") != null
                     && soapMessage.get("jbiFault").equals(true)) {
