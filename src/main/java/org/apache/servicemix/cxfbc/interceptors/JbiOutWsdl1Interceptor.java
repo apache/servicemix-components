@@ -56,10 +56,12 @@ import org.apache.servicemix.soap.util.QNameUtil;
 public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
     
     private boolean useJBIWrapper = true;
+    private boolean useSOAPWrapper = true;
     
-    public JbiOutWsdl1Interceptor(boolean useJBIWrapper) {
+    public JbiOutWsdl1Interceptor(boolean useJBIWrapper, boolean useSOAPWrapper) {
         super(Phase.MARSHAL);
         this.useJBIWrapper = useJBIWrapper;
+        this.useSOAPWrapper = useSOAPWrapper;
     }
 
     public void handleMessage(SoapMessage message) {
@@ -77,9 +79,12 @@ public class JbiOutWsdl1Interceptor extends AbstractSoapInterceptor {
                 SoapVersion soapVersion = message.getVersion();                
                 if (element != null) {                                                      
                     // if this message is coming from the CxfBCConsumer
-                    Element bodyElement = (Element) element.getElementsByTagNameNS(
+                    Element bodyElement = null;
+                    if (useSOAPWrapper) {
+                    	bodyElement = (Element) element.getElementsByTagNameNS(
                             element.getNamespaceURI(),
                             soapVersion.getBody().getLocalPart()).item(0);
+                    }
                     if (bodyElement != null) {
                         StaxUtils.writeElement((Element)bodyElement.getFirstChild(), xmlWriter, false);                           
                     } else {

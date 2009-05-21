@@ -212,7 +212,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         }
 
         outList.add(new JbiOutInterceptor());
-        outList.add(new JbiOutWsdl1Interceptor(isUseJBIWrapper()));
+        outList.add(new JbiOutWsdl1Interceptor(isUseJBIWrapper(), isUseSOAPEnvelope()));
         outList.add(new SoapPreProtocolOutInterceptor());
         outList.add(new SoapOutInterceptor(getBus()));
         outList.add(new SoapActionOutInterceptor());
