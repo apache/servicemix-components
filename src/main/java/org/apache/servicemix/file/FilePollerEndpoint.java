@@ -358,7 +358,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
      *  
      * @return
      */
-    private boolean isThrottled() {
+    protected boolean isThrottled() {
         return (throttleCounter.get() > 0);
     }
 

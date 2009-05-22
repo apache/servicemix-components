@@ -21,11 +21,13 @@ import java.io.IOException;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.jbi.framework.ComponentNameSpace;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.servicedesc.InternalEndpoint;
@@ -34,8 +36,8 @@ import org.apache.servicemix.tck.mock.MockExchangeFactory;
 
 public class FileSenderEndpointTest extends TestCase {
 
-	private static final File OUT_DIR = new File("target/file-test");
-	private static final File OUT_FILE = new File(OUT_DIR, "file-exists.tmp");
+    private static final File OUT_DIR = new File("target/file-test");
+    private static final File OUT_FILE = new File(OUT_DIR, "file-exists.tmp");
     public static final String FILE_NAME_PROPERTY = "org.apache.servicemix.file.name";
     public static final String FILE_PATH_PROPERTY = "org.apache.servicemix.file.path";
     private FileSenderEndpoint endpoint;
@@ -96,10 +98,10 @@ public class FileSenderEndpointTest extends TestCase {
     	endpoint.setAppend(true);
     	endpoint.setOverwrite(true);
     	try {
-    		endpoint.validate();
-    		fail("validate() should fail when isAppend and isOverwrite are both true.");
+    	    endpoint.validate();
+    	    fail("validate() should fail when isAppend and isOverwrite are both true.");
     	} catch (DeploymentException de) {
-    		// test succeeds
+    	    // test succeeds
     	}
     }
 
@@ -214,6 +216,43 @@ public class FileSenderEndpointTest extends TestCase {
         endpoint.processInOnly(me, msg);
         
         assertTrue("File was not overwritten: " + OUT_FILE.getAbsolutePath(), OUT_FILE.length() > fileLength);
+        
+        // clean up
+        FileUtil.deleteFile(OUT_FILE);
+    }
+    
+    // Test when output file exists and append is true.
+    public final void testProcessInOnlyFileExistsAppendWithTempFileName() throws Exception {
+        MockExchangeFactory mef = new MockExchangeFactory();
+        MessageExchange me = mef.createInOnlyExchange();
+        me.setOperation(new QName("uri", "op"));
+        me.setProperty("myProp", "myValue");
+        NormalizedMessage msg = me.createMessage();
+        msg.setProperty(FILE_PATH_PROPERTY, OUT_FILE.getAbsolutePath());
+        msg.setProperty(FILE_NAME_PROPERTY, OUT_FILE.getName());
+        msg.setContent(new StringSource("<input>input message</input>"));
+        endpoint.setDirectory(OUT_DIR);
+        endpoint.setAutoCreateDirectory(true);
+        endpoint.validate();
+        endpoint.setMarshaler(new DefaultFileMarshaler() {
+           @Override
+            public String getTempOutputName(MessageExchange exchange, NormalizedMessage message) throws MessagingException {
+               return super.getOutputName(exchange, message) + ".tmp";
+            } 
+        });
+        
+        // Create the initial file for later use.
+        endpoint.processInOnly(me, msg);
+        
+        long fileLength = OUT_FILE.length();
+        
+        endpoint.setOverwrite(false);
+        endpoint.setAppend(true);
+        
+        endpoint.processInOnly(me, msg);
+        
+        assertTrue("File was not overwritten: " + OUT_FILE.getAbsolutePath(), OUT_FILE.length() > fileLength);
+        assertFalse("Temporary file no longer exists", new File(OUT_FILE.getAbsolutePath() + ".tmp").exists());
         
         // clean up
         FileUtil.deleteFile(OUT_FILE);

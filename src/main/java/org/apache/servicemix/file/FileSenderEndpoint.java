@@ -124,33 +124,33 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                 }
             }
             if (success) {
-            	if (name != null && !name.equals(newFile.getName())) {
-            		if (isAppend()) {
-            			// append mode...now we need to transfer the file content into the original file
-            			File targetFile = new File(directory, name);
-            			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(newFile));
-            			out = new BufferedOutputStream(new FileOutputStream(targetFile, append));
-            			try {
-            				FileUtil.copyInputStream(bis, out);
-            			} catch (IOException ioex) {
-            				logger.error("Unable to append to file " + targetFile.getName(), ioex);
-            			} finally {
-            				try {
+                if (name != null && !name.equals(newFile.getName())) {
+                    if (isAppend()) {
+                        // append mode...now we need to transfer the file content into the original file
+                        File targetFile = new File(directory, name);
+                        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(newFile));
+                        out = new BufferedOutputStream(new FileOutputStream(targetFile, append));
+                        try {
+                            FileUtil.copyInputStream(bis, out);
+                        } catch (IOException ioex) {
+                            logger.error("Unable to append to file " + targetFile.getName(), ioex);
+                        } finally {
+                            try {
                                 out.close();
                             } catch (IOException e) {
                                 logger.error("Caught exception while closing stream on error: " + e, e);
                             }
                             if (!newFile.delete()) {
-                            	throw new IOException("File " + newFile.getName() + " could not be deleted...");          
+                                throw new IOException("File " + newFile.getName() + " could not be deleted...");          
                             }
-            			}            			
-            		} else {
-            			// no append mode, so just rename it
-            			if (!newFile.renameTo(new File(directory, name))) {
-            				throw new IOException("File " + newFile.getName() + " could not be renamed to " + name);            				
-            			}           				
-            		}
-            	}
+                        }            			
+                    } else {
+                        // no append mode, so just rename it
+                        if (!newFile.renameTo(new File(directory, name))) {
+                            throw new IOException("File " + newFile.getName() + " could not be renamed to " + name);            				
+                        }           				
+                    }
+                }
             } else {
                 // cleaning up incomplete files after things went wrong
                 if (newFile != null) {

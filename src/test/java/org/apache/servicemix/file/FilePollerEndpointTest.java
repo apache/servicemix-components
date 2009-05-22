@@ -18,12 +18,15 @@ package org.apache.servicemix.file;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -37,8 +40,12 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.Executor;
+import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
+import org.apache.servicemix.tck.mock.MockMessageExchange;
 import org.apache.servicemix.util.FileUtil;
+
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 
 public class FilePollerEndpointTest extends TestCase {
 
@@ -84,6 +91,12 @@ public class FilePollerEndpointTest extends TestCase {
         };
         endpoint.setTargetService(new QName("urn:test", "service"));
         endpoint.setLockManager(new org.apache.servicemix.common.locks.impl.SimpleLockManager());
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        FileUtil.deleteFile(DATA);
+        super.tearDown();
     }
 
     public void testValidateNoFile() throws Exception {
@@ -143,9 +156,8 @@ public class FilePollerEndpointTest extends TestCase {
     }
 
     public void testProcessSuccess() throws Exception {
-        createTestFile();
         endpoint.setFile(DATA);
-        File file = new File(DATA, "test-data.xml");
+        File file = createTestFile();
         endpoint.pollFile(file);
         MessageExchange exchange = exchanges.get(0);
         exchange.setStatus(ExchangeStatus.DONE);
@@ -153,13 +165,19 @@ public class FilePollerEndpointTest extends TestCase {
         assertFalse(file.exists());
     }
 
-    private void createTestFile() throws IOException {
+    private File createTestFile() throws IOException {
+        return createTestFile("test-data.xml");
+    }
+
+    private File createTestFile(String name) throws FileNotFoundException, IOException {
         DATA.mkdirs();
+        File testfile = new File(DATA, name);
         InputStream fis = new FileInputStream("target/test-classes/test-data.xml");
-        OutputStream fos = new FileOutputStream(new File(DATA, "test-data.xml"));
+        OutputStream fos = new FileOutputStream(testfile);
         FileUtil.copyInputStream(fis, fos);
         fis.close();
         fos.close();
+        return testfile;
     }
 
     public void testMoveFileToNonExistentDirectory() throws Exception {
@@ -171,6 +189,77 @@ public class FilePollerEndpointTest extends TestCase {
             // test succeeds
         } finally {
             srcFile.delete();
+        }
+    }
+    
+    /*
+     * Test file poller endpoint throttling
+     */
+    public void testPollerThrottling() throws Exception {
+        File file = createTestFile();
+        File anotherfile = createTestFile("another-test-file.xml");
+        endpoint.setFile(DATA);
+        endpoint.setMaxConcurrent(1);
+        
+        final CountDownLatch polls = new CountDownLatch(1);
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            public void run() {
+                try {
+                    endpoint.poll();
+                    polls.countDown();
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
+         
+        while (exchanges.size() < 1) {
+            Thread.sleep(150);
+        }
+        assertEquals(1, exchanges.size());
+        
+        // let's wait a bit to allow throttling to kick in
+        waitForThrottling();
+        assertTrue(endpoint.isThrottled());
+        assertEquals("Background polling should still be in progress", 1, polls.getCount());
+        
+        // polling again now should not block another thread
+        endpoint.poll();
+        
+        // now, let's release things and make sure both files get handled
+        while (exchanges.size() > 0) {
+            MessageExchange exchange = exchanges.remove(0);
+            exchange.setStatus(ExchangeStatus.DONE);
+            endpoint.process(exchange);
+            polls.await();
+        }
+        
+        assertFalse(file.exists());
+        assertFalse(anotherfile.exists());
+    }
+    
+    public void testHandleUnknownExchange() throws Exception {
+        try {
+            endpoint.process(new MockMessageExchange() {
+                @Override
+                public String getExchangeId() {
+                    return "a-completely-bogus-exchange";
+                }
+            });
+        } catch (Exception e) {
+            fail("The endpoint should not throw exceptions for unknown exchanges: " + e.getMessage());
+        }
+    }
+
+    /*
+     * Let's wait for max. 750ms for the endpoint to get throttling
+     */
+    private void waitForThrottling() throws InterruptedException {
+        int count = 5;
+        while (!endpoint.isThrottled() && count > 0) {
+            Thread.sleep(150);
+            count--;
         }
     }
 
