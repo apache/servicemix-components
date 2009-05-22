@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.cxfse;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -30,14 +31,24 @@ import javax.jbi.messaging.DeliveryChannel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.ws.WebServiceRef;
+
+import org.w3c.dom.Element;
+
+import org.xml.sax.SAXException;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.aegis.databinding.AegisDatabinding;
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.SoapVersion;
+import org.apache.cxf.binding.soap.model.SoapBindingInfo;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.frontend.ServerFactoryBean;
 import org.apache.cxf.interceptor.Fault;
@@ -48,6 +59,8 @@ import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.jaxws.ServiceImpl;
 import org.apache.cxf.jaxws.support.JaxWsImplementorInfo;
 import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
+import org.apache.cxf.message.Message;
+import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBIDestination;
@@ -59,6 +72,8 @@ import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
 import org.apache.servicemix.cxfse.interceptors.AttachmentOutInterceptor;
 import org.apache.servicemix.cxfse.support.ReflectionUtils;
 import org.apache.servicemix.id.IdGenerator;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
@@ -102,6 +117,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     private String pojoEndpoint;
     private QName pojoInterfaceName;
 
+    private Server soapBindingServer;
+    
     /**
      * Returns the object implementing the endpoint's functionality. It is
      * returned as a generic Java <code>Object</code> that can be cast to the
@@ -334,7 +351,18 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                     opeName = ei.getBinding().getOperations().iterator().next().getName();
                     exchange.setOperation(opeName);
                 } else {
-                    throw new Fault(new Exception("Operation not bound on this MessageExchange"));
+                    NormalizedMessage nm = exchange.getMessage("in");
+                    if (soapBindingServer == null) {
+                        ServerFactoryBean sfForSoapBinding = new ServerFactoryBean();
+                        sfForSoapBinding.setServiceBean(getPojo());
+                        //sfForSoapBinding.setAddress("http://dummyaddress");
+                        sfForSoapBinding.getServiceFactory().setPopulateFromClass(true);
+                        sfForSoapBinding.setStart(false);
+                        soapBindingServer = sfForSoapBinding.create();
+                    }
+                    Message message = soapBindingServer.getEndpoint().getBinding().createMessage();
+                    opeName = findOperation(nm, message, exchange);
+                    exchange.setOperation(opeName);
 
                 }
             }
@@ -450,6 +478,47 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
 
     protected Bus getBus() {
         return ((CxfSeComponent)getServiceUnit().getComponent()).getBus();
+    }
+    
+    private QName findOperation(NormalizedMessage nm, Message message, MessageExchange exchange)
+        throws TransformerException, ParserConfigurationException, IOException, SAXException {
+        // try to figure out the operationName based on the incoming message
+        // payload and wsdl if use doc/literal/wrapped
+        Element element = new SourceTransformer().toDOMElement(nm.getContent());
+
+        if (!useJBIWrapper) {
+            SoapVersion soapVersion = ((SoapMessage)message).getVersion();
+            if (element != null) {
+                Element bodyElement = (Element)element.getElementsByTagNameNS(
+                                                                              element.getNamespaceURI(),
+                                                                              soapVersion.getBody()
+                                                                                  .getLocalPart()).item(0);
+                if (bodyElement != null) {
+                    element = (Element)bodyElement.getFirstChild();
+                }
+            }
+        } else {
+            element = DomUtil.getFirstChildElement(DomUtil.getFirstChildElement(element));
+        }
+
+        QName opeName = new QName(element.getNamespaceURI(), element.getLocalName());
+        SoapBindingInfo binding = (SoapBindingInfo)soapBindingServer.getEndpoint().getEndpointInfo()
+            .getBinding();
+        for (BindingOperationInfo op : binding.getOperations()) {
+            String style = binding.getStyle(op.getOperationInfo());
+            if (style == null) {
+                style = binding.getStyle();
+            }
+            if ("document".equals(style)) {
+                if (op.getName().getLocalPart().equals(opeName.getLocalPart())) {
+                    return new QName(getPojoService().getNamespaceURI(), opeName.getLocalPart());
+                }
+            } else {
+                throw new Fault(new Exception("Operation must bound on this MessageExchange if use rpc mode"));
+            }
+        }
+        throw new Fault(new Exception("Operation not bound on this MessageExchange"));
+
     }
 
     @PostConstruct
