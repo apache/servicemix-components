@@ -156,10 +156,14 @@ public class JbiBinding {
 
     protected Source getJbiInContent(Exchange camelExchange) {
         // TODO this should be more smart
-        Source content = camelExchange.getIn().getBody(Source.class);
-        if (content == null && camelExchange.getIn().getBody() != null) {
-            LOG.warn("'in' message content of type " + camelExchange.getIn().getBody().getClass()
-                     + " could not be converted to Source and will be dropped");
+        Source content = null;
+        try {
+            content = camelExchange.getIn().getBody(Source.class);
+        } catch (NoTypeConversionAvailableException e) {
+            if (camelExchange.getIn().getBody() != null) {
+                LOG.warn("'in' message content of type " + camelExchange.getIn().getBody().getClass()
+                         + " could not be converted to Source and will be dropped");
+            }
         }
         return content;
     }

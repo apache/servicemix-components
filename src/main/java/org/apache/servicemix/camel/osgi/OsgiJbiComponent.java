@@ -25,15 +25,12 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 /**
+ * OSGi-specific servicemix-camel {@link JbiComponent} implementation that looks up the {@link CamelComponent} in the OSGi Service Registry
  */
 public class OsgiJbiComponent extends JbiComponent implements BundleContextAware, InitializingBean, DisposableBean {
 
     private BundleContext bundleContext;
     private ServiceReference reference;
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
-    }
 
     public void setBundleContext(BundleContext bundleContext) {
         this.bundleContext = bundleContext;

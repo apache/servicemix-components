@@ -38,10 +38,10 @@ public class JbiComponent implements Component<Exchange> {
     public JbiComponent(CamelComponent component) {
         setCamelJbiComponent(component);
     }
-
+    
     protected JbiComponent() {
+        super();
     }
-
 
     public CamelContext getCamelContext() {
         return camelContext;

@@ -50,6 +50,9 @@ public class JbiInOutCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSup
         client.done(exchange);
 
         errors.assertIsSatisfied();
+        
+        // let's wait a moment to make sure that the last DONE MessageExchange is handled
+        Thread.sleep(500);
     }
 
     public void testInOutWithHandleFault() throws Exception {
@@ -66,6 +69,9 @@ public class JbiInOutCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSup
         client.done(exchange);
 
         errors.assertIsSatisfied();
+
+        // let's wait a moment to make sure that the last DONE MessageExchange is handled
+        Thread.sleep(500);
     }
 
     public void testInOutWithErrorNotHandled() throws Exception {
@@ -115,6 +121,9 @@ public class JbiInOutCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSup
         receiverComponent.getMessageList().assertMessagesReceived(1);
 
         errors.assertIsSatisfied();
+        
+        // let's wait a moment to make sure that the last DONE MessageExchange is handled
+        Thread.sleep(500);
     }
 
     @Override

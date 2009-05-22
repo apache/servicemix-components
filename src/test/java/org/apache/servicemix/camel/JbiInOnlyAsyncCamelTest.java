@@ -22,6 +22,8 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxp.StringSource;
@@ -37,6 +39,9 @@ public class JbiInOnlyAsyncCamelTest extends JbiTestSupport {
     private static final String MESSAGE = "<just><a>test</a></just>";
 
     public void testInOnlyExchangeThroughAsyncRoute() throws Exception {
+        // first remove the ExchangeListener -- it will not be notified of the undeliverable MessageExchange
+        jbiContainer.removeListener(exchangeCompletedListener);
+        
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedBodiesReceived(MESSAGE);
         
@@ -72,3 +77,4 @@ public class JbiInOnlyAsyncCamelTest extends JbiTestSupport {
         };
     }
 }
+

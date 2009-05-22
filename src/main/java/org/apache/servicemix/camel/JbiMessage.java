@@ -110,9 +110,8 @@ public class JbiMessage extends DefaultMessage {
             } catch (MessagingException e) {
                 throw new JbiException(e);
             }
-        } else {
-            super.addAttachment(id, content);
         }
+        super.addAttachment(id, content);
     }
 
     @Override

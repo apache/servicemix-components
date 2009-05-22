@@ -79,6 +79,7 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
             jbiComponent.getCamelJbiComponent().addEndpoint(consumer);
             super.start();
         }
+        
         @Override
         public void stop() throws Exception {
             if (isStopped()) {
@@ -96,6 +97,13 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
 
         public boolean process(Exchange exchange, AsyncCallback asyncCallback) {
             return consumer.process(exchange, asyncCallback);
+        }
+        
+        /*
+         * Access the underlying JBI Consumer endpoint
+         */
+        protected CamelConsumerEndpoint getCamelConsumerEndpoint() {
+            return consumer;
         }
     }
 

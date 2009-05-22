@@ -53,6 +53,8 @@ public abstract class JbiTestSupport extends TestSupport {
     protected CamelContext camelContext;
 
     protected SpringJBIContainer jbiContainer = new SpringJBIContainer();
+    
+    protected CamelJbiComponent component;
 
     protected ExchangeCompletedListener exchangeCompletedListener;
 
@@ -124,7 +126,7 @@ public abstract class JbiTestSupport extends TestSupport {
         List<ActivationSpec> activationSpecList = new ArrayList<ActivationSpec>();
 
         // lets add the Camel endpoint
-        CamelJbiComponent component = new CamelJbiComponent();
+        component = new CamelJbiComponent();
         activationSpecList.add(createActivationSpec(component, new QName("camel", "camel"), "camelEndpoint"));
 
         // and provide a callback method for adding more services
@@ -133,7 +135,7 @@ public abstract class JbiTestSupport extends TestSupport {
 
         jbiContainer.afterPropertiesSet();
 
-        exchangeCompletedListener = new ExchangeCompletedListener();
+        exchangeCompletedListener = new ExchangeCompletedListener(2000);
         jbiContainer.addListener(exchangeCompletedListener);
 
         // allow for additional configuration of the compenent (e.g. deploying SU)
@@ -153,13 +155,14 @@ public abstract class JbiTestSupport extends TestSupport {
         return new DefaultCamelContext();
     }
 
-    protected void configureComponent(CamelJbiComponent component) throws Exception {
+    protected void configureComponent(CamelJbiComponent camelComponent) throws Exception {
         // add the ServiceMix Camel component to the CamelContext
-        camelContext.addComponent("jbi", new JbiComponent(component));
+        camelContext.addComponent("jbi", new JbiComponent(camelComponent));
     }
 
     protected void configureContainer(final JBIContainer container) throws Exception {
         container.setEmbedded(true);
+        container.setForceShutdown(1000);
     }
 
     public ServiceMixClient getServicemixClient() throws JBIException {
@@ -169,12 +172,12 @@ public abstract class JbiTestSupport extends TestSupport {
         return servicemixClient;
     }
 
-    protected ActivationSpec createActivationSpec(Object component, QName service) {
-        return createActivationSpec(component, service, "endpoint");
+    protected ActivationSpec createActivationSpec(Object comp, QName service) {
+        return createActivationSpec(comp, service, "endpoint");
     }
 
-    protected ActivationSpec createActivationSpec(Object component, QName service, String endpoint) {
-        ActivationSpec spec = new ActivationSpec(component);
+    protected ActivationSpec createActivationSpec(Object comp, QName service, String endpoint) {
+        ActivationSpec spec = new ActivationSpec(comp);
         spec.setService(service);
         spec.setEndpoint(endpoint);
         return spec;
@@ -182,6 +185,7 @@ public abstract class JbiTestSupport extends TestSupport {
 
     @Override
     protected void tearDown() throws Exception {
+        exchangeCompletedListener.assertExchangeCompleted();
         getServicemixClient().close();
         client.stop();
         camelContext.stop();

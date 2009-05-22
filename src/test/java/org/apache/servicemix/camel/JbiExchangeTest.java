@@ -18,14 +18,18 @@ package org.apache.servicemix.camel;
 
 import java.net.URI;
 
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
 
 import junit.framework.TestCase;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
+import org.apache.servicemix.jbi.helper.MessageExchangePattern;
+import org.apache.servicemix.jbi.messaging.FaultImpl;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
+import org.apache.servicemix.tck.mock.MockNormalizedMessage;
 
 /**
  * Test case for {@link JbiExchange}
@@ -66,11 +70,34 @@ public class JbiExchangeTest extends TestCase {
         assertEquals(VALUE, camelExchange.getProperty(KEY));
     }
     
+    /*
+     * Test access to the underlying NormalizedMessages
+     */
+    public void testAccessTheNormalizedMessages() throws Exception {
+        NormalizedMessage in = new MockNormalizedMessage();
+        NormalizedMessage out = new MockNormalizedMessage();
+        Fault fault = new FaultImpl();
+        MessageExchange mock = createMockExchange();
+        mock.setMessage(in, "in");
+        mock.setMessage(out, "out");
+        mock.setFault(fault);
+        JbiExchange exchange = new JbiExchange(new DefaultCamelContext(), new JbiBinding(), mock);
+        assertSame(in, exchange.getInMessage());
+        assertSame(out, exchange.getOutMessage());
+        assertSame(fault, exchange.getFaultMessage());
+    }
+    
     private MessageExchange createMockExchange() {
         return new MockMessageExchange() {
             @Override
             public URI getPattern() {
-                return MessageExchangeSupport.IN_OUT;
+                return MessageExchangePattern.IN_OUT;
+            }
+            public NormalizedMessage getMessage(String name) {
+                if ("fault".equalsIgnoreCase(name)) {
+                    return getFault();
+                }
+                return super.getMessage(name);
             }
         };
     }
