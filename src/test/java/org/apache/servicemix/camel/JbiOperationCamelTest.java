@@ -52,7 +52,6 @@ public class JbiOperationCamelTest extends JbiTestSupport {
         
         // this time, we set the target operation on the Camel Exchange
         client.send("direct:in-only-noop", new Processor() {
-            @Override
             public void process(Exchange exchange) throws Exception {
                 exchange.setProperty("jbi.operation", OPERATION);
                 exchange.getIn().setBody(new StringSource("<request>Sending you the operation, could you please perform it?</request>"));
@@ -78,7 +77,6 @@ public class JbiOperationCamelTest extends JbiTestSupport {
                 from("direct:in-only-noop").to("log:info").to("jbi:service:urn:test:in-only");
                 
                 from("jbi:service:urn:test:in-only").process(new Processor() {
-                    @Override
                     public void process(Exchange exchange) throws Exception {
                         JbiExchange jbi = (JbiExchange) exchange;
                         assertEquals(new QName(OPERATION), jbi.getMessageExchange().getOperation());

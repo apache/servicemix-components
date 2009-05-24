@@ -91,13 +91,10 @@ public class JbiCamelAttachmentTest extends JbiTestSupport {
                 
                 // and now with a Camel processor to add the attachment
                 from("jbi:service:urn:test:inout-service").process(new Processor() {
-
-                    @Override
                     public void process(Exchange exchange) throws Exception {
                         exchange.getOut().setBody(exchange.getIn().getBody());
                         exchange.getOut().addAttachment(ATTACHMENT_ID, new DataHandler(new FileDataSource(TEST_FILE)));
-                    }
-                    
+                    }                    
                 });
             }
         };
