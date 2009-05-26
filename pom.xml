@@ -343,7 +343,6 @@
           <excludes>
             <!-- exclude abstract test classes -->
             <exclude>**/Abstract*.*</exclude>
-            <exclude>**/JmsSpringJcaTest.*</exclude>
             <exclude>**/JmsNewTxConsumerEndpointTest.*</exclude>
           </excludes>
           <forkedProcessTimeoutInSeconds>90</forkedProcessTimeoutInSeconds>
