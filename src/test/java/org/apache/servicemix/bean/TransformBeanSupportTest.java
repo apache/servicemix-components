@@ -29,6 +29,8 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Element;
+
 import org.apache.servicemix.bean.support.ExchangeTarget;
 import org.apache.servicemix.bean.support.TransformBeanSupport;
 import org.apache.servicemix.common.util.MessageUtil;
@@ -39,14 +41,10 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.listener.MessageExchangeListener;
+import org.apache.servicemix.jbi.transformer.CopyTransformer;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.w3c.dom.Element;
 
 public class TransformBeanSupportTest extends AbstractBeanComponentTest {
-
-    protected void configureContainer() {
-        container.setFlowName("st");
-    }
     
     public void testInOut() throws Exception {
         TransformBeanSupport transformer = new MyTransformer();
@@ -243,8 +241,28 @@ public class TransformBeanSupportTest extends AbstractBeanComponentTest {
         client.fail(io, new Exception("I do not like faults"));
         assertBeanEndpointRequestsMapEmpty(transformEndpoint);
     }
+    
+    public void testSetCopyProperties() throws Exception {
+        TransformBeanSupport transformer = createTransformer("fault");
+        transformer.setCopyProperties(true);
+        assertTrue(transformer.isCopyProperties());
+        assertTrue(((CopyTransformer) transformer.getMessageTransformer()).isCopyProperties());
+        transformer.setCopyProperties(false);
+        assertFalse(transformer.isCopyProperties());
+        assertFalse(((CopyTransformer) transformer.getMessageTransformer()).isCopyProperties());
+    }
+    
+    public void testSetCopyAttachements() throws Exception {
+        TransformBeanSupport transformer = createTransformer("fault");
+        transformer.setCopyAttachments(true);
+        assertTrue(transformer.isCopyAttachments());
+        assertTrue(((CopyTransformer) transformer.getMessageTransformer()).isCopyAttachments());
+        transformer.setCopyAttachments(false);
+        assertFalse(transformer.isCopyAttachments());
+        assertFalse(((CopyTransformer) transformer.getMessageTransformer()).isCopyAttachments());
+    }
 
-    private MyTransformer createTransformer(String targetService) {
+    protected MyTransformer createTransformer(String targetService) {
         MyTransformer transformer = new MyTransformer();
         ExchangeTarget target = new ExchangeTarget();
         target.setService(new QName(targetService));
@@ -252,7 +270,7 @@ public class TransformBeanSupportTest extends AbstractBeanComponentTest {
         return transformer;
     }
 
-    private BeanEndpoint createBeanEndpoint(TransformBeanSupport transformer) {
+    protected BeanEndpoint createBeanEndpoint(TransformBeanSupport transformer) {
         BeanEndpoint transformEndpoint = new BeanEndpoint();
         transformEndpoint.setBean(transformer);
         transformEndpoint.setService(new QName("transform"));

@@ -17,6 +17,7 @@
 package org.apache.servicemix.bean;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -212,55 +213,58 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
     public void process(MessageExchange exchange) throws Exception {
         if (exchange.getRole() == Role.CONSUMER) {
             onConsumerExchange(exchange);
-        // Find or create the request for this provider exchange
-        } else if (exchange.getRole() == MessageExchange.Role.PROVIDER) {
-            onProviderExchange(exchange);
         } else {
-            throw new IllegalStateException("Unknown role: " + exchange.getRole());
+            onProviderExchange(exchange);
         }
     }
 
     protected void onProviderExchange(MessageExchange exchange) throws Exception {
         Request req = getOrCreateCurrentRequest(exchange);
         currentRequest.set(req);
-        synchronized (req) {
-            // If the bean implements MessageExchangeListener,
-            // just call the method
-            if (req.getBean() instanceof MessageExchangeListener) {
-                ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
-            } else {
-                // Exchange is finished
-                if (exchange.getStatus() == ExchangeStatus.DONE) {
-                    return;
-                // Exchange has been aborted with an exception
-                } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                    return;
-                // Fault message
-                } else if (exchange.getFault() != null) {
-                    // TODO: find a way to send it back to the bean before setting the DONE status
-                    done(exchange);
+        try {
+            // Find or create the request for this provider exchange
+            synchronized (req) {
+                // If the bean implements MessageExchangeListener,
+                // just call the method
+                if (req.getBean() instanceof MessageExchangeListener) {
+                    ((MessageExchangeListener) req.getBean()).onMessageExchange(exchange);
                 } else {
-                    MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(
-                            req.getBean(), getBeanInfo(), exchange, this);
-                    if (invocation == null) {
-                        throw new UnknownMessageExchangeTypeException(exchange, this);
-                    }
-                    try {
-                        invocation.proceed();
-                    } catch (Exception e) {
-                        throw e;
-                    } catch (Throwable throwable) {
-                        throw new MethodInvocationFailedException(req.getBean(), invocation, exchange, this, throwable);
-                    }
-                    if (exchange.getStatus() == ExchangeStatus.ERROR) {
-                        send(exchange);
-                    }
-                    if (exchange.getFault() == null && exchange.getMessage("out") == null)  {
-                        // TODO: handle MEP correctly (DONE should only be sent for InOnly)
+                    // Exchange is finished
+                    if (exchange.getStatus() == ExchangeStatus.DONE) {
+                        return;
+                    // Exchange has been aborted with an exception
+                    } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                        return;
+                    // Fault message
+                    } else if (exchange.getFault() != null) {
+                        // TODO: find a way to send it back to the bean before setting the DONE status
                         done(exchange);
+                    } else {
+                        MethodInvocation invocation = getMethodInvocationStrategy().createInvocation(
+                                req.getBean(), getBeanInfo(), exchange, this);
+                        if (invocation == null) {
+                            throw new UnknownMessageExchangeTypeException(exchange, this);
+                        }
+                        try {
+                            invocation.proceed();
+                        } catch (InvocationTargetException e) {
+                            throw new MethodInvocationFailedException(req.getBean(), invocation, exchange, this, e.getCause());
+                        } catch (Exception e) {
+                            throw e;
+                        } catch (Throwable throwable) {
+                            throw new MethodInvocationFailedException(req.getBean(), invocation, exchange, this, throwable);
+                        }
+                        if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                            send(exchange);
+                        }
+                        if (exchange.getFault() == null && exchange.getMessage("out") == null)  {
+                            // TODO: handle MEP correctly (DONE should only be sent for InOnly)
+                            done(exchange);
+                        }
                     }
                 }
             }
+        } finally {
             checkEndOfRequest(req);
             currentRequest.set(null);
         }
@@ -326,12 +330,11 @@ public class BeanEndpoint extends ProviderEndpoint implements ApplicationContext
         if (beanName == null && beanType == null) {
             throw new IllegalArgumentException("Property 'bean', 'beanName' or 'beanClassName' has not been set!");
         }
+        if (beanName != null && applicationContext == null) {
+            throw new IllegalArgumentException("Property 'beanName' specified, but no BeanFactory set!");
+        }
         if (beanType != null) {
             return beanType.newInstance();
-        } else if (beanName == null) {
-            throw new IllegalArgumentException("Property 'beanName', 'beanType' or 'beanClassName' must be set!");
-        } else if (applicationContext == null) {
-            throw new IllegalArgumentException("Property 'beanName' specified, but no BeanFactory set!");
         } else {
             Object answer = applicationContext.getBean(beanName);
             if (answer == null) {

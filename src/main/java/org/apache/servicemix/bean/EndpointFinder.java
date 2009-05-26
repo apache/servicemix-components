@@ -69,15 +69,10 @@ public class EndpointFinder implements ApplicationContextAware {
             if (shouldIgnoreBean(aClass)) {
                 continue;
             }
-            if (isClient(aClass)) {
-                registerClient(aClass);
-            } else if (!Modifier.isAbstract(aClass.getModifiers())) {
+            if (!isClient(aClass)) {
                 list.add(createBeanEndpoint(aClass));
             }
         }
-    }
-
-    public void destroy() throws Exception {
     }
 
     /**
@@ -98,11 +93,6 @@ public class EndpointFinder implements ApplicationContextAware {
     protected boolean isClient(Class type) {
         return type.isInterface() || Modifier.isAbstract(type.getModifiers());
     }
-
-    protected void registerClient(Class type) {
-        /** TODO */
-    }
-
 
     protected BeanEndpoint createBeanEndpoint(Class serviceType) {
         Endpoint endpointAnnotation = (Endpoint) serviceType.getAnnotation(Endpoint.class);

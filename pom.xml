@@ -123,6 +123,11 @@
       <version>1.2.14</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -166,6 +171,18 @@
             <exclude>**/AnnotatedBeanEndpointTest.*</exclude>
             <exclude>**/ConsumerBeanTest.*</exclude>
           </excludes>
+        </configuration>
+      </plugin>
+      <!-- exclude generated DefaultBootstrap class from Cobertura reports -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <configuration>
+          <instrumentation>
+            <excludes>
+              <exclude>org/apache/servicemix/common/DefaultBootstrap.class</exclude>
+            </excludes>
+          </instrumentation>
         </configuration>
       </plugin>
     </plugins>

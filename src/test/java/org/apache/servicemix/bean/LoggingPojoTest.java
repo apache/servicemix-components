@@ -16,21 +16,32 @@
  */
 package org.apache.servicemix.bean;
 
-import javax.xml.namespace.QName;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.xml.namespace.QName;
 
-import org.apache.servicemix.jbi.container.JBIContainer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
+import junit.framework.TestCase;
+
+import org.apache.commons.logging.impl.SimpleLog;
 import org.apache.servicemix.bean.pojos.LoggingPojo;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
-import junit.framework.TestCase;
+import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public class LoggingPojoTest extends TestCase {
 
     protected JBIContainer container;
     protected BeanComponent component;
+    protected List<String> messages;
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -38,9 +49,19 @@ public class LoggingPojoTest extends TestCase {
         container.init();
 
         component = new BeanComponent();
+        messages = new LinkedList<String>();
         BeanEndpoint loggingEndpoint = new BeanEndpoint();
-        loggingEndpoint.setBeanClassName(LoggingPojo.class.getName());
+        LoggingPojo pojo = new LoggingPojo();
+        pojo.setMaxMsgDisplaySize(35);
+        pojo.setLog(new SimpleLog("my-logger") {
+            @Override
+            protected void log(int type, Object message, Throwable t) {
+                messages.add(message.toString());
+            }
+        });
+        loggingEndpoint.setBean(pojo);
         loggingEndpoint.setService(new QName("logging"));
+        loggingEndpoint.setInterfaceName(new QName("logservice"));
         loggingEndpoint.setEndpoint("endpoint");
         component.addEndpoint(loggingEndpoint);
         container.activateComponent(component, "servicemix-bean");
@@ -55,19 +76,56 @@ public class LoggingPojoTest extends TestCase {
     public void testInOnly() throws Exception {
         ServiceMixClient client = new ServiceMixClientFacade(component.getComponentContext());
         InOnly exchange = client.createInOnlyExchange();
-        exchange.setService(new QName("logging"));
-        exchange.getInMessage().setContent(new StringSource("<hello/>"));
-        exchange.getInMessage().setProperty("key", "value");
+        fillExchange(exchange);
         client.sendSync(exchange);
+        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        
+        assertLog();
+    }
+    
+    public void testInOnlyWithWrongContent() throws Exception {
+        ServiceMixClient client = new ServiceMixClientFacade(component.getComponentContext());
+        InOnly exchange = client.createInOnlyExchange();
+        fillExchange(exchange);
+        exchange.getInMessage().setContent(new StringSource("This is not XML!"));
+        client.sendSync(exchange);
+        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        
+        assertLog();
+        assertTrue(messages.get(0).contains("Unable to display:"));
     }
 
     public void testInOut() throws Exception {
         ServiceMixClient client = new ServiceMixClientFacade(component.getComponentContext());
         InOut exchange = client.createInOutExchange();
-        exchange.setService(new QName("logging"));
-        exchange.getInMessage().setContent(new StringSource("<hello/>"));
-        exchange.getInMessage().setProperty("key", "value");
+        fillExchange(exchange);
         client.sendSync(exchange);
+        assertEquals(ExchangeStatus.ACTIVE, exchange.getStatus());
         client.done(exchange);
+        
+        assertLog();
+    }
+    
+    private void fillExchange(MessageExchange exchange) throws MessagingException {
+        exchange.setService(new QName("logging"));
+        exchange.setInterfaceName(new QName("logservice"));
+        exchange.setOperation(new QName("log"));
+        exchange.setProperty("xml", new StringSource("<an>XML value</an>"));
+        exchange.getMessage("in").setContent(new StringSource("<hello>world</hello>"));
+        exchange.getMessage("in").setProperty("key", "value");
+        exchange.getMessage("in").setProperty("xml", new StringSource("<an>XML value</an>"));
+        exchange.getMessage("in").addAttachment("attachment", new DataHandler(new FileDataSource("src/test/resources/attachment.png")));
+    }
+    
+    private void assertLog() {
+        assertEquals(1, messages.size());
+        String message = messages.get(0);
+        assertTrue(message.contains("service: logging"));
+        assertTrue(message.contains("endpoint: endpoint"));
+        assertTrue(message.contains("interface: logservice"));
+        assertTrue(message.contains("operation: log"));
+        assertTrue(message.contains("key = value"));
+        assertTrue(message.contains("xml = <an>XML value</an>"));
+        assertTrue(message.contains("attachments:"));
     }
 }

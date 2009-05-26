@@ -32,6 +32,7 @@ import javax.jbi.messaging.RobustInOnly;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -173,6 +174,19 @@ public abstract class BeanSupport {
     public void answer(MessageExchange exchange, NormalizedMessage answer) throws MessagingException {
         exchange.setMessage(answer, "out");
         getDeliveryChannel().send(exchange);
+    }
+    
+    /**
+     * A helper method to reply to a given message exchange with a given Source 
+     * 
+     * @param exchange the message exchange
+     * @param answer the answer as an XML source
+     * @throws MessagingException
+     */
+    public void answer(MessageExchange exchange, Source answer) throws MessagingException {
+        NormalizedMessage message = exchange.createMessage();
+        message.setContent(answer);
+        answer(exchange, message);
     }
 
     /**

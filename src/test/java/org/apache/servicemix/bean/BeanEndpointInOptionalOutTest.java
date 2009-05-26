@@ -24,9 +24,12 @@ import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.apache.servicemix.bean.support.BeanSupport;
+import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 
@@ -37,10 +40,6 @@ public class BeanEndpointInOptionalOutTest extends AbstractBeanComponentTest {
     
     private static final QName IN_OPTIONAL_OUT_PRODUCER = new QName("urn:test", "ioo-producer");
     private static final QName IN_OPTIONAL_OUT_CONSUMER = new QName("urn:test", "ioo-consumer");
-
-    protected void configureContainer() {
-        container.setFlowName("st");
-    }
     
     //we first have a set of tests that send an InOptionalOut exchange to the bean endpoint
     public void testInOptionalOutWithBeanType() throws Exception {
@@ -54,6 +53,75 @@ public class BeanEndpointInOptionalOutTest extends AbstractBeanComponentTest {
         
         io = client.receive();
         assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(endpoint);        
+    }
+    
+    public void testInOptionalOutWithSimplePojo() throws Exception {
+        MySimplePojo pojo = new MySimplePojo();
+        BeanEndpoint endpoint = createBeanEndpoint(pojo, IN_OPTIONAL_OUT_PRODUCER);
+        component.addEndpoint(endpoint);
+        
+        MessageExchange io = client.createInOptionalOutExchange();
+        io.setService(IN_OPTIONAL_OUT_PRODUCER);
+        io.getMessage("in").setContent(new StringSource("<request status='ok'/>"));
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.DONE, io.getStatus());
+        assertBeanEndpointRequestsMapEmpty(endpoint);        
+    }
+    
+    public void testInOptionalOutWithPojoHandlingMessageExchange() throws Exception {
+        MyMessageExchangePojo pojo = new MyMessageExchangePojo();
+        BeanEndpoint endpoint = createBeanEndpoint(pojo, IN_OPTIONAL_OUT_PRODUCER);
+        component.addEndpoint(endpoint);
+        
+        MessageExchange io = client.createInOptionalOutExchange();
+        io.setService(IN_OPTIONAL_OUT_PRODUCER);
+        io.getMessage("in").setContent(new StringSource("<request status='ok'/>"));
+        io.getMessage("in").setProperty("todo", "fault");
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        assertNotNull(io.getFault());
+        client.done(io);
+        assertBeanEndpointRequestsMapEmpty(endpoint);        
+    }
+    
+    public void testInOptionalOutWithPojoHandlingMessageExchangeClientFault() throws Exception {
+        MyMessageExchangePojo pojo = new MyMessageExchangePojo();
+        BeanEndpoint endpoint = createBeanEndpoint(pojo, IN_OPTIONAL_OUT_PRODUCER);
+        component.addEndpoint(endpoint);
+        
+        MessageExchange io = client.createInOptionalOutExchange();
+        io.setService(IN_OPTIONAL_OUT_PRODUCER);
+        io.getMessage("in").setContent(new StringSource("<request status='ok'/>"));
+        io.getMessage("in").setProperty("todo", "reply");
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        io.setFault(io.createFault());
+        client.send(io);
+        assertBeanEndpointRequestsMapEmpty(endpoint);        
+    }
+    
+    public void testInOptionalOutWithPojoHandlingMessageExchangeClientError() throws Exception {
+        MyMessageExchangePojo pojo = new MyMessageExchangePojo();
+        BeanEndpoint endpoint = createBeanEndpoint(pojo, IN_OPTIONAL_OUT_PRODUCER);
+        component.addEndpoint(endpoint);
+        
+        MessageExchange io = client.createInOptionalOutExchange();
+        io.setService(IN_OPTIONAL_OUT_PRODUCER);
+        io.getMessage("in").setContent(new StringSource("<request status='ok'/>"));
+        io.getMessage("in").setProperty("todo", "fault");
+        client.send(io);
+        
+        io = client.receive();
+        assertEquals(ExchangeStatus.ACTIVE, io.getStatus());
+        assertNotNull(io.getFault());
+        client.fail(io, new RuntimeException("Abort! Abort!"));
         assertBeanEndpointRequestsMapEmpty(endpoint);        
     }
     
@@ -109,6 +177,7 @@ public class BeanEndpointInOptionalOutTest extends AbstractBeanComponentTest {
         client.fail(io, fault);
         assertBeanEndpointRequestsMapEmpty(endpoint);        
     }
+
 
     // this is a set of tests where the bean endpoint also acts as consumer and sends InOptionalOut exchanges
     public void testInOptionalOutConsumerDone() throws Exception {
@@ -212,14 +281,11 @@ public class BeanEndpointInOptionalOutTest extends AbstractBeanComponentTest {
         return endpoint;
     }
     
-    public static final class MyInOptionalOutBean implements MessageExchangeListener {
+    public static final class MyInOptionalOutBean extends BeanSupport implements MessageExchangeListener {
         
         private Source fault;
         private Source response;
         
-        @Resource
-        private DeliveryChannel channel;
-
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
             if (exchange instanceof InOptionalOut) {
                 onInOptionalOut((InOptionalOut) exchange);
@@ -231,35 +297,64 @@ public class BeanEndpointInOptionalOutTest extends AbstractBeanComponentTest {
         private void onInOptionalOut(InOptionalOut exchange) throws MessagingException {
             if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                 if (response != null) {
-                    exchange.setOutMessage(exchange.createMessage());
-                    exchange.getOutMessage().setContent(response);
+                    answer(exchange, response);
                     response = null;
                 } else if (fault != null) {
-                    exchange.setFault(exchange.createFault());
-                    exchange.getFault().setContent(fault);
+                    fail(exchange, exchange.createFault());
                     fault = null;
                 } else {
-                    exchange.setStatus(ExchangeStatus.DONE);
+                    done(exchange);
                 }
-                channel.send(exchange);
             }
         }
     }
     
-    public static final class MyConsumerBean implements MessageExchangeListener {
+    public static final class MySimplePojo {
+        
+        public void handle(@XPath(xpath = "/request/@status") String status) {
+            if (status.equalsIgnoreCase("ok")) {
+                // ok
+            } else {
+                // let's throw an Exception to see if we can blow things up
+                throw new RuntimeException("Expecting OK, but was " + status);
+            }
+        }
+    }
+    
+    public static final class MyMessageExchangePojo {
         
         @Resource
         private DeliveryChannel channel;
+        
+        public void handle(MessageExchange exchange, @Property(name = "todo") String todo) throws MessagingException {
+            if ("fault".equals(todo)) {
+                exchange.setFault(exchange.createFault());
+                exchange.getFault().setContent(new StringSource("<fault>It went astray!</fault>"));
+                channel.send(exchange);
+            } else if ("reply".equals(todo)) {
+                NormalizedMessage out = exchange.createMessage();
+                exchange.setMessage(out, "out");
+                MessageUtil.transfer(exchange.getMessage("in"), out);
+                channel.send(exchange);
+            } else {
+                // everything is OK
+            }
+        }
+    }
+    
+    public static final class MyConsumerBean extends BeanSupport implements MessageExchangeListener {
+        
+        @Resource
         private QName target;
         private MessageExchange original;
         private Source fault;
                 
         public void send() throws MessagingException {
-            InOptionalOut ioo = channel.createExchangeFactory().createInOptionalOutExchange();
+            InOptionalOut ioo = getExchangeFactory().createInOptionalOutExchange();
             ioo.setService(target);
             ioo.setInMessage(ioo.createMessage());
             ioo.getMessage("in").setContent(new StringSource("<hello/>"));
-            channel.send(ioo);
+            send(ioo);
         }
 
         public void onMessageExchange(MessageExchange exchange) throws MessagingException {
@@ -272,23 +367,16 @@ public class BeanEndpointInOptionalOutTest extends AbstractBeanComponentTest {
             } else {                
                 if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                     if (fault != null) {
-                        exchange.setFault(exchange.createFault());
-                        exchange.getFault().setContent(fault);
+                        fail(exchange, exchange.createFault());
                         fault = null;
                     } else {
-                        exchange.setStatus(ExchangeStatus.DONE);
-                        done();
+                        done(exchange);
+                        done(original);
                     }
-                    channel.send(exchange);
                 } else {
-                    done();
+                    done(original);
                 }
             }
-        }
-
-        private void done() throws MessagingException {
-            original.setStatus(ExchangeStatus.DONE);
-            channel.send(original);
         }
     }
 }

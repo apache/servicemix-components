@@ -22,7 +22,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
+public final class ReflectionUtils extends org.springframework.util.ReflectionUtils {
+    
+    private ReflectionUtils() {
+        // hide constructor to keep CheckStyle happy
+    }
 
     public static <T extends Annotation> void callLifecycleMethod(final Object bean, final Class<T> annotation) {
         ReflectionUtils.doWithMethods(bean.getClass(), new ReflectionUtils.MethodCallback() {

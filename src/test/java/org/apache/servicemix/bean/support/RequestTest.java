@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.bean.support;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 
@@ -65,6 +68,14 @@ public class RequestTest extends TestCase {
         Request request = new Request("my-correlation-id", new Object(), exchange);
         request.addExchange(exchange);
         assertEquals("We shouldn't have duplicate MessageExchange instances", 1, request.getExchanges().size());
+    }
+    
+    public void testLazyCreateCallbacks() throws Exception {
+        MessageExchange exchange = createMockExchange("my-exchange-id");
+        Request request = new Request("my-correlation-id", new Object(), exchange);
+        Map<Method, Boolean> callbacks = request.getCallbacks();
+        assertNotNull(callbacks);
+        assertSame(callbacks, request.getCallbacks());
     }
     
     private MessageExchange createMockExchange(String id) {

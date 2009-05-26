@@ -29,15 +29,12 @@ import javax.jbi.messaging.MessageExchange;
 import org.apache.servicemix.bean.BeanEndpoint;
 
 public class Request {
-    private Object bean;
+    private final Object bean;
     // Keep track of callbacks already called, so that the same callback
     // can not be called twice
     private Map<Method, Boolean> callbacks;
-    private Object correlationId;
+    private final Object correlationId;
     private final Set<MessageExchange> exchanges = new HashSet<MessageExchange>();
-    
-    public Request() {
-    }
     
     public Request(Object correlationId, Object bean, MessageExchange exchange) {
         this.correlationId = correlationId;
@@ -50,13 +47,6 @@ public class Request {
      */
     public Object getBean() {
         return bean;
-    }
-
-    /**
-     * @param bean the bean to set
-     */
-    public void setBean(Object bean) {
-        this.bean = bean;
     }
     
     public Object getCorrelationId() {

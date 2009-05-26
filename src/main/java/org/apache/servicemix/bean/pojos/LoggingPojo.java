@@ -47,7 +47,7 @@ public class LoggingPojo extends BeanSupport implements MessageExchangeListener 
 
     private Log log = LogFactory.getLog(LoggingPojo.class);
 
-    private SourceTransformer sourceTransformer = new SourceTransformer();
+    private final SourceTransformer sourceTransformer = new SourceTransformer();
 
     private int maxMsgDisplaySize = 1500;
 
@@ -57,14 +57,6 @@ public class LoggingPojo extends BeanSupport implements MessageExchangeListener 
 
     public void setLog(Log log) {
         this.log = log;
-    }
-
-    public SourceTransformer getSourceTransformer() {
-        return sourceTransformer;
-    }
-
-    public void setSourceTransformer(SourceTransformer sourceTransformer) {
-        this.sourceTransformer = sourceTransformer;
     }
 
     public int getMaxMsgDisplaySize() {

@@ -55,7 +55,9 @@ public abstract class AbstractBeanComponentTest extends TestCase {
         container.shutDown();
     }
 
-    protected abstract void configureContainer();
+    protected void configureContainer() {
+        container.setFlowName("st");
+    }
     
     @SuppressWarnings("unchecked")
     protected void assertBeanEndpointRequestsMapEmpty(BeanEndpoint beanEndpoint) throws Exception {

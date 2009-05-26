@@ -128,7 +128,7 @@ public class BeanInfo {
             }
         }
         Expression parametersExpression = createMethodParametersExpression(parameterExpressions);
-        operations.put(opName, new MethodInfo(clazz, method, parametersExpression));
+        operations.put(opName, new MethodInfo(method, parametersExpression));
     }
 
     protected Expression createMethodParametersExpression(final Expression[] parameterExpressions) {

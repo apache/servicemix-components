@@ -46,7 +46,6 @@ public class ConsumerBeanTest extends TestCase {
         jbi.shutDown();
     }
 
-    /*
     public void test() throws Exception {
         BeanComponent bc = new BeanComponent();
         BeanEndpoint ep = new BeanEndpoint();
@@ -74,7 +73,6 @@ public class ConsumerBeanTest extends TestCase {
         assertExchangeWorked(me);
         client.done(me);
     }
-    */
     
     protected void assertExchangeWorked(MessageExchange me) throws Exception {
         if (me.getStatus() == ExchangeStatus.ERROR) {

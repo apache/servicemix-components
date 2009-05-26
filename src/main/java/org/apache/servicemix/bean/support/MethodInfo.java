@@ -30,12 +30,11 @@ import org.apache.servicemix.expression.Expression;
  * @version $Revision: $
  */
 public class MethodInfo {
-    private Class type;
-    private Method method;
-    private Expression parametersExpression;
+    
+    private final Method method;
+    private final Expression parametersExpression;
 
-    public MethodInfo(Class type, Method method, Expression parametersExpression) {
-        this.type = type;
+    public MethodInfo(Method method, Expression parametersExpression) {
         this.method = method;
         this.parametersExpression = parametersExpression;
     }
@@ -63,18 +62,6 @@ public class MethodInfo {
             }
         };
 
-    }
-
-    public Class getType() {
-        return type;
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public Expression getParametersExpression() {
-        return parametersExpression;
     }
 
     protected Object invoke(Method mth, Object pojo, Object[] arguments, 
