@@ -17,31 +17,13 @@
   limitations under the License.
   
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:sm="http://servicemix.apache.org/config/1.0"
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
        xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
-       xmlns:test="urn:test"
-       xmlns:mtom="http://cxf.apache.org/mime"
-       xmlns:calculator="http://apache.org/cxf/calculator"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-          http://www.springframework.org/schema/beans           http://www.springframework.org/schema/beans/spring-beans.xsd
-          ">
+       xmlns:calculator="http://apache.org/cxf/calculator">
   
-    
-      <cxfse:endpoint>
+      <cxfse:endpoint useJBIWrapper="false" useSOAPEnvelope="false">
         <cxfse:pojo>
-          <bean class="org.apache.servicemix.cxfse.GreeterImplForClientProxy" autowire="false">
-              <property name="calculator">
-                  <cxfse:proxy service="calculator:CalculatorService" context="#context" type="org.apache.cxf.calculator.CalculatorPortType" />
-              </property>
-              <property name="mtom">
-                  <cxfse:proxy service="mtom:TestMtomService" context="#context"  type="org.apache.cxf.mime.TestMtom" mtomEnabled="true"/>
-              </property>               <property name="calculatorPayload">
-                  <cxfse:proxy service="calculator:CalculatorService" context="#context" useJBIWrapper="false" useSOAPEnvelope="false" type="org.apache.cxf.calculator.CalculatorPortType" />
-              </property>
-          </bean>
-              
+          <bean class="org.apache.cxf.calculator.CalculatorImpl" />
         </cxfse:pojo>
         <cxfse:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
@@ -56,5 +38,5 @@
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfse:outFaultInterceptors>
       </cxfse:endpoint>
-    
+  
 </beans>

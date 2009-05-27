@@ -16,15 +16,19 @@
  */
 package org.apache.servicemix.cxfse;
 
-
+import java.io.InputStream;
 import java.util.concurrent.Future;
 
+import javax.activation.DataHandler;
 import javax.jbi.component.ComponentContext;
 import javax.jws.WebService;
+import javax.mail.util.ByteArrayDataSource;
 import javax.xml.ws.AsyncHandler;
+import javax.xml.ws.Holder;
 import javax.xml.ws.Response;
 
 import org.apache.cxf.calculator.CalculatorPortType;
+import org.apache.cxf.mime.TestMtom;
 import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
 import org.apache.hello_world_soap_http.NoSuchCodeLitFault;
@@ -46,16 +50,38 @@ public class GreeterImplForClientProxy implements Greeter {
 
     private ComponentContext context;
     private CalculatorPortType calculator;
+    private CalculatorPortType calculatorPayload;
+    private TestMtom mtom;    
+
     public String greetMe(String me) {
         int ret = 0;
         try {
-            
-            ret = getCalculator().add(1, 2);
+            if ("ffang".equals(me)) {
+                ret = getCalculator().add(1, 2);
+                return "Hello " + me  + " " + ret;
+            } else if ("mtom".equals(me)) {
+                Holder<DataHandler> param = new Holder<DataHandler>();
+                
+                param.value = new DataHandler(new ByteArrayDataSource("foobar".getBytes(), 
+                    "application/octet-stream"));
+                
+                Holder<String> name = new Holder<String>("call detail");
+                mtom.testXop(name, param);
+                InputStream bis = param.value.getDataSource().getInputStream();
+                byte b[] = new byte[10];
+                bis.read(b, 0, 10);
+                String attachContent = new String(b);
+                return "Hello " + me  + " " + attachContent;
+            } else if ("payload".equals(me)) {
+                ret = getCalculatorPayload().add(1, 2);
+                return "Hello " + me  + " " + ret;
+            }
                         
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "Hello " + me  + " " + ret;
+        return null;
+        
     }
     
     public ComponentContext getContext() {
@@ -164,6 +190,20 @@ public class GreeterImplForClientProxy implements Greeter {
         return null;
     }
 
-    
+    public void setMtom(TestMtom mtom) {
+        this.mtom = mtom;
+    }
+
+    public TestMtom getMtom() {
+        return mtom;
+    }
+
+    public void setCalculatorPayload(CalculatorPortType calculatorPayload) {
+        this.calculatorPayload = calculatorPayload;
+    }
+
+    public CalculatorPortType getCalculatorPayload() {
+        return calculatorPayload;
+    } 
 
 }
