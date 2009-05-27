@@ -25,12 +25,12 @@ import javax.xml.namespace.QName;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.converter.jaxp.StringSource;
 import org.apache.camel.Processor;
 import org.apache.camel.Exchange;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel 
@@ -48,6 +48,20 @@ public class JbiInOnlyTest extends JbiTestSupport {
         exchange.setService(new QName("urn:test", "in-only"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.send(exchange);
+        client.receive(1000);
+        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        done.assertIsSatisfied();
+    }
+    
+    public void testInOnlyExchangeForwardAndConvertBody() throws Exception {
+        MockEndpoint done = getMockEndpoint("mock:done");
+        done.expectedBodiesReceived(MESSAGE);
+        
+        ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
+        InOnly exchange = client.createInOnlyExchange();
+        exchange.setService(new QName("urn:test", "forward"));
+        exchange.getInMessage().setContent(new StringSource(MESSAGE));
+        client.sendSync(exchange);
         
         done.assertIsSatisfied();
     }
@@ -69,6 +83,19 @@ public class JbiInOnlyTest extends JbiTestSupport {
         client.sendSync(exchange);
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
     }
+    
+    public void testInOnlyToAggregator() throws Exception {
+        ServiceMixClient smxClient = getServicemixClient();
+        getMockEndpoint("mock:aggregated").expectedMessageCount(1);
+        for (int i = 0; i < 50; i++) {
+            InOnly exchange = smxClient.createInOnlyExchange();
+            exchange.setService(new QName("urn:test", "in-only-aggregator"));
+            exchange.getInMessage().setProperty("key", "aggregate-this");
+            exchange.getInMessage().setContent(new StringSource("<request>Could you please aggregate this?</request>"));
+            smxClient.send(exchange);
+        }
+        getMockEndpoint("mock:aggregated").assertIsSatisfied();
+    }
 
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
@@ -81,14 +108,18 @@ public class JbiInOnlyTest extends JbiTestSupport {
 
             @Override
             public void configure() throws Exception {
+                from("jbi:service:urn:test:forward").to("jbi:service:urn:test:in-only?mep=in-only");
                 from("jbi:service:urn:test:in-only").convertBodyTo(String.class).to("mock:done");
                 from("jbi:service:urn:test:in-only-error").process(new Processor() {
                     public void process(Exchange exchange) throws Exception {
                         throw new Exception("Error");
                     }
                 });
+                from("jbi:service:urn:test:in-only-aggregator")
+                    .aggregator(header("key"))
+                    .setHeader("aggregated").constant(true)
+                    .to("mock:aggregated");
             }
-            
         };
     }
 }

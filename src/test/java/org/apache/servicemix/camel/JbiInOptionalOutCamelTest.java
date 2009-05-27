@@ -39,6 +39,8 @@ public class JbiInOptionalOutCamelTest extends JbiTestSupport {
         client.sendBody("direct:in-optional-out", new StringSource("<request>Does this MEP confuse you?</request>"));
         
         inonly.assertIsSatisfied();
+        // let's wait for a moment to ensure that all pending Exchanges are handled
+        Thread.sleep(500);
     }
     
     public void testInOptionalOutFromJbiWithDone() throws Exception {

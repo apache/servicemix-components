@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.servicemix.jbi.helper.MessageExchangePattern;
+import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.FaultImpl;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
 import org.apache.servicemix.tck.mock.MockNormalizedMessage;
@@ -85,6 +86,22 @@ public class JbiExchangeTest extends TestCase {
         assertSame(in, exchange.getInMessage());
         assertSame(out, exchange.getOutMessage());
         assertSame(fault, exchange.getFaultMessage());
+    }
+    
+    public void testDetach() throws Exception {
+        MessageExchange exchange = createMockExchange();
+        StringSource body = new StringSource("<question>Will this still be there?</question>");
+        exchange.setMessage(exchange.createMessage(), "in");
+        exchange.getMessage("in").setContent(body);
+        exchange.getMessage("in").setProperty("key", "value");
+        JbiExchange camelExchange = new JbiExchange(new DefaultCamelContext(), new JbiBinding(), exchange);
+        assertEquals(body, camelExchange.getIn().getBody());
+        // now detach the Camel Exchange from the underlying JBI MessageExchange
+        assertSame(exchange, camelExchange.detach());
+        assertNull(camelExchange.getMessageExchange());
+        // and make sure that all the data is still there
+        assertEquals(body, camelExchange.getIn().getBody());
+        assertEquals("value", camelExchange.getIn().getHeader("key"));
     }
     
     private MessageExchange createMockExchange() {

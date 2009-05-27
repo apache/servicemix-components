@@ -20,6 +20,7 @@ package org.apache.servicemix.camel;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
 
@@ -103,9 +104,9 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
                     } else {
                         e = new Exception(t);
                     }
-                    fail(exchange, e);
+                    fail(camelExchange, e);
                 } else {
-                    done(exchange);
+                    done(camelExchange);
                 }
             } else {
                 if (logger.isDebugEnabled()) {
@@ -124,16 +125,16 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
                     } else {
                         e = new Exception(t);
                     }
-                    fail(exchange, e);
+                    fail(camelExchange, e);
                 } else {
                     boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
 //                    if (camelExchange.getOut(false) == null) {
 //                        camelExchange.getOut().copyFrom(camelExchange.getIn());
 //                    }
                     if (txSync) {
-                        sendSync(exchange);
+                        sendSync(camelExchange);
                     } else {
-                        send(exchange);
+                        send(camelExchange);
                     }
                 }
             }
@@ -143,4 +144,31 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
         }
     }
 
+    /*
+     * Send the underlying JBI MessageExchange and detach it from the Camel JbiExchange
+     */
+    private void send(JbiExchange camelExchange) throws MessagingException {
+        send(camelExchange.detach());
+    }
+
+    /*
+     * Synchronously send the underlying JBI MessageExchange and detach it from the Camel JbiExchange
+     */
+    private void sendSync(JbiExchange camelExchange) throws MessagingException {
+        sendSync(camelExchange.detach());
+    }
+
+    /*
+     * Send a DONE status for the underlying JBI MessageExchange and detach it from the Camel JbiExchange
+     */
+    private void done(JbiExchange camelExchange) throws MessagingException {
+        done(camelExchange.detach());
+    }
+
+    /*
+     * Make the underlying JBI MessageExchange fail and detach it from the Camel JbiExchange
+     */
+    private void fail(JbiExchange camelExchange, Exception e) throws MessagingException {
+        fail(camelExchange.detach(), e);
+    }
 }

@@ -45,13 +45,10 @@ public class JbiExchange extends DefaultExchange {
         populateProperties();
     }
 
-
-
     public JbiExchange(CamelContext context, JbiBinding binding, MessageExchange messageExchange) {
         super(context);
         this.binding = binding;
         this.messageExchange = messageExchange;
-
         setPattern(ExchangePattern.fromWsdlUri(messageExchange.getPattern().toString()));
         populateProperties();
     }
@@ -82,8 +79,12 @@ public class JbiExchange extends DefaultExchange {
     }
 
     @Override
-    public org.apache.camel.Exchange newInstance() {        
-        return new JbiExchange(this.getContext(), this.getBinding(), this.getMessageExchange());
+    public org.apache.camel.Exchange newInstance() {    
+        if (messageExchange == null) {
+            return new JbiExchange(this.getContext(), this.getBinding());
+        } else {
+            return new JbiExchange(this.getContext(), this.getBinding(), this.getMessageExchange());
+        }
     }
     
     @Override
@@ -197,4 +198,11 @@ public class JbiExchange extends DefaultExchange {
         }
     }
 
+    public MessageExchange detach() {
+        try {
+            return messageExchange;
+        } finally {
+            messageExchange = null;
+        }
+    }
 }
