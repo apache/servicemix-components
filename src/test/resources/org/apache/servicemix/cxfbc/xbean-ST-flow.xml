@@ -51,6 +51,7 @@
                       targetService="calculator:CalculatorService"
                       targetInterface="calculator:CalculatorPortType"
                       synchronous="false"
+                      locationURI="http://localhost:19000/CalculatorService/SoapPort"
                       >
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>

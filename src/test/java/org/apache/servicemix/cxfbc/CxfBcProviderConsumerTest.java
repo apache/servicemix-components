@@ -19,7 +19,7 @@ package org.apache.servicemix.cxfbc;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
-
+import javax.xml.ws.soap.SOAPBinding;
 import org.apache.cxf.calculator.AddNumbersFault;
 import org.apache.cxf.calculator.CalculatorImpl;
 import org.apache.cxf.calculator.CalculatorPortType;
@@ -52,7 +52,10 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
         assertNotNull(wsdl);
         CalculatorService service1 = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));
-        CalculatorPortType port = service1.getCalculatorPort();
+        QName endpointName = new QName("http://apache.org/cxf/calculator", "CalculatorPort");
+        service1.addPort(endpointName, 
+                SOAPBinding.SOAP12HTTP_BINDING, "http://localhost:19000/CalculatorService/SoapPort");
+        CalculatorPortType port = service1.getPort(endpointName, CalculatorPortType.class);
         ClientProxy.getClient(port).getInFaultInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getOutFaultInterceptors().add(new LoggingOutInterceptor());

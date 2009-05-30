@@ -41,7 +41,7 @@
   </http:destination>
 
   <httpj:engine-factory bus="cxf">
-   <httpj:engine port="9000">
+   <httpj:engine port="19000">
        <httpj:threadingParameters minThreads="1" maxThreads="2" />
    </httpj:engine>
   </httpj:engine-factory>

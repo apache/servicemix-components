@@ -44,7 +44,7 @@ public class CxfBcRetrieveWsdlFromInternalEndpointTest extends SpringTestSupport
         CxfBcConsumer cxfBcConsumer = new CxfBcConsumer();
         cxfBcConsumer.setTargetEndpoint("CalculatorPort");
         cxfBcConsumer.setTargetService(new QName("http://apache.org/cxf/calculator", "CalculatorService"));
-        cxfBcConsumer.setLocationURI("http://localhost:9000/CalculatorService/SoapPort");
+        cxfBcConsumer.setLocationURI("http://localhost:19000/CalculatorService/SoapPort");
         component.addEndpoint(cxfBcConsumer);
         component.start();
     }
@@ -59,7 +59,7 @@ public class CxfBcRetrieveWsdlFromInternalEndpointTest extends SpringTestSupport
         factory.getOutInterceptors().add(new LoggingOutInterceptor());
         factory.setServiceClass(CalculatorPortType.class);
         factory.setBindingId(SOAPBinding.SOAP11HTTP_BINDING);
-        factory.setAddress("http://localhost:9000/CalculatorService/SoapPort");
+        factory.setAddress("http://localhost:19000/CalculatorService/SoapPort");
         CalculatorPortType port = (CalculatorPortType) factory.create();
         
         int ret = port.add(1, 2);

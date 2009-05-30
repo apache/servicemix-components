@@ -28,7 +28,7 @@
     <sm:endpoints>      
       
             <cxfbc:provider wsdl="./hello_world.wsdl"
-                      locationURI="http://localhost:9000/SoapContext/SoapPort"
+                      locationURI="http://localhost:19000/SoapContext/SoapPort"
                       endpoint="SoapPort"
                       service="greeter:SOAPService"
                       interfaceName="greeter:Greeter"                      

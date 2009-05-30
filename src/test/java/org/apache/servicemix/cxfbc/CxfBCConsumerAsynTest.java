@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
-
+import javax.xml.ws.soap.SOAPBinding;
 import org.apache.cxf.calculator.CalculatorPortType;
 import org.apache.cxf.calculator.CalculatorService;
 import org.apache.cxf.common.logging.LogUtils;
@@ -80,7 +80,10 @@ public class CxfBCConsumerAsynTest extends SpringTestSupport {
         assertNotNull(wsdl);
         CalculatorService service = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));
-        CalculatorPortType port = service.getCalculatorPort();
+        QName endpoint = new QName("http://apache.org/cxf/calculator", "CalculatorPort");
+        service.addPort(endpoint, 
+                SOAPBinding.SOAP12HTTP_BINDING, "http://localhost:19000/CalculatorService/SoapPort");
+        CalculatorPortType port = service.getPort(endpoint, CalculatorPortType.class);
         ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getOutInterceptors().add(new LoggingOutInterceptor());
         MultiClientThread[] clients = new MultiClientThread[2];

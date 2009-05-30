@@ -88,7 +88,7 @@
     </binding>
     <service name="CalculatorSecondService">
 	<port name="CalculatorPort" binding="tns:CalculatorBinding">
-	    <soap12:address location="http://localhost:9000/CalculatorSecondService/SoapPort" />
+	    <soap12:address location="http://localhost:19000/CalculatorSecondService/SoapPort" />
 	</port>
     </service>
 </definitions>

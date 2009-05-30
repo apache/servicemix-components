@@ -31,7 +31,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
     <bean id="loggingIn" class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
     <bean id="loggingOut" class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
     <bean id="toVerifier" class="org.apache.servicemix.cxfbc.ws.addressing.AddressingToVerifier">
-      <property name="expectedTo" value="http://localhost:9000/SoapContext/SoapPort"/>
+      <property name="expectedTo" value="http://localhost:19000/SoapContext/SoapPort"/>
     </bean>
 
     <!-- We are adding the interceptors to the bus as we will have only one endpoint/service/bus. -->

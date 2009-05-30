@@ -45,6 +45,7 @@
         </cxfse:outFaultInterceptors>
       </cxfse:endpoint>
       <cxfbc:consumer wsdl="/wsdl/calculator.wsdl"
+                      locationURI="http://localhost:19000/CalculatorService/SoapPort"
                       targetEndpoint="CalculatorPort"
                       targetService="calculator:CalculatorService"
                       targetInterface="calculator:CalculatorPortType"
