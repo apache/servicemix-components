@@ -116,8 +116,10 @@ public class JbiInOnlyTest extends JbiTestSupport {
                     }
                 });
                 from("jbi:service:urn:test:in-only-aggregator")
+                    .to("log:info")
                     .aggregator(header("key"))
                     .setHeader("aggregated").constant(true)
+                    .to("log:info")
                     .to("mock:aggregated");
             }
         };

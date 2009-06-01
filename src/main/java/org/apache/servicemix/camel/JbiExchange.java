@@ -80,11 +80,7 @@ public class JbiExchange extends DefaultExchange {
 
     @Override
     public org.apache.camel.Exchange newInstance() {    
-        if (messageExchange == null) {
-            return new JbiExchange(this.getContext(), this.getBinding());
-        } else {
-            return new JbiExchange(this.getContext(), this.getBinding(), this.getMessageExchange());
-        }
+        return new JbiExchange(this.getContext(), this.getBinding());
     }
     
     @Override
@@ -198,11 +194,14 @@ public class JbiExchange extends DefaultExchange {
         }
     }
 
+    /**
+     * Detach from the underlying JBI {@link MessageExchange}
+     * 
+     * @return the underlying {@link MessageExchange}
+     */
     public MessageExchange detach() {
-        try {
-            return messageExchange;
-        } finally {
-            messageExchange = null;
-        }
+        MessageExchange result = messageExchange;
+        messageExchange = null;
+        return result;
     }
 }
