@@ -137,6 +137,10 @@ public class JbiOutInterceptor extends AbstractPhaseInterceptor<Message> {
         List<Header> headerList = message.getHeaders();
         List<SoapHeaderInfo> headers = msg.getExtensors(SoapHeaderInfo.class);
         for (SoapHeaderInfo header : headers) {
+            if (partsContent.size() == 0) {
+                break;
+            }
+
             NodeList nl = partsContent.get(0);
             if (header.getPart().getConcreteName().getNamespaceURI().equals(
                     nl.item(0).getNamespaceURI())
