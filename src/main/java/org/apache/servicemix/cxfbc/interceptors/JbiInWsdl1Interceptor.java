@@ -232,7 +232,8 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             nodeList = soapFault.getElementsByTagName("faultstring");
             message.put("faultstring", nodeList.item(0).getFirstChild().getTextContent());
             nodeList = soapFault.getElementsByTagName("detail");
-            if (nodeList != null && nodeList.getLength() > 0) {
+            if (nodeList != null && nodeList.getLength() > 0
+                && nodeList.item(0).getFirstChild() != null) {
                 jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
             } else {
                 message.put("hasdetail", false);
@@ -249,7 +250,8 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             nodeList = soapFault.getElementsByTagName("soap:Reason");
             message.put("faultstring", nodeList.item(0).getFirstChild().getTextContent());
             nodeList = soapFault.getElementsByTagName("soap:Detail");
-            if (nodeList != null && nodeList.getLength() > 0) {
+            if (nodeList != null && nodeList.getLength() > 0
+                && nodeList.item(0).getFirstChild() != null) {
                 jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
             } else {
                 message.put("hasdetail", false);
