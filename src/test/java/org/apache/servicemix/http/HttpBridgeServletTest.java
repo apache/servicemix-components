@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.servicemix.http;
 
 import java.io.InputStream;
@@ -14,188 +30,179 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import junit.framework.TestCase;
+
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.Response;
 
-import junit.framework.TestCase;
-
 public class HttpBridgeServletTest extends TestCase {
 
-	private HttpBridgeServlet httpBridgeServlet;
-	
-	protected void setUp() throws Exception {
-		super.setUp();
-		httpBridgeServlet = new HttpBridgeServlet();
-	}
+    private HttpBridgeServlet httpBridgeServlet;
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		httpBridgeServlet = null;
-	}
-	
-	// Test init() when HttpProcessor is null.
-	public void testInitProcessorNull() throws Exception {
-		httpBridgeServlet.setProcessor(null);
-		TestServletConfig config = new TestServletConfig();
-		
-		try {
-			httpBridgeServlet.init(config);
-			fail("init() should fail when HttpProcessor is null");
-		} catch (ServletException se) {
-			String errorMsg = se.getMessage();
-			assertTrue("ServletException does not contain the expected error message", 
-					errorMsg.contains("No binding property available"));
-		}
-	}
-	
-	// Test service() method - check for exceptions, fail if any are thrown.
-	public void testService() throws Exception {
-		TestHttpProcessor processor = new TestHttpProcessor();
-		httpBridgeServlet.setProcessor(processor);
-		TestServletConfig config = new TestServletConfig();
-		
-		httpBridgeServlet.init(config);
-		
-		Request request = new Request();
-		Response response = null;
-		
-		try {
-			httpBridgeServlet.service(request, response);
-		} catch (Exception e) {
-			fail("service() should not throw an exception");
-		}
-		
-	}
+    protected void setUp() throws Exception {
+        super.setUp();
+        httpBridgeServlet = new HttpBridgeServlet();
+    }
 
-	// Dummy ServletConfig implementation for testing.  
-	public static class TestServletConfig implements ServletConfig {
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        httpBridgeServlet = null;
+    }
 
-		public String getInitParameter(String name) {
-			return null;
-		}
+    // Test init() when HttpProcessor is null.
+    public void testInitProcessorNull() throws Exception {
+        httpBridgeServlet.setProcessor(null);
+        TestServletConfig config = new TestServletConfig();
+        
+        try {
+            httpBridgeServlet.init(config);
+            fail("init() should fail when HttpProcessor is null");
+        } catch (ServletException se) {
+            String errorMsg = se.getMessage();
+            assertTrue("ServletException does not contain the expected error message", errorMsg.contains("No binding property available"));
+        }
+    }
 
-		public Enumeration<String> getInitParameterNames() {
-			return null;
-		}
+    // Test service() method - check for exceptions, fail if any are thrown.
+    public void testService() throws Exception {
+        TestHttpProcessor processor = new TestHttpProcessor();
+        httpBridgeServlet.setProcessor(processor);
+        TestServletConfig config = new TestServletConfig();
 
-		public ServletContext getServletContext() {
-			return new TestServletContext();
-		}
+        httpBridgeServlet.init(config);
 
-		public String getServletName() {
-			return null;
-		}
-		
-	}
-	
-	// Dummy ServletContext implementation for testing.
-	public static class TestServletContext implements ServletContext {
+        Request request = new Request();
+        Response response = null;
 
-		public Object getAttribute(String name) {
-			return null;
-		}
+        try {
+            httpBridgeServlet.service(request, response);
+        } catch (Exception e) {
+            fail("service() should not throw an exception");
+        }
+    }
 
-		public Enumeration<Object> getAttributeNames() {
-			return null;
-		}
+    // Dummy ServletConfig implementation for testing.  
+    public static class TestServletConfig implements ServletConfig {
 
-		public ServletContext getContext(String uripath) {
-			return this;
-		}
+        public String getInitParameter(String name) {
+            return null;
+        }
 
-		public String getContextPath() {
-			return null;
-		}
+        public Enumeration<String> getInitParameterNames() {
+            return null;
+        }
 
-		public String getInitParameter(String name) {
-			return null;
-		}
+        public ServletContext getServletContext() {
+            return new TestServletContext();
+        }
 
-		public Enumeration<String> getInitParameterNames() {
-			return null;
-		}
+        public String getServletName() {
+            return null;
+        }
+    }
 
-		public int getMajorVersion() {
-			return 0;
-		}
+    // Dummy ServletContext implementation for testing.
+    public static class TestServletContext implements ServletContext {
 
-		public String getMimeType(String file) {
-			return null;
-		}
+        public Object getAttribute(String name) {
+            return null;
+        }
 
-		public int getMinorVersion() {
-			return 0;
-		}
+        public Enumeration<Object> getAttributeNames() {
+            return null;
+        }
 
-		public RequestDispatcher getNamedDispatcher(String name) {
-			return null;
-		}
+        public ServletContext getContext(String uripath) {
+            return this;
+        }
 
-		public String getRealPath(String path) {
-			return null;
-		}
+        public String getContextPath() {
+            return null;
+        }
 
-		public RequestDispatcher getRequestDispatcher(String path) {
-			return null;
-		}
+        public String getInitParameter(String name) {
+            return null;
+        }
 
-		public URL getResource(String path) throws MalformedURLException {
-			return null;
-		}
+        public Enumeration<String> getInitParameterNames() {
+            return null;
+        }
 
-		public InputStream getResourceAsStream(String path) {
-			return null;
-		}
+        public int getMajorVersion() {
+            return 0;
+        }
 
-		public Set<String> getResourcePaths(String path) {
-			return null;
-		}
+        public String getMimeType(String file) {
+            return null;
+        }
 
-		public String getServerInfo() {
-			return null;
-		}
+        public int getMinorVersion() {
+            return 0;
+        }
 
-		public String getServletContextName() {
-			return null;
-		}
+        public RequestDispatcher getNamedDispatcher(String name) {
+            return null;
+        }
 
-		public void log(String message, Throwable throwable) {
-			
-		}
+        public String getRealPath(String path) {
+            return null;
+        }
 
-		public void log(String msg) {
-			
-		}
+        public RequestDispatcher getRequestDispatcher(String path) {
+            return null;
+        }
 
-		public void removeAttribute(String name) {
-			
-		}
+        public URL getResource(String path) throws MalformedURLException {
+            return null;
+        }
 
-		public void setAttribute(String name, Object object) {
-			
-		}
+        public InputStream getResourceAsStream(String path) {
+            return null;
+        }
 
-		public Servlet getServlet(String name) throws ServletException {
-			return null;
-		}
+        public Set<String> getResourcePaths(String path) {
+            return null;
+        }
 
-		public Enumeration<Servlet> getServletNames() {
-			return null;
-		}
+        public String getServerInfo() {
+            return null;
+        }
 
-		public Enumeration<Servlet> getServlets() {
-			return null;
-		}
+        public String getServletContextName() {
+            return null;
+        }
 
-		public void log(Exception exception, String msg) {
-			
-		}
-		
-	}
-	
-	// Dummy HttpProcessor implementation for testing.
+        public void log(String message, Throwable throwable) {
+        }
+
+        public void log(String msg) {
+        }
+
+        public void removeAttribute(String name) {
+        }
+
+        public void setAttribute(String name, Object object) {
+        }
+
+        public Servlet getServlet(String name) throws ServletException {
+            return null;
+        }
+
+        public Enumeration<Servlet> getServletNames() {
+            return null;
+        }
+
+        public Enumeration<Servlet> getServlets() {
+            return null;
+        }
+
+        public void log(Exception exception, String msg) {
+        }
+    }
+
+    // Dummy HttpProcessor implementation for testing.
     public static class TestHttpProcessor implements HttpProcessor {
-    	
+
         public SslParameters getSsl() {
             return null;
         }

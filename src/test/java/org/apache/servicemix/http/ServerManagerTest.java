@@ -109,39 +109,39 @@ public class ServerManagerTest extends TestCase {
     
     // Test create context when an authorization method is set on the HTTP processor.
     public void testContextWithAuth() throws Exception {
-    	server.init();
-    	server.start();
-    	
-    	Object contextObj = server.createContext("http://localhost:8192/Service1/test", new TestAltHttpProcessor());
-    	
-    	assertNotNull("Context should not be null", contextObj);    	
-    	assertTrue("Context should be started", ((ContextHandler)contextObj).isStarted());
+        server.init();
+        server.start();
+
+        Object contextObj = server.createContext("http://localhost:8192/Service1/test", new TestAltHttpProcessor());
+   
+        assertNotNull("Context should not be null", contextObj);
+        assertTrue("Context should be started", ((ContextHandler)contextObj).isStarted());
     }
     
     // Test when https protocol used but SSL params is null.
     public void testHttpsNoSslParams() throws Exception {
-    	server.init();
-    	server.start();
-    	
-    	try {
-    		server.createContext("https://localhost:8143/Service/test", new TestHttpProcessor());
-    		fail("Context for https URL with no SSL Params should not be created");
-    	} catch (IllegalArgumentException iae) {
-    		// test passes
-    	}
+        server.init();
+        server.start();
+ 
+        try {
+            server.createContext("https://localhost:8143/Service/test", new TestHttpProcessor());
+            fail("Context for https URL with no SSL Params should not be created");
+        } catch (IllegalArgumentException iae) {
+            // test passes
+        }
     }
     
     // Test invalid protocol
     public void testContextWithInvalidProtocol() throws Exception {
-    	server.init();
-    	server.start();
-    	
-    	try {
-    		server.createContext("file://localhost:8192/Service/test", new TestHttpProcessor());
-    		fail("Context for invalid protocol should not be created.");
-    	} catch (UnsupportedOperationException uoe) {
-    		// test passes
-    	}
+        server.init();
+        server.start();
+ 
+        try {
+            server.createContext("file://localhost:8192/Service/test", new TestHttpProcessor());
+            fail("Context for invalid protocol should not be created.");
+        } catch (UnsupportedOperationException uoe) {
+            // test passes
+        }
     }
 
     public void testSetMaxThreads() throws Exception {
@@ -199,7 +199,7 @@ public class ServerManagerTest extends TestCase {
     }
     
     public static class TestAltHttpProcessor implements HttpProcessor {
-    	public SslParameters getSsl() {
+        public SslParameters getSsl() {
             return null;
         }
 
