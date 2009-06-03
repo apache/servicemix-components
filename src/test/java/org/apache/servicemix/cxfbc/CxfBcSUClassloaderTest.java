@@ -74,7 +74,9 @@ public class CxfBcSUClassloaderTest extends SpringTestSupport {
         assertNotNull(wsdl);
         service = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorSecondService"));
-        port = service.getCalculatorPort();
+        service.addPort(endpoint,
+                SOAPBinding.SOAP12HTTP_BINDING, "http://localhost:19000/CalculatorService/SoapPort");
+        port = service.getPort(endpoint, CalculatorPortType.class);
         ClientProxy.getClient(port).getInFaultInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
         try {
