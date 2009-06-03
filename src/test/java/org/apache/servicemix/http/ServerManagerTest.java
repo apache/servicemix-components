@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.http.jetty.JettyContextManager;
+import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.thread.QueuedThreadPool;
 
 public class ServerManagerTest extends TestCase {
@@ -105,6 +106,43 @@ public class ServerManagerTest extends TestCase {
             // ok
         }
     }
+    
+    // Test create context when an authorization method is set on the HTTP processor.
+    public void testContextWithAuth() throws Exception {
+    	server.init();
+    	server.start();
+    	
+    	Object contextObj = server.createContext("http://localhost:8192/Service1/test", new TestAltHttpProcessor());
+    	
+    	assertNotNull("Context should not be null", contextObj);    	
+    	assertTrue("Context should be started", ((ContextHandler)contextObj).isStarted());
+    }
+    
+    // Test when https protocol used but SSL params is null.
+    public void testHttpsNoSslParams() throws Exception {
+    	server.init();
+    	server.start();
+    	
+    	try {
+    		server.createContext("https://localhost:8143/Service/test", new TestHttpProcessor());
+    		fail("Context for https URL with no SSL Params should not be created");
+    	} catch (IllegalArgumentException iae) {
+    		// test passes
+    	}
+    }
+    
+    // Test invalid protocol
+    public void testContextWithInvalidProtocol() throws Exception {
+    	server.init();
+    	server.start();
+    	
+    	try {
+    		server.createContext("file://localhost:8192/Service/test", new TestHttpProcessor());
+    		fail("Context for invalid protocol should not be created.");
+    	} catch (UnsupportedOperationException uoe) {
+    		// test passes
+    	}
+    }
 
     public void testSetMaxThreads() throws Exception {
         int maxThreads = 512;
@@ -158,5 +196,19 @@ public class ServerManagerTest extends TestCase {
             log.info(request);
         }
 
+    }
+    
+    public static class TestAltHttpProcessor implements HttpProcessor {
+    	public SslParameters getSsl() {
+            return null;
+        }
+
+        public String getAuthMethod() {
+            return "usernameToken";
+        }
+
+        public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
+            log.info(request);
+        }
     }
 }

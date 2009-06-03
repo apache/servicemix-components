@@ -35,13 +35,13 @@ import org.mortbay.util.StringUtil;
 public class ManagedContextManager implements ContextManager {
 
     private HttpConfiguration configuration;
-    private Map managedContexts;
+    private Map<String, HttpProcessor> managedContexts;
 
     public void init() throws Exception {
         if (configuration == null) {
             configuration = new HttpConfiguration();
         }
-        managedContexts = new ConcurrentHashMap();
+        managedContexts = new ConcurrentHashMap<String, HttpProcessor>();
     }
 
     public void shutDown() throws Exception {
@@ -58,7 +58,7 @@ public class ManagedContextManager implements ContextManager {
         URI uri = new URI(strUrl);
         String path = uri.getPath();
         if (!path.startsWith("/")) {
-            path = path + "/";
+            path = "/" + path;
         }
         if (!path.endsWith("/")) {
             path = path + "/";
@@ -107,8 +107,8 @@ public class ManagedContextManager implements ContextManager {
                 displayServices(request, response);
                 return;
             }
-            Set urls = managedContexts.keySet();
-            for (Iterator iter = urls.iterator(); iter.hasNext();) {
+            Set<String> urls = managedContexts.keySet();
+            for (Iterator<String> iter = urls.iterator(); iter.hasNext();) {
                 String url = (String) iter.next();
                 if (uri.startsWith(request.getContextPath() + mapping + url)) {
                     HttpProcessor proc = (HttpProcessor) managedContexts.get(url);
@@ -134,8 +134,8 @@ public class ManagedContextManager implements ContextManager {
             writer.write("No service matched or handled this request.<BR>");
             writer.write("Known services are: <ul>");
 
-            Set servers = ManagedContextManager.this.managedContexts.keySet();
-            for (Iterator iter = servers.iterator(); iter.hasNext();) {
+            Set<String> servers = ManagedContextManager.this.managedContexts.keySet();
+            for (Iterator<String> iter = servers.iterator(); iter.hasNext();) {
                 String context = (String) iter.next();
                 if (!context.endsWith("/")) {
                     context += "/";

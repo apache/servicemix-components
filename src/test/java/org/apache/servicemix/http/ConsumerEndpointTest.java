@@ -149,6 +149,9 @@ public class ConsumerEndpointTest extends TestCase {
         }
 
         recv.getMessageList().assertMessagesReceived(1);
+        post.releaseConnection();
+        container.deactivateComponent("recv");
+        container.deactivateComponent("http");
     }
 
     public void testHttpInOutWithTimeout() throws Exception {
@@ -191,6 +194,10 @@ public class ConsumerEndpointTest extends TestCase {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
         Thread.sleep(1000);
+        
+        post.releaseConnection();
+        container.deactivateComponent("echo");
+        container.deactivateComponent("http");
     }
 
     public void testHttpInOut() throws Exception {
@@ -221,6 +228,10 @@ public class ConsumerEndpointTest extends TestCase {
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
+        
+        post.releaseConnection();
+        container.deactivateComponent("echo");
+        container.deactivateComponent("http");
     }
 
     protected void initSoapEndpoints(boolean useJbiWrapper) throws Exception {
@@ -264,6 +275,9 @@ public class ConsumerEndpointTest extends TestCase {
         assertEquals(SoapConstants.SOAP_11_FAULTCODE, DomUtil.getQName(elem));
         assertEquals(SoapConstants.SOAP_11_CODE_VERSIONMISMATCH, DomUtil.createQName(elem, elem.getTextContent()));
         assertEquals(500, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("http");
     }
 
     public void testHttpSoap12FaultOnEnvelope() throws Exception {
@@ -289,6 +303,9 @@ public class ConsumerEndpointTest extends TestCase {
         assertEquals(SoapConstants.SOAP_12_FAULTSUBCODE, DomUtil.getQName(elem));
         assertEquals(SoapConstants.SOAP_12_CODE_VERSIONMISMATCH, DomUtil.createQName(elem, elem.getTextContent()));
         assertEquals(500, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("http");
     }
 
     public void testHttpSoap11UnkownOp() throws Exception {
@@ -311,6 +328,9 @@ public class ConsumerEndpointTest extends TestCase {
         assertEquals(SoapConstants.SOAP_11_FAULTCODE, DomUtil.getQName(elem));
         assertEquals(SoapConstants.SOAP_11_CODE_CLIENT, DomUtil.createQName(elem, elem.getTextContent()));
         assertEquals(500, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("http");
     }
 
     /*
@@ -368,6 +388,10 @@ public class ConsumerEndpointTest extends TestCase {
         elem = DomUtil.getFirstChildElement(elem);
         assertEquals(new QName("uri:HelloWorld", "HelloResponse"), DomUtil.getQName(elem));
         assertEquals(200, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("echo");
+        container.deactivateComponent("http");
     }
 
     public void testHttpSoap12() throws Exception {
@@ -411,6 +435,10 @@ public class ConsumerEndpointTest extends TestCase {
         elem = DomUtil.getFirstChildElement(elem);
         assertEquals(new QName("uri:HelloWorld", "HelloResponse"), DomUtil.getQName(elem));
         assertEquals(200, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("mock");
+        container.deactivateComponent("http");
     }
 
     public void testHttpSoap12WithoutJbiWrapper() throws Exception {
@@ -452,6 +480,10 @@ public class ConsumerEndpointTest extends TestCase {
         elem = DomUtil.getFirstChildElement(elem);
         assertEquals(new QName("uri:HelloWorld", "HelloResponse"), DomUtil.getQName(elem));
         assertEquals(200, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("mock");
+        container.deactivateComponent("http");
     }
 
     public void testGzipEncodingNonSoap() throws Exception {
@@ -495,6 +527,10 @@ public class ConsumerEndpointTest extends TestCase {
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
+        
+        post.releaseConnection();
+        container.deactivateComponent("echo");
+        container.deactivateComponent("http");
     }
 
     public void testGzipEncodingSoap() throws Exception {
@@ -552,6 +588,10 @@ public class ConsumerEndpointTest extends TestCase {
         elem = DomUtil.getFirstChildElement(elem);
         assertEquals(new QName("uri:HelloWorld", "HelloResponse"), DomUtil.getQName(elem));
         assertEquals(200, post.getStatusCode());
+        
+        post.releaseConnection();
+        container.deactivateComponent("mock");
+        container.deactivateComponent("http");
     }
 
     /*
@@ -595,7 +635,7 @@ public class ConsumerEndpointTest extends TestCase {
         echo.setService(new QName("urn:test", "echo"));
         echo.setEndpoint("endpoint");
         container.activateComponent(echo, "echo");
-
+        
         ((ExecutorFactoryImpl) container.getExecutorFactory()).getDefaultConfig().setMaximumPoolSize(16);
 
         container.start();
@@ -609,8 +649,9 @@ public class ConsumerEndpointTest extends TestCase {
                     final HttpClient client = new HttpClient();
                     client.getParams().setSoTimeout(soTimeout);
                     for (int i = 0; i < nbRequests; i++) {
+                    	PostMethod post = null;
                         try {
-                            PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+                            post = new PostMethod("http://localhost:8192/ep1/");
                             post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
                             client.executeMethod(post);
                             if (post.getStatusCode() != 200) {
@@ -623,6 +664,9 @@ public class ConsumerEndpointTest extends TestCase {
                             throwables.add(t);
                         } finally {
                             latchSent.countDown();
+                            if (post != null) {
+                            	post.releaseConnection();
+                            }
                             //System.out.println("[" + System.currentTimeMillis() + "] Request " + latch.getCount() + " processed");
                         }
                     }
@@ -634,7 +678,10 @@ public class ConsumerEndpointTest extends TestCase {
         listener.assertExchangeCompleted();
         for (Throwable t : throwables) {
             t.printStackTrace();
-        }
+        }        
+        
+        container.deactivateComponent("echo");
+        container.deactivateComponent("http");
     }
 
     public void testProxyWsl() throws Exception {
@@ -654,7 +701,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep1.setService(new QName("uri:HelloWorld", "HelloService"));
         ep1.setEndpoint("HelloPortSoap11");
         ep1.setTargetService(new QName("http://test", "MyConsumerService"));
-        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setLocationURI("http://localhost:8193/ep1/");
         ep1.setValidateWsdl(true);
         http.setEndpoints(new HttpEndpointType[] {ep1});
         container.activateComponent(http, "http");
@@ -662,7 +709,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();
-        Definition def = reader.readWSDL("http://localhost:8192/ep1/?wsdl");
+        Definition def = reader.readWSDL("http://localhost:8193/ep1/?wsdl");
         StringWriter writer = new StringWriter();
         factory.newWSDLWriter().writeWSDL(def, writer);
         log.info(writer.toString());
@@ -672,6 +719,9 @@ public class ConsumerEndpointTest extends TestCase {
         ExtensibilityElement ee = (ExtensibilityElement) bop.getExtensibilityElements().iterator().next();
         assertTrue(ee instanceof SOAPOperation);
         assertEquals("", ((SOAPOperation) ee).getSoapActionURI());
+        
+        container.deactivateComponent("echo");
+        container.deactivateComponent("http");
     }
 
 }
