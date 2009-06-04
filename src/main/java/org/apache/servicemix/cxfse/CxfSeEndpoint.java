@@ -358,6 +358,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                         //sfForSoapBinding.setAddress("http://dummyaddress");
                         sfForSoapBinding.getServiceFactory().setPopulateFromClass(true);
                         sfForSoapBinding.setStart(false);
+                        sfForSoapBinding.setAddress("local://dummy");
                         soapBindingServer = sfForSoapBinding.create();
                     }
                     Message message = soapBindingServer.getEndpoint().getBinding().createMessage();
@@ -530,7 +531,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                 mth.invoke(pojo, new Object[] {context});
             }
         } catch (Exception e) {
-            logger.debug("Unable to inject ComponentContext: " + e.getMessage());
+            //setContext is optional for the pojo
         }
 
     }
