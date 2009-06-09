@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -164,5 +165,48 @@ public class SplitAggregatorTest extends AbstractEIPTest {
 
         Thread.sleep(500);
         rec.getMessageList().assertMessagesReceived(0);
+    }
+    
+    // Test aggregator when InOut MEP is used.  An exception should be thrown.
+    public void testInvalidInOutMep() throws Exception {
+    	
+        int nbMessages = 3;
+        int nbMessagesSent = 0;
+        String corrId = Long.toString(System.currentTimeMillis());
+        try {
+            for (int i = 0; i < 3; i++) {
+                InOut me = client.createInOutExchange();
+                me.setService(new QName("aggregator"));
+                me.getInMessage().setContent(createSource("<hello id='" + i + "' />"));
+                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_COUNT, new Integer(nbMessages));
+                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_INDEX, new Integer(i));
+                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_CORRID, corrId);
+                me.getInMessage().setProperty("prop", "value");
+                client.send(me);
+                nbMessagesSent++;
+            }
+        } catch (UnsupportedOperationException uoe) {
+        	// test succeeds
+        }
+    }
+    
+    // Test aggregator when no correlation id is set on the message.
+    public void testNullCorrelationId() throws Exception {
+    	int nbMessages = 3;
+        int nbMessagesSent = 0;
+        try {
+            for (int i = 0; i < 3; i++) {
+                InOut me = client.createInOutExchange();
+                me.setService(new QName("aggregator"));
+                me.getInMessage().setContent(createSource("<hello id='" + i + "' />"));
+                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_COUNT, new Integer(nbMessages));
+                me.getInMessage().setProperty(AbstractSplitter.SPLITTER_INDEX, new Integer(i));
+                me.getInMessage().setProperty("prop", "value");
+                client.send(me);
+                nbMessagesSent++;
+            }
+        } catch (IllegalArgumentException iae) {
+        	// test succeeds
+        }
     }
 }

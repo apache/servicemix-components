@@ -66,5 +66,26 @@ public class MessageFilterTest extends AbstractEIPTest {
         client.sendSync(me);
         assertEquals(ExchangeStatus.ERROR, me.getStatus());
     }
+    
+    // Test XPath filter when XPath expression is invalid.
+    public void testInvalidXPathExpression() throws Exception {
+    	// Create an invalid XPath expression predicate and set it as the filter.
+    	XPathPredicate predicate = new XPathPredicate();
+    	predicate.setXPath("\\invalid");
+    	messageFilter.setFilter(predicate);
+    	configurePattern(messageFilter);
+        
+        ReceiverComponent rec = activateReceiver("target");
+        
+        // Create an inOnly exchange and send a basic XML message.
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("messageFilter"));
+        me.getInMessage().setContent(createSource("<hello><one/><two/><three/></hello>"));
+        client.sendSync(me);
+        assertEquals("", ExchangeStatus.DONE, me.getStatus());
+        
+        // No messages should be received due to the invalid XPath expression.
+        rec.getMessageList().assertMessagesReceived(0);
+    }
 
 }
