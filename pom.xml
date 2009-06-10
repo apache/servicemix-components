@@ -69,8 +69,8 @@
     </servicemix.osgi.export>
     <servicemix.osgi.bundles>
         org.apache.cxf.bundle,
-        org.apache.cxf.cxf-rt-bindings-jbi,
-        org.apache.cxf.cxf-rt-transports-jbi,
+        org.apache.cxf.rt-bindings-jbi,
+        org.apache.cxf.rt-transports-jbi,
         org.springframework.core,
         org.springframework.beans,
         org.springframework.context
