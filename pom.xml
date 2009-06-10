@@ -101,6 +101,11 @@
     </dependency>
     <!-- for unit/integration testing -->
     <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
       <version>${servicemix-version}</version>
@@ -139,6 +144,18 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <!-- exclude generated DefaultBootstrap class from Cobertura reports -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <configuration>
+          <instrumentation>
+            <excludes>
+              <exclude>org/apache/servicemix/common/DefaultBootstrap.class</exclude>
+            </excludes>
+          </instrumentation>
+        </configuration>
       </plugin>
     </plugins>
   </build>

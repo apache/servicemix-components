@@ -29,6 +29,12 @@
       <saxon:xslt service="test:xslt" endpoint="endpoint"
                   resource="classpath:transform.xsl" />
       <!-- END SNIPPET: xslt -->
+      
+      <!-- START SNIPPET: xslt-string -->
+      <saxon:xslt service="test:xslt-string" endpoint="endpoint"
+                  resource="classpath:transform.xsl" result="string" />
+      <!-- END SNIPPET: xslt-string -->
+ 
       	      
       <!-- START SNIPPET: xslt-params -->
       <saxon:xslt service="test:xslt-params" endpoint="endpoint"
@@ -67,6 +73,27 @@
       <saxon:xquery service="test:xquery" endpoint="endpoint"
                     resource="classpath:query.xq" />
       <!-- END SNIPPET: xquery -->
+      
+      <!-- START SNIPPET: xquery-string -->
+      <saxon:xquery service="test:xquery-string" endpoint="endpoint"
+                    resource="classpath:query.xq" result="string" />
+      <!-- END SNIPPET: xquery-string -->
+      
+      <!-- START SNIPPET: xquery-params -->
+      <saxon:xquery service="test:xquery-params" endpoint="endpoint"
+                  resource="classpath:parameter-test-query.xq" result="bytes">
+        <property name="parameters">
+          <map>
+            <entry key="max_price">
+              <bean class="java.lang.Integer">
+                <constructor-arg index="0" value="30"/>
+              </bean>
+            </entry>
+          </map>
+        </property>
+      </saxon:xquery>
+      <!-- END SNIPPET: xquery-params -->
+   
       	      
       <!-- START SNIPPET: xquery-inline -->
       <saxon:xquery service="test:xquery-inline" endpoint="endpoint" reload="true">
@@ -105,7 +132,50 @@
         </saxon:target>
       </saxon:proxy>
       <!-- END SNIPPET: xslt-proxy -->
-
+      
+      <!--  START SNIPPET: xslt-proxy-string -->
+      <saxon:proxy service="test:proxy-string" endpoint="endpoint"
+                   useDomSourceForXslt="false"
+                   useDomSourceForContent="false"
+                   result="string"
+                   resource="classpath:transform-in.xsl" >
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy-string -->
+      
+      <!--  START SNIPPET: xslt-proxy-bytes -->
+      <saxon:proxy service="test:proxy-bytes" endpoint="endpoint"
+                   useDomSourceForXslt="true"
+                   useDomSourceForContent="true"
+                   result="bytes"
+                   resource="classpath:transform-in.xsl" >
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy-bytes -->
+      
+      <!-- START SNIPPET: xslt-proxy-params -->
+      <saxon:proxy service="test:xslt-proxy-params" endpoint="endpoint"
+                  resource="classpath:transform-in.xsl">
+        <property name="parameters">
+          <map>
+            <entry key="symbol" value="IBM"/>
+            <entry key="volume">
+              <bean class="java.lang.Integer">
+                <constructor-arg index="0" value="10"/>
+              </bean>
+            </entry>
+          </map>
+        </property>
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy-params -->
+      
     </sm:endpoints>
     <sm:activationSpecs>
         <sm:activationSpec service="test:echo" endpoint="endpoint">
