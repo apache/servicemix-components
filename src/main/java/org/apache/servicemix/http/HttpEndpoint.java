@@ -406,6 +406,9 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     }
 
     public void validate() throws DeploymentException {
+        if (endpoint != null && endpoint.contains(":")) {
+            throw failure("deploy", "Endpoint name contains ':'. This character is not allowed as it can provide invalid WSDL.", null);
+        }
         if (getRole() == null) {
             throw failure("deploy", "Endpoint must have a defined role", null);
         }

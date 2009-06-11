@@ -520,6 +520,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
 
     public void validate() throws DeploymentException {
         super.validate();
+        if (endpoint != null && endpoint.contains(":")) {
+            throw new DeploymentException("Endpoint name contains ':'. This character is not allowed as it can provide invalid WSDL.");
+        }
         if (marshaler == null) {
             marshaler = new DefaultHttpConsumerMarshaler();
         }
