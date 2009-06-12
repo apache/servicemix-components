@@ -267,7 +267,8 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         return endpoint;
     }
 
-    private JmsConsumerEndpoint createInOnlyConsumerEndpointWithConfiguredRollback(ConnectionFactory connFactory, boolean rollbackOnError) throws URISyntaxException {
+    private JmsConsumerEndpoint createInOnlyConsumerEndpointWithConfiguredRollback(ConnectionFactory connFactory,
+                                                                                   boolean rollbackOnError) throws URISyntaxException {
         JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
         endpoint.setService(new QName("http://jms.servicemix.org/Test", "Consumer"));
         endpoint.setEndpoint("endpoint");

@@ -80,7 +80,7 @@ public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements Jm
     }
 
     public boolean isRollbackOnError() {
-        return (rollbackConfigured ? rollbackOnError : rollbackOnErrorDefault);
+        return rollbackConfigured ? rollbackOnError : rollbackOnErrorDefault;
     }
 
     /**
