@@ -117,7 +117,20 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         }
     }
 
-    public void start() throws Exception {
+    @Override
+	public synchronized void activate() throws Exception {
+		if (uri == null && clientPool != null) {
+			String str = "ftp://" + clientPool.getHost();
+			if (clientPool.getPort() >= 0) {
+				str += ":" + clientPool.getPort();
+			}
+			str += "/";
+			uri = new URI(str);
+		}
+		super.activate();
+	}
+
+	public void start() throws Exception {
         if (lockManager == null) {
             lockManager = createLockManager();
         }
@@ -134,14 +147,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                     clientPool.setPassword(infos[1]);
                 }
             }
-        } else {
-            String str = "ftp://" + clientPool.getHost();
-            if (clientPool.getPort() >= 0) {
-                str += ":" + clientPool.getPort();
-            }
-            str += "/";
-            uri = new URI(str);
-        }
+        } 
         
         // borrow client from pool
         FTPClient ftp = borrowClient();
@@ -512,7 +518,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                 } else {
                     Exception e = exchange.getError();
                     if (e == null) {
-                        e = new JBIException("Unkown error");
+                        e = new JBIException("Unknown error");
                     }
                     throw e;
                 }
