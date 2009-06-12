@@ -55,6 +55,25 @@ public class JbiMessageTest extends TestCase {
         // and they should also be on the Camel Message itself
         camelMessage.setNormalizedMessage(null);
         assertSame(ANOTHER_ATTACHMENT, camelMessage.getAttachment(ANOTHER_ATTACHMENT_ID));
+        assertSame(ATTACHMENT, camelMessage.getAttachment(ATTACHMENT_ID));
+    }
+    
+    public void testSetAttachmentsThroughMap() throws Exception {
+        NormalizedMessage jbiMessage = new MockNormalizedMessage();
+        jbiMessage.addAttachment(ATTACHMENT_ID, ATTACHMENT);
+        
+        // make sure the Camel Message also has the attachment
+        JbiMessage camelMessage = new JbiMessage(jbiMessage);
+        assertSame(ATTACHMENT, camelMessage.getAttachment(ATTACHMENT_ID));
+        
+        // and ensure that attachments are propagated back to the underlying NormalizedMessage
+        camelMessage.getAttachments().put(ANOTHER_ATTACHMENT_ID, ANOTHER_ATTACHMENT);
+        assertSame(ANOTHER_ATTACHMENT, jbiMessage.getAttachment(ANOTHER_ATTACHMENT_ID));
+        
+        // and they should also be on the Camel Message itself
+        camelMessage.setNormalizedMessage(null);
+        assertSame(ANOTHER_ATTACHMENT, camelMessage.getAttachment(ANOTHER_ATTACHMENT_ID));
+        assertSame(ATTACHMENT, camelMessage.getAttachment(ATTACHMENT_ID));
     }
     
     public void testHeadersWithNormalizedMessage() throws Exception {
@@ -72,8 +91,27 @@ public class JbiMessageTest extends TestCase {
         // and they should also be on the Camel Message itself
         camelMessage.setNormalizedMessage(null);
         assertSame(ANOTHER_VALUE, camelMessage.getHeader(ANOTHER_HEADER));
+        assertSame(VALUE, camelMessage.getHeader(HEADER));
     }    
     
+    public void testSetHeaderThroughMap() throws Exception {
+        NormalizedMessage jbiMessage = new MockNormalizedMessage();
+        jbiMessage.setProperty(HEADER, VALUE);
+        
+        // make sure the Camel Message also has the header
+        JbiMessage camelMessage = new JbiMessage(jbiMessage);
+        assertSame(VALUE, camelMessage.getHeader(HEADER));
+        
+        // and ensure the headers are propagated back to the underlying NormalizedMessage
+        camelMessage.getHeaders().put(ANOTHER_HEADER, ANOTHER_VALUE);
+        assertSame(ANOTHER_VALUE, jbiMessage.getProperty(ANOTHER_HEADER));
+        
+        // and they should also be on the Camel Message itself
+        camelMessage.setNormalizedMessage(null);
+        assertSame(ANOTHER_VALUE, camelMessage.getHeader(ANOTHER_HEADER));
+        assertSame(VALUE, camelMessage.getHeader(HEADER));        
+    }
+        
     public void testCopyMessage() throws Exception {
         JbiMessage message = new JbiMessage();
         Message copy = message.copy();

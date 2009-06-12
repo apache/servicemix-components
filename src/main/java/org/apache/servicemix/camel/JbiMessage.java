@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.camel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.activation.DataHandler;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -36,7 +39,8 @@ public class JbiMessage extends DefaultMessage {
     }
 
     public JbiMessage(NormalizedMessage normalizedMessage) {
-        this.normalizedMessage = normalizedMessage;
+        super();
+        setNormalizedMessage(normalizedMessage);
     }
 
     @Override
@@ -62,8 +66,13 @@ public class JbiMessage extends DefaultMessage {
         return normalizedMessage;
     }
 
-    protected void setNormalizedMessage(NormalizedMessage normalizedMessage) {
+    protected final void setNormalizedMessage(NormalizedMessage normalizedMessage) {
         this.normalizedMessage = normalizedMessage;
+        // copy all properties into the Camel Message
+        if (normalizedMessage != null) {
+            getHeaders().putAll(getHeaders(normalizedMessage));
+            getAttachments().putAll(getAttachments(normalizedMessage));
+        }
     }
 
     @Override
@@ -77,13 +86,18 @@ public class JbiMessage extends DefaultMessage {
         }
         return answer;
     }
-
+    
     @Override
-    public void setHeader(String name , Object value) {
-        if (normalizedMessage != null) {
-            normalizedMessage.setProperty(name, value);
-        }
-        super.setHeader(name, value);
+    protected Map<String, Object> createHeaders() {
+        return new HashMap<String, Object>() {
+            @Override
+            public Object put(String key, Object value) {
+                if (normalizedMessage != null) {
+                    normalizedMessage.setProperty(key, value);
+                }
+                return super.put(key, value);
+            }
+        };
     }
 
     @Override
@@ -97,17 +111,22 @@ public class JbiMessage extends DefaultMessage {
         }
         return answer;
     }
-
+    
     @Override
-    public void addAttachment(String id, DataHandler content) {
-        if (normalizedMessage != null) {
-            try {
-                normalizedMessage.addAttachment(id, content);
-            } catch (MessagingException e) {
-                throw new JbiException(e);
+    protected Map<String, DataHandler> createAttachments() {
+        return new HashMap<String, DataHandler>() {
+            @Override
+            public DataHandler put(String key, DataHandler value) {
+                if (normalizedMessage != null) {
+                    try {
+                        normalizedMessage.addAttachment(key, value);
+                    } catch (MessagingException e) {
+                        throw new JbiException(e);
+                    }
+                }
+                return super.put(key, value);
             }
-        }
-        super.addAttachment(id, content);
+        };
     }
 
     @Override
@@ -145,5 +164,21 @@ public class JbiMessage extends DefaultMessage {
     private String toString(NormalizedMessage message) {
         return String.format("NormalizedMessage@%s(%s)", 
                              Integer.toHexString(message.hashCode()), message.getContent());
+    }
+    
+    private Map<? extends String, ? extends Object> getHeaders(NormalizedMessage message) {
+        Map<String, Object> headers = new HashMap<String, Object>();
+        for (Object key : message.getPropertyNames()) {
+            headers.put(key.toString(), message.getProperty(key.toString()));
+        }
+        return headers;
+    }
+    
+    private Map<? extends String, ? extends DataHandler> getAttachments(NormalizedMessage message) {
+        Map<String, DataHandler> attachments = new HashMap<String, DataHandler>();
+        for (Object name : message.getAttachmentNames()) {
+            attachments.put(name.toString(), message.getAttachment(name.toString()));
+        }
+        return attachments;
     }
 }
