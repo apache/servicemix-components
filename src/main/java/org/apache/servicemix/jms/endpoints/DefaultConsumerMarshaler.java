@@ -54,6 +54,8 @@ public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements Jm
     
     private URI mep;
     private boolean rollbackOnError;
+    private boolean rollbackOnErrorDefault;
+    private boolean rollbackConfigured;
 
     public DefaultConsumerMarshaler() {
         this.mep = JbiConstants.IN_ONLY;
@@ -78,15 +80,29 @@ public class DefaultConsumerMarshaler extends AbstractJmsMarshaler implements Jm
     }
 
     public boolean isRollbackOnError() {
-        return rollbackOnError;
+        return (rollbackConfigured ? rollbackOnError : rollbackOnErrorDefault);
     }
 
     /**
      * @param rollbackOnError if exchange in errors should cause a rollback on the JMS side
      */
     public void setRollbackOnError(boolean rollbackOnError) {
+        rollbackConfigured = true;
         this.rollbackOnError = rollbackOnError;
     }
+
+    /**
+     * This is called to set intelligent defaults if no
+     * explicit rollbackOnError configuration is set.
+     * If setRollbackOnError is explicitly set, it
+     * will be used.
+     *
+     * @param rollbackDefault default rollbackOnError setting
+     */
+    public void setRollbackOnErrorDefault(boolean rollbackDefault) {
+        this.rollbackOnErrorDefault = rollbackDefault;
+    }
+
 
     public JmsContext createContext(Message message) throws Exception {
         return new Context(message);

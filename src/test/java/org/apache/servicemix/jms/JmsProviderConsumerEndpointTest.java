@@ -132,7 +132,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         template.receive("destination");
 
         JmsComponent jmsComponent = new JmsComponent();
-        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpoint(connFactory);
+        JmsConsumerEndpoint consumerEndpoint = createInOnlyConsumerEndpointWithConfiguredRollback(connFactory, true);
         consumerEndpoint.setTransacted("jms");
         JmsProviderEndpoint providerEndpoint = createProviderEndpoint(connFactory);
         jmsComponent.setEndpoints(new JmsEndpointType[] {consumerEndpoint, providerEndpoint});
@@ -258,6 +258,24 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
         DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
         marshaler.setMep(new URI("http://www.w3.org/2004/08/wsdl/in-only"));
         endpoint.setMarshaler(marshaler);
+        endpoint.setListenerType("simple");
+        endpoint.setConnectionFactory(connFactory);
+        endpoint.setDestinationName("destination");
+        endpoint.setRecoveryInterval(10000);
+        endpoint.setConcurrentConsumers(1);
+        endpoint.setTargetService(new QName("http://jms.servicemix.org/Test", "Echo"));
+        return endpoint;
+    }
+
+    private JmsConsumerEndpoint createInOnlyConsumerEndpointWithConfiguredRollback(ConnectionFactory connFactory, boolean rollbackOnError) throws URISyntaxException {
+        JmsConsumerEndpoint endpoint = new JmsConsumerEndpoint();
+        endpoint.setService(new QName("http://jms.servicemix.org/Test", "Consumer"));
+        endpoint.setEndpoint("endpoint");
+        DefaultConsumerMarshaler marshaler = new DefaultConsumerMarshaler();
+        marshaler.setMep(new URI("http://www.w3.org/2004/08/wsdl/in-only"));
+        marshaler.setRollbackOnError(rollbackOnError);
+        endpoint.setMarshaler(marshaler);
+        endpoint.setListenerType("simple");
         endpoint.setListenerType("simple");
         endpoint.setConnectionFactory(connFactory);
         endpoint.setDestinationName("destination");

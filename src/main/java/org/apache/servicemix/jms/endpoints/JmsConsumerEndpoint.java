@@ -554,7 +554,7 @@ public class JmsConsumerEndpoint extends AbstractConsumerEndpoint implements Jms
         if (TRANSACTED_XA.equals(transacted) || TRANSACTED_JMS.equals(transacted)) {
             JmsConsumerMarshaler marshaler = getMarshaler();
             if (marshaler instanceof DefaultConsumerMarshaler) {
-                ((DefaultConsumerMarshaler)marshaler).setRollbackOnError(true);
+                ((DefaultConsumerMarshaler)marshaler).setRollbackOnErrorDefault(true);
             }
         }
     }
