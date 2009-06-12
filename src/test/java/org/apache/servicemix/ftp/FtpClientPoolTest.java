@@ -86,20 +86,13 @@ public class FtpClientPoolTest extends AbstractFtpTestSupport {
 		endpoint.setEndpoint("endpoint");
 		endpoint.setTargetService(receiver.getService());
 		endpoint.setClientPool(clientPool);
-
-		// TODO Need this until SMXCOMP-556 is fixed
-		endpoint.setUri(new URI("ftp://testuser1:password@localhost:"
-				+ getListenerPort() + "/"));
-
-		endpoint.validate();
 		return endpoint;
 	}
 
 	private FTPClientPool createClientPool() {
 		FTPClientPool pool = new FTPClientPool();
-		// TODO Causes NPE, seeSMXCOMP-556
-		// pool.setHost("localhost");
-		// pool.setPort(getListenerPort());
+        pool.setHost("localhost");
+        pool.setPort(getListenerPort());
 		pool.setUsername("testuser2");
 		pool.setPassword("password");
 		return pool;
