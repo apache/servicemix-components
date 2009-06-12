@@ -16,9 +16,6 @@
  */
 package org.apache.servicemix.camel;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import javax.activation.DataHandler;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -45,7 +42,7 @@ public class JbiMessage extends DefaultMessage {
     @Override
     public String toString() {
         if (normalizedMessage != null) {
-            return "JbiMessage: " + normalizedMessage;
+            return "JbiMessage: " + toString(normalizedMessage);
         } else {
             return "JbiMessage: " + getBody();
         }
@@ -65,7 +62,7 @@ public class JbiMessage extends DefaultMessage {
         return normalizedMessage;
     }
 
-    public void setNormalizedMessage(NormalizedMessage normalizedMessage) {
+    protected void setNormalizedMessage(NormalizedMessage normalizedMessage) {
         this.normalizedMessage = normalizedMessage;
     }
 
@@ -85,9 +82,8 @@ public class JbiMessage extends DefaultMessage {
     public void setHeader(String name , Object value) {
         if (normalizedMessage != null) {
             normalizedMessage.setProperty(name, value);
-        } else {
-            super.setHeader(name, value);
         }
+        super.setHeader(name, value);
     }
 
     @Override
@@ -127,30 +123,6 @@ public class JbiMessage extends DefaultMessage {
         return null;
     }
 
-    @Override
-    protected void populateInitialHeaders(Map<String, Object> map) {
-        if (normalizedMessage != null) {
-            Iterator iter = normalizedMessage.getPropertyNames().iterator();
-            while (iter.hasNext()) {
-                String name = iter.next().toString();
-                Object value = normalizedMessage.getProperty(name);
-                map.put(name, value);
-            }
-        }
-    }
-
-    @Override
-    protected void populateInitialAttachments(Map<String, DataHandler> map) {
-        if (normalizedMessage != null) {
-            Iterator iter = normalizedMessage.getAttachmentNames().iterator();
-            while (iter.hasNext()) {
-                String id = iter.next().toString();
-                DataHandler content = normalizedMessage.getAttachment(id);
-                map.put(id, content);
-            }
-        }
-    }
-
 //    @Override
     public void setBody(Object body) {
         if (normalizedMessage != null) {
@@ -164,5 +136,14 @@ public class JbiMessage extends DefaultMessage {
             }
         }
         super.setBody(body);
+    }
+    
+    /*
+     * Avoid use of normalizedMessage.toString() because it may iterate over the NormalizedMessage headers
+     * after it has been sent through the NMR
+     */
+    private String toString(NormalizedMessage message) {
+        return String.format("NormalizedMessage@%s(%s)", 
+                             Integer.toHexString(message.hashCode()), message.getContent());
     }
 }

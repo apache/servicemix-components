@@ -35,6 +35,11 @@ public class JbiMessageTest extends TestCase {
     private static final DataHandler ATTACHMENT = new DataHandler(new FileDataSource("attachment.png"));
     private static final DataHandler ANOTHER_ATTACHMENT = new DataHandler(new FileDataSource("attachment.png"));
     
+    private static final String HEADER = "header";
+    private static final String ANOTHER_HEADER = "another-header";
+    private static final String VALUE = "header's value";
+    private static final String ANOTHER_VALUE = "another header's value";
+    
     public void testAttachmentsWithNormalizedMessage() throws Exception {
         NormalizedMessage jbiMessage = new MockNormalizedMessage();
         jbiMessage.addAttachment(ATTACHMENT_ID, ATTACHMENT);
@@ -51,6 +56,23 @@ public class JbiMessageTest extends TestCase {
         camelMessage.setNormalizedMessage(null);
         assertSame(ANOTHER_ATTACHMENT, camelMessage.getAttachment(ANOTHER_ATTACHMENT_ID));
     }
+    
+    public void testHeadersWithNormalizedMessage() throws Exception {
+        NormalizedMessage jbiMessage = new MockNormalizedMessage();
+        jbiMessage.setProperty(HEADER, VALUE);
+        
+        // make sure the Camel Message also has the header
+        JbiMessage camelMessage = new JbiMessage(jbiMessage);
+        assertSame(VALUE, camelMessage.getHeader(HEADER));
+        
+        // and ensure the headers are propagated back to the underlying NormalizedMessage
+        camelMessage.setHeader(ANOTHER_HEADER, ANOTHER_VALUE);
+        assertSame(ANOTHER_VALUE, jbiMessage.getProperty(ANOTHER_HEADER));
+        
+        // and they should also be on the Camel Message itself
+        camelMessage.setNormalizedMessage(null);
+        assertSame(ANOTHER_VALUE, camelMessage.getHeader(ANOTHER_HEADER));
+    }    
     
     public void testCopyMessage() throws Exception {
         JbiMessage message = new JbiMessage();
