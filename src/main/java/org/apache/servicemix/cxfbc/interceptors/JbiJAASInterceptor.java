@@ -17,6 +17,7 @@
 package org.apache.servicemix.cxfbc.interceptors;
 
 import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -34,25 +35,27 @@ import org.apache.ws.security.WSUsernameTokenPrincipal;
 import org.apache.ws.security.handler.WSHandlerConstants;
 import org.apache.ws.security.handler.WSHandlerResult;
 
+
 public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
 
     private String domain = "servicemix-domain";
     private AuthenticationService authenticationService;
     private ThreadLocal<Subject> currentSubject = new ThreadLocal<Subject>();
+    private boolean x509;
     
     
-    public JbiJAASInterceptor(AuthenticationService authenticationService) {
+    public JbiJAASInterceptor(AuthenticationService authenticationService, boolean x509) {
         super();
         setPhase(Phase.PRE_PROTOCOL);
         getAfter().add(WSS4JInInterceptor.class.getName());
         this.authenticationService = authenticationService;
+        this.x509 = x509;
     }
     
     
     public void handleMessage(SoapMessage message) throws Fault {
      
         try {
-            
             Subject subject = (Subject) currentSubject.get();
             
             if (subject == null) {
@@ -68,6 +71,11 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
                 if (hr == null || hr.getResults() == null) {
                     return;
                 }
+                boolean authenticated = false;
+                
+                //favor WSSE UsernameToken based authentication over X.509 certificate
+                //based authentication. For that purpose we iterate twice over the 
+                //WSHandler result list
                 for (Iterator it = hr.getResults().iterator(); it.hasNext();) {
                     WSSecurityEngineResult er = (WSSecurityEngineResult) it.next();
                         
@@ -75,7 +83,21 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
                         WSUsernameTokenPrincipal p = (WSUsernameTokenPrincipal)er.getPrincipal();
                         subject.getPrincipals().add(p);
                         this.authenticationService.authenticate(subject, domain, p.getName(), p.getPassword());
+                        authenticated = true;
                     }
+                }
+                
+                //Second iteration checking for X.509 certificate to run authentication on
+                //but only if not already authenticated on WSSE UsernameToken
+                if (!authenticated && x509) {
+	                for (Iterator it = hr.getResults().iterator(); it.hasNext();) {
+	                  WSSecurityEngineResult er = (WSSecurityEngineResult) it.next();
+	
+	                    if (er != null && er.getCertificate() instanceof X509Certificate) {
+	                      X509Certificate cert = er.getCertificate();
+	                      this.authenticationService.authenticate(subject, domain, cert.getIssuerX500Principal().getName(), cert);
+	                  }
+	                }
                 }
             }
             

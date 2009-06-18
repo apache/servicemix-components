@@ -46,6 +46,7 @@
                       targetEndpoint="TimestampSignEncrypt"
                       targetService="greeter:SOAPServiceWSSecurity"
 		      targetInterface="greeter:Greeter"
+                      x509="false"
                       >
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>

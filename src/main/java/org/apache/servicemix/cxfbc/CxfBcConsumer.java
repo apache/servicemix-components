@@ -178,6 +178,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private boolean isSTFlow;
    
     private ClassLoader suClassLoader;
+   
+    private boolean x509;
 
     /**
      * @return the wsdl
@@ -456,7 +458,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getInInterceptors().add(new JbiJAASInterceptor(
                     AuthenticationService.Proxy.create(
                         ((CxfBcComponent)this.getServiceUnit().getComponent()).
-                            getConfiguration().getAuthenticationService())));
+                            getConfiguration().getAuthenticationService()), isX509()));
             cxfService.getInInterceptors().add(new JbiInvokerInterceptor());
             cxfService.getInInterceptors().add(new JbiPostInvokerInterceptor());
 
@@ -1077,6 +1079,22 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     public List<AbstractFeature> getFeatures() {
         return features;
+    }
+ 
+    /**
+     * Specifies if the endpoint use X.509 Certificate to do the authentication.
+     * 
+     * @param x509
+     *            a boolean
+     * @org.apache.xbean.Property description="Specifies if the endpoint use X.509 Certificate to do the authentication.
+     *  Default is <code>false</code>. 
+     */
+    public void setX509(boolean x509) {
+        this.x509 = x509;
+    }
+
+    public boolean isX509() {
+        return x509;
     }
 
 }
