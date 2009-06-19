@@ -18,10 +18,15 @@ package org.apache.servicemix.soap.handlers.addressing;
 
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.util.WSAddressingConstants;
 import org.apache.servicemix.soap.Context;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 import junit.framework.TestCase;
 
@@ -29,6 +34,7 @@ public class AddressingHandlerTest extends TestCase {
 
 
 	private AddressingHandler handler;
+	private static final String WSA_NS = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
 
 	public AddressingHandlerTest(String name) {
 		super(name);
@@ -102,5 +108,41 @@ public class AddressingHandlerTest extends TestCase {
 		assertEquals("Value", messageId, wsaRelatesTo.getTextContent());
 	}
 	
+	// test onReceive() when wsa:Action and wsa:To are set on the incoming message.
+	// The appropriate parts of the Context that is passed in should be set.
+	public void testOnReceiveActionAndTo() throws Exception {
+		Context msgContext = new Context();
+		SoapMessage soapMessage = new SoapMessage();
+		soapMessage.setBodyName(new QName("http://test.org", "echo"));
+		soapMessage.addHeader(new QName(WSA_NS, "To"), 
+				createDocumentFragment("To", "http://localhost:8192/Services/EchoService"));
+		soapMessage.addHeader(new QName(WSA_NS, "Action"), 
+				createDocumentFragment("Action", "http://test.org/Echo/EchoService"));
+		soapMessage.setSource(new StringSource(
+				"<env:Envelope xmlns:env=\"http://schemas.xmlsoap.org/soap/envelope/\" +" +
+				"<env:Body><ns1:EchoRequest xmlns:ns1=\"http://test.org\"><echo>this string</echo>" +
+				"</ns1:EchoRequest></env:Body></env:Envelope>"));
+		
+		msgContext.setInMessage(soapMessage);
+		
+		this.handler.onReceive(msgContext);
+		
+		assertNotNull("Endpoint on Context should be set", msgContext.getProperty(Context.ENDPOINT));
+		assertNotNull("Service on Context should be set", msgContext.getProperty(Context.SERVICE));
+		assertNotNull("Operation on Context should be set", msgContext.getProperty(Context.OPERATION));
+		assertNotNull("Interface on Context should be set", msgContext.getProperty(Context.INTERFACE));
+	}
+	
+	private DocumentFragment createDocumentFragment(String headerName, String headerValue) throws Exception {
+		DocumentFragment df = null;
+		Document doc = DOMUtil.newDocument();
+		df = doc.createDocumentFragment();
+		//Element e = doc.createElementNS(WSA_NS, headerName);
+		Element e = doc.createElement(headerName);
+		Text t = doc.createTextNode(headerValue);
+		e.appendChild(t);
+		df.appendChild(e);
+		return df;
+	}
 
 }

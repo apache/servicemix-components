@@ -145,7 +145,6 @@
           <excludes>
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
-            <exclude>**/WSSecurityHandlerTest.*</exclude>
           </excludes>
         </configuration>
       </plugin>
