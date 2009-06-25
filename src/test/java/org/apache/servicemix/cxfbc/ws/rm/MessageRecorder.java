@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.cxfbc.ws.rm;
 
+import java.util.List;
+
 import junit.framework.Assert;
 
 public class MessageRecorder extends Assert {
@@ -49,7 +51,34 @@ public class MessageRecorder extends Assert {
             }
             waited += 100;
         }
-        assertEquals("Did not receive expected number of inbound messages", nExpectedIn, nIn);
-        assertEquals("Did not send expected number of outbound messages", nExpectedOut, nOut);        
+        if (nExpectedIn != nIn) {
+            System.out.println((nExpectedIn < nIn ? "excess" : "shortfall")
+                               + " of " + Math.abs(nExpectedIn - nIn)
+                               + " incoming messages");
+            System.out.println("\nMessages actually received:\n");
+            List<byte[]> inbound = inRecorder.getInboundMessages();
+            for (byte[] b : inbound) {
+                System.out.println(new String(b) + "\n");
+                System.out.println("----------------\n");
+            }
+        }
+        if (nExpectedOut != nOut) {
+            System.out.println((nExpectedOut < nOut ? "excess" : "shortfall")
+                               + " of " + Math.abs(nExpectedOut - nOut)
+                               + " outgoing messages");
+            System.out.println("\nMessages actually sent:\n");
+            List<byte[]> outbound = outRecorder.getOutboundMessages();
+            for (byte[] b : outbound) {
+                System.out.println(new String(b) + "\n");
+                System.out.println("----------------\n");
+            }
+        }
+        
+        if (nExpectedIn > nIn) {
+            assertEquals("Did not receive expected number of inbound messages", nExpectedIn, nIn);
+        }
+        if (nExpectedOut > nOut) {
+            assertEquals("Did not send expected number of outbound messages", nExpectedOut, nOut);        
+        }        
     }    
 }
