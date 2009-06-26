@@ -67,9 +67,13 @@ public class CxfBcComponent extends DefaultComponent {
 
     @Override
     protected void doInit() throws Exception {
-        if (getBusConfig() != null) {
+        //Load configuration
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.setComponentName(context.getComponentName());
+        configuration.load();
+        if (configuration.getBusCfg() != null && configuration.getBusCfg().length() > 0) {
             SpringBusFactory bf = new SpringBusFactory();
-            bus = bf.createBus(getBusConfig());
+            bus = bf.createBus(configuration.getBusCfg());
         } else {
             bus = BusFactory.newInstance().createBus();
         }
