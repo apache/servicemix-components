@@ -41,6 +41,7 @@ public class CxfSeComponent extends DefaultComponent {
 
     private CxfSeEndpoint[] endpoints;
     private Bus bus;
+    private CxfSeConfiguration configuration = new CxfSeConfiguration();
     
     public CxfSeComponent() {
         
@@ -73,6 +74,13 @@ public class CxfSeComponent extends DefaultComponent {
     
     @Override
     protected void doInit() throws Exception {
+        //Load configuration
+        configuration.setRootDir(context.getWorkspaceRoot());
+        configuration.setComponentName(context.getComponentName());
+        configuration.load();
+        if (configuration.getBusCfg() != null && configuration.getBusCfg().length() > 0) {
+            CXF_CONFIG[0] = configuration.getBusCfg();
+        } 
         if (bus == null) {
             bus = new SpringBusFactory().createBus(CXF_CONFIG);
         }
