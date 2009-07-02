@@ -84,10 +84,12 @@ public class JbiBinding {
         normalizedMessage.setContent(getJbiInContent(camelExchange));
         addJbiHeaders(jbiExchange, normalizedMessage, camelExchange.getIn());
         addJbiAttachments(jbiExchange, normalizedMessage, camelExchange);
+        addSecuritySubject(jbiExchange, normalizedMessage, camelExchange.getIn());
         return jbiExchange;
     }
+    
 
-    // Properties
+	// Properties
     // -------------------------------------------------------------------------
 
     public String getMessageExchangePattern() {
@@ -188,6 +190,18 @@ public class JbiBinding {
             copyNormalizedMessageHeaders(normalizedMessage, camelNormalizedMessage);
         }
     }
+    
+    protected void addSecuritySubject(MessageExchange jbiExchange,
+			NormalizedMessage normalizedMessage, Message camelMessage) {
+    	if (camelMessage instanceof JbiMessage) {
+    		JbiMessage message = (JbiMessage) camelMessage;
+    		if (message.getNormalizedMessage() != null) {
+    			// copy the security subject
+    			normalizedMessage.setSecuritySubject(message.getNormalizedMessage().getSecuritySubject());
+    		}
+    	}	
+		
+	}
 
     @SuppressWarnings("unchecked")
     private void copyNormalizedMessageHeaders(NormalizedMessage from, NormalizedMessage to) {
