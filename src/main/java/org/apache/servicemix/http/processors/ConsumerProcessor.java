@@ -311,6 +311,9 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
         endpoint.reloadWsdl();
 
         Node node = (Node) endpoint.getWsdls().get(path);
+        if (node == null && path.endsWith("main.wsdl")) {
+            node = (Node) endpoint.getWsdls().get("main.wsdl");
+        }
         generateDocument(response, node);
     }
 
