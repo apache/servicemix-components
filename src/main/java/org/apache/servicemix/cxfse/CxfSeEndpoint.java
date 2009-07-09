@@ -67,6 +67,7 @@ import org.apache.cxf.transport.jbi.JBIDestination;
 import org.apache.cxf.transport.jbi.JBIDispatcherUtil;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
+import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
 import org.apache.servicemix.cxfse.interceptors.AttachmentOutInterceptor;
@@ -112,6 +113,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     private boolean useSOAPEnvelope = true;
 
     private boolean useAegis;
+    
+    private boolean useXmlBeans;
 
     private QName pojoService;
     private String pojoEndpoint;
@@ -254,6 +257,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             sf.setServiceBean(getPojo());
             sf.setAddress("jbi://" + ID_GENERATOR.generateSanitizedId());
             sf.getServiceFactory().setDataBinding(new AegisDatabinding());
+          
             sf.getServiceFactory().setPopulateFromClass(true);
             sf.setStart(false);
             if (isUseJBIWrapper()) {
@@ -292,6 +296,9 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             endpoint = new EndpointImpl(getBus(), getPojo(), new JaxWsServerFactoryBean(serviceFactory));
             if (isUseJBIWrapper()) {
                 endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+            }
+            if (isUseXmlBeans()) {
+                endpoint.setDataBinding(new XmlBeansDataBinding());
             }
             endpoint.setInInterceptors(getInInterceptors());
             endpoint.setInFaultInterceptors(getInFaultInterceptors());
@@ -627,6 +634,23 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
 
     protected QName getPojoInterfaceName() {
         return pojoInterfaceName;
+    }
+
+
+    /**
+     * Specifies if the endpoint use xmlbeans databinding to marshell/unmarshell
+     * message
+     * 
+     * @org.apache.xbean.Property description="Specifies if the endpoint use
+     *                            xmlbeans databinding to marshell/unmarshell
+     *                            message. The default is <code>false</code>.
+     */
+    public void setUseXmlBeans(boolean useXmlBeans) {
+        this.useXmlBeans = useXmlBeans;
+    }
+
+    public boolean isUseXmlBeans() {
+        return useXmlBeans;
     }
 
 }

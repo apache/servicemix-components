@@ -42,7 +42,7 @@
     <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01</previous.releases>
     <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2009.01</servicemix-shared-version>
-    <cxf-version>2.2.2</cxf-version>
+    <cxf-version>2.2.3-SNAPSHOT</cxf-version>
 
     <servicemix.osgi.import>
         javax.jws,
@@ -195,6 +195,11 @@
         <artifactId>cxf-rt-databinding-aegis</artifactId>
         <version>${cxf-version}</version>
     </dependency>
+    <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-databinding-xmlbeans</artifactId>
+        <version>${cxf-version}</version>
+    </dependency>
   </dependencies>
   
   <repositories>
@@ -207,6 +212,20 @@
   </repositories>
 
   <build>
+    <testResources>
+        <testResource>
+            <directory>${basedir}/target/generated/src/test/java/</directory>
+            <includes>
+                <include>**/*.xsb</include>
+                <include>**/*.class</include>
+            </includes>
+        </testResource>
+        <testResource>
+            <directory>${basedir}/src/test/resources</directory>
+        </testResource> 
+    </testResources>
+
+
     <plugins>
       <plugin>
         <groupId>org.apache.xbean</groupId>
@@ -252,6 +271,35 @@
             </excludes>
           </instrumentation>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-codegen-plugin</artifactId>
+        <version>${cxf-version}</version>
+        <executions>
+          <execution>
+            <id>generate-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <testSourceRoot>${basedir}/target/generated/src/test/java</testSourceRoot>
+              <wsdlOptions>
+                <wsdlOption>
+                  <wsdl>${basedir}/src/test/resources/hello_world_xmlbeans.wsdl</wsdl>
+                  <extraargs>
+                    <extraarg>-verbose</extraarg>
+                  </extraargs>
+                  <extraargs>
+                    <extraarg>-db</extraarg>
+                    <extraarg>xmlbeans</extraarg>
+                  </extraargs>
+                </wsdlOption>
+              </wsdlOptions>
+            </configuration>
+            <goals>
+              <goal>wsdl2java</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
