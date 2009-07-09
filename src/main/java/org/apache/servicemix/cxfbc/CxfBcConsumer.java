@@ -383,10 +383,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     @Override
     public void deactivate() throws Exception {
         server.stop();
-        if (ei.getAddress() != null && ei.getAddress().startsWith("https")) {
-            bus.shutdown(false);
-            bus = null;
-        }
         if (!isComponentBus()) {
             //if use the endpoint own bus, then shutdown it
             bus.shutdown(true);
@@ -604,7 +600,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             }
             return bus;
         } else {
-            return ((CxfBcComponent) getServiceUnit().getComponent()).getBus();
+        	bus = ((CxfBcComponent) getServiceUnit().getComponent()).getBus();
+            return bus;
         }
     }
 
