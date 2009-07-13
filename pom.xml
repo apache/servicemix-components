@@ -73,7 +73,8 @@
         org.apache.cxf.rt-transports-jbi,
         org.springframework.core,
         org.springframework.beans,
-        org.springframework.context
+        org.springframework.context,
+        org.apache.servicemix.bundles.xmlbeans
     </servicemix.osgi.bundles>
   </properties>
   
