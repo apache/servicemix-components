@@ -297,6 +297,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                     if (lock.tryLock()) {
                         processFileNow(aFile);
                     } else {
+                    	workingSet.remove(aFile);
                         if (logger.isDebugEnabled()) {
                             logger.debug("Unable to acquire lock on " + aFile.getName().getURI());
                         }
