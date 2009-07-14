@@ -243,6 +243,7 @@ public class CxfBcProviderTest extends SpringTestSupport {
                 io.getOutMessage()).indexOf("Hello concurrency test 0 2 4 6 8 10 12 14 16 18") >= 0);
         client.done(io);
         // Shutdown CXF Service/Endpoint so that next test doesn't fail.
+        Thread.sleep(5000); //sleep so we get chance to see the behavior of oneway exception
         factory.getBus().shutdown(true);
     }
     

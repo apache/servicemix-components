@@ -62,6 +62,7 @@
                 </cxfbc:inInterceptors>
                 <cxfbc:outInterceptors>
                     <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+                    <bean class="org.apache.servicemix.cxfbc.interceptors.ThrowExceptionForOneWay"/>
                 </cxfbc:outInterceptors>
                 <cxfbc:inFaultInterceptors>
                     <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>

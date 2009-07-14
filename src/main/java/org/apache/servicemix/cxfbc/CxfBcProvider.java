@@ -31,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
@@ -259,7 +260,9 @@ public class CxfBcProvider extends ProviderEndpoint implements
             is.close();
             os.close();
         } catch (Exception e) {
+            if (!(exchange instanceof InOnly)) {
         	faultProcess(exchange, message, e);
+            }
         }
         if (boi.getOperationInfo().isOneWay()) {
             exchange.setStatus(ExchangeStatus.DONE);
