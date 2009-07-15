@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
@@ -126,6 +127,13 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             inChain.doIntercept(soapMessage);
             closeConnectionStream(soapMessage);
             if (soapMessage.getContent(Source.class) == null) {
+                Exception ex = soapMessage.getContent(Exception.class);
+                if (!(soapMessage.getExchange().get(MessageExchange.class) instanceof InOnly) && ex != null) {
+                    messageExchange.setStatus(ExchangeStatus.ERROR);
+                    messageExchange.setError(ex);
+                    providerEndpoint.getContext().getDeliveryChannel().send(
+                            messageExchange);
+                }
                 return;
             }
           

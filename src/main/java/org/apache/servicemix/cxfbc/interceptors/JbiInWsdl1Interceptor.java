@@ -219,58 +219,76 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
     }
 
     private void handleJBIFault(SoapMessage message, Element soapFault) {
-        Document doc = DomUtil.createDocument();
-        Element jbiFault = DomUtil.createElement(doc, new QName(
-                CxfJbiConstants.WSDL11_WRAPPER_NAMESPACE, JbiFault.JBI_FAULT_ROOT));
-        Node jbiFaultDetail = null;
-        if (message.getVersion() instanceof Soap11) {
-            NodeList nodeList = soapFault.getElementsByTagName("faultcode");
-            String faultCode = nodeList.item(0).getFirstChild().getTextContent();
-            String prefix = faultCode.substring(0, faultCode.indexOf(":"));
-            String localName = faultCode.substring(faultCode.indexOf(":") + 1);
-            message.put("faultcode", new QName(prefix, localName));
-            nodeList = soapFault.getElementsByTagName("faultstring");
-            message.put("faultstring", nodeList.item(0).getFirstChild().getTextContent());
-            nodeList = soapFault.getElementsByTagName("detail");
-            if (nodeList != null && nodeList.getLength() > 0
-                && DomUtil.getFirstChildElement(nodeList.item(0)) != null) {
-                jbiFaultDetail = doc.importNode(DomUtil.getFirstChildElement(nodeList.item(0)), true);
-            } else {
-                message.put("hasdetail", false);
+        try {
+            Document doc = DomUtil.createDocument();
+            Element jbiFault = DomUtil.createElement(doc, new QName(
+                    CxfJbiConstants.WSDL11_WRAPPER_NAMESPACE,
+                    JbiFault.JBI_FAULT_ROOT));
+            Node jbiFaultDetail = null;
+            if (message.getVersion() instanceof Soap11) {
+                NodeList nodeList = soapFault.getElementsByTagName("faultcode");
+                String faultCode = nodeList.item(0).getFirstChild()
+                        .getTextContent();
+                String prefix = faultCode.substring(0, faultCode.indexOf(":"));
+                String localName = faultCode
+                        .substring(faultCode.indexOf(":") + 1);
+                message.put("faultcode", new QName(prefix, localName));
                 nodeList = soapFault.getElementsByTagName("faultstring");
-                jbiFaultDetail = doc.importNode(nodeList.item(0).getFirstChild(), true);
-            }
-            
-        } else {
-            NodeList nodeList = soapFault.getElementsByTagName("soap:Code");
-            String faultCode = DomUtil.getFirstChildElement(nodeList.item(0)).getTextContent();
-            String prefix = faultCode.substring(0, faultCode.indexOf(":"));
-            String localName = faultCode.substring(faultCode.indexOf(":") + 1);
-            message.put("faultcode", new QName(prefix, localName));
-            nodeList = soapFault.getElementsByTagName("soap:Reason");
-            message.put("faultstring", DomUtil.getFirstChildElement(nodeList.item(0)).getTextContent());
-            nodeList = soapFault.getElementsByTagName("soap:Detail");
-            if (nodeList != null && nodeList.getLength() > 0
-                && DomUtil.getFirstChildElement(nodeList.item(0)) != null) {
-                jbiFaultDetail = doc.importNode(DomUtil.getFirstChildElement(nodeList.item(0)), true);
-            } else {
-                message.put("hasdetail", false);
-                nodeList = soapFault.getElementsByTagName("faultstring");
-                jbiFaultDetail = doc.importNode(DomUtil.getFirstChildElement(nodeList.item(0)), true);
-            }
-            
-        }
+                message.put("faultstring", nodeList.item(0).getFirstChild()
+                        .getTextContent());
+                nodeList = soapFault.getElementsByTagName("detail");
+                if (nodeList != null
+                        && nodeList.getLength() > 0
+                        && DomUtil.getFirstChildElement(nodeList.item(0)) != null) {
+                    jbiFaultDetail = doc.importNode(DomUtil
+                            .getFirstChildElement(nodeList.item(0)), true);
+                } else {
+                    message.put("hasdetail", false);
+                    nodeList = soapFault.getElementsByTagName("faultstring");
+                    jbiFaultDetail = doc.importNode(nodeList.item(0)
+                            .getFirstChild(), true);
+                }
 
-        SchemaInfo schemaInfo = 
-            getOperation(message).getBinding().getService().getSchema(jbiFaultDetail.getNamespaceURI());
-        if (schemaInfo != null && !schemaInfo.isElementFormQualified() 
-            && (jbiFaultDetail instanceof Element)) {
-            //that's unquailied fault
-            jbiFaultDetail = addEmptyDefaultTns((Element)jbiFaultDetail);
+            } else {
+                NodeList nodeList = soapFault.getElementsByTagName("soap:Code");
+                String faultCode = DomUtil.getFirstChildElement(
+                        nodeList.item(0)).getTextContent();
+                String prefix = faultCode.substring(0, faultCode.indexOf(":"));
+                String localName = faultCode
+                        .substring(faultCode.indexOf(":") + 1);
+                message.put("faultcode", new QName(prefix, localName));
+                nodeList = soapFault.getElementsByTagName("soap:Reason");
+                message.put("faultstring", DomUtil.getFirstChildElement(
+                        nodeList.item(0)).getTextContent());
+                nodeList = soapFault.getElementsByTagName("soap:Detail");
+                if (nodeList != null
+                        && nodeList.getLength() > 0
+                        && DomUtil.getFirstChildElement(nodeList.item(0)) != null) {
+                    jbiFaultDetail = doc.importNode(DomUtil
+                            .getFirstChildElement(nodeList.item(0)), true);
+                } else {
+                    message.put("hasdetail", false);
+                    nodeList = soapFault.getElementsByTagName("faultstring");
+                    jbiFaultDetail = doc.importNode(DomUtil
+                            .getFirstChildElement(nodeList.item(0)), true);
+                }
+
+            }
+
+            SchemaInfo schemaInfo = getOperation(message).getBinding()
+                    .getService().getSchema(jbiFaultDetail.getNamespaceURI());
+            if (schemaInfo != null && !schemaInfo.isElementFormQualified()
+                    && (jbiFaultDetail instanceof Element)) {
+                // that's unquailied fault
+                jbiFaultDetail = addEmptyDefaultTns((Element) jbiFaultDetail);
+            }
+            jbiFault.appendChild(jbiFaultDetail);
+            message.setContent(Source.class, new DOMSource(doc));
+            message.put("jbiFault", true);
+        } catch (Exception e) {
+            throw new RuntimeException("the fault message can't be parsed:" + e.getMessage());
+            
         }
-        jbiFault.appendChild(jbiFaultDetail);
-        message.setContent(Source.class, new DOMSource(doc));
-        message.put("jbiFault", true);
     }
 
     private Element addEmptyDefaultTns(Element ret) {

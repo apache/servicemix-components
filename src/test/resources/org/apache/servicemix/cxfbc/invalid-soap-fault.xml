@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+	<soap:Body>
+		<soap:Fault>
+			<soap:Code>
+				<soap:Value>Receiver</soap:Value>
+			</soap:Code>
+			<soap:Reason>
+				<soap:Text xml:lang ="en">Negative number cant be added!</soap:Text>
+			</soap:Reason>
+			<soap:Detail>
+				<CalculatorFault xmlns="http://apache.org/cxf/calculator/types">
+					<faultInfo>Numbers: 1, -1</faultInfo>
+					<message>Negative number cant be added!</message>
+				</CalculatorFault>
+			</soap:Detail>
+		</soap:Fault>
+	</soap:Body>
+</soap:Envelope>

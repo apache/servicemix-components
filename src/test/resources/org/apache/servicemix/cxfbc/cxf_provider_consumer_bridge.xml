@@ -53,6 +53,7 @@
                      >
           <cxfbc:inInterceptors>
             <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+            <bean class="org.apache.servicemix.cxfbc.interceptors.InvalidSoapFaultInterceptor"/>
           </cxfbc:inInterceptors>
           <cxfbc:outInterceptors>
             <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
