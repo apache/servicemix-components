@@ -372,6 +372,8 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
             }
         } catch (Exception e) {
             logger.error("Failed to process file: " + aFile + ". Reason: " + e, e);
+            // unlock the file on processing failures, otherwise it won't be processed any more
+            unlockAsyncFile(aFile);
         }
     }
 
