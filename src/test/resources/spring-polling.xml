@@ -75,6 +75,7 @@
                            endpoint="endpoint"
                            directory="file:target/pollerFilesNotAppend"
                            append="false"
+                           overwrite="true"
                            autoCreateDirectory="true"/>
               
               <file:sender service="test:serviceAppend"

@@ -98,6 +98,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                 		// all fine, we append
                 	} else {
                 		// no overwrite and no append
+                		newFile = null;
                 		throw new IOException("Can not write " + name
                                 + " : file already exists and overwrite has not been enabled");
                 	}

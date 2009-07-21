@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -40,7 +39,6 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.Executor;
-import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
 import org.apache.servicemix.util.FileUtil;
