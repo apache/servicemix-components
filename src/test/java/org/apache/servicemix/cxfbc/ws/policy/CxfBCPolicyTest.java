@@ -16,10 +16,14 @@
  */
 package org.apache.servicemix.cxfbc.ws.policy;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
+
+import junit.framework.TestCase;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -32,14 +36,57 @@ import org.apache.cxf.greeter_control.Greeter;
 import org.apache.cxf.greeter_control.PingMeFault;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.apache.cxf.testutil.common.ServerLauncher;
 
-public class CxfBCPolicyTest extends SpringTestSupport {
+
+public class CxfBCPolicyTest extends TestCase {
 
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBCPolicyTest.class);
+    protected static boolean serversStarted;
+    private ServerLauncher sl;
+    
+    public void startJBIContainers() throws Exception {
+        if (serversStarted) {
+            return;
+        }
+        
+        assertTrue("JBIContainers did not launch correctly", 
+                launchServer(JBIServer.class, null, false));
+       
+        
+        serversStarted = true;
+    }
+    
+    protected void setUp() throws Exception {
+        startJBIContainers();
+    }
+    
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        try {
+            sl.stopServer();         
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop jbi container " + sl.getClass());
+        } 
+        serversStarted = false;
+    }
 
+    public boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
+        boolean ok = false;
+        try { 
+            sl = new ServerLauncher(clz.getName(), p, null, inProcess);
+            ok = sl.launchServer();
+            assertTrue("server failed to launch", ok);
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to launch server " + clz);
+        }
+        
+        return ok;
+    }
+    
     public void testUsingAddressing() throws Exception {
         SpringBusFactory bf = new SpringBusFactory();
         Bus bus = bf
@@ -88,12 +135,5 @@ public class CxfBCPolicyTest extends SpringTestSupport {
         }
     }
 
-    @Override
-    protected AbstractXmlApplicationContext createBeanFactory() {
-        // load cxf se and bc from spring config file
-        return new ClassPathXmlApplicationContext(
-                "org/apache/servicemix/cxfbc/ws/policy/xbean.xml");
-
-    }
-
+    
 }
