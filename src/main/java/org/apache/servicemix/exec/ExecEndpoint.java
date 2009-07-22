@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.exec;
 
+import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
@@ -37,15 +38,8 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  */
 public class ExecEndpoint extends ProviderEndpoint {
 
-	private String command; // the command can be static (define in the
-	// descriptor) or provided in the incoming message
-	private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the
-																			// marshaler
-																			// that
-																			// parse
-																			// the
-																			// in
-																			// message
+	private String command; // the command can be static (define in the descriptor) or provided in the incoming message
+	private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the default exec marshaler
 
 	public String getCommand() {
 		return command;
@@ -83,6 +77,26 @@ public class ExecEndpoint extends ProviderEndpoint {
 	 */
 	public void setMarshaler(ExecMarshalerSupport marshaler) {
 		this.marshaler = marshaler;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.apache.servicemix.common.endpoints.AbstractEndpoint#validate()
+	 */
+	@Override
+	public void validate() throws DeploymentException {
+	    // TODO validate the WSDL
+	    super.validate();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#start()
+	 */
+	@Override
+	public void start() throws Exception {
+	    // TODO register the WSDL definition in the endpoint definition
+	    // TODO register the WSDL content in the endpoint description (the definition document) 
 	}
 
 	/*
@@ -126,6 +140,8 @@ public class ExecEndpoint extends ProviderEndpoint {
 			return;
 		} else {
 			String exec = null;
+			
+			// TODO parse and extract data from the in SOAP envelope
 
 			// try to extract the command from the in message content
 			if (exchange.getMessage("in") != null) {
