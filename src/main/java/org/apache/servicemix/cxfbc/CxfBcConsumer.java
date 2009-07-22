@@ -39,9 +39,6 @@ import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,7 +49,6 @@ import com.ibm.wsdl.extensions.soap.SOAPBindingImpl;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.attachment.AttachmentImpl;
-import org.apache.cxf.binding.AbstractBindingFactory;
 import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
@@ -64,7 +60,6 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.catalog.OASISCatalogManager;
 import org.apache.cxf.continuations.Continuation;
 import org.apache.cxf.continuations.ContinuationProvider;
-import org.apache.cxf.continuations.SuspendedInvocationException;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.endpoint.Server;
@@ -116,8 +111,6 @@ import org.apache.servicemix.cxfbc.interceptors.JbiFault;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.HttpConnection;
-import org.mortbay.jetty.handler.AbstractHandler;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -827,7 +820,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         if (exchange.getProperty("faultstring") != null) {
                             details = (Element) details.getElementsByTagName("faultstring").item(0);
                         } else {
-                            details = (Element) details.getElementsByTagName("detail").item(0);
+                            details = (Element) details.getElementsByTagName("detail").item(0) == null ?
+                                    (Element) details.getElementsByTagName("soap:Detail").item(0):
+                                        (Element) details.getElementsByTagName("detail").item(0);
+                          
                         }
 
                         assert details != null;

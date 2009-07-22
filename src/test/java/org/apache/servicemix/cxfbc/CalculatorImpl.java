@@ -29,6 +29,7 @@ import org.apache.cxf.calculator.types.CalculatorFault;
             targetNamespace = "http://apache.org/cxf/calculator", 
             endpointInterface = "org.apache.cxf.calculator.CalculatorPortType",
             wsdlLocation = "testutils/calculator.wsdl")
+@javax.xml.ws.BindingType(value = "http://www.w3.org/2003/05/soap/bindings/HTTP/")
 public class CalculatorImpl implements CalculatorPortType {
     public int add(int number1, int number2) throws AddNumbersFault {
         if (number1 < 0 || number2 < 0) {
