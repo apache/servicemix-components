@@ -40,6 +40,7 @@ import org.springframework.core.io.Resource;
  */
 public class ExecEndpoint extends ProviderEndpoint {
     
+    // the default WSDL name (in the classpath)
     public final static String DEFAULT_WSDL = "servicemix-exec.wsdl";
 
 	private String command; // the command can be static (define in the descriptor) or provided in the incoming message
@@ -100,6 +101,8 @@ public class ExecEndpoint extends ProviderEndpoint {
 	    // TODO override WSDL attributes (binding, service name, etc) using the endpoint configuration
 	    // (contained in the xbean.xml)
 	    // it should use PortTypeDecorator.decorate()
+	    
+	    super.activate();
 	}
 
 	/*
