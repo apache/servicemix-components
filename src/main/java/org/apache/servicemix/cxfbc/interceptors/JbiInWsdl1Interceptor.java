@@ -342,7 +342,7 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             //ensure the whitespace is passed
             StaxUtils.toNextElement((DepthXMLStreamReader) filteredReader);
             Document doc = DOMUtils.createDocument();
-            StaxUtils.readDocElements(doc, filteredReader, false);
+            StaxUtils.readDocElements(doc, filteredReader, true);
             return doc.getDocumentElement();
         } catch (XMLStreamException e) {
             throw new Fault(e);

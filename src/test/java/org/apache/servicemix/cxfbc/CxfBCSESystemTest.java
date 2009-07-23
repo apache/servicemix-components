@@ -79,32 +79,38 @@ public class CxfBCSESystemTest extends SpringTestSupport {
         }
     }
 
-    public void testCalculatrorWithJBIWrapper() throws Exception {
+    public void xtestCalculatrorWithJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean.xml");
         calculatorTestBase();
     }
     
-    public void testCalculatrorWithOutJBIWrapper() throws Exception {
+    public void testCalculatrorCheckingNameSpace() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/xbean_namespace.xml");
+        calculatorTestBase();
+    }
+
+    
+    public void xtestCalculatrorWithOutJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper.xml");
         calculatorTestBase();
     }
     
-    public void testCalculatrorWithOutJBIWrapperAndSoapEnv() throws Exception {
+    public void xtestCalculatrorWithOutJBIWrapperAndSoapEnv() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper_without_soapenv.xml");
         calculatorTestBase();
     }
     
-    public void testMultipleClientWithJBIWrapper() throws Exception {
+    public void xtestMultipleClientWithJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean.xml");
         multiClientTestBase();
     }
     
-    public void testMultipleClientWithoutJBIWrapper() throws Exception {
+    public void xtestMultipleClientWithoutJBIWrapper() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean_without_jbi_wrapper.xml");
         multiClientTestBase();
     }
     
-    public void testCalculatrorWithDifferentServiceEndpointNmae() throws Exception {
+    public void xtestCalculatrorWithDifferentServiceEndpointNmae() throws Exception {
         setUpJBI("org/apache/servicemix/cxfbc/xbean_different_service_endpoint_name.xml");
         calculatorTestBase();
     }

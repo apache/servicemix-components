@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:tns="http://apache.org/cxf/calculator/types">
+    <soap:Body>
+        <tns:add>
+            <tns:arg0>1</tns:arg0>
+            <tns:arg1>2</tns:arg1>
+        </tns:add>
+    </soap:Body>
+</soap:Envelope>
