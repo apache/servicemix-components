@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.exec;
 
-import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
@@ -29,6 +28,9 @@ import org.apache.servicemix.exec.marshaler.ExecMarshalerSupport;
 import org.apache.servicemix.exec.utils.ExecUtils;
 import org.apache.servicemix.exec.utils.ExecutionData;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.soap.util.DomUtil;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * Represents an exec endpoint.
@@ -37,6 +39,8 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  * @org.apache.xbean.XBean element="endpoint"
  */
 public class ExecEndpoint extends ProviderEndpoint {
+    
+    public final static String DEFAULT_WSDL = "servicemix-exec.wsdl";
 
 	private String command; // the command can be static (define in the descriptor) or provided in the incoming message
 	private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the default exec marshaler
@@ -81,22 +85,21 @@ public class ExecEndpoint extends ProviderEndpoint {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see org.apache.servicemix.common.endpoints.AbstractEndpoint#validate()
+	 * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#activate()
 	 */
 	@Override
-	public void validate() throws DeploymentException {
-	    // TODO validate the WSDL
-	    super.validate();
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#start()
-	 */
-	@Override
-	public void start() throws Exception {
-	    // TODO register the WSDL definition in the endpoint definition
-	    // TODO register the WSDL content in the endpoint description (the definition document) 
+	public void activate() throws Exception {
+	    // get the WSDL resource
+	    Resource wsdl = new ClassPathResource(DEFAULT_WSDL);
+	    
+	    // parse the WSDL to populate the endpoint description
+	    description = DomUtil.parse(wsdl.getInputStream());
+	    // extract the WSDL definition from the description
+	    definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+	    
+	    // TODO override WSDL attributes (binding, service name, etc) using the endpoint configuration
+	    // (contained in the xbean.xml)
+	    // it should use PortTypeDecorator.decorate()
 	}
 
 	/*
