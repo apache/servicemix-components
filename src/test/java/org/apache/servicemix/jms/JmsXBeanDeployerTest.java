@@ -162,9 +162,15 @@ public class JmsXBeanDeployerTest extends AbstractJmsTestSupport {
         component.getServiceUnitManager().start("xbean");
         
         // Test wsdls
-        assertNotNull(container.getRegistry().getEndpointDescriptor(
-                container.getRegistry().getExternalEndpointsForService(
-                        new QName("http://test", "MyConsumerService"))[0]));
+        ServiceEndpoint[] endpoints = 
+            container.getRegistry().getExternalEndpointsForService(new QName("http://test", "MyConsumerService"));
+        boolean wsdl = false;
+        for (ServiceEndpoint endpoint : endpoints) {
+            if (container.getRegistry().getEndpointDescriptor(endpoint) != null) {
+                wsdl = true;
+            }
+        }
+        assertTrue("Expected at least one endpoint to have a WSDL endpoint descriptor", wsdl);
         
         // Test
         InOut me = client.createInOutExchange();
