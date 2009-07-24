@@ -19,6 +19,7 @@ package org.apache.servicemix.cxfse;
 
 import java.util.concurrent.Future;
 
+import javax.annotation.Resource;
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.InOut;
@@ -27,7 +28,11 @@ import javax.jws.WebService;
 import javax.xml.namespace.QName;
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Response;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
+import org.apache.cxf.jaxws.context.WrappedMessageContext;
+import org.apache.cxf.message.Message;
 import org.apache.hello_world_soap_http.BadRecordLitFault;
 import org.apache.hello_world_soap_http.Greeter;
 import org.apache.hello_world_soap_http.NoSuchCodeLitFault;
@@ -46,10 +51,16 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
         endpointInterface = "org.apache.hello_world_soap_http.Greeter", 
         targetNamespace = "http://apache.org/hello_world_soap_http")
 
+        
 public class GreeterImpl implements Greeter {
 
+    @Resource
+    private WebServiceContext wsContext; 
     private ComponentContext context;
     public String greetMe(String me) {
+        if ("WebServiceContext".equals(me)) {
+            testWebServiceContext();
+        }
         String txt = null;
         try {
             
@@ -80,6 +91,13 @@ public class GreeterImpl implements Greeter {
         return txt;
     }
     
+    private void testWebServiceContext() {
+        MessageContext ctx = wsContext.getMessageContext();
+        Message message = ((WrappedMessageContext) ctx).getWrappedMessage();
+        String testProperty = (String) message.get("test-property");
+        message.put("test-property", testProperty + "ffang");
+    }
+
     public String greetMeLater(long later) {
         return "test";
     }

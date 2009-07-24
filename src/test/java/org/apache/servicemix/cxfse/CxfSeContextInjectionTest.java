@@ -102,6 +102,27 @@ public class CxfSeContextInjectionTest extends SpringTestSupport {
         client.sendSync(io);
         assertNull(io.getMessage("out"));
     }
+    
+    public void testWebServiceContextInjection() throws Exception {
+        LOG.info("test WebServiceContext Injection");
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        io.getMessage("in").setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "WebServiceContext"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        io.getMessage("in").setProperty("test-property", "Hello ");
+        client.sendSync(io);
+        assertEquals("Hello ffang", io.getMessage("out").getProperty("test-property"));
+        client.done(io);
+    }
 
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
