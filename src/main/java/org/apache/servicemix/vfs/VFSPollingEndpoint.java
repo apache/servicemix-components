@@ -6,7 +6,6 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,6 +45,7 @@ import org.apache.servicemix.common.locks.LockManager;
 import org.apache.servicemix.common.locks.impl.SimpleLockManager;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
+import org.apache.servicemix.executors.ExecutorAwareRunnable;
 
 /**
  * A polling endpoint that looks for a file or files in a virtual file system 
@@ -73,7 +73,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
     private FileSystemManager fileSystemManager;
     private LockManager lockManager;
     private ConcurrentMap<String, InputStream> openExchanges = new ConcurrentHashMap<String, InputStream>();
-    
+    private boolean concurrentExchange = true;
     /**
      * default constructor
      */
@@ -158,7 +158,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                 throw new JBIException(
                                        "Property org.apache.servicemix.vfs was removed from the exchange -- unable to delete/archive the file");
             }
-
+            
             logger.debug("Releasing " + aFile.getName().getPathDecoded());
         
             // first try to close the stream
@@ -290,7 +290,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
             }
             
             // execute processing in another thread
-            getExecutor().execute(new Runnable() {
+            getExecutor().execute(new ExecutorAwareRunnable() {
                 public void run() {
                     String uri = aFile.getName().getURI().toString();
                     Lock lock = lockManager.getLock(uri);
@@ -302,6 +302,9 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                             logger.debug("Unable to acquire lock on " + aFile.getName().getURI());
                         }
                     }
+                }
+                public boolean shouldRunSynchronously(){
+                	return !isConcurrentExchange();
                 }
             });
         }
@@ -322,7 +325,9 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                 processFile(aFile);
             }
         } catch (Exception e) {
-            logger.error("Failed to process file: " + aFile.getName().getURI() + ". Reason: " + e, e);
+        	workingSet.remove(aFile);
+        	unlockAsyncFile(aFile);
+        	logger.error("Failed to process file: " + aFile.getName().getURI() + ". Reason: " + e, e);
         }
     }
 
@@ -356,7 +361,12 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         exchange.getInMessage().setProperty(VFSComponent.VFS_PROPERTY, file);
         this.openExchanges.put(exchange.getExchangeId(), stream);
 
-        send(exchange);
+        if(isConcurrentExchange()){
+        	send(exchange);
+        }else{
+        	sendSync(exchange);
+        	process(exchange);
+        }
     }
     
     /**
@@ -516,5 +526,19 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
     }
+    
+	/**
+	 * @return the concurrentExchange
+	 */
+	public boolean isConcurrentExchange() {
+		return concurrentExchange;
+	}
+
+	/**
+	 * @param concurrentExchange the concurrentExchange to set
+	 */
+	public void setConcurrentExchange(boolean concurrentExchange) {
+		this.concurrentExchange = concurrentExchange;
+	}
 
 }

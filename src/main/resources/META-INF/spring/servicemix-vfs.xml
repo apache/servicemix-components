@@ -45,6 +45,7 @@
                 <property name="corePoolSize" value="${threadPoolCorePoolSize}"/>
                 <property name="maximumPoolSize" value="${threadPoolMaximumPoolSize}"/>
                 <property name="queueSize" value="${threadPoolQueueSize}"/>
+                <property name="bypassIfSynchronous" value="${threadPoolAllowBypass}"/>
             </bean>
         </property>
     </bean>
@@ -70,6 +71,7 @@
         <prop key="threadPoolCorePoolSize">8</prop>
         <prop key="threadPoolMaximumPoolSize">32</prop>
         <prop key="threadPoolQueueSize">256</prop>
+        <prop key="threadPoolAllowBypass">true</prop>
     </osgix:cm-properties>
 
     <ctx:property-placeholder properties-ref="cmProps" />
