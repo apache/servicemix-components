@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.helper.MessageExchangePattern;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeFactoryImpl;
 
@@ -65,8 +66,8 @@ public class DefaultExecMarshalerTest extends TestCase {
         NormalizedMessage message = exchange.createMessage();
         message.setContent(new StringSource(MSG_VALID));
         exchange.setMessage(message, "in");
-        
-        String execCommand = marshaler.constructExecCommand(message);
+        SourceTransformer transformer = new SourceTransformer();
+        String execCommand = marshaler.constructExecCommand(transformer.toDOMDocument(message));
         
         assertEquals("ls -lt /tmp", execCommand);
     }

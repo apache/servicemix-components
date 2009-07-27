@@ -16,10 +16,10 @@
  */
 package org.apache.servicemix.exec.marshaler;
 
-import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.TransformerException;
 
 import org.apache.servicemix.exec.utils.ExecutionData;
+import org.w3c.dom.Document;
 
 /**
  * This interface describes the behavior of an exec marshaler.
@@ -34,11 +34,11 @@ public interface ExecMarshalerSupport {
      * to constructs the execution command.
      * </p>
      * 
-     * @param message the <code>NormalizedMessage</code>.
+     * @param document the DOM contained in the <code>NormalizedMessage</code>.
      * @return the execution command.
      * @throws TransformerException in case of error during command construction.
      */
-    public String constructExecCommand(NormalizedMessage message) throws TransformerException;
+    public String constructExecCommand(Document document) throws TransformerException;
     
     /**
      * <p>

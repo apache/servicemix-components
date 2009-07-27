@@ -47,13 +47,9 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
      * (non-Javadoc)
      * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#constructExecCommand(javax.jbi.messaging.NormalizedMessage)
      */
-    public String constructExecCommand(NormalizedMessage message) throws TransformerException {
+    public String constructExecCommand(Document document) throws TransformerException {
         String execString = null;
-        // create a source transformer
-        SourceTransformer transformer = new SourceTransformer();
         try {
-            // transform the message content into a DOM document
-            Document document = transformer.toDOMDocument(message);
             document.getDocumentElement().normalize();
             
             // get the command node

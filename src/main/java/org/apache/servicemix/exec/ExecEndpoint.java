@@ -27,6 +27,7 @@ import org.apache.servicemix.exec.marshaler.DefaultExecMarshaler;
 import org.apache.servicemix.exec.marshaler.ExecMarshalerSupport;
 import org.apache.servicemix.exec.utils.ExecUtils;
 import org.apache.servicemix.exec.utils.ExecutionData;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.springframework.core.io.ClassPathResource;
@@ -158,7 +159,8 @@ public class ExecEndpoint extends ProviderEndpoint {
 				// gets the in message
 				NormalizedMessage in = exchange.getMessage("in");
 				// parses the in message and get the execution command
-				exec = marshaler.constructExecCommand(in);
+				SourceTransformer transformer = new SourceTransformer();
+				exec = marshaler.constructExecCommand(transformer.toDOMDocument(in));
 			}
 
 			// fall back to static command if extracted is null or empty
