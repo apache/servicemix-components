@@ -1,43 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions name="servicemix-exec"
-                  targetNamespace="http://servicemix.apache.org/servicemix-exec"
-                  xmlns="http://schemas.xmlsoap.org/wsdl/"
-                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap"
-                  xmlns:tns="http://servicemix.apache.org/servicemix-exec"
-                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">           
+<wsdl:description name="servicemix-exec"
+                  targetNamespace="http://servicemix.apache.org/exec"
+                  xmlns:wsdl="http://www.w3.org/2006/01/wsdl"
+                  xmlns:tns="http://servicemix.apache.org/exec"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
                   
-    <message name="ExecRequest">
-        <part name="command" type="xsd:string"/>
-    </message>
-    <message name="ExecResponse">
-        <part name="output" type="xsd:string"/>
-    </message>
+    <wsdl:description>
+        Abstract WSDL for the servicemix-exec component.
+    </wsdl:description>                  
     
-    <portType name="ExecPortType">
-        <operation name="exec">
-            <input message="tns:ExecRequest"/>
-            <output message="tns:ExecResponse"/>
-        </operation>
-    </portType>
+    <wsdl:types>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   targetNamespace="http://servicemix.apache.org/exec"
+                   xmlns="http://servicemix.apache.org/exec">
+            
+            <xs:element name="Command" type="xs:string"/>
+            
+            <xs:element name="ExecutionData" type="TypeExecutionData"/>
+            <xs:complexType name="TypeExecutionData">
+                <xs:sequence>
+                    <xs:element name="output" type="xs:string"/>
+                    <xs:element name="error" type="xs:string"/>
+                    <xs:element name="returnCode" type="xs:integer"/>                
+                </xs:sequence>    
+            </xs:complexType>
+                       
+        </xs:schema>
+    </wsdl:types>
     
-    <binding name="ExecBinding" type="ExecPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-        <operation name="exec">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-        </operation> 
-    </binding>
-    
-    <service name="ExecService">
-        <documentation>WSDL for ServiceMix Exec component</documentation>
-        <port binding="tns:ExecBinding" name="ExecPort">
-            <soap:address location="nmr://exec"/>
-        </port>
-    </service>
+    <wsdl:interfaces>
+        <wsdl:interface name="executeInterface">
+            <wsdl:fault name="executionFault" element="xs:string"/>
+            <wsdl:operation name="execute" pattern="http://www.w3.org/ns/wsdl/in-out"
+                       style="http://www.w3.org/ns/wsdl/style/iri">
+                <wsdl:input messageLabel="In" element="Command"/>
+                <wsdl:output messageLabel="Out" element="ExecutionData"/>                       
+            </wsdl:operation>                  
+        </wsdl:interface>
+    </wsdl:interfaces>
                   
-</definitions>                  
+</wsdl:description>               

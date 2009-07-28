@@ -92,12 +92,12 @@ public class ExecEndpoint extends ProviderEndpoint {
 	@Override
 	public void activate() throws Exception {
 	    // get the WSDL resource
-	    Resource wsdl = new ClassPathResource(DEFAULT_WSDL);
+	    //Resource wsdl = new ClassPathResource(DEFAULT_WSDL);
 	    
 	    // parse the WSDL to populate the endpoint description
-	    description = DomUtil.parse(wsdl.getInputStream());
+	    //description = DomUtil.parse(wsdl.getInputStream());
 	    // extract the WSDL definition from the description
-	    definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+	    //definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
 	    
 	    // TODO override WSDL attributes (binding, service name, etc) using the endpoint configuration
 	    // (contained in the xbean.xml)
