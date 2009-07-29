@@ -16,7 +16,9 @@
  */
 package org.apache.servicemix.soap;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jbi.component.ComponentContext;
-import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.wsdl.Definition;
 import javax.wsdl.Import;
@@ -43,11 +45,12 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.AbstractEndpoint;
-import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.security.AuthenticationService;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.wsdl1.JbiExtension;
 import org.apache.servicemix.soap.handlers.addressing.AddressingHandler;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.w3c.dom.Document;
 
 import com.ibm.wsdl.Constants;
@@ -219,6 +222,25 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
             setRole(Role.PROVIDER);
         } else {
             throw new IllegalArgumentException("Unrecognized role: " + role);
+        }
+    }
+    
+    /**
+     * In addition to setting the description, attempts to set
+     * the wsdlResource to fix a reloading issue.
+     */
+    @Override
+    public void setDescription(Document description) {
+        super.setDescription(description);
+        String uri = description.getBaseURI();
+        if (uri != null) {
+            try {
+                URL url = new URL(uri);
+                logger.debug("Setting wsdlResource: " + url.toExternalForm());
+                this.setWsdlResource(new UrlResource(url));
+            } catch (MalformedURLException e) {
+                logger.warn("Could not parse URL", e);
+            }
         }
     }
 
