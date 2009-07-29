@@ -31,6 +31,7 @@ import org.apache.servicemix.exec.utils.ExecutionData;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.soap.util.DomUtil;
+import org.apache.servicemix.soap.wsdl.WSDLUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -116,13 +117,12 @@ public class ExecEndpoint extends ProviderEndpoint {
 	            // load the default abstract WSDL
 	            description = DomUtil.parse(new ClassPathResource(DEFAULT_WSDL).getInputStream());
 	            definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
-	            // TODO cleanup in WSDL definitions to use endpoint properties (service/endpoint)
 	        }
 	    } catch (Exception e) {
 	        throw new DeploymentException("Can't load the WSDL.", e);
 	    }
 	    
-	    // TODO validate used WSDL
+	    // TODO define the WSDL for the marshaler
 	}
 
 	/*
@@ -166,8 +166,6 @@ public class ExecEndpoint extends ProviderEndpoint {
 			return;
 		} else {
 			String exec = null;
-			
-			// TODO parse and extract data from the in SOAP envelope
 
 			// try to extract the command from the in message content
 			if (exchange.getMessage("in") != null) {
@@ -177,6 +175,8 @@ public class ExecEndpoint extends ProviderEndpoint {
 				}
 				// gets the in message
 				NormalizedMessage in = exchange.getMessage("in");
+				logger.debug("In message: " + in);
+				logger.debug("In message content: " + in.getContent());
 				// parses the in message and get the execution command
 				SourceTransformer transformer = new SourceTransformer();
 				exec = marshaler.constructExecCommand(transformer.toDOMDocument(in));

@@ -17,37 +17,64 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<wsdl:definitions name="servicemix-exec" targetNamespace="http://servicemix.apache.org/exec"
+<wsdl:definitions name="servicemix-exec" 
+    targetNamespace="http://servicemix.apache.org/exec"
     xmlns:tns="http://servicemix.apache.org/exec"
     xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     
     <wsdl:types>
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                attributeFormDefault="unqualified"
-                elementFormDefault="unqualified"
                 targetNamespace="http://servicemix.apache.org/exec"
-                xmlns:tns="http://servicemix.apache.org/exec">
-            <xs:element name="Command" type="xs:string"/>
-            <xs:element name="CommandResponse" type="tns:ExecutionData"/>
-            <xs:complexType name="ExecutionData">
-                <xs:element name="output" type="xs:string"/>
+                xmlns:tns="http://servicemix.apache.org/exec"
+                attributeFormDefault="unqualified"
+                elementFormDefault="unqualified">
+            <xs:element name="execute" type="tns:command"/>
+            <xs:complexType name="command">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="executeResponse" type="tns:executeResponse"/>
+            <xs:complexType name="executeResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="tns:executionData"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="executionData">
+                <xs:sequence>
+                    <xs:element name="endTime" type="xs:long"/>
+                    <xs:element minOccurs="0" name="errorData" type="tns:stringBuffer"/>
+                    <xs:element name="exitCode" type="xs:int"/>
+                    <xs:element minOccurs="0" name="outputData" type="tns:stringBuffer"/>
+                    <xs:element name="startTime" type="xs:long"/>
+                </xs:sequence>
+            </xs:complexType>                
+            <xs:complexType final="extension restriction" name="stringBuffer">
+                <xs:complexContent>
+                    <xs:extension base="tns:abstractStringBuilder">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:complexType abstract="true" name="abstractStringBuilder">
+                <xs:sequence/>
             </xs:complexType>
         </xs:schema>
     </wsdl:types>
     
-    <wsdl:message name="ExecuteCommandIn">
-        <wsdl:part name="body" element="tns:ExecuteCommand"/>
+    <wsdl:message name="execute">
+        <wsdl:part name="parameters" element="tns:execute"/>
     </wsdl:message>
     
-    <wsdl:message name="ExecuteCommandOut">
-        <wsdl:part name="body" element="tns:ExecuteCommandResponse"/>
+    <wsdl:message name="executeResponse">
+        <wsdl:part name="parameters" element="tns:executeResponse"/>
     </wsdl:message>
     
     <wsdl:portType name="ExecPortType">
-        <wsdl:operation name="ExecutionCommand">
-            <wsdl:input message="tns:Command"/>
-            <wsdl:output message="tns:CommandResponse"/>
+        <wsdl:operation name="execute">
+            <wsdl:input message="tns:execute"/>
+            <wsdl:output message="tns:executeResponse"/>
         </wsdl:operation>
     </wsdl:portType>
     
