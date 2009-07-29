@@ -1,42 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:description name="servicemix-exec"
-                  targetNamespace="http://servicemix.apache.org/exec"
-                  xmlns:wsdl="http://www.w3.org/2006/01/wsdl"
-                  xmlns:tns="http://servicemix.apache.org/exec"
-                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-                  
-    <wsdl:description>
-        Abstract WSDL for the servicemix-exec component.
-    </wsdl:description>                  
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<wsdl:definitions name="servicemix-exec" targetNamespace="http://servicemix.apache.org/exec"
+    xmlns:tns="http://servicemix.apache.org/exec"
+    xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     
     <wsdl:types>
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                   targetNamespace="http://servicemix.apache.org/exec"
-                   xmlns="http://servicemix.apache.org/exec">
-            
+                attributeFormDefault="unqualified"
+                elementFormDefault="unqualified"
+                targetNamespace="http://servicemix.apache.org/exec"
+                xmlns:tns="http://servicemix.apache.org/exec">
             <xs:element name="Command" type="xs:string"/>
-            
-            <xs:element name="ExecutionData" type="TypeExecutionData"/>
-            <xs:complexType name="TypeExecutionData">
-                <xs:sequence>
-                    <xs:element name="output" type="xs:string"/>
-                    <xs:element name="error" type="xs:string"/>
-                    <xs:element name="returnCode" type="xs:integer"/>                
-                </xs:sequence>    
+            <xs:element name="CommandResponse" type="tns:ExecutionData"/>
+            <xs:complexType name="ExecutionData">
+                <xs:element name="output" type="xs:string"/>
             </xs:complexType>
-                       
         </xs:schema>
     </wsdl:types>
     
-    <wsdl:interfaces>
-        <wsdl:interface name="executeInterface">
-            <wsdl:fault name="executionFault" element="xs:string"/>
-            <wsdl:operation name="execute" pattern="http://www.w3.org/ns/wsdl/in-out"
-                       style="http://www.w3.org/ns/wsdl/style/iri">
-                <wsdl:input messageLabel="In" element="Command"/>
-                <wsdl:output messageLabel="Out" element="ExecutionData"/>                       
-            </wsdl:operation>                  
-        </wsdl:interface>
-    </wsdl:interfaces>
-                  
-</wsdl:description>               
+    <wsdl:message name="ExecuteCommandIn">
+        <wsdl:part name="body" element="tns:ExecuteCommand"/>
+    </wsdl:message>
+    
+    <wsdl:message name="ExecuteCommandOut">
+        <wsdl:part name="body" element="tns:ExecuteCommandResponse"/>
+    </wsdl:message>
+    
+    <wsdl:portType name="ExecPortType">
+        <wsdl:operation name="ExecutionCommand">
+            <wsdl:input message="tns:Command"/>
+            <wsdl:output message="tns:CommandResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+</wsdl:definitions>             

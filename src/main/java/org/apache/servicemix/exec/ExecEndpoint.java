@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.exec;
 
+import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
@@ -41,10 +42,10 @@ import org.springframework.core.io.Resource;
  */
 public class ExecEndpoint extends ProviderEndpoint {
     
-    // the default WSDL name (in the classpath)
-    public final static String DEFAULT_WSDL = "servicemix-exec.wsdl";
+    public final static String DEFAULT_WSDL = "servicemix-exec.wsdl"; // the default abstract endpoint WSDL
 
 	private String command; // the command can be static (define in the descriptor) or provided in the incoming message
+	private Resource wsdl; // the abstract WSDL describing the endpoint behavior
 	private ExecMarshalerSupport marshaler = new DefaultExecMarshaler(); // the default exec marshaler
 
 	public String getCommand() {
@@ -67,6 +68,21 @@ public class ExecEndpoint extends ProviderEndpoint {
 	public ExecMarshalerSupport getMarshaler() {
 		return marshaler;
 	}
+	
+	public Resource getWsdl() {
+	    return this.wsdl;
+	}
+	
+	/**
+	 * <p>
+	 * This attribute specifies the abstract WSDL describing the endpoint behavior.
+	 * </p>
+	 * 
+	 * @param wsdl the WSDL <code>Resource</code>.
+	 */
+	public void setWsdl(Resource wsdl) {
+	    this.wsdl = wsdl;
+	}
 
 	/**
 	 * <p>
@@ -87,23 +103,26 @@ public class ExecEndpoint extends ProviderEndpoint {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see org.apache.servicemix.common.endpoints.ProviderEndpoint#activate()
+	 * @see org.apache.servicemix.common.endpoints.AbstractEndpoint#validate()
 	 */
 	@Override
-	public void activate() throws Exception {
-	    // get the WSDL resource
-	    //Resource wsdl = new ClassPathResource(DEFAULT_WSDL);
+	public void validate() throws DeploymentException {
+	    try {
+	        if (wsdl != null) {
+	            // the user provides a WSDL
+	            description = DomUtil.parse(wsdl.getInputStream());
+	            definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+	        } else {
+	            // load the default abstract WSDL
+	            description = DomUtil.parse(new ClassPathResource(DEFAULT_WSDL).getInputStream());
+	            definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+	            // TODO cleanup in WSDL definitions to use endpoint properties (service/endpoint)
+	        }
+	    } catch (Exception e) {
+	        throw new DeploymentException("Can't load the WSDL.", e);
+	    }
 	    
-	    // parse the WSDL to populate the endpoint description
-	    //description = DomUtil.parse(wsdl.getInputStream());
-	    // extract the WSDL definition from the description
-	    //definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
-	    
-	    // TODO override WSDL attributes (binding, service name, etc) using the endpoint configuration
-	    // (contained in the xbean.xml)
-	    // it should use PortTypeDecorator.decorate()
-	    
-	    super.activate();
+	    // TODO validate used WSDL
 	}
 
 	/*
