@@ -162,7 +162,12 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
             logger.debug("Releasing " + aFile.getName().getPathDecoded());
         
             // first try to close the stream
-            stream.close();
+            try {
+            	stream.close();            	
+            } catch (IOException ex) {
+            	logger.error("Unable to close stream for file " + aFile.getName().getPathDecoded(), ex);
+            }
+            
             try {
                 // check for state
                 if (exchange.getStatus() == ExchangeStatus.DONE) {
