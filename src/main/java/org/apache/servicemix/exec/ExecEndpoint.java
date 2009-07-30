@@ -175,8 +175,6 @@ public class ExecEndpoint extends ProviderEndpoint {
 				}
 				// gets the in message
 				NormalizedMessage in = exchange.getMessage("in");
-				logger.debug("In message: " + in);
-				logger.debug("In message content: " + in.getContent());
 				// parses the in message and get the execution command
 				SourceTransformer transformer = new SourceTransformer();
 				exec = marshaler.constructExecCommand(transformer.toDOMDocument(in));
