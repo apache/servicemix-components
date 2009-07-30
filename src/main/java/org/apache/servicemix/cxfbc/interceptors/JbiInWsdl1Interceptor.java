@@ -286,7 +286,11 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
             message.setContent(Source.class, new DOMSource(doc));
             message.put("jbiFault", true);
         } catch (Exception e) {
-            throw new RuntimeException("the fault message can't be parsed:" + e.getMessage());
+            String eMessage = e.getMessage();
+            if (eMessage == null) {
+                eMessage = e.getClass().getName();
+            }
+            throw new RuntimeException("the fault message can't be parsed:" + eMessage);
             
         }
     }

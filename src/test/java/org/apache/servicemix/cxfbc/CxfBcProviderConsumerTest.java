@@ -66,7 +66,9 @@ public class CxfBcProviderConsumerTest extends SpringTestSupport {
             port.add(1, -2);
             fail("should get exception");
         } catch (Exception e) {
-            assertEquals(e.getMessage(), "the fault message can't be parsed:String index out of range: -1");
+            String expected = "the fault message can't be parsed:";
+            assertTrue("Exception did not contain expected text. expected: " 
+                + expected + " was: " + e.getMessage(), e.getMessage().contains(expected));
         }
 
     }
