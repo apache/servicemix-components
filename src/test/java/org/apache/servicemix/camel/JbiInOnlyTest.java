@@ -48,7 +48,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
         exchange.setService(new QName("urn:test", "in-only"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.send(exchange);
-        client.receive(1000);
+        assertNotNull("Expecting to receive a DONE/ERROR MessageExchange", client.receive(20000));
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         done.assertIsSatisfied();
     }

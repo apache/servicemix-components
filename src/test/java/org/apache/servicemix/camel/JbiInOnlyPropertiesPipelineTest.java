@@ -52,7 +52,7 @@ public class JbiInOnlyPropertiesPipelineTest extends JbiTestSupport {
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         exchange.getInMessage().setProperty(HEADER_ORIGINAL, "my-original-header-value");
         client.send(exchange);
-        client.receive(1000);
+        assertNotNull("Expecting to receive a DONE/ERROR MessageExchange", client.receive(20000));
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         
         output.assertIsSatisfied();
