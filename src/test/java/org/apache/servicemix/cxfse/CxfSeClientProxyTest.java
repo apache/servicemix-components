@@ -133,6 +133,27 @@ public class CxfSeClientProxyTest extends TestCase {
                 io.getOutMessage()).indexOf("Hello ffang 3") > 0);
         client.done(io);
         
+        client = new DefaultServiceMixClient(container);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPService"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        io.setOperation(new QName("http://apache.org/hello_world_soap_http", "greetMe"));
+        LOG.info("test property get/set");
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "property"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello ffang") > 0);
+        client.done(io);
+        
+        
+        
     }
     
     protected void tearDown() throws Exception {

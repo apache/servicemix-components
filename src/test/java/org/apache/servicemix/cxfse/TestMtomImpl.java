@@ -21,10 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.activation.DataHandler;
+import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.mail.util.ByteArrayDataSource;
 import javax.xml.ws.Holder;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
+import org.apache.cxf.jaxws.context.WrappedMessageContext;
+import org.apache.cxf.message.Message;
 import org.apache.cxf.mime.TestMtom;
 
 @WebService(serviceName = "TestMtomService", 
@@ -33,11 +38,21 @@ import org.apache.cxf.mime.TestMtom;
         endpointInterface = "org.apache.cxf.mime.TestMtom",
             wsdlLocation = "testutils/mtom_xop.wsdl")
 public class TestMtomImpl implements TestMtom {
+    
+    @Resource
+    private WebServiceContext wsContext;
+    
     public void testXop(Holder<String> name, Holder<DataHandler> attachinfo) {
         
         try {
             if ("runtime exception".equals(name.value)) {
                 throw new RuntimeException("throw runtime exception");
+            } else if ("property".equals(name.value)){
+                MessageContext ctx = wsContext.getMessageContext();
+                Message message = ((WrappedMessageContext) ctx).getWrappedMessage();
+                String testProperty = (String) message.get("test-property");
+                message.put("test-property", testProperty + "ffang");
+                return;
             }
             InputStream bis = attachinfo.value.getDataSource().getInputStream();
             byte b[] = new byte[6];

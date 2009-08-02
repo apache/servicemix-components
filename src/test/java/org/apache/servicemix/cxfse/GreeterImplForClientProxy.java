@@ -24,6 +24,7 @@ import javax.jbi.component.ComponentContext;
 import javax.jws.WebService;
 import javax.mail.util.ByteArrayDataSource;
 import javax.xml.ws.AsyncHandler;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 import javax.xml.ws.Response;
 
@@ -75,6 +76,14 @@ public class GreeterImplForClientProxy implements Greeter {
             } else if ("payload".equals(me)) {
                 ret = getCalculatorPayload().add(1, 2);
                 return "Hello " + me  + " " + ret;
+            } else if ("property".equals(me)) {
+                ((BindingProvider)mtom).getRequestContext().put("test-property", "Hello ");
+                Holder<DataHandler> param = new Holder<DataHandler>();
+                param.value = new DataHandler(new ByteArrayDataSource("foobar".getBytes(), 
+                    "application/octet-stream"));
+                Holder<String> name = new Holder<String>("property");
+                mtom.testXop(name, param);
+                return (String) ((BindingProvider)mtom).getResponseContext().get("test-property");
             }
                         
         } catch (Exception e) {

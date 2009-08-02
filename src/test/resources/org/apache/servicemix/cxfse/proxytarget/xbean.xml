@@ -47,5 +47,22 @@
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfse:outFaultInterceptors>
       </cxfse:endpoint>
-    
+      <cxfse:endpoint mtomEnabled="true">
+        <cxfse:pojo>
+          <bean class="org.apache.servicemix.cxfse.TestMtomImpl" />
+        </cxfse:pojo>
+        <cxfse:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inInterceptors>
+        <cxfse:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outInterceptors>
+        <cxfse:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inFaultInterceptors>
+        <cxfse:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outFaultInterceptors>
+      </cxfse:endpoint>
+ 
 </beans>
