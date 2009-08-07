@@ -93,6 +93,7 @@ public class CxfBCConsumerAsynTest extends SpringTestSupport {
         
         for (int i = 0; i < clients.length; i++) {
             clients[i].start();
+            Thread.sleep(2000);
         }
         
         for (int i = 0; i < clients.length; i++) {

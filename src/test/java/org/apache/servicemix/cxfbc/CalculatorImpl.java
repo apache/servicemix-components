@@ -39,7 +39,7 @@ public class CalculatorImpl implements CalculatorPortType {
             throw new AddNumbersFault("Negative number cant be added!", fault);
         }
         try {
-			Thread.sleep(8000 - number2 * 4000);
+			Thread.sleep(12000 - number2 * 6000);
         } catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
