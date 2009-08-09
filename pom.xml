@@ -42,14 +42,11 @@
 		<servicemix-shared-version>2009.01</servicemix-shared-version>
 
 		<servicemix.osgi.import>
-			org.apache.servicemix;resolution:=optional,
-			org.apache.servicemix.client;resolution:=optional,
 			org.apache.servicemix.common,
 			org.apache.servicemix.common.osgi,
-			org.apache.servicemix.components*;resolution:=optional,
-			org.apache.servicemix.executors.impl,
-			org.apache.servicemix.expression*;resolution:=optional,
-			org.apache.servicemix.jbi*;resolution:=optional,
+            org.apache.servicemix.executors.impl,
+            org.apache.servicemix.jbi.container*;resolution:=optional,
+            org.apache.servicemix.jbi.framework*;resolution:=optional,
 			org.apache.xbean.spring.context.v2,
 			org.springframework.beans.factory.xml,
 			sun.misc;resolution:=optional,
@@ -73,11 +70,16 @@
 	</scm>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.apache.servicemix</groupId>
-			<artifactId>servicemix-shared</artifactId>
-			<version>${servicemix-shared-version}</version>
-		</dependency>
+	    <dependency>
+	       <groupId>org.apache.servicemix</groupId>
+	       <artifactId>servicemix-shared</artifactId>
+	       <version>${servicemix-shared-version}</version>
+	    </dependency>
+	    <dependency>
+	       <groupId>org.apache.servicemix</groupId>
+	       <artifactId>servicemix-common</artifactId>
+	       <version>${servicemix-shared-version}</version>
+	    </dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.specs</groupId>
 			<artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
@@ -96,6 +98,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix</groupId>
