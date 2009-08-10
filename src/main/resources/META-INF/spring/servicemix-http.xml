@@ -89,7 +89,7 @@
         </osgi:service-properties>
     </osgi:service>
 
-    <osgix:cm-properties id="cmProps" persistent-id="servicemix-http">
+    <osgix:cm-properties id="cmProps" persistent-id="org.apache.servicemix.components.http">
         <prop key="connectorMaxIdleTime">30000</prop>
         <prop key="consumerProcessorSuspendTime">60000</prop>
         <prop key="jettyClientThreadPoolSize">16</prop>
