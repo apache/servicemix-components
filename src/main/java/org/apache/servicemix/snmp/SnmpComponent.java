@@ -57,6 +57,6 @@ public class SnmpComponent extends DefaultComponent {
      * @see org.apache.servicemix.common.DefaultComponent#getEndpointClasses()
      */
     protected Class[] getEndpointClasses() {
-        return new Class[] {SnmpPollingEndpoint.class};
+        return new Class[] {SnmpPollingEndpoint.class, SnmpTrapConsumerEndpoint.class};
     }
 }

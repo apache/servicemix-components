@@ -34,7 +34,7 @@ public interface SnmpMarshalerSupport {
      * 
      * @param exchange                  the exchange object
      * @param inMsg                     the normalized message to fill
-     * @param request                   the snmp request
+     * @param request                   the snmp request. Null when PDU is a trap PDU.
      * @param response                  the snmp response
      * @throws MessagingException       on errors
      */
