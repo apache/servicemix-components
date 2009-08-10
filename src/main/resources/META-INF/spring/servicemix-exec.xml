@@ -66,7 +66,7 @@
         </osgi:service-properties>
     </osgi:service>
     
-    <osgix:cm-properties id="cmProps" persistent-id="servicemix-exec">
+    <osgix:cm-properties id="cmProps" persistent-id="org.apache.servicemix.components.exec">
         <prop key="threadPoolCorePoolSize">8</prop>
         <prop key="threadPoolMaximumPoolSize">32</prop>
         <prop key="threadPoolQueueSize">256</prop>
