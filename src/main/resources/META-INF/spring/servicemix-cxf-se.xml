@@ -72,7 +72,7 @@
         </osgi:service-properties>
     </osgi:service>
 
-    <osgix:cm-properties id="cmProps" persistent-id="servicemix-cxf-se">
+    <osgix:cm-properties id="cmProps" persistent-id="org.apache.servicemix.components.cxfse">
         <prop key="threadPoolCorePoolSize">8</prop>
         <prop key="threadPoolMaximumPoolSize">32</prop>
         <prop key="threadPoolQueueSize">256</prop>
