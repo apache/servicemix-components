@@ -69,7 +69,7 @@
 
     <osgi:reference id="connectionFactory" interface="javax.jms.ConnectionFactory" />
 
-    <osgix:cm-properties id="cmProps" persistent-id="servicemix-wsn2005">
+    <osgix:cm-properties id="cmProps" persistent-id="org.apache.servicemix.components.wsn2005">
         <prop key="threadPoolCorePoolSize">8</prop>
         <prop key="threadPoolMaximumPoolSize">32</prop>
         <prop key="threadPoolQueueSize">256</prop>
