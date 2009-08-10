@@ -47,7 +47,7 @@ public class SnmpTrapConsumerEndpointTest extends SpringTestSupport {
     private static final String VAR_BIND_UDP_LOCAL = "1.3.6.1.2.1.7.5.1";
     private static final String VAR_BIND_UDP_LOCAL_ADDRESS = ".1";
     private static final String VAR_BIND_UDP_LOCAL_PORT = ".2";
-    private static final String listenAddress = "udp:127.0.0.1/1662";
+    private static final String address = "udp:127.0.0.1/1662";
     
     /**
      * Sets up a {@link SnmpTrapConsumerEndpoint}, sends a v1 trap
@@ -99,7 +99,7 @@ public class SnmpTrapConsumerEndpointTest extends SpringTestSupport {
     private void sendV1Trap() {
         // Setting up snmp and listening address
         Snmp snmp = null;
-        Address listenGenericAddress = GenericAddress.parse(listenAddress);
+        Address listenGenericAddress = GenericAddress.parse(address);
         try {
             TransportMapping transport = new DefaultUdpTransportMapping();
             snmp = new Snmp(transport);

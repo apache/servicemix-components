@@ -54,7 +54,7 @@ public class SnmpTrapConsumerEndpoint extends ConsumerEndpoint implements SnmpEn
     private Snmp snmp;
     private TransportMapping transport;
 
-    private String listenAddress;
+    private String address;
     private boolean enabled = DEFAULT_ENABLED_VALUE;
     
     private SnmpMarshalerSupport marshaler = new DefaultSnmpMarshaler();
@@ -69,7 +69,7 @@ public class SnmpTrapConsumerEndpoint extends ConsumerEndpoint implements SnmpEn
         // load connection data only if the endpoint is enabled
         if (isEnabled()) {
             logger.debug("Activating endpoint");
-            this.listenGenericAddress = GenericAddress.parse(this.listenAddress);
+            this.listenGenericAddress = GenericAddress.parse(this.address);
             this.transport = new DefaultUdpTransportMapping((UdpAddress) this.listenGenericAddress);
             this.snmp = new Snmp(transport);
             snmp.addCommandResponder(this);
@@ -117,17 +117,17 @@ public class SnmpTrapConsumerEndpoint extends ConsumerEndpoint implements SnmpEn
         super.validate();
         
         // check listen address not null
-        if (this.listenAddress == null) {
+        if (this.address == null) {
             throw new DeploymentException("The listen address attribute has to be specified!");
         }
         
         // check if address is valid
         try {
-            if (GenericAddress.parse(this.listenAddress) == null) {
-                throw new DeploymentException("The specified address " + listenAddress + " is not valid!");
+            if (GenericAddress.parse(this.address) == null) {
+                throw new DeploymentException("The specified address " + address + " is not valid!");
             }
         } catch (IllegalArgumentException ex) {
-            throw new DeploymentException("The specified address " + listenAddress + " is not valid!");
+            throw new DeploymentException("The specified address " + address + " is not valid!");
         }
     }
     
@@ -191,8 +191,8 @@ public class SnmpTrapConsumerEndpoint extends ConsumerEndpoint implements SnmpEn
         return this.snmp;
     }
 
-    public String getListenAddress() {
-        return this.listenAddress;
+    public String getAddress() {
+        return this.address;
     }
 
     /**
@@ -228,8 +228,8 @@ public class SnmpTrapConsumerEndpoint extends ConsumerEndpoint implements SnmpEn
      * @param listenAddress 
      *              a <code>String</code> value containing the connection details
      */
-    public void setListenAddress(String listenAddress) {
-        this.listenAddress = listenAddress;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public SnmpMarshalerSupport getMarshaler() {

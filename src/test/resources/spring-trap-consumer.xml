@@ -32,7 +32,7 @@
       				<snmp:trap-consumer service="test:snmp-service"
       								   endpoint="trap-consumer"
       								   targetService="test:receiver"
-      								   listenAddress="udp:127.0.0.1/1662">
+      								   address="udp:127.0.0.1/1662">
       				</snmp:trap-consumer>
       			</snmp:endpoints>
       		</snmp:component>
