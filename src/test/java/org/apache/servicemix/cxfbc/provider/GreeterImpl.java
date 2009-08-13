@@ -36,7 +36,11 @@ public class GreeterImpl implements Greeter {
                 e.printStackTrace();
             }
         }
-        return "Hello " + me;
+        if ("schemavalidation".equals(me)) {
+            return "intended to return a long string to break the schema validation";
+        } else {
+            return "Hello " + me;
+        }
     }
 
     public String sayHi() {

@@ -55,7 +55,7 @@
             <element name="greetMeResponse">
                 <complexType>
                     <sequence>
-                        <element name="responseType" type="string"/>
+                        <element name="responseType" type="tns:MyStringType"/>
                     </sequence>
                 </complexType>
             </element>

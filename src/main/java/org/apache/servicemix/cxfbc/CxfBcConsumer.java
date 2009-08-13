@@ -94,7 +94,6 @@ import org.apache.cxf.transport.http_jetty.JettyHTTPDestination;
 import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngine;
 import org.apache.cxf.transport.jms.JMSConfiguration;
 import org.apache.cxf.transport.jms.JMSDestination;
-import org.apache.cxf.transport.http_jetty.continuations.JettyContinuationWrapper;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.rm.Servant;
 import org.apache.cxf.wsdl.WSDLManager;
@@ -108,6 +107,8 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOperationInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiFault;
+import org.apache.servicemix.cxfbc.interceptors.SchemaValidationInInterceptor;
+import org.apache.servicemix.cxfbc.interceptors.SchemaValidationOutInterceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.mortbay.jetty.Handler;
@@ -173,6 +174,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private ClassLoader suClassLoader;
    
     private boolean x509;
+    
+    private boolean schemaValidationEnabled;
 
     /**
      * @return the wsdl
@@ -443,6 +446,14 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     new JbiOperationInterceptor());
             cxfService.getInInterceptors().add(
                     new JbiInWsdl1Interceptor(isUseJBIWrapper(), isUseSOAPEnvelope()));
+            if (isSchemaValidationEnabled()) {
+                cxfService.getInInterceptors().add(new SchemaValidationInInterceptor(
+                        isUseJBIWrapper(), isUseSOAPEnvelope()));
+            }
+            if (isSchemaValidationEnabled()) {
+                cxfService.getOutInterceptors().add(new SchemaValidationOutInterceptor(
+                        isUseJBIWrapper(), isUseSOAPEnvelope()));
+            }
             cxfService.getInInterceptors().add(new JbiInInterceptor());
             cxfService.getInInterceptors().add(new JbiJAASInterceptor(
                     AuthenticationService.Proxy.create(
@@ -1089,5 +1100,23 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     public boolean isX509() {
         return x509;
     }
+    
+    public boolean isSchemaValidationEnabled() {
+        return schemaValidationEnabled;
+    }
+
+    /**
+     * Specifies if the endpoint use schemavalidation for the incoming/outgoing message.
+     * 
+     * @param schemaValidationEnabled
+     *            a boolean
+     * @org.apache.xbean.Property description="Specifies if the endpoint use schemavalidation for the incoming/outgoing message.
+     *  Default is <code>false</code>. 
+     */
+
+    public void setSchemaValidationEnabled(boolean schemaValidationEnabled) {
+        this.schemaValidationEnabled = schemaValidationEnabled;
+    }
+
 
 }
