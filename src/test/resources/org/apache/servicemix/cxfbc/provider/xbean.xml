@@ -24,6 +24,7 @@
        xmlns:hello="uri:HelloWorld"
        xmlns:calculator="http://apache.org/cxf/calculator"
        xmlns:greeter="http://apache.org/hello_world_soap_http"
+       xmlns:provider_greeter="http://apache.org/hello_world_soap_http_provider"
        xmlns:mtom="http://cxf.apache.org/mime">
   
     
@@ -39,6 +40,10 @@
               <property name="greeter">
                   <cxfse:proxy service="greetr:SOAPService" context="#context" type="org.apache.hello_world_soap_http.Greeter"/>
               </property>
+              <property name="providerGreeter">
+                  <cxfse:proxy service="provider_greetr:SOAPService" context="#context" type="org.apache.hello_world_soap_http_provider.Greeter"/>
+              </property>
+
               <property name="hello">
                   <cxfse:proxy service="hello:HelloService" context="#context" type="uri.helloworld.HelloPortType"/>
               </property>              

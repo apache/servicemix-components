@@ -58,6 +58,7 @@ public class GreeterImplForProvider implements Greeter {
     private Greeter securityGreeter;
     private HelloPortType hello;
     private TestMtom mtom;
+    private org.apache.hello_world_soap_http_provider.Greeter providerGreeter;
 
     public String greetMe(String me) {
         String ret = "";
@@ -70,6 +71,12 @@ public class GreeterImplForProvider implements Greeter {
             } else if ("oneway test".equals(me)) {
                 getGreeter().greetMeOneWay("oneway");
                 ret = "oneway";
+            } else if ("schemavalidation".equals(me)) {
+                try {
+                    ret = getProviderGreeter().greetMe("schemavalidation");
+                } catch (Exception e) {
+                    ret = e.getMessage();
+                }
             } else if ("header test".equals(me)) { 
                 HelloRequest req = new HelloRequest();
                 req.setText("12");
@@ -84,7 +91,6 @@ public class GreeterImplForProvider implements Greeter {
                 for (int i = 0; i < clients.length; i++) {
                     clients[i] = new MultiClientThread(getCalculator(), i);
                 }
-                
                 for (int i = 0; i < clients.length; i++) {
                     clients[i].start();
                 }
@@ -287,6 +293,14 @@ public class GreeterImplForProvider implements Greeter {
         return mtom;
     }
 
+     public void setProviderGreeter(org.apache.hello_world_soap_http_provider.Greeter providerGreeter) {
+        this.providerGreeter = providerGreeter;
+    }
+
+    public org.apache.hello_world_soap_http_provider.Greeter getProviderGreeter() {
+        return providerGreeter;
+    }
+    
 
     class MultiClientThread extends Thread {
         private CalculatorPortType port;

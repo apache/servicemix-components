@@ -55,7 +55,7 @@ import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.MessageObserver;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
-
+import org.apache.servicemix.cxfbc.interceptors.SchemaValidationInInterceptor;
 
 public class CxfBcProviderMessageObserver implements MessageObserver {
     ByteArrayOutputStream response = new ByteArrayOutputStream();
@@ -119,6 +119,10 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             inList.add(new StaxInInterceptor());
             inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper(),
             		this.providerEndpoint.isUseSOAPEnvelope()));
+            if (this.providerEndpoint.isSchemaValidationEnabled()) {
+                inList.add(new SchemaValidationInInterceptor(this.providerEndpoint.isUseJBIWrapper(),
+                        this.providerEndpoint.isUseSOAPEnvelope()));
+            }
             inList.add(new AttachmentInInterceptor());
             PhaseInterceptorChain inChain = inboundChainCache.get(pm
                     .getInPhases(), inList);
@@ -126,7 +130,7 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
             closeConnectionStream(soapMessage);
-            if (soapMessage.getContent(Source.class) == null) {
+            if (soapMessage.getContent(Exception.class) != null || soapMessage.getContent(Source.class) == null) {    
                 Exception ex = soapMessage.getContent(Exception.class);
                 if (!(soapMessage.getExchange().get(MessageExchange.class) instanceof InOnly) && ex != null) {
                     messageExchange.setStatus(ExchangeStatus.ERROR);

@@ -107,6 +107,7 @@ import org.apache.servicemix.cxfbc.interceptors.JbiOutInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiOutWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiFault;
+import org.apache.servicemix.cxfbc.interceptors.SchemaValidationOutInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.CxfJbiConstants;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
@@ -154,6 +155,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
     private boolean useSOAPEnvelope = true;
     
     private boolean synchronous = true;
+  
+    private boolean schemaValidationEnabled;
  
     private List<AbstractFeature> features = new CopyOnWriteArrayList<AbstractFeature>();
 
@@ -212,8 +215,11 @@ public class CxfBcProvider extends ProviderEndpoint implements
             outList.add(new AttachmentOutInterceptor());
 
         }
-
+         
         outList.add(new JbiOutInterceptor());
+        if (isSchemaValidationEnabled()) {
+            outList.add(new SchemaValidationOutInterceptor(isUseJBIWrapper(), isUseSOAPEnvelope()));
+        }
         outList.add(new JbiOutWsdl1Interceptor(isUseJBIWrapper(), isUseSOAPEnvelope()));
         outList.add(new SoapPreProtocolOutInterceptor());
         outList.add(new SoapOutInterceptor(getBus()));
@@ -724,5 +730,21 @@ public class CxfBcProvider extends ProviderEndpoint implements
     public List<AbstractFeature> getFeatures() {
         return features;
     }
- 
+    
+    public boolean isSchemaValidationEnabled() {
+        return schemaValidationEnabled;
+    }
+
+    /**
+     * Specifies if the endpoint use schemavalidation for the incoming/outgoing message.
+     * 
+     * @param schemaValidationEnabled
+     *            a boolean
+     * @org.apache.xbean.Property description="Specifies if the endpoint use schemavalidation for the incoming/outgoing message.
+     *  Default is <code>false</code>. 
+     */
+
+    public void setSchemaValidationEnabled(boolean schemaValidationEnabled) {
+        this.schemaValidationEnabled = schemaValidationEnabled;
+    } 
 }
