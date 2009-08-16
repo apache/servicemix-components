@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbi:message xmlns:jbi="http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper"
+             xmlns:msg="http://servicemix.apache.org/exec"
+             type="msg:execute"
+             name="execute"
+             version="1.0">
+    <jbi:part>
+        <exec:execute xmlns:exec="http://servicemix.apache.org/exec">
+            <command>ls</command>
+        </exec:execute>
+    </jbi:part>
+</jbi:message>

@@ -17,6 +17,10 @@
 package org.apache.servicemix.exec.marshaler;
 
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.TransformerException;
 
 import org.apache.servicemix.exec.utils.ExecutionData;
@@ -42,6 +46,27 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
     public static final String TAG_DURATION = "duration";
     
     public static final String RESULT_FORMAT = "<%s><%s>%d</%s><%s>%d</%s><%s>%d</%s><%s>%d</%s><%s><![CDATA[%s]]></%s><%s><![CDATA[%s]]></%s></%s>";
+    
+    /**
+     * <p>
+     * Unmarshal the incoming message content using JAXB and return the exec command string.
+     * </p>
+     * 
+     * @param in the in normalized message.
+     * @return the exec command string.
+     * @throws TransformerException in case of unmarshalling exception.
+     */
+    public String unmarshalExecMessage(NormalizedMessage in) throws JAXBException {
+        String exec = null;
+        
+        JAXBContext jaxbContext = JAXBContext.newInstance(String.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        JAXBElement<String> element = (JAXBElement<String>)jaxbUnmarshaller.unmarshal(in.getContent());
+        
+        exec = element.getValue();
+        
+        return exec;
+    }
     
     /*
      * (non-Javadoc)
