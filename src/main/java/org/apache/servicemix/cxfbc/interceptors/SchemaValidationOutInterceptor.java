@@ -26,6 +26,10 @@ import org.apache.cxf.phase.Phase;
 
 public class SchemaValidationOutInterceptor extends AbstractSchemaValidationInterceptor {
 
+    public SchemaValidationOutInterceptor() {
+        this(true, false);
+    }
+
     public SchemaValidationOutInterceptor(boolean useJBIWrapper, boolean useSOAPEnvelope) {
         super(Phase.PRE_STREAM, useJBIWrapper, useSOAPEnvelope);
         addBefore(JbiOutInterceptor.class.getName());
