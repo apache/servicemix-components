@@ -46,7 +46,7 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
     public ExecRequest unmarshal(NormalizedMessage in) throws Exception {
         
         // create a JAXB context for the exec request
-        LOG.debug("Create a JAXB context.");
+        LOG.debug("Create a JAXB context with ExecRequest class.");
         JAXBContext jaxbContext = JAXBContext.newInstance(ExecRequest.class);
         
         // create a unmarshaller
@@ -54,8 +54,7 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         
         // unmarshal the in message content
-        SourceTransformer transformer = new SourceTransformer();
-        LOG.debug("In message: " + transformer.contentToString(in));
+        LOG.debug("Unmarshal the in message context.");
         return (ExecRequest)unmarshaller.unmarshal(in.getContent());
     }
     
@@ -66,17 +65,21 @@ public class DefaultExecMarshaler implements ExecMarshalerSupport {
     public void marshal(ExecResponse execResponse, NormalizedMessage out) throws Exception {
         
         // create a JAXB context for the exec response
+        LOG.debug("Create a JAXB context with ExecResponse class.");
         JAXBContext jaxbContext = JAXBContext.newInstance(ExecResponse.class);
         
         // create a marshaller
+        LOG.debug("Create the JAXB marshaller.");
         Marshaller marshaller = jaxbContext.createMarshaller();
         
         // marshal into the out message node
+        LOG.debug("Marshal the ExecResponse into a DOM node.");
         SourceTransformer transformer = new SourceTransformer();
         Document document = transformer.createDocument();
         marshaller.marshal(execResponse, document);
         
         // populate the out message content
+        LOG.debug("Populate the out message content using the DOM node.");
         out.setContent(new DOMSource(document));
     }
     
