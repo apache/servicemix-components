@@ -40,6 +40,7 @@
 	<properties>
 		<servicemix-version>3.3</servicemix-version>
 		<servicemix-shared-version>2009.01</servicemix-shared-version>
+		<jaxb-version>2.1.6</jaxb-version>
 
 		<servicemix.osgi.import>
 			org.apache.servicemix.common,
@@ -49,6 +50,7 @@
             org.apache.servicemix.jbi.framework*;resolution:=optional,
 			org.apache.xbean.spring.context.v2,
 			org.springframework.beans.factory.xml,
+			javax.xml.bind*,
 			sun.misc;resolution:=optional,
 			*
         </servicemix.osgi.import>
@@ -79,6 +81,11 @@
 	       <groupId>org.apache.servicemix</groupId>
 	       <artifactId>servicemix-common</artifactId>
 	       <version>${servicemix-shared-version}</version>
+	    </dependency>
+	    <dependency>
+	       <groupId>com.sun.xml.bind</groupId>
+	       <artifactId>jaxb-impl</artifactId>
+	       <version>${jaxb-version}</version>
 	    </dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.specs</groupId>

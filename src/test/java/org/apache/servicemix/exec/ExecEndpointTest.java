@@ -37,16 +37,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  * 
  * @author jbonofre
  */
-public class ExecXBeanDeployerTest extends TestCase {
-    
-    private static final String MSG_VALID = "<message>"
-        + "<command>ls</command>"
-        + "<arguments>"
-        + " <argument>-l</argument>"
-        + " <argument>/tmp</argument>"
-        + "</arguments>"
-        + "</message>";
-    private static final String MSG_EMPTY = "<message></message>";
+public class ExecEndpointTest extends TestCase {
     
     protected JBIContainer container;
     
@@ -87,26 +78,39 @@ public class ExecXBeanDeployerTest extends TestCase {
     
     /**
      * <p>
+     * Test if the exec endpoint described by the xbean.xml is deployed and expose a WSDL.
+     * </p>
+     * 
+     * @throws Exception in case of lookup failure.
+     */
+    public void testDeployment() throws Exception {
+        // test if the endpoint is present
+        assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
+        
+        // test if the endpoint descriptor contains the WSDL
+        assertNotNull("The endpoint http://test/service/exec descriptor is null", container.getRegistry().getEndpointDescriptor(container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec")));
+    }
+    
+    /**
+     * <p>
      * InOnly test using a valid in message.
      * </p>
      * 
      * @throws Exception if an error occurs during the test.
      */
-    public void testInOnlyWithValidMessage() throws Exception {
-        // test if the endpoint is present
-        assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
-        
-        // test if the endpoint descriptor contains something
-        // TODO add WSDLs support in the Exec component
-        // assertNotNull("The endpoint http://test/service/exec descriptor is null",
-        // container.getRegistry().getEndpointDescriptor(container.getRegistry().getEndpoint(new
-        // QName("http://test", "service"), "exec")));
-        
+    public void testInOnlyWithValidPayloadMessage() throws Exception {   
         // InOnly MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOnly inOnly = client.createInOnlyExchange();
         inOnly.setService(new QName("http://test", "service"));
-        inOnly.getInMessage().setContent(new StringSource(MSG_VALID));
+        inOnly.getInMessage().setContent(new StringSource(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<exec:execRequest xmlns:exec=\"http://servicemix.apache.org/exec\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+                "<command>touch</command>" +
+                "<arguments>" +
+                "<argument>/tmp/test</argument>" +
+                "</arguments>" +
+                "</exec:execRequest>"));
         client.sendSync(inOnly);
         
         if (inOnly.getStatus() == ExchangeStatus.ERROR) {
@@ -118,20 +122,19 @@ public class ExecXBeanDeployerTest extends TestCase {
     
     /**
      * <p>
-     * InOnly test without in message (using the static command).
+     * InOnly test with an empty in message (using the static command).
      * </p>
      * 
      * @throws Exception
      */
     public void testInOnlyWithEmptyMessage() throws Exception {
-        // test if the endpoint is present
-        assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
-        
         // InOnly MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOnly inOnly = client.createInOnlyExchange();
         inOnly.setService(new QName("http://test", "service"));
-        inOnly.getInMessage().setContent(new StringSource(MSG_EMPTY));
+        inOnly.getInMessage().setContent(new StringSource(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<exec:execRequest xmlns:exec=\"http://servicemix.apache.org/exec\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"/>"));
         client.sendSync(inOnly);
         
         if (inOnly.getStatus() == ExchangeStatus.ERROR) {
@@ -155,8 +158,12 @@ public class ExecXBeanDeployerTest extends TestCase {
         // InOut MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inOut = client.createInOutExchange();
-        inOut.setService(new QName("http://test", "service"));
-        inOut.getInMessage().setContent(new StringSource(MSG_VALID));
+        inOut.setService(new QName("http://test", "service"));        
+        inOut.getInMessage().setContent(new StringSource(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<exec:execRequest xmlns:exec=\"http://servicemix.apache.org/exec\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+                "<command>ls</command>" +
+                "</exec:execRequest>"));
         client.sendSync(inOut);
         
         if (inOut.getStatus() == ExchangeStatus.ERROR) {

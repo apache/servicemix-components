@@ -29,52 +29,58 @@
                 xmlns:tns="http://servicemix.apache.org/exec"
                 attributeFormDefault="unqualified"
                 elementFormDefault="unqualified">
-            <xs:element name="execute" type="tns:command"/>
-            <xs:complexType name="command">
+                
+              <xs:complexType name="execRequest">
                 <xs:sequence>
-                    <xs:element minOccurs="0" name="command" type="xs:string"/>
+                    <xs:element name="command" type="xs:string" minOccurs="0"/>
+                    <xs:element name="arguments" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="argument" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
                 </xs:sequence>
-            </xs:complexType>
-            <xs:element name="executeResponse" type="tns:executeResponse"/>
-            <xs:complexType name="executeResponse">
-                <xs:sequence>
-                    <xs:element minOccurs="0" name="executionData" type="tns:executionData"/>
-                </xs:sequence>
-            </xs:complexType>
-            <xs:complexType name="executionData">
+             </xs:complexType>
+             
+             <xs:complexType name="execResponse">
                 <xs:sequence>
                     <xs:element name="endTime" type="xs:long"/>
-                    <xs:element minOccurs="0" name="errorData" type="tns:stringBuffer"/>
+                    <xs:element name="errorData" type="tns:stringBuffer" minOccurs="0"/>
+                    <xs:element name="executionDuration" type="xs:long"/>
                     <xs:element name="exitCode" type="xs:int"/>
-                    <xs:element minOccurs="0" name="outputData" type="tns:stringBuffer"/>
+                    <xs:element name="outputData" type="tns:stringBuffer" minOccurs="0"/>
                     <xs:element name="startTime" type="xs:long"/>
                 </xs:sequence>
-            </xs:complexType>                
-            <xs:complexType final="extension restriction" name="stringBuffer">
+            </xs:complexType>
+
+            <xs:complexType name="stringBuffer" final="extension restriction">
                 <xs:complexContent>
                     <xs:extension base="tns:abstractStringBuilder">
                         <xs:sequence/>
                     </xs:extension>
                 </xs:complexContent>
             </xs:complexType>
-            <xs:complexType abstract="true" name="abstractStringBuilder">
+
+            <xs:complexType name="abstractStringBuilder" abstract="true">
                 <xs:sequence/>
             </xs:complexType>
+                
         </xs:schema>
     </wsdl:types>
     
-    <wsdl:message name="execute">
-        <wsdl:part name="parameters" element="tns:execute"/>
+    <wsdl:message name="execRequest">
+        <wsdl:part name="parameters" element="tns:execRequest"/>
     </wsdl:message>
     
-    <wsdl:message name="executeResponse">
-        <wsdl:part name="parameters" element="tns:executeResponse"/>
+    <wsdl:message name="execResponse">
+        <wsdl:part name="parameters" element="tns:execResponse"/>
     </wsdl:message>
     
     <wsdl:portType name="ExecPortType">
         <wsdl:operation name="execute">
-            <wsdl:input message="tns:execute"/>
-            <wsdl:output message="tns:executeResponse"/>
+            <wsdl:input message="tns:execRequest"/>
+            <wsdl:output message="tns:execResponse"/>
         </wsdl:operation>
     </wsdl:portType>
     

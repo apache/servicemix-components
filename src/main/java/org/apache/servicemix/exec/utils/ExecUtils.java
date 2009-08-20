@@ -23,6 +23,8 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.exec.marshaler.ExecRequest;
+import org.apache.servicemix.exec.marshaler.ExecResponse;
 
 /**
  * Utility class to execute system command.
@@ -39,17 +41,20 @@ public class ExecUtils {
 	 * return value.
 	 * </p>
 	 * 
-	 * @param command
-	 *            the system command to execute.
-	 * 
-	 * @return an execution data object containing all information
-	 * @throws ExecException
+	 * @param execRequest the exec request.
+	 * @return the execution response.
+	 * @throws ExecException in case of execution failure.
 	 */
-	public static ExecutionData execute(String command) throws ExecException {
+	public static ExecResponse execute(ExecRequest execRequest) throws ExecException {
 
-		ExecutionData result = new ExecutionData();
+		ExecResponse execResponse = new ExecResponse();
 		
-		LOG.info("Execute command " + command);
+		String exec = execRequest.getCommand();
+		for (String argument:execRequest.getArguments()) {
+		    exec = exec + " " + argument;
+		}
+		
+		LOG.info("Execute command " + exec);
 		String[] shellCommand = null;
 		LOG.debug("Define the shell.");
 		LOG.debug("Get the OS name property.");
@@ -58,87 +63,70 @@ public class ExecUtils {
 			LOG.debug("Microsoft Windows platform detected.");
 			String comSpec = System.getProperty("ComSpec");
 			if (comSpec != null) {
-				LOG
-						.debug("The ComSpec MS Windows environment variable is defined, using it: "
-								+ comSpec + " /C " + command);
-				shellCommand = new String[] { comSpec, "/C", command };
+				LOG.debug("The ComSpec MS Windows environment variable is defined, using it: " + comSpec + " /C " + exec);
+				shellCommand = new String[] { comSpec, "/C", exec };
 			} else {
-				LOG
-						.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
+				LOG.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
 				if (osName.startsWith("Windows 3")
 						|| osName.startsWith("Windows 95")
 						|| osName.startsWith("Windows 98")
 						|| osName.startsWith("Windows ME")) {
-					LOG
-							.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C "
-									+ command);
-					shellCommand = new String[] { "command.com", "/C", command };
+					LOG.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C " + exec);
+					shellCommand = new String[] { "command.com", "/C", exec };
 				} else {
-					LOG
-							.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C "
-									+ command);
-					shellCommand = new String[] { "cmd.exe", "/C", command };
+					LOG.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C " + exec);
+					shellCommand = new String[] { "cmd.exe", "/C", exec };
 				}
 			}
 		} else {
 			LOG.debug("Unix platform detected.");
 			String shell = System.getProperty("SHELL");
 			if (shell != null) {
-				LOG
-						.debug("The SHELL Unix environment variable is defined, using it: "
-								+ shell + " -c " + command);
-				shellCommand = new String[] { shell, "-c", command };
+				LOG.debug("The SHELL Unix environment variable is defined, using it: " + shell + " -c " + exec);
+				shellCommand = new String[] { shell, "-c", exec };
 			} else {
-				LOG
-						.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c "
-								+ command);
-				shellCommand = new String[] { "/bin/sh", "-c", command };
+				LOG.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c " + exec);
+				shellCommand = new String[] { "/bin/sh", "-c", exec };
 			}
 		}
 		try {
 			// remember the start time
-			result.setStartTime(System.currentTimeMillis());
+			execResponse.setStartTime(System.currentTimeMillis());
 			
 			// launch the system command
 			Process process = Runtime.getRuntime().exec(shellCommand);
 			
 			// get and start the error stream gobbler
-			StreamGobbler errorGobbler = new StreamGobbler(process
-					.getErrorStream(), result.getErrorData());
+			StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), execResponse.getErrorData());
 			errorGobbler.start();
 
 			// get and start the output stream gobbler
-			StreamGobbler outputGobbler = new StreamGobbler(process
-					.getInputStream(), result.getOutputData());
+			StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), execResponse.getOutputData());
 			outputGobbler.start();
 			
 			// wait the end of the process
 			int exitValue = process.waitFor();
 			
 			// remember the end time
-			result.setEndTime(System.currentTimeMillis());
+			execResponse.setEndTime(System.currentTimeMillis());
 			
 			// store the exit code
-			result.setExitCode(exitValue);
+			execResponse.setExitCode(exitValue);
 			
 			if (exitValue != 0) {
 				// an error occured
-				LOG.error("Command " + command
-						+ " execution failed with return code " + exitValue
-						+ " : " + result.getErrorData().toString());
+				LOG.error("Command " + exec + " execution failed with return code " + exitValue + " : " + execResponse.getErrorData().toString());
 			} else {
 				// command was successful
-				LOG.debug("Command " + command + " execution completed: "
-						+ result.getOutputData().toString());
+				LOG.debug("Command " + exec + " execution completed: " + execResponse.getOutputData().toString());
 			}
 		} catch (Exception exception) {
-			LOG.error("Command " + command + " execution failed.", exception);
-			throw new ExecException(
-					"Command " + command + " execution failed.", exception);
+			LOG.error("Command " + exec + " execution failed.", exception);
+			throw new ExecException("Command " + exec + " execution failed.", exception);
 		}
 
-		// return the result object
-		return result;
+		// return the exec response
+		return execResponse;
 	}
 }
 
@@ -147,7 +135,7 @@ public class ExecUtils {
  * Inner class to glob stream with a thread.
  * </p>
  * 
- * @author onofre
+ * @author jbonofre
  */
 class StreamGobbler extends Thread {
 

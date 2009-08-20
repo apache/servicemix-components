@@ -18,113 +18,66 @@ package org.apache.servicemix.exec.marshaler;
 
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
 
-import org.apache.servicemix.exec.utils.ExecutionData;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 /**
- * Default exec marshaler.
+ * <p>
+ * Default exec marshaler that use JAXB to marshal and unmarshal exec objects.
+ * </p>
  * 
  * @author jbonofre
  */
 public class DefaultExecMarshaler implements ExecMarshalerSupport {
     
-    public static final String TAG_COMMAND = "command";
-    public static final String TAG_ARGUMENT = "argument";
-    public static final String TAG_RESULT = "result";
-    public static final String TAG_EXITCODE = "exitcode";
-    public static final String TAG_OUTPUT = "output";
-    public static final String TAG_ERROR = "error";
-    public static final String TAG_START_TIME = "started";
-    public static final String TAG_END_TIME = "finished";
-    public static final String TAG_DURATION = "duration";
+    // logging facility
+    private final static transient Log LOG = LogFactory.getLog(DefaultExecMarshaler.class);
     
-    public static final String RESULT_FORMAT = "<%s><%s>%d</%s><%s>%d</%s><%s>%d</%s><%s>%d</%s><%s><![CDATA[%s]]></%s><%s><![CDATA[%s]]></%s></%s>";
-    
-    /**
-     * <p>
-     * Unmarshal the incoming message content using JAXB and return the exec command string.
-     * </p>
-     * 
-     * @param in the in normalized message.
-     * @return the exec command string.
-     * @throws TransformerException in case of unmarshalling exception.
+    /*
+     * (non-Javadoc)
+     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#unmarshal(javax.jbi.messaging.NormalizedMessage)
      */
-    public String unmarshalExecMessage(NormalizedMessage in) throws JAXBException {
-        String exec = null;
+    public ExecRequest unmarshal(NormalizedMessage in) throws Exception {
         
-        JAXBContext jaxbContext = JAXBContext.newInstance(String.class);
-        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        JAXBElement<String> element = (JAXBElement<String>)jaxbUnmarshaller.unmarshal(in.getContent());
+        // create a JAXB context for the exec request
+        LOG.debug("Create a JAXB context.");
+        JAXBContext jaxbContext = JAXBContext.newInstance(ExecRequest.class);
         
-        exec = element.getValue();
+        // create a unmarshaller
+        LOG.debug("Create the JAXB unmarshaller.");
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         
-        return exec;
+        // unmarshal the in message content
+        SourceTransformer transformer = new SourceTransformer();
+        LOG.debug("In message: " + transformer.contentToString(in));
+        return (ExecRequest)unmarshaller.unmarshal(in.getContent());
     }
     
     /*
      * (non-Javadoc)
-     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#constructExecCommand(javax.jbi.messaging.NormalizedMessage)
+     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#marshal(org.apache.servicemix.exec.marshaler.ExecResponse, javax.jbi.messaging.NormalizedMessage)
      */
-    public String constructExecCommand(Document document) throws TransformerException {
-        String execString = null;
-        try {
-            document.getDocumentElement().normalize();
-            
-            // get the command node
-            NodeList commandNode = document.getElementsByTagName(TAG_COMMAND);
-            if (commandNode != null && commandNode.getLength() > 1) {
-                throw new TransformerException("Invalid message content. Only one command tag is supported.");
-            }
-            if (commandNode != null && commandNode.item(0) != null) {
-                execString = commandNode.item(0).getChildNodes().item(0).getNodeValue();
-            }
-            
-            // get the argument nodes
-            NodeList argumentNodes = document.getElementsByTagName(TAG_ARGUMENT);
-            for (int i = 0; i < argumentNodes.getLength(); i++) {
-                execString = execString + " " + argumentNodes.item(i).getChildNodes().item(0).getNodeValue();
-            }
-            
-        } catch (Exception e) {
-            throw new TransformerException(e);
-        }
-        return execString;
+    public void marshal(ExecResponse execResponse, NormalizedMessage out) throws Exception {
+        
+        // create a JAXB context for the exec response
+        JAXBContext jaxbContext = JAXBContext.newInstance(ExecResponse.class);
+        
+        // create a marshaller
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        
+        // marshal into the out message node
+        SourceTransformer transformer = new SourceTransformer();
+        Document document = transformer.createDocument();
+        marshaller.marshal(execResponse, document);
+        
+        // populate the out message content
+        out.setContent(new DOMSource(document));
     }
-
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.exec.marshaler.ExecMarshalerSupport#formatExecutionResult(org.apache.servicemix.exec.utils.ExecutionData)
-     */
-    public String formatExecutionResult(ExecutionData executionData) {
-    	String result = String.format(RESULT_FORMAT, 
-				TAG_RESULT,
-				TAG_START_TIME,
-				executionData.getStartTime(),
-				TAG_START_TIME,
-				TAG_END_TIME,
-				executionData.getEndTime(),
-				TAG_END_TIME,
-				TAG_DURATION,
-				executionData.getExecutionDuration(),
-				TAG_DURATION,
-				TAG_EXITCODE,
-				executionData.getExitCode(),
-				TAG_EXITCODE,
-				TAG_OUTPUT,
-				executionData.getOutputData() != null ? executionData.getOutputData().toString() : "",
-				TAG_OUTPUT,
-				TAG_ERROR,
-				executionData.getErrorData() != null ? executionData.getErrorData().toString() : "",
-				TAG_ERROR,
-				TAG_RESULT
-				);
-
-    	return result;
-    }
+    
 }

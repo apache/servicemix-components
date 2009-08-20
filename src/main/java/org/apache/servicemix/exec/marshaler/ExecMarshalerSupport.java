@@ -16,13 +16,12 @@
  */
 package org.apache.servicemix.exec.marshaler;
 
-import javax.xml.transform.TransformerException;
-
-import org.apache.servicemix.exec.utils.ExecutionData;
-import org.w3c.dom.Document;
+import javax.jbi.messaging.NormalizedMessage;
 
 /**
+ * <p>
  * This interface describes the behavior of an exec marshaler.
+ * </p>
  * 
  * @author jbonofre
  */
@@ -30,23 +29,24 @@ public interface ExecMarshalerSupport {
     
     /**
      * <p>
-     * Parses the content of the <code>NormalizedMessage</code>, extracts command and arguments
-     * to constructs the execution command.
+     * Unmarshal the content of the in <code>NormalizedMessage</code> to an <code>ExecRequest</code>.
      * </p>
      * 
-     * @param document the DOM contained in the <code>NormalizedMessage</code>.
-     * @return the execution command.
-     * @throws TransformerException in case of error during command construction.
+     * @param in the in message.
+     * @return the exec request.
+     * @throws Exception in case of unmarshalling error.
      */
-    public String constructExecCommand(Document document) throws TransformerException;
+    public ExecRequest unmarshal(NormalizedMessage in) throws Exception;
     
     /**
      * <p>
-     * Formats the execution command output to be embedded in the exchange out message.
+     * Marshal an <code>ExecResponse</code> into the out <code>NormalizedMessage</code>.
      * </p>
      * 
-     * @param executionData	an object containing all needed information about execution
-     * @return the command execution output formatted to be embedded in the exchange out message.
+     * @param execResponse the exec response.
+     * @param out the out message.
+     * @throws Exception in case of marshalling error.
      */
-    public String formatExecutionResult(ExecutionData executionData);
+    public void marshal(ExecResponse execResponse, NormalizedMessage out) throws Exception;
+    
 }

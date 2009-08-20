@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<exec:execute xmlns:exec="http://servicemix.apache.org/exec"
-              xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-    <command>ls</command>                  
-</exec:execute>

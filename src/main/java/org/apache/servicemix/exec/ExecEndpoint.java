@@ -26,12 +26,10 @@ import javax.jbi.messaging.NormalizedMessage;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.exec.marshaler.DefaultExecMarshaler;
 import org.apache.servicemix.exec.marshaler.ExecMarshalerSupport;
+import org.apache.servicemix.exec.marshaler.ExecRequest;
+import org.apache.servicemix.exec.marshaler.ExecResponse;
 import org.apache.servicemix.exec.utils.ExecUtils;
-import org.apache.servicemix.exec.utils.ExecutionData;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.soap.util.DomUtil;
-import org.apache.servicemix.soap.wsdl.WSDLUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -165,7 +163,7 @@ public class ExecEndpoint extends ProviderEndpoint {
 			done(exchange);
 			return;
 		} else {
-			String exec = null;
+		    ExecRequest execRequest = null;
 
 			// try to extract the command from the in message content
 			if (exchange.getMessage("in") != null) {
@@ -173,34 +171,33 @@ public class ExecEndpoint extends ProviderEndpoint {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Received exchange: " + exchange);
 				}
+				
 				// gets the in message
 				NormalizedMessage in = exchange.getMessage("in");
-				// parses the in message and get the execution command
-				SourceTransformer transformer = new SourceTransformer();
-				exec = marshaler.constructExecCommand(transformer.toDOMDocument(in));
+				// unmarshal the in message
+				execRequest = marshaler.unmarshal(in);
 			}
 
 			// fall back to static command if extracted is null or empty
-			if (exec == null || exec.trim().length() < 1) {
-				exec = command;
+			if (execRequest == null || execRequest.getCommand() == null || execRequest.getCommand().trim().length() < 1) {
+				execRequest.setCommand(command);
 			}
 
 			// if even the fall back is empty then we can't do anything
-			if (exec == null || exec.trim().length() < 1) {
+			if (execRequest == null || execRequest.getCommand() == null || execRequest.getCommand().trim().length() < 1) {
 				throw new MessagingException("No command to execute.");
 			}
 
 			// execute the command
-			ExecutionData resultData = ExecUtils.execute(exec);
-
-			// prepare the output
-			String result = marshaler.formatExecutionResult(resultData);
+			ExecResponse execResponse = ExecUtils.execute(execRequest);
 
 			if (exchange instanceof InOut) {
 				// pushes the execution output in out message
 				NormalizedMessage out = exchange.createMessage();
-				out.setContent(new StringSource(result));
+				// marshal into the out message
+				marshaler.marshal(execResponse, out);
 				exchange.setMessage(out, "out");
+				// send the message exchange
 				send(exchange);
 			} else {
 				done(exchange);
