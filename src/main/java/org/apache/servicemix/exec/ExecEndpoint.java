@@ -22,6 +22,7 @@ import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
 
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.exec.marshaler.DefaultExecMarshaler;
@@ -107,20 +108,30 @@ public class ExecEndpoint extends ProviderEndpoint {
 	@Override
 	public void validate() throws DeploymentException {
 	    try {
-	        if (wsdl != null) {
-	            // the user provides a WSDL
-	            description = DomUtil.parse(wsdl.getInputStream());
-	            definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
-	        } else {
-	            // load the default abstract WSDL
-	            description = DomUtil.parse(new ClassPathResource(DEFAULT_WSDL).getInputStream());
-	            definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+	        if (wsdl == null) {
+	            // the user hasn't provide a WSDL, load the default abstract one
+	            wsdl = new ClassPathResource(DEFAULT_WSDL);
 	        }
+	        
+	        // load the WSDL
+	        description = DomUtil.parse(wsdl.getInputStream());
+	        definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+	        
+	        // cleanup WSDL to be sure thats it's an abstract one
+	        // cleanup services
+	        QName[] qnames = (QName[]) definition.getServices().keySet().toArray(new QName[0]);
+	        for (int i = 0; i < qnames.length; i++) {
+	            definition.removeService(qnames[i]);
+	        }
+	        // cleanup binding
+	        qnames = (QName[]) definition.getBindings().keySet().toArray(new QName[0]);
+	        for (int i = 0; i < qnames.length; i++) {
+	            definition.removeBinding(qnames[i]);
+	        }
+	        
 	    } catch (Exception e) {
 	        throw new DeploymentException("Can't load the WSDL.", e);
 	    }
-	    
-	    // TODO define the WSDL for the marshaler
 	}
 
 	/*

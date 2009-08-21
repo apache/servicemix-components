@@ -31,23 +31,13 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeFactoryImpl;
 
 /**
+ * <p>
  * Unit tests on the default exec marshaler.
+ * </p>
  * 
  * @author jbonofre
  */
 public class DefaultExecMarshalerTest extends TestCase {
-    
-    private static final String COMMAND = "ls";
-    private static final String FIRST_ARG = "-lt";
-    private static final String SECOND_ARG = "/tmp";
-    
-    private static final String MSG_VALID = "<message>"
-        + "<command>" + COMMAND + "</command>"
-        + "<arguments>"
-        + "<argument>" + FIRST_ARG + "</argument>"
-        + "<argument>" + SECOND_ARG + "</argument>"
-        + "</arguments>"
-        + "</message>";
     
     private ExecMarshalerSupport marshaler;
     private MessageExchangeFactory factory;
@@ -61,17 +51,65 @@ public class DefaultExecMarshalerTest extends TestCase {
         this.factory = new MessageExchangeFactoryImpl(new IdGenerator(), new AtomicBoolean(false));
     }
     
-    public void testValidMessage() throws Exception {
+    /**
+     * <p>
+     * Test the unmarshalling of a valid message content.
+     * </p>
+     * 
+     * @throws Exception if the unmarshalling fails.
+     */
+    public void testUnmarshalling() throws Exception {
         MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
         NormalizedMessage message = exchange.createMessage();
-        message.setContent(new StringSource(MSG_VALID));
+        message.setContent(new StringSource(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<exec:execRequest xmlns:exec=\"http://servicemix.apache.org/exec\">" +
+                "<command>ls</command>" +
+                "<arguments>" +
+                "<argument>-lt</argument>" +
+                "<argument>/tmp</argument>" +
+                "</arguments>" +
+                "</exec:execRequest>"));
+                
         exchange.setMessage(message, "in");
-        SourceTransformer transformer = new SourceTransformer();
-        //String execCommand = marshaler.constructExecCommand(transformer.toDOMDocument(message));
         
-        //assertEquals("ls -lt /tmp", execCommand);
+        ExecRequest execRequest = marshaler.unmarshal(message);
+        
+        assertEquals("ls", execRequest.getCommand());
+        assertEquals("-lt", execRequest.getArguments().get(0));
+        assertEquals("/tmp", execRequest.getArguments().get(1));
     }
     
+    /**
+     * <p>
+     * Test the marshalling of a ExecResponse.
+     * </p>
+     * 
+     * @throws Exception if the marshalling fails.
+     */
+    public void testMarshalling() throws Exception {
+        // construct an ExecResponse
+        ExecResponse execResponse = new ExecResponse();
+        execResponse.setExitCode(0);
+        execResponse.setStartTime(1000000);
+        execResponse.setEndTime(1000000);
+        execResponse.setExecutionDuration(1000000);
+        execResponse.setErrorData(new StringBuffer("TEST"));
+        execResponse.setOutputData(new StringBuffer("TEST"));
+        
+        // create an exchange/normalized message
+        MessageExchange exchange = this.factory.createExchange(MessageExchangePattern.IN_ONLY);
+        NormalizedMessage message = exchange.createMessage();
+        
+        // marshal the exec response
+        marshaler.marshal(execResponse, message);
+        
+        // get the message content
+        SourceTransformer transformer = new SourceTransformer();
+        String content = transformer.contentToString(message);
+        
+        assertEquals(content, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns2:execResponse xmlns:ns2=\"http://servicemix.apache.org/exec\"><endTime>1000000</endTime><errorData/><executionDuration>1000000</executionDuration><exitCode>0</exitCode><outputData/><startTime>1000000</startTime></ns2:execResponse>");
+    }
     
 
 }
