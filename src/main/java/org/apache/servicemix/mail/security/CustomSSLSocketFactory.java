@@ -46,6 +46,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
      */
     public static final String PROPERTY_SEPARATOR = ";";
 
+    private static final String PREFIX = "Customized trust manager ";    
     private static final Log LOG = LogFactory.getLog(CustomSSLSocketFactory.class);
 
     private SSLSocketFactory factory;
@@ -54,6 +55,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
      * default constructor
      */
     public CustomSSLSocketFactory() {
+    	super();
         try {
             SSLContext sslcontext = SSLContext.getInstance("TLS");
             if (System.getProperty(PROPERTY_TRUSTMANAGERS) != null
@@ -80,27 +82,29 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
 
         // look for trust managers in the system properties
         String managersString = System.getProperty(PROPERTY_TRUSTMANAGERS);
-        if (managersString != null && managersString.trim().length() > 0) {
-            StringTokenizer strTok = new StringTokenizer(managersString, PROPERTY_SEPARATOR);
-            while (strTok.hasMoreTokens()) {
-                String name = strTok.nextToken();
-                try {
-                    Object tm = Class.forName(name).newInstance();
-                    if (tm instanceof TrustManager) {
-                        managers.add((TrustManager)tm);
-                    } else {
-                        LOG.error("Customized trust manager " + name
-                                  + " is not implementing TrustManager. Skipping...");
-                    }
-                } catch (IllegalAccessException iaex) {
-                    LOG.error("Customized trust manager " + name + " is not accessable. Skipping...", iaex);
-                } catch (InstantiationException iex) {
-                    LOG.error("Customized trust manager " + name + " could not be instantiated. Skipping...",
-                              iex);
-                } catch (ClassNotFoundException cnfex) {
-                    LOG.error("Customized trust manager " + name + " was not found. Skipping...", cnfex);
-                }
-            }
+        
+        if (managersString == null || managersString.trim().length() < 1)
+        	{
+        	return managers.toArray(new TrustManager[managers.size()]);
+        	}
+        
+        StringTokenizer strTok = new StringTokenizer(managersString, PROPERTY_SEPARATOR);
+        while (strTok.hasMoreTokens()) {
+        	String name = strTok.nextToken();
+        	try {
+        		Object tm = Class.forName(name).newInstance();
+        		if (tm instanceof TrustManager) {
+        			managers.add((TrustManager)tm);
+        		} else {
+        			LOG.error(PREFIX + name + " is not implementing TrustManager. Skipping...");
+        		}
+        	} catch (IllegalAccessException iaex) {
+        		LOG.error(PREFIX + name + " is not accessable. Skipping...", iaex);
+        	} catch (InstantiationException iex) {
+        		LOG.error(PREFIX + name + " could not be instantiated. Skipping...", iex);
+        	} catch (ClassNotFoundException cnfex) {
+        		LOG.error(PREFIX + name + " was not found. Skipping...", cnfex);
+        	}
         }
 
         return managers.toArray(new TrustManager[managers.size()]);
