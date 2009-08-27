@@ -177,7 +177,7 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     /**
      * a map of files to be cleaned up later on
      */
-    private Map< String, List<File> > temporaryFilesMap = Collections.synchronizedMap(new HashMap<String, List<File> >());
+    private final Map< String, List<File> > temporaryFilesMap = Collections.synchronizedMap(new HashMap<String, List<File> >());
     
     /**
      * This method is used to convert a mime mail message received via an 
