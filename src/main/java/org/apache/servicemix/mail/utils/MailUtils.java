@@ -17,17 +17,33 @@
 package org.apache.servicemix.mail.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
+import javax.activation.DataHandler;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.mail.Header;
+import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Part;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
+import javax.mail.util.ByteArrayDataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
 
 /**
@@ -36,6 +52,11 @@ import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
  * @author lhein
  */
 public final class MailUtils {
+    private static Log log = LogFactory.getLog(MailUtils.class);
+    
+    public static final String KEY_BODY_TEXT = "text";
+    public static final String KEY_BODY_HTML = "html";
+    
     public static final String SSL_FACTORY = "org.apache.servicemix.mail.security.CustomSSLSocketFactory"; // javax.net.ssl.SSLSocketFactory
 
     public static final int DEFAULT_PORT_SMTP = 25;
@@ -216,6 +237,108 @@ public final class MailUtils {
     }
     
     /**
+     * Extracts the body from the Mail message
+     */
+    public static Object extractBodyFromMail(Message message) {
+        try {
+            return message.getContent();
+        } catch (UnsupportedEncodingException e) {
+            return "Unable to decode the mail because charset is not supported: " + e.getMessage();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract body due to: " + e.getMessage()
+                + ". Message: " + message, e);
+        }
+    }
+    
+    /**
+     * copy the headers of the mail message into the normalized message headers
+     * 
+     * @param exchange the exchange to use
+     * @param nmsg the message to use
+     * @param mailMsg the mail message
+     * @throws javax.mail.MessagingException on any errors
+     */
+    public static void extractHeadersFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
+        throws javax.mail.MessagingException {
+        // first convert the headers of the mail to properties of the message
+        Enumeration headers = mailMsg.getAllHeaders();
+        while (headers.hasMoreElements()) {
+            Header header = (Header)headers.nextElement();
+            if (nmsg.getProperty(header.getName()) != null) {
+                // this is a multi line header - add it at the end
+                try {
+                    nmsg.setProperty(header.getName(), nmsg.getProperty(header.getName() + ";"
+                                                                    + MimeUtility.decodeText(header.getValue())));
+                } catch (UnsupportedEncodingException e) {
+                    nmsg.setProperty(header.getName(), nmsg.getProperty(header.getName() + ";"
+                                                                        + header.getValue()));
+                }
+            } else {
+                // add it to the message properties
+                try {
+                    nmsg.setProperty(header.getName(), MimeUtility.decodeText(header.getValue()));
+                } catch (UnsupportedEncodingException e) {
+                    nmsg.setProperty(header.getName(), header.getValue());
+                }
+            }
+            try {
+                log.debug("Setting property: " + header.getName() + " = " + MimeUtility.decodeText(header.getValue()));    
+            } catch (UnsupportedEncodingException e) {
+                log.debug("Setting property: " + header.getName() + " = " + header.getValue());
+            }
+        }
+
+        // grab the mime type
+        if (mailMsg.getContentType() != null) {
+            if (mailMsg.isMimeType(MailContentType.TEXT_PLAIN.getMimeType())) {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.TEXT_PLAIN.getMimeType());
+            } else if (mailMsg.isMimeType(MailContentType.TEXT_HTML.getMimeType())) {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.TEXT_HTML.getMimeType());
+            } else if (mailMsg.isMimeType(MailContentType.TEXT_XML.getMimeType())) {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.TEXT_XML.getMimeType());
+            } else if (mailMsg.isMimeType(MailContentType.MULTIPART_ALTERNATIVE.getMimeType())) {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.MULTIPART_ALTERNATIVE.getMimeType());
+            } else if (mailMsg.isMimeType(MailContentType.MULTIPART_MIXED.getMimeType())) {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.MULTIPART_MIXED.getMimeType());
+            } else if (mailMsg.isMimeType(MailContentType.MULTIPART.getMimeType())) {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.MULTIPART.getMimeType());
+            } else {
+                nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.UNKNOWN.getMimeType());
+            }
+        }
+        
+        // now fill some predefined properties to the message        
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_BCC) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_BCC, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_BCC));
+        }
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_CC) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_CC, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_CC));
+        }
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_FROM) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_FROM, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_FROM));
+        }
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_REPLYTO) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_REPLYTO));
+        }
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_SENTDATE) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SENTDATE, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_SENTDATE));
+        }
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_SUBJECT) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_SUBJECT));
+        }
+        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_TO) != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TO, nmsg
+                .getProperty(AbstractMailMarshaler.MAIL_TAG_TO));
+        }
+    }
+    
+    /**
      * extracts attachments from a multipart mail part
      * 
      * @param mp        the multipart
@@ -224,38 +347,261 @@ public final class MailUtils {
      * @throws MessagingException       on jbi messaging errors
      * @throws IOException      on io errors
      */
-    public static void extractFromMultipart(Multipart mp, NormalizedMessage nmsg)
+    public static void extractAttachmentsFromMultipart(Multipart mp, NormalizedMessage nmsg)
         throws javax.mail.MessagingException, MessagingException, IOException {
 
         for (int i = 0; i < mp.getCount(); i++) {
-            Part part = mp.getBodyPart(i);
-            if (part.isMimeType("multipart/*")) {
-                extractFromMultipart((Multipart)part.getContent(), nmsg);
-            } else {
-                String disposition = part.getDisposition();
-                if (disposition != null) {
-                    if (disposition.equalsIgnoreCase(Part.ATTACHMENT)
-                        || disposition.equalsIgnoreCase(Part.INLINE)) {
-                        String name = part.getFileName();
-                        // only add named attachments
-                        if (name != null) {
-                            // Parts marked with a disposition of
-                            // Part.ATTACHMENT
-                            // are clearly attachments
-                            if (name != null) {
-                                try {
-                                    name = MimeUtility.decodeText(name);
-                                } catch (UnsupportedEncodingException e) {
-                                    // ignore it
-                                }
-                            }
-                            nmsg.addAttachment(name, part.getDataHandler());
-                        } else if (part.getDataHandler() != null) {
-                            // also add unnamed if there is a data handler
-                            nmsg.addAttachment(disposition, part.getDataHandler());                            
-                        }
-                    }
+            MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(i);
+            if (part.isMimeType(MailContentType.MULTIPART.getMimeType())) {
+                try {
+                    Multipart mup = (Multipart)part.getContent();
+                    extractAttachmentsFromMultipart(mup, nmsg);
+                } catch (UnsupportedEncodingException e) {
+                    log.error("Unable to decode the mail because charset is not supported.", e);
                 }
+            } else {
+                if (i < 1) {
+                    // skip first part always
+                    continue;
+                }
+                String disposition = part.getDisposition();
+                if (disposition != null && 
+                    disposition.equalsIgnoreCase(Part.ATTACHMENT)) {
+                    
+                    // treat as attachment
+                    String name = part.getFileName();
+                    // only add named attachments
+                    if (name != null) {
+                        // Parts marked with a disposition of
+                        // Part.ATTACHMENT
+                        // are clearly attachments
+                        try {
+                            name = MimeUtility.decodeText(name);
+                        } catch (UnsupportedEncodingException e) {
+                            // ignore it
+                        }
+                        nmsg.addAttachment(name, part.getDataHandler());
+                    } else if (part.getDataHandler() != null) {
+                        // also add unnamed if there is a data handler
+                        nmsg.addAttachment(disposition, part.getDataHandler());                            
+                    }
+                } else if (disposition != null && disposition.equalsIgnoreCase(Part.INLINE)) {
+                    String contentID = part.getContentID();
+                    if (contentID != null) {
+                        contentID = contentID.replace('<', ' ');
+                        contentID = contentID.replace('>', ' ');
+                        contentID = contentID.trim();
+                    } else {
+                        contentID = part.getFileName();
+                    }
+                    contentID = "cid:" + contentID;
+                    // treat as inline attachment
+                    String name = part.getFileName();
+                    // only add named attachments
+                    if (name != null) {
+                        // Parts marked with a disposition of
+                        // Part.ATTACHMENT
+                        // are clearly attachments
+                        try {
+                            name = MimeUtility.decodeText(name);
+                        } catch (UnsupportedEncodingException e) {
+                            // ignore it
+                        }
+                        nmsg.addAttachment(contentID, part.getDataHandler());
+                        nmsg.setProperty(contentID, name);
+                    } else if (part.getDataHandler() != null) {
+                        // also add unnamed if there is a data handler
+                        nmsg.addAttachment(contentID, part.getDataHandler());
+                        nmsg.setProperty(contentID, contentID);
+                    }                    
+                }
+            }
+        }
+    }
+    
+    /**
+     * returns the body of the mail 
+     * 
+     * @param mp        
+     * @param nmsg
+     * @return
+     */
+    public static Map<String, String> extractBodyFromMultipart(Multipart mp, NormalizedMessage nmsg) 
+        throws javax.mail.MessagingException, IOException {
+        Map<String, String> content = new HashMap<String, String>();
+        
+        for (int i = 0; i < mp.getCount(); i++) {
+            Part part = mp.getBodyPart(i);
+            String disposition = part.getDisposition();
+
+            if (disposition == null) {
+                // Check if plain
+                if (part.isMimeType(MailContentType.MULTIPART.getMimeType())) {
+                    try {
+                        Multipart mup = (Multipart)part.getContent();
+                        Map<String, String> res = extractBodyFromMultipart(mup, nmsg);
+                        Iterator<String> keyIt = res.keySet().iterator();
+                        while (keyIt.hasNext()) {
+                            String key = keyIt.next();
+                            if (content.containsKey(key)) {
+                                content.put(key, content.get(key) + '\n' + res.get(key));
+                            } else {
+                                content.put(key, res.get(key));
+                            }
+                        }
+                    } catch (UnsupportedEncodingException e) {
+                        log.error("Unable to decode the mail because charset is not supported.", e);
+                    }
+                } else if (part.isMimeType(MailContentType.TEXT_PLAIN.getMimeType())) {
+                    try {
+                        content.put(KEY_BODY_TEXT, (String)part.getContent());
+                    } catch (UnsupportedEncodingException e) {
+                        content.put(KEY_BODY_TEXT, AbstractMailMarshaler.DUMMY_CONTENT);
+                        log.error("Unable to decode the mail because charset is not supported.", e);
+                    }
+                } else if (part.isMimeType(MailContentType.TEXT_HTML.getMimeType()) ||
+                           part.isMimeType(MailContentType.TEXT_XML.getMimeType()) ) {
+                    try {
+                        content.put(KEY_BODY_HTML, (String)part.getContent());
+                    } catch (UnsupportedEncodingException e) {
+                        log.error("Unable to decode the mail because charset is not supported.", e);
+                    }
+                } else {
+                    // can't parse that...skipping
+                }
+            }
+        }
+        
+        // do a final check if this is a multipart/alternative and if yes, then
+        // switch the content type according
+        if (content.size() == 2 && !nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE).toString().equalsIgnoreCase(MailContentType.MULTIPART_ALTERNATIVE.getMimeType())) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE, MailContentType.MULTIPART_ALTERNATIVE.getKey());
+        }
+        
+        return content;
+    }
+    
+    /**
+     * extracts and parses the attachments found in the mail bodies and puts 
+     * them to the normalized message attachments
+     * 
+     * @param mbp           the mime body part to parse
+     * @param nmsg          the normalized message to fill
+     * @throws MessagingException
+     * @throws javax.mail.MessagingException
+     * @throws IOException
+     */
+    public static void parsePart(MimeBodyPart mbp, NormalizedMessage nmsg) throws MessagingException,
+        javax.mail.MessagingException, IOException {
+        Object subContent = mbp.getContent();
+
+        log.debug("Parsing: " + subContent.getClass().getName());
+
+        if (subContent instanceof InputStream) {
+            String cid = mbp.getContentID();
+            if (cid != null) {
+                cid = cid.replaceAll("<", "").replaceAll(">", "").toLowerCase();
+            }
+
+            log.debug("Adding special attachment: "
+                      + (mbp.getFileName() != null ? mbp.getFileName() : cid));
+
+            // read the stream into a byte array
+            byte[] data = new byte[mbp.getSize()];
+            InputStream stream = (InputStream)subContent;
+            stream.read(data);
+
+            // create a byte array data source for use in data handler
+            ByteArrayDataSource bads = new ByteArrayDataSource(data, mbp.getContentType());
+            
+            // remember the name of the attachment
+            bads.setName(mbp.getFileName() != null ? mbp.getFileName() : cid);
+
+            // add the attachment to the message
+            nmsg.addAttachment(bads.getName(), new DataHandler(bads));
+            // add the cid2attachment mapping to properties
+            if (cid != null) {
+                nmsg.setProperty(cid, mbp.getFileName());
+            }
+        }
+    }
+    
+    /**
+     * extracts the body from the mail
+     * 
+     * @param exchange  the message exchange
+     * @param nmsg      the normalized message
+     * @param mailMsg   the mail message
+     */
+    public static void extractBodyFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
+        throws javax.mail.MessagingException, MessagingException {
+        
+        Object content = MailUtils.extractBodyFromMail(mailMsg);
+        String text = null;
+        String html = null;
+        
+        if (content == null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, AbstractMailMarshaler.DUMMY_CONTENT);
+            return;
+        }
+        
+        if (mailMsg.isMimeType(MailContentType.TEXT_PLAIN.getMimeType())) {
+            // simple mail
+            text = (String)content;
+        } else if (mailMsg.isMimeType(MailContentType.TEXT_HTML.getMimeType()) ||
+                   mailMsg.isMimeType(MailContentType.TEXT_XML.getMimeType())) {
+            html = (String)content;
+        } else if (mailMsg.isMimeType(MailContentType.MULTIPART.getMimeType())) {
+            // multipart - scan for body 
+            Multipart mp = (Multipart)content;
+            try {
+                Map<String, String> parts = extractBodyFromMultipart(mp, nmsg);
+                
+                // check for text
+                if (parts.containsKey(KEY_BODY_TEXT)) {
+                    text = parts.get(KEY_BODY_TEXT);
+                } 
+                // check for html
+                if (parts.containsKey(KEY_BODY_HTML)) {
+                    html = parts.get(KEY_BODY_HTML);
+                }
+            } catch (Exception e) {
+                log.error("Error extracting body from message " + mailMsg, e);
+            }
+        }
+        
+        if ((html == null || html.trim().length() < 1) &&
+            (text == null || text.trim().length() < 1)) {
+            text = AbstractMailMarshaler.DUMMY_CONTENT;
+        }
+        
+        if (text != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, text);
+        }
+        
+        if (html != null) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_HTML, html);
+            nmsg.setContent(new StringSource(html));
+        }
+    }
+    
+    /**
+     * extracts the attachments from the mail 
+     * 
+     * @param exchange  the message exchange
+     * @param nmsg      the normalized message
+     * @param mailMsg   the mail message
+     */
+    public static void extractAttachmentsFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg) {
+        Object content = MailUtils.extractBodyFromMail(mailMsg);
+        if (content != null && content instanceof Multipart) {
+            // mail with attachment
+            Multipart mp = (Multipart)content;
+            try {
+                MailUtils.extractAttachmentsFromMultipart(mp, nmsg);
+                log.debug("Attachments found: " + nmsg.getAttachmentNames().size());
+            } catch (Exception e) {
+                log.error("Error extracting attachments from message " + mailMsg, e);
             }
         }
     }

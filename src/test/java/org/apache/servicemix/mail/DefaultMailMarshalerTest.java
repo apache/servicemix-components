@@ -26,11 +26,13 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 
 import junit.framework.TestCase;
 
@@ -39,6 +41,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.InOnlyImpl;
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
+import org.apache.servicemix.mail.utils.MailContentType;
 
 /**
  * this is a collection of test which validate the marshaler conversion results
@@ -120,7 +123,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertEquals("The TEXT content is wrong!", TEXT, nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT));
         assertNotNull("The message content was null!", nmsg.getContent());
 
-        String result = st.contentToString(nmsg);
+        String result = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString();
         assertEquals("The content is wrong!", TEXT, result);
     }
 
@@ -168,7 +171,9 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("The message content was null!", nmsg.getContent());
 
         String result = st.contentToString(nmsg);
-        assertEquals("The content is wrong!", TEXT, result);
+        if (HTML.indexOf(result) == -1) {
+            fail("The HTML content is wrong! Expected: " + HTML + " Result: " + result);   
+        }
     }
 
     /**
@@ -190,9 +195,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         validateCommonsInJBI(nmsg);
         assertEquals("The TEXT content is wrong!", TEXT, nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT));
         assertNotNull("The message content was null!", nmsg.getContent());
-
-        String result = st.contentToString(nmsg);
-        assertEquals("The content is wrong!", TEXT, result);
 
         if (nmsg.getAttachmentNames().size() != 1) {
             fail("The attachments are invalid. Expected: 1  Found: " + nmsg.getAttachmentNames().size());
@@ -266,8 +268,15 @@ public class DefaultMailMarshalerTest extends TestCase {
         assertNotNull("The message content was null!", nmsg.getContent());
 
         String result = st.contentToString(nmsg);
-        assertEquals("The content is wrong!", TEXT, result);
+        if (HTML.indexOf(result) == -1) {
+            fail("The HTML content is wrong! Expected: " + HTML + " Result: " + result);   
+        }
 
+        Iterator i = nmsg.getAttachmentNames().iterator();
+        while (i.hasNext()) {
+            System.err.println("ATT: " + i.next().toString());
+        }
+        
         if (nmsg.getAttachmentNames().size() != 1) {
             fail("The attachments are invalid. Expected: 1  Found: " + nmsg.getAttachmentNames().size());
         }
@@ -298,8 +307,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT, SUBJECT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, TEXT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, FROM);
-        // prepare content
-        nmsg.setContent(new StringSource(TEXT));
 
         // convert
         marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
@@ -417,8 +424,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_BCC, BCC);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT, SUBJECT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, FROM);
-        // prepare content
-        nmsg.setContent(new StringSource(TEXT));
+        nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, TEXT);
 
         // convert
         marshaler.convertJBIToMail(mail, exchange, nmsg, null, null);
@@ -472,8 +478,6 @@ public class DefaultMailMarshalerTest extends TestCase {
             .toString());
         assertEquals("The SUBJECT is invalid!", SUBJECT, mail
             .getHeader(AbstractMailMarshaler.MAIL_TAG_SUBJECT)[0].toString());
-        assertEquals("The HTML is invalid!", HTML, ((MimeMultipart)mail.getContent()).getBodyPart(0)
-            .getContent());
         assertEquals("The REPLY-TO is invalid!", FROM,
                      mail.getHeader(AbstractMailMarshaler.MAIL_TAG_REPLYTO)[0].toString());
     }
@@ -494,8 +498,6 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT, SUBJECT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, TEXT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, FROM);
-        // prepare content
-        nmsg.setContent(new StringSource(TEXT));
         // prepare attachment
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
@@ -513,19 +515,8 @@ public class DefaultMailMarshalerTest extends TestCase {
             .toString());
         assertEquals("The SUBJECT is invalid!", SUBJECT, mail
             .getHeader(AbstractMailMarshaler.MAIL_TAG_SUBJECT)[0].toString());
-        assertEquals("The TEXT is invalid!", TEXT, ((MimeMultipart)mail.getContent()).getBodyPart(0)
-            .getContent());
         assertEquals("The REPLY-TO is invalid!", FROM,
                      mail.getHeader(AbstractMailMarshaler.MAIL_TAG_REPLYTO)[0].toString());
-
-        // check attachment
-        assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
-        BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
-        assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
-            fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
-                 + att.getDataHandler().getInputStream().available());
-        }
     }
 
     /**
@@ -595,8 +586,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, TEXT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_HTML, HTML);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, FROM);
-        // prepare content
-        nmsg.setContent(new StringSource(TEXT));
+        nmsg.setContent(new StringSource(HTML));
         // prepare attachment
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
@@ -647,8 +637,7 @@ public class DefaultMailMarshalerTest extends TestCase {
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_BCC, BCC);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT, SUBJECT);
         nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, FROM);
-        // prepare content
-        nmsg.setContent(new StringSource(TEXT));
+        nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, TEXT);
         // prepare attachment
         nmsg.addAttachment(FILE, new DataHandler(new FileDataSource(new File(PATH, FILE))));
 
@@ -666,19 +655,8 @@ public class DefaultMailMarshalerTest extends TestCase {
             .toString());
         assertEquals("The SUBJECT is invalid!", SUBJECT, mail
             .getHeader(AbstractMailMarshaler.MAIL_TAG_SUBJECT)[0].toString());
-        assertEquals("The TEXT is invalid!", TEXT, ((MimeMultipart)mail.getContent()).getBodyPart(0)
-            .getContent());
         assertEquals("The REPLY-TO is invalid!", FROM,
                      mail.getHeader(AbstractMailMarshaler.MAIL_TAG_REPLYTO)[0].toString());
-
-        // check attachment
-        assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
-        BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
-        assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
-            fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
-                 + att.getDataHandler().getInputStream().available());
-        }
     }
 
     /**
@@ -716,19 +694,8 @@ public class DefaultMailMarshalerTest extends TestCase {
             .toString());
         assertEquals("The SUBJECT is invalid!", SUBJECT, mail
             .getHeader(AbstractMailMarshaler.MAIL_TAG_SUBJECT)[0].toString());
-        assertEquals("The HTML is invalid!", HTML, ((MimeMultipart)mail.getContent()).getBodyPart(0)
-            .getContent());
         assertEquals("The REPLY-TO is invalid!", FROM,
                      mail.getHeader(AbstractMailMarshaler.MAIL_TAG_REPLYTO)[0].toString());
-
-        // check attachment
-        assertNotNull("No attachment part found!", ((MimeMultipart)mail.getContent()).getBodyPart(1));
-        BodyPart att = ((MimeMultipart)mail.getContent()).getBodyPart(1);
-        assertEquals("Attachment file name is invalid!", FILE, att.getFileName());
-        if (att.getDataHandler().getInputStream().available() != new File(PATH, FILE).length()) {
-            fail("Attachment size wrong. Expected: " + new File(PATH, FILE).length() + "  Found: "
-                 + att.getDataHandler().getInputStream().available());
-        }
     }
 
     /**
@@ -867,35 +834,30 @@ public class DefaultMailMarshalerTest extends TestCase {
         message.addRecipient(Message.RecipientType.BCC, new InternetAddress(BCC));
 
         if (withAttachments) {
-            // Create a Multipart
             MimeMultipart multipart = new MimeMultipart();
+            multipart.setSubType("mixed");
 
-            // Create your new message part
-            BodyPart messageBodyPart = new MimeBodyPart();
+            MimeBodyPart textBodyPart = new MimeBodyPart();
+            textBodyPart.setText(TEXT, MimeUtility.getDefaultJavaCharset(), "plain");
+            multipart.addBodyPart(textBodyPart);
 
-            // Set the content of the body part
-            messageBodyPart.setContent(TEXT, "text/plain");
-
-            // Add body part to multipart
-            multipart.addBodyPart(messageBodyPart);
-
-            messageBodyPart = new MimeBodyPart();
-
-            // Set the content of the body part
-            messageBodyPart.setContent(HTML, "text/html");
-
-            // Add body part to multipart
-            multipart.addBodyPart(messageBodyPart);
-
-            // Create part for the image
-            messageBodyPart = new MimeBodyPart();
+            MimeBodyPart htmlBodyPart = new MimeBodyPart();
+            htmlBodyPart.setContent(HTML, MailContentType.TEXT_HTML.getMimeType());
+            multipart.addBodyPart(htmlBodyPart);
 
             // Fetch the image and associate to part
             FileDataSource fds = new FileDataSource(new File(PATH, FILE));
+            
+            MimeBodyPart messageBodyPart = null;
+            // Create another body part
+            messageBodyPart = new MimeBodyPart();
+            // Set the data handler to the attachment
             messageBodyPart.setDataHandler(new DataHandler(fds));
+            // Set the filename
             messageBodyPart.setFileName(fds.getName());
-
-            // Add part to multi-part
+            // Set Disposition
+            messageBodyPart.setDisposition(Part.ATTACHMENT);
+            // Add part to multipart
             multipart.addBodyPart(messageBodyPart);
 
             // Associate multi-part with message

@@ -19,13 +19,9 @@ package org.apache.servicemix.mail.marshaler;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.activation.DataHandler;
@@ -35,20 +31,18 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.mail.Address;
 import javax.mail.BodyPart;
-import javax.mail.Header;
 import javax.mail.Message;
-import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.mail.utils.MailContentType;
 import org.apache.servicemix.mail.utils.MailUtils;
 
 /**
@@ -69,11 +63,22 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     @Override
     public void convertMailToJBI(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
         throws javax.mail.MessagingException {
-        // copy headers
-        copyHeaders(exchange, nmsg, mailMsg);
+        // extract the headers from the mail message
+        MailUtils.extractHeadersFromMail(exchange, nmsg, mailMsg);
 
-        // now copy the mail body and the attachments
-        copyBodyAndAttachments(exchange, nmsg, mailMsg);
+        // extract the body
+        try {
+            MailUtils.extractBodyFromMail(exchange, nmsg, mailMsg);
+            if (nmsg.getContent() == null) {
+                nmsg.setContent(new StringSource(AbstractMailMarshaler.DUMMY_CONTENT));
+            }
+        } catch (Exception e) {
+            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, AbstractMailMarshaler.DUMMY_CONTENT);
+            log.error("Unable to extract the mail content: " + MailUtils.extractBodyFromMail(mailMsg), e);
+        }        
+        
+        // extract the attachments
+        MailUtils.extractAttachmentsFromMail(exchange, nmsg, mailMsg);
     }
 
     /*
@@ -108,6 +113,225 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     protected void fillMailBodyAndAttachments(MimeMessage mimeMessage, MessageExchange exchange,
                                               NormalizedMessage nmsg) throws Exception {
         
+        String contentType = null;
+        
+        if (nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE) != null) {
+            contentType = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CONTENT_TYPE).toString();
+        }
+        
+        boolean isText = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT) != null;
+        boolean isHtml = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML) != null || !isText || nmsg.getContent() != null;
+                
+        if (contentType == null) {
+            // we need to guess what is best to use here
+            if (isHtml) {
+                // we got attachments or a html content...so it will be some multipart/* message
+                prepareMixedMail(MailContentType.MULTIPART, mimeMessage, exchange, nmsg);
+            } else {
+                // we will use a text/plain message
+                preparePlainTextMail(MailContentType.TEXT_PLAIN, mimeMessage, exchange, nmsg);
+            }
+        } else {
+            MailContentType mct = MailContentType.getEnumForValue(contentType);
+            switch (mct) {
+                case TEXT_PLAIN:                preparePlainTextMail(mct, mimeMessage, exchange, nmsg);
+                                                break;
+                case TEXT_HTML:
+                case TEXT_XML:
+                case MULTIPART:         
+                case MULTIPART_MIXED:           prepareMixedMail(mct, mimeMessage, exchange, nmsg);
+                                                break;
+                case MULTIPART_ALTERNATIVE:     prepareAlternativeMail(mct, mimeMessage, exchange, nmsg);
+                                                break;
+                default:                        if (isHtml && isText) {
+                                                    prepareAlternativeMail(mct, mimeMessage, exchange, nmsg);
+                                                } else if (isText && nmsg.getAttachmentNames().size() == 0) {
+                                                    preparePlainTextMail(mct, mimeMessage, exchange, nmsg);
+                                                } else {
+                                                    prepareMixedMail(mct, mimeMessage, exchange, nmsg);
+                                                }
+                }
+            }
+        }            
+
+    /**
+     * prepares a plain text mail message
+     * 
+     * @param mct               the mail content type
+     * @param mimeMessage       the mail message
+     * @param exchange          the message exchange
+     * @param nmsg              the normalized message
+     * @throws Exception        on errors
+     */
+    protected void preparePlainTextMail(MailContentType mct, MimeMessage mimeMessage, MessageExchange exchange,
+                     NormalizedMessage nmsg) throws Exception {
+        
+        Object content = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT);
+        Object charset = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CHARSET);
+        
+        if (content != null) {
+            if (charset != null) {
+                mimeMessage.setText(content.toString(), charset.toString(), "plain");
+            } else {
+                mimeMessage.setText(content.toString(), MimeUtility.getDefaultJavaCharset(), "plain");
+            }
+        } else {
+            // no message content...throw exception
+            throw new MessagingException("Unable to get mail content for text/plain message from exchange.");
+        }
+    }
+    
+    /**
+     * prepares a multipart mixed mail message 
+     * 
+     * @param mct               the mail content type
+     * @param mimeMessage       the mail message
+     * @param exchange          the message exchange
+     * @param nmsg              the normalized message
+     * @throws Exception        on errors
+     */
+    protected void prepareMixedMail(MailContentType mct, MimeMessage mimeMessage, MessageExchange exchange,
+                                        NormalizedMessage nmsg) throws Exception {
+        
+        boolean isText = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT) != null;
+        boolean isHtml = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML) != null;
+        boolean useInline = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS) != null && 
+                            ((Boolean)nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS)).booleanValue();
+        
+        Object content_text = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT);
+        Object content_html = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML);
+        Object charset = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CHARSET);
+        
+        // Create a Multipart
+        MimeMultipart multipart = new MimeMultipart();
+        multipart.setSubType("mixed");
+
+        // fill the body with text if existing
+        if (isText && content_text != null) {
+            MimeBodyPart textBodyPart = new MimeBodyPart();
+            if (charset != null) {
+                textBodyPart.setText(content_text.toString(), charset.toString(), "plain");    
+            } else {
+                textBodyPart.setText(content_text.toString(), MimeUtility.getDefaultJavaCharset(), "plain");
+            }
+            multipart.addBodyPart(textBodyPart);
+        }
+        
+        // fill the body with html if existing
+        if (isHtml && content_html != null) {
+            MimeBodyPart htmlBodyPart = new MimeBodyPart();
+            htmlBodyPart.setContent(content_html.toString(), MailContentType.TEXT_HTML.getMimeType());
+            multipart.addBodyPart(htmlBodyPart);
+        }
+        
+        // put attachments in place
+        appendAttachments(exchange, nmsg, multipart, useInline ? Part.INLINE : Part.ATTACHMENT);
+        
+        // Put parts in message
+        mimeMessage.setContent(multipart);
+    }
+    
+    /**
+     * prepares a multipart alternative mail message (both html and text)
+     * 
+     * @param mct               the mail content type
+     * @param mimeMessage       the mail message
+     * @param exchange          the message exchange
+     * @param nmsg              the normalized message
+     * @throws Exception        on errors
+     */
+    protected void prepareAlternativeMail(MailContentType mct, MimeMessage mimeMessage, MessageExchange exchange,
+                                        NormalizedMessage nmsg) throws Exception {
+    
+        boolean isText = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT) != null;
+        boolean isHtml = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML) != null;
+        boolean useInline = true; // defaults to true
+        
+        // only use attachments if it's definitive set so
+        if (nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS) != null && 
+            ((Boolean)nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS)).booleanValue() == false) {
+            useInline = false;
+        }
+        
+        Object content_text = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT);
+        Object content_html = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML);
+        Object charset = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CHARSET);
+        
+        // Create a Multipart
+        MimeMultipart multipart = new MimeMultipart();
+        multipart.setSubType("alternative");
+
+        // fill the body with text if existing
+        if (isText && content_text != null) {
+            MimeBodyPart textBodyPart = new MimeBodyPart();
+            if (charset != null) {
+                textBodyPart.setText(content_text.toString(), charset.toString(), "plain");    
+            } else {
+                textBodyPart.setText(content_text.toString(), MimeUtility.getDefaultJavaCharset(), "plain");
+            }
+            multipart.addBodyPart(textBodyPart);
+        }
+
+        if (nmsg.getAttachmentNames().size() < 1) {
+            // no attachments
+            // fill the body with html if existing
+            if (isHtml && content_html != null) {
+                MimeBodyPart htmlBodyPart = new MimeBodyPart();
+                htmlBodyPart.setContent(content_html.toString(), MailContentType.TEXT_HTML.getMimeType());
+                multipart.addBodyPart(htmlBodyPart);
+            }
+        } else {
+            // found attachments
+            if (!useInline) {
+                // no inline attachments
+                BodyPart htmlpart = new MimeBodyPart();
+                MimeMultipart mmp = new MimeMultipart();
+                mmp.setSubType("mixed");
+                
+                // fill the body with html if existing
+                if (isHtml && content_html != null) {
+                    MimeBodyPart htmlBodyPart = new MimeBodyPart();
+                    htmlBodyPart.setContent(content_html.toString(), MailContentType.TEXT_HTML.getMimeType());
+                    mmp.addBodyPart(htmlBodyPart);
+                }
+                htmlpart.setContent(mmp);
+                multipart.addBodyPart(htmlpart);
+
+                // put attachments in place
+                appendAttachments(exchange, nmsg, mmp, useInline ? Part.INLINE : Part.ATTACHMENT);
+            } else {
+                // use inline attachments
+                MimeMultipart multipartRelated = new MimeMultipart("related");
+                BodyPart related = new MimeBodyPart();
+                related.setContent(multipartRelated);
+                multipart.addBodyPart(related);
+
+                // fill the body with html if existing
+                if (isHtml && content_html != null) {
+                    MimeBodyPart htmlBodyPart = new MimeBodyPart();
+                    htmlBodyPart.setContent(content_html.toString(), MailContentType.TEXT_HTML.getMimeType());
+                    multipartRelated.addBodyPart(htmlBodyPart);
+                }
+                // put attachments in place
+                appendAttachments(exchange, nmsg, multipartRelated, useInline ? Part.INLINE : Part.ATTACHMENT);
+            }
+        }
+        
+        // Put parts in message
+        mimeMessage.setContent(multipart);        
+    }
+
+    /**
+     * appends all attachments to the mime message
+     * 
+     * @param exchange          the message exchange
+     * @param nmsg              the normalized message  
+     * @param multipart         the mime multipart
+     * @param partType          the part type (INLINE / ATTACHMENT)
+     * @throws Exception        on any errors
+     */
+    protected void appendAttachments(MessageExchange exchange, NormalizedMessage nmsg, 
+                                     MimeMultipart multipart, String partType) throws Exception {
         // if there are attachments, then a multipart mime mail with
         // attachments will be sent
         if (nmsg.getAttachmentNames().size() > 0) {
@@ -115,14 +339,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
 
             if (itAttNames.hasNext()) {
                 // there is at least one attachment
-
-                // Create a Multipart
-                MimeMultipart multipart = new MimeMultipart();
-
-                // fill the body with text, html or both
-                fillMailBody(mimeMessage, exchange, nmsg, multipart);
-
-                BodyPart messageBodyPart = null;
+                MimeBodyPart messageBodyPart = null;
 
                 // loop the existing attachments and put them to the mail
                 while (itAttNames.hasNext()) {
@@ -141,7 +358,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     DataHandler dh = nmsg.getAttachment(oneAttachmentName);
                     File f = File.createTempFile("" + System.currentTimeMillis() + "-", dh.getDataSource().getName());
                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(f));
-                    copyInputStream(dh.getInputStream(), bos);
+                    dh.writeTo(bos);
                     bos.close();
                     
                     log.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
@@ -155,134 +372,18 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     // Set the filename
                     messageBodyPart.setFileName(dh.getDataSource().getName());
                     // Set Disposition
-                    messageBodyPart.setDisposition(Part.ATTACHMENT);
+                    messageBodyPart.setDisposition(partType);
+                    // add a Content-ID header to the attachment                    
+                    if (oneAttachmentName.toLowerCase().startsWith("cid:")) {
+                        messageBodyPart.setContentID(oneAttachmentName.substring(4));
+                    }
                     // Add part to multipart
                     multipart.addBodyPart(messageBodyPart);
                 }
-                // Put parts in message
-                mimeMessage.setContent(multipart);
             }
-        } else {
-            // fill the body with text, html or both
-            fillMailBody(mimeMessage, exchange, nmsg, null);
         }
     }
-
-    /**
-     * fills the body of the mail
-     * 
-     * @param mimeMessage the mail message
-     * @param exchange the jbi exchange
-     * @param nmsg the normalized message
-     * @param content the content of a multipart to use or null
-     * @throws Exception on errors
-     */
-    protected void fillMailBody(MimeMessage mimeMessage, MessageExchange exchange, NormalizedMessage nmsg,
-                                MimeMultipart content) throws Exception {
-        // check if we are going to send a plain text mail or html or both
-        boolean isPlainTextMessage = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT) != null;
-        boolean isHtmlMessage = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML) != null;
-
-        if (isPlainTextMessage && !isHtmlMessage) {
-            // a plain text mail will be sent 
-            if (content != null) {
-                content.setSubType("mixed");
-                MimeBodyPart textBodyPart = new MimeBodyPart();
-                textBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString(),
-                                        "text/plain");
-                content.addBodyPart(textBodyPart);
-            } else {
-                mimeMessage.setText(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString());
-            }
-        } else if (isHtmlMessage && !isPlainTextMessage) {
-            // a html message will be sent 
-            if (content != null) {
-                content.setSubType("mixed");
-                MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                htmlBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML).toString(),
-                                        "text/html");
-                content.addBodyPart(htmlBodyPart);
-            } else {
-                content = new MimeMultipart("mixed");
-                MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                htmlBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML).toString(),
-                                        "text/html");
-                content.addBodyPart(htmlBodyPart);
-                // Put parts in message
-                mimeMessage.setContent(content);
-            }
-        } else if (isHtmlMessage && isPlainTextMessage) {
-            // both parts will be sent 
-            if (content != null) {
-                content.setSubType("mixed");
-                MimeBodyPart textBodyPart = new MimeBodyPart();
-                MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                textBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString(),
-                                        "text/plain");
-                htmlBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML).toString(),
-                                        "text/html");
-                content.addBodyPart(textBodyPart);
-                content.addBodyPart(htmlBodyPart);
-            } else {
-                content = new MimeMultipart("mixed");
-                MimeBodyPart textBodyPart = new MimeBodyPart();
-                MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                textBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT).toString(),
-                                        "text/plain");
-                htmlBodyPart.setContent(nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML).toString(),
-                                        "text/html");
-                content.addBodyPart(textBodyPart);
-                content.addBodyPart(htmlBodyPart);
-                // Put parts in message
-                mimeMessage.setContent(content);
-            }
-        } else {
-            if (nmsg.getContent() != null) {
-                // use the content of the message
-                SourceTransformer st = new SourceTransformer();
-                try {
-                    st.toDOMDocument(nmsg);
     
-                    // a html message will be sent
-                    if (content != null) {
-                        content.setSubType("mixed");
-                        MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                        htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
-                        content.addBodyPart(htmlBodyPart);
-                    } else {
-                        content = new MimeMultipart("mixed");
-                        MimeBodyPart htmlBodyPart = new MimeBodyPart();
-                        htmlBodyPart.setContent(st.contentToString(nmsg), "text/html");
-                        content.addBodyPart(htmlBodyPart);
-                        // Put parts in message
-                        mimeMessage.setContent(content);
-                    }
-                } catch (Exception ex) {
-                    // no xml document - plain text used now
-                    if (content != null) {
-                        content.setSubType("mixed");
-                        MimeBodyPart textBodyPart = new MimeBodyPart();
-                        textBodyPart.setContent(st.contentToString(nmsg), "text/plain");
-                        content.addBodyPart(textBodyPart);
-                    } else {
-                        // Put text in message
-                        mimeMessage.setText(st.contentToString(nmsg));
-                    }
-                }
-            } else {
-                // a plain text mail will be sent
-                if (content != null) {
-                    content.setSubType("mixed");
-                    MimeBodyPart textBodyPart = new MimeBodyPart();
-                    textBodyPart.setContent(AbstractMailMarshaler.DUMMY_CONTENT, "text/plain");
-                    content.addBodyPart(textBodyPart);
-                } else {
-                    mimeMessage.setText(AbstractMailMarshaler.DUMMY_CONTENT);
-                }
-            }
-        }
-    }
-
     /**
      * fills the mail headers according to the normalized message headers
      * 
@@ -388,237 +489,4 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             }
         }
     }
-
-    /**
-     * copy the headers of the mail message into the normalized message headers
-     * 
-     * @param exchange the exchange to use
-     * @param nmsg the message to use
-     * @param mailMsg the mail message
-     * @throws javax.mail.MessagingException on any errors
-     */
-    protected void copyHeaders(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
-        throws javax.mail.MessagingException {
-        // first convert the headers of the mail to properties of the message
-        Enumeration headers = mailMsg.getAllHeaders();
-        while (headers.hasMoreElements()) {
-            Header header = (Header)headers.nextElement();
-            if (nmsg.getProperty(header.getName()) != null) {
-                // this is a multi line header - add it at the end
-                nmsg.setProperty(header.getName(), nmsg.getProperty(header.getName() + ";"
-                                                                    + header.getValue()));
-            } else {
-                // add it to the message properties
-                nmsg.setProperty(header.getName(), header.getValue());
-            }
-            log.debug("Setting property: " + header.getName() + " = " + header.getValue());
-        }
-
-        // now fill some predefined properties to the message
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_BCC) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_BCC, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_BCC));
-        }
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_CC) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_CC, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_CC));
-        }
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_FROM) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_FROM, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_FROM));
-        }
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_REPLYTO) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_REPLYTO, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_REPLYTO));
-        }
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_SENTDATE) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SENTDATE, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_SENTDATE));
-        }
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_SUBJECT) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_SUBJECT, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_SUBJECT));
-        }
-        if (nmsg.getProperty(AbstractMailMarshaler.MAIL_TAG_TO) != null) {
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TO, nmsg
-                .getProperty(AbstractMailMarshaler.MAIL_TAG_TO));
-        }
-    }
-
-    /**
-     * copies the mail body and attachments to the normalized message
-     * 
-     * @param exchange the exchange to use
-     * @param nmsg the message to use
-     * @param mailMsg the mail to use
-     * @throws javax.mail.MessagingException on any errors
-     */
-    protected void copyBodyAndAttachments(MessageExchange exchange, NormalizedMessage nmsg,
-                                          MimeMessage mailMsg) throws javax.mail.MessagingException {
-        // now convert the mail body and attachments and put it to the msg
-        Object content;
-        Multipart mp;
-        String text = null;
-        String html = null;
-
-        try {
-            content = mailMsg.getContent();
-
-            if (content instanceof String) {
-                // simple mail
-                text = asString(content);
-            } else if (content instanceof Multipart) {
-                // mail with attachment
-                mp = (Multipart)content;
-                // first grab all attachments
-                MailUtils.extractFromMultipart(mp, nmsg);
-                log.debug("Attachments found: " + nmsg.getAttachmentNames().size());
-                
-                for (int i = 0; i < mp.getCount(); i++) {
-                    Part part = mp.getBodyPart(i);
-                    String disposition = part.getDisposition();
-
-                    if (disposition == null) {
-                        // Check if plain
-                        MimeBodyPart mbp = (MimeBodyPart)part;
-                        if (mbp.isMimeType("text/plain")) {
-                            // Handle plain text
-                            text = (String)mbp.getContent();
-                        } else if (mbp.isMimeType("text/html")) {
-                            // Handle html contents
-                            html = (String)mbp.getContent();
-                        } else {
-                            // Special non-attachment cases (image/gif, ...)
-                            if (mbp.getContent() instanceof MimeMultipart) {
-                                MimeMultipart subMP = (MimeMultipart)mbp.getContent();
-                                for (int j = 0; j < subMP.getCount(); j++) {
-                                    MimeBodyPart subMBP = (MimeBodyPart)subMP.getBodyPart(j);
-
-                                    if (subMBP.getContent() instanceof InputStream) {
-                                        // parse the part
-                                        parsePart(subMBP, nmsg);
-                                    } else if (subMBP.isMimeType("text/plain")
-                                               && (text == null || text.length() <= 0)) {
-                                        // Handle plain text
-                                        text = (String)subMBP.getContent();
-                                    } else if (subMBP.isMimeType("text/html")
-                                               && (html == null || html.length() <= 0)) {
-                                        // Handle plain text
-                                        html = (String)subMBP.getContent();
-                                    } else {
-                                        // add as property into the normalize message
-                                        nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_ALTERNATIVE_CONTENT
-                                                         + j, subMBP.getContent());
-                                    }
-                                }
-                            } else {
-                                // parse the part
-                                parsePart(mbp, nmsg);
-                            }
-                        }
-                    }
-                }
-            } else { // strange mail structure...log a warning
-                log.warn("The content of the mail message is not supported by this component. ("
-                         + content.getClass().getName() + ")");
-            }
-        } catch (MessagingException e) {
-            throw new javax.mail.MessagingException("Error while setting content on normalized message", e);
-        } catch (IOException e) {
-            throw new javax.mail.MessagingException("Error while fetching content", e);
-        }
-
-        String msgContent = null;
-
-        if (text == null && html != null) {
-            // html mail body
-            msgContent = html;
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_HTML, html);
-        } else if (text != null && html != null) {
-            // both text and html
-            msgContent = text;
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_HTML, html);
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, text);
-        } else {
-            // text mail body
-            if (text == null) {
-                // text and html content is null
-                log.debug("No content found! \n" + nmsg.toString());
-            }
-
-            msgContent = text;
-            nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, text);
-        }
-
-        try {
-            // now set the converted content for the normalized message
-            nmsg.setContent(new StringSource(msgContent != null ? msgContent : "No mail content found!"));
-        } catch (javax.jbi.messaging.MessagingException e) {
-            throw new javax.mail.MessagingException("Error while setting message content", e);
-        }
-    }
-
-    /**
-     * extracts and parses the attachments found in the mail bodies and puts 
-     * them to the normalized message attachments
-     * 
-     * @param mbp           the mime body part to parse
-     * @param nmsg          the normalized message to fill
-     * @throws MessagingException
-     * @throws javax.mail.MessagingException
-     * @throws IOException
-     */
-    protected void parsePart(MimeBodyPart mbp, NormalizedMessage nmsg) throws MessagingException,
-        javax.mail.MessagingException, IOException {
-        Object subContent = mbp.getContent();
-
-        log.debug("Parsing: " + subContent.getClass().getName());
-
-        if (subContent instanceof InputStream) {
-            String cid = mbp.getContentID();
-            if (cid != null) {
-                cid = cid.replaceAll("<", "").replaceAll(">", "").toLowerCase();
-            }
-
-            log.debug("Adding special attachment: "
-                      + (mbp.getFileName() != null ? mbp.getFileName() : cid));
-
-            // read the stream into a byte array
-            byte[] data = new byte[mbp.getSize()];
-            InputStream stream = (InputStream)subContent;
-            stream.read(data);
-
-            // create a byte array data source for use in data handler
-            ByteArrayDataSource bads = new ByteArrayDataSource(data, mbp.getContentType());
-            
-            // remember the name of the attachment
-            bads.setName(mbp.getFileName() != null ? mbp.getFileName() : cid);
-
-            // add the attachment to the message
-            nmsg.addAttachment(bads.getName(), new DataHandler(bads));
-            // add the cid2attachment mapping to properties
-            if (cid != null) {
-                nmsg.setProperty(cid, mbp.getFileName());
-            }
-        }
-    }
-
-    /**
-     * Copy in stream to an out stream
-     *
-     * @param in
-     * @param out
-     * @throws IOException
-     */
-    public static void copyInputStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[8192];
-        int len = in.read(buffer);
-        while (len >= 0) {
-            out.write(buffer, 0, len);
-            len = in.read(buffer);
-        }
-        in.close();
-        out.close();
-    }
-
 }

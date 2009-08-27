@@ -112,22 +112,6 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     public static final String MSG_TAG_FROM = "org.apache.servicemix.mail.from";
 
     /**
-     * this tag is used in normalized messages to represent the text portion 
-     * of the mail received OR the text portion of the mail to be sent
-     * if both html and text properties are set, then it will be a multipart
-     * mail message containing both
-     */
-    public static final String MSG_TAG_TEXT = "org.apache.servicemix.mail.text";
-
-    /**
-     * this tag is used in normalized messages to represent the html portion 
-     * of the mail received OR the html portion of the mail to be sent
-     * if both html and text properties are set, then it will be a multipart
-     * mail message containing both 
-     */
-    public static final String MSG_TAG_HTML = "org.apache.servicemix.mail.html";
-
-    /**
      * this tag is used in normalized messages to represent the subject of the 
      * mail received OR the subject of the mail to be sent
      */
@@ -146,11 +130,35 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     public static final String MSG_TAG_SENTDATE = "org.apache.servicemix.mail.sentdate";
 
     /**
-     * this tag is used in normalized messages to represent the alternative
-     * content of a multipart/related message type
+     * this tag is used in normalized messages to represent the content type of
+     * the mail received or the mail to be sent
      */
-    public static final String MSG_TAG_ALTERNATIVE_CONTENT = "org.apache.servicemix.mail.alternativecontent";
-
+    public static final String MSG_TAG_MAIL_CONTENT_TYPE ="org.apache.servicemix.mail.type";
+    
+    /**
+     * this tag is used in normalized messages to represent the charset used in
+     * the received mail or to be used in the mail to be sent
+     */
+    public static final String MSG_TAG_MAIL_CHARSET = "org.apache.servicemix.mail.charset";
+    
+    /**
+     * this tag is used in normalized messages to flag that the attachments have to be
+     * treatened as inline attachments
+     */
+    public static final String MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS = "org.apache.servicemix.mail.attachments.inline";
+    
+    /**
+     * this tag is used in normalized messages to represent the plain text content used in
+     * the received mail or to be used in the mail to be sent
+     */
+    public static final String MSG_TAG_TEXT = "org.apache.servicemix.mail.text";
+    
+    /**
+     * this tag is used in normalized messages to represent the html content used in
+     * the received mail or to be used in the mail to be sent
+     */
+    public static final String MSG_TAG_HTML = "org.apache.servicemix.mail.html";
+    
     /**
      * the default sender address for outgoing mails
      */
@@ -166,6 +174,9 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      */
     public static final String DUMMY_CONTENT = "no content";
     
+    /**
+     * a map of files to be cleaned up later on
+     */
     private Map< String, List<File> > temporaryFilesMap = Collections.synchronizedMap(new HashMap<String, List<File> >());
     
     /**
