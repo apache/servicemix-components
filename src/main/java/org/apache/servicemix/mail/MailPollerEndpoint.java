@@ -56,7 +56,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
 
     private AbstractMailMarshaler marshaler = new DefaultMailMarshaler();
 
-    private List<String> seenMessages = Collections.synchronizedList(new LinkedList<String>());
+    private final List<String> seenMessages = Collections.synchronizedList(new LinkedList<String>());
 
     private String customTrustManagers;
 
@@ -74,7 +74,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
 
     private Map<String, String> customProperties;
 
-    private List<String> foundMessagesInFolder = Collections.synchronizedList(new LinkedList<String>());
+    private final List<String> foundMessagesInFolder = Collections.synchronizedList(new LinkedList<String>());
 
     private org.apache.servicemix.store.Store storage;
 
@@ -82,6 +82,8 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
      * default constructor
      */
     public MailPollerEndpoint() {
+    	super();
+    	
         this.processOnlyUnseenMessages = true;
         this.deleteProcessedMessages = false;
         this.debugMode = false;
@@ -103,25 +105,30 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
      * @see org.apache.servicemix.common.endpoints.PollingEndpoint#start()
      */
     @Override
+    @SuppressWarnings("unchecked")
     public synchronized void start() throws Exception {
         super.start();
 
-        if (this.storage != null) {
-            String id = config.getUsername() + " @ " + config.getHost();
-            try {
-                // load the list of seen messages
-                List<String> loadedMsg = (List<String>)this.storage.load(id);
-                if (loadedMsg != null && !loadedMsg.isEmpty()) {
-                    for (String uid : loadedMsg) {
-                        if (!this.seenMessages.contains(uid)) {
-                            this.seenMessages.add(uid);
-                        }
-                    }
-                    loadedMsg.clear();
-                }
-            } catch (IOException ioex) {
-                logger.error("Error loading seen messages for: " + id, ioex);
-            }
+        if (this.storage == null) {
+        	return;
+        }
+        	
+        String id = config.getUsername() + " @ " + config.getHost();
+        try {
+        	// load the list of seen messages
+        	List<String> loadedMsg = (List<String>)this.storage.load(id);
+        	if (loadedMsg == null || loadedMsg.isEmpty()) {
+        		return;
+        	}
+        		
+        	for (String uid : loadedMsg) {
+        		if (!this.seenMessages.contains(uid)) {
+        			this.seenMessages.add(uid);
+        		}
+        	}
+        	loadedMsg.clear();
+        } catch (IOException ioex) {
+        	logger.error("Error loading seen messages for: " + id, ioex);
         }
     }
 
@@ -218,11 +225,11 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                     // POP3 doesn't support flags, so we need to check manually
                     // if message is new or not
                     try {
-                        Object o_uid = folder.getClass().getMethod("getUID", new Class[] { Message.class }).invoke(folder, new Object[] { mailMsg });
+                        Object ouid = folder.getClass().getMethod("getUID", new Class[] { Message.class }).invoke(folder, new Object[] { mailMsg });
                         
                         // remember each found message
-                        if (o_uid != null) {
-                            uid = (String)o_uid;
+                        if (ouid != null) {
+                            uid = (String)ouid;
                             foundMessagesInFolder.add(uid);
                         }
 
