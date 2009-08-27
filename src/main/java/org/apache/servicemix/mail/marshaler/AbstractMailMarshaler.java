@@ -16,21 +16,14 @@
  */
 package org.apache.servicemix.mail.marshaler;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.apache.servicemix.components.util.MarshalerSupport;
 
 import javax.activation.DataSource;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.mail.internet.MimeMessage;
-
-import org.apache.servicemix.components.util.MarshalerSupport;
+import java.io.File;
+import java.util.*;
 
 /**
  * this is the abstract super class of all marshalers which want to convert
@@ -232,13 +225,12 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
                                                                                    NormalizedMessage normalizedMessage) {
         // get attachment from Normalize Message (used for sending)
         Map<String, DataSource> attachments = new HashMap<String, DataSource>();
-        String oneAttachmentName = "";
+        String oneAttachmentName;
         Set attNames = normalizedMessage.getAttachmentNames();
-        Iterator itAttNames = attNames.iterator();
-        while (itAttNames.hasNext()) {
-            oneAttachmentName = (String)itAttNames.next();
+        for (Object attName : attNames) {
+            oneAttachmentName = (String) attName;
             DataSource oneAttchmentInputString = normalizedMessage.getAttachment(oneAttachmentName)
-                .getDataSource();
+                    .getDataSource();
             attachments.put(oneAttachmentName, oneAttchmentInputString);
         }
 

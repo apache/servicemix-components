@@ -16,9 +16,9 @@
  */
 package org.apache.servicemix.mail;
 
-import java.util.List;
-
 import org.apache.servicemix.common.DefaultComponent;
+
+import java.util.List;
 
 /**
  * @org.apache.xbean.XBean element="component" description="Mail Component"
@@ -30,7 +30,7 @@ public class MailComponent extends DefaultComponent {
 
     /**
      * 
-     * @return
+     * @return all available endpoint classes
      */
     public MailEndpointType[] getEndpoints() {
         return endpoints;
@@ -38,7 +38,7 @@ public class MailComponent extends DefaultComponent {
 
     /**
      * 
-     * @param endpoints
+     * @param endpoints the endpoints
      */
     public void setEndpoints(MailEndpointType[] endpoints) {
         this.endpoints = endpoints;

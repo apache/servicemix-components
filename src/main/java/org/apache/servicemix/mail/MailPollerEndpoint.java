@@ -16,27 +16,6 @@
  */
 package org.apache.servicemix.mail;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.jbi.JBIException;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.ParseException;
-import javax.mail.search.FlagTerm;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
@@ -44,6 +23,18 @@ import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
 import org.apache.servicemix.mail.utils.MailUtils;
+
+import javax.jbi.JBIException;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.mail.*;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.ParseException;
+import javax.mail.search.FlagTerm;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * This is the polling endpoint for the mail component.
@@ -181,7 +172,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
 
         Store store = null;
         Folder folder = null;
-        Session session = null;
+        Session session;
         try {
             Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
             props.put("mail.debug", isDebugMode() ? "true" : "false");
@@ -203,7 +194,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
             }
             folder.open(Folder.READ_WRITE);
 
-            Message[] messages = null;
+            Message[] messages;
             if (isProcessOnlyUnseenMessages() && !isPopProtocol) {
                 messages = folder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
             } else {
@@ -213,19 +204,19 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
             int fetchSize = getMaxFetchSize() == -1 ? messages.length : Math.min(getMaxFetchSize(),
                                                                                  messages.length);
             int fetchedMessages = 0;
-            String uid = null;
+            String uid;
             
-            for (int cnt = 0; cnt < messages.length; cnt++) {
+            for (Message msg : messages) {
                 uid = null;
                 
                 // get the message
-                MimeMessage mailMsg = (MimeMessage)messages[cnt];
+                MimeMessage mailMsg = (MimeMessage)msg;
 
                 if (isProcessOnlyUnseenMessages() && isPopProtocol) {
                     // POP3 doesn't support flags, so we need to check manually
                     // if message is new or not
                     try {
-                        Object ouid = folder.getClass().getMethod("getUID", new Class[] { Message.class }).invoke(folder, new Object[] { mailMsg });
+                        Object ouid = folder.getClass().getMethod("getUID", Message.class).invoke(folder, mailMsg);
                         
                         // remember each found message
                         if (ouid != null) {

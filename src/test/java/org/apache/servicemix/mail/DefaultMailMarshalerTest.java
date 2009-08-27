@@ -16,32 +16,22 @@
  */
 package org.apache.servicemix.mail;
 
-import java.io.File;
-import java.util.Iterator;
-
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.InOnlyImpl;
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailContentType;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.mail.*;
+import javax.mail.internet.*;
+import java.io.File;
+import java.util.Iterator;
 
 /**
  * this is a collection of test which validate the marshaler conversion results
@@ -84,7 +74,6 @@ public class DefaultMailMarshalerTest extends TestCase {
 
     /**
      * Test method for
-     * {@link net.compart.jbi.mail.marshaler.AbstractMailMarshaler#getDefaultSenderForOutgoingMails()}.
      */
     public void testGetDefaultSenderForOutgoingMails() {
         assertEquals("Marshaler's default sender is not correct!", marshaler
@@ -272,9 +261,8 @@ public class DefaultMailMarshalerTest extends TestCase {
             fail("The HTML content is wrong! Expected: " + HTML + " Result: " + result);   
         }
 
-        Iterator i = nmsg.getAttachmentNames().iterator();
-        while (i.hasNext()) {
-            System.err.println("ATT: " + i.next().toString());
+        for (Object o : nmsg.getAttachmentNames()) {
+            System.err.println("ATT: " + o.toString());
         }
         
         if (nmsg.getAttachmentNames().size() != 1) {
@@ -848,7 +836,7 @@ public class DefaultMailMarshalerTest extends TestCase {
             // Fetch the image and associate to part
             FileDataSource fds = new FileDataSource(new File(PATH, FILE));
             
-            MimeBodyPart messageBodyPart = null;
+            MimeBodyPart messageBodyPart;
             // Create another body part
             messageBodyPart = new MimeBodyPart();
             // Set the data handler to the attachment

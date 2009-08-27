@@ -141,8 +141,7 @@ public class MailConnectionConfiguration {
              */
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                PasswordAuthentication pa = new PasswordAuthentication(getUsername(), getPassword());
-                return pa;
+                return new PasswordAuthentication(getUsername(), getPassword());
             }
         };
     }

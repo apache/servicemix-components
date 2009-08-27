@@ -30,8 +30,8 @@ public enum MailContentType {
     MULTIPART_ALTERNATIVE ("multipart/alternative", "multipart/alternative"),
     UNKNOWN     ("unknown", "text/plain");
     
-    private String key;
-    private String mimeType;
+    private final String key;
+    private final String mimeType;
     
     /**
      * creates a mail content type enum object

@@ -16,9 +16,14 @@
  */
 package org.apache.servicemix.mail;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
+import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
+import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
+import org.apache.servicemix.mail.utils.MailUtils;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -29,15 +34,9 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.common.endpoints.ProviderEndpoint;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
-import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
-import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
-import org.apache.servicemix.mail.utils.MailUtils;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * this is the sending endpoint for the mail component
@@ -81,16 +80,16 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in) throws Exception {
         // Exchange is finished
         if (exchange.getStatus() == ExchangeStatus.DONE) {
-            return;
+            //return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             // Exchange has been aborted with an exception
-            return;
+            //return;
         } else if (exchange.getFault() != null) {
             // Fault message
             exchange.setStatus(ExchangeStatus.DONE);
             getChannel().send(exchange);
         } else {
-            Session session = null;
+            Session session;
             try {
                 Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
                 props.put("mail.debug", isDebugMode() ? "true" : "false");
@@ -150,16 +149,16 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         throws Exception {
         // Exchange is finished
         if (exchange.getStatus() == ExchangeStatus.DONE) {
-            return;
+            //return;
         } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
             // Exchange has been aborted with an exception
-            return;
+            //return;
         } else if (exchange.getFault() != null) {
             // Fault message
             exchange.setStatus(ExchangeStatus.DONE);
             getChannel().send(exchange);
         } else {
-            Session session = null;
+            Session session;
             try {
                 Properties props = MailUtils.getPropertiesForProtocol(this.config, this.customTrustManagers);
                 props.put("mail.debug", isDebugMode() ? "true" : "false");

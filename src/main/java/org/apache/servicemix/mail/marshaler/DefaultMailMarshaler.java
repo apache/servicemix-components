@@ -16,13 +16,11 @@
  */
 package org.apache.servicemix.mail.marshaler;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Iterator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.mail.utils.MailContentType;
+import org.apache.servicemix.mail.utils.MailUtils;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -33,17 +31,14 @@ import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.Part;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.mail.utils.MailContentType;
-import org.apache.servicemix.mail.utils.MailUtils;
+import javax.mail.internet.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Iterator;
 
 /**
  * this is the default marshaler for conversion between the normalized message
@@ -52,7 +47,7 @@ import org.apache.servicemix.mail.utils.MailUtils;
  * @author lhein
  */
 public class DefaultMailMarshaler extends AbstractMailMarshaler {
-    private static Log log = LogFactory.getLog(DefaultMailMarshaler.class);
+    private static final Log log = LogFactory.getLog(DefaultMailMarshaler.class);
 
     /*
      * (non-Javadoc)
@@ -64,11 +59,11 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     public void convertMailToJBI(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
         throws javax.mail.MessagingException {
         // extract the headers from the mail message
-        MailUtils.extractHeadersFromMail(exchange, nmsg, mailMsg);
+        MailUtils.extractHeadersFromMail(nmsg, mailMsg);
 
         // extract the body
         try {
-            MailUtils.extractBodyFromMail(exchange, nmsg, mailMsg);
+            MailUtils.extractBodyFromMail(nmsg, mailMsg);
             if (nmsg.getContent() == null) {
                 nmsg.setContent(new StringSource(AbstractMailMarshaler.DUMMY_CONTENT));
             }
@@ -78,7 +73,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         }        
         
         // extract the attachments
-        MailUtils.extractAttachmentsFromMail(exchange, nmsg, mailMsg);
+        MailUtils.extractAttachmentsFromMail(nmsg, mailMsg);
     }
 
     /*
@@ -93,7 +88,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         throws javax.mail.MessagingException {
         try {
             // first fill the headers of the mail
-            fillMailHeaders(mimeMessage, exchange, nmsg, configuredSender, configuredReceiver);
+            fillMailHeaders(mimeMessage, nmsg, configuredSender, configuredReceiver);
 
             // fill the body and attachments
             fillMailBodyAndAttachments(mimeMessage, exchange, nmsg);
@@ -126,29 +121,29 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             // we need to guess what is best to use here
             if (isHtml) {
                 // we got attachments or a html content...so it will be some multipart/* message
-                prepareMixedMail(MailContentType.MULTIPART, mimeMessage, exchange, nmsg);
+                prepareMixedMail(mimeMessage, exchange, nmsg);
             } else {
                 // we will use a text/plain message
-                preparePlainTextMail(MailContentType.TEXT_PLAIN, mimeMessage, exchange, nmsg);
+                preparePlainTextMail(mimeMessage, nmsg);
             }
         } else {
             MailContentType mct = MailContentType.getEnumForValue(contentType);
             switch (mct) {
-                case TEXT_PLAIN:                preparePlainTextMail(mct, mimeMessage, exchange, nmsg);
+                case TEXT_PLAIN:                preparePlainTextMail(mimeMessage, nmsg);
                                                 break;
                 case TEXT_HTML:
                 case TEXT_XML:
                 case MULTIPART:         
-                case MULTIPART_MIXED:           prepareMixedMail(mct, mimeMessage, exchange, nmsg);
+                case MULTIPART_MIXED:           prepareMixedMail(mimeMessage, exchange, nmsg);
                                                 break;
-                case MULTIPART_ALTERNATIVE:     prepareAlternativeMail(mct, mimeMessage, exchange, nmsg);
+                case MULTIPART_ALTERNATIVE:     prepareAlternativeMail(mimeMessage, exchange, nmsg);
                                                 break;
                 default:                        if (isHtml && isText) {
-                                                    prepareAlternativeMail(mct, mimeMessage, exchange, nmsg);
+                                                    prepareAlternativeMail(mimeMessage, exchange, nmsg);
                                                 } else if (isText && nmsg.getAttachmentNames().size() == 0) {
-                                                    preparePlainTextMail(mct, mimeMessage, exchange, nmsg);
+                                                    preparePlainTextMail(mimeMessage, nmsg);
                                                 } else {
-                                                    prepareMixedMail(mct, mimeMessage, exchange, nmsg);
+                                                    prepareMixedMail(mimeMessage, exchange, nmsg);
                                                 }
                 }
             }
@@ -157,14 +152,11 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     /**
      * prepares a plain text mail message
      * 
-     * @param mct               the mail content type
      * @param mimeMessage       the mail message
-     * @param exchange          the message exchange
      * @param nmsg              the normalized message
      * @throws Exception        on errors
      */
-    protected void preparePlainTextMail(MailContentType mct, MimeMessage mimeMessage, MessageExchange exchange,
-                     NormalizedMessage nmsg) throws Exception {
+    protected void preparePlainTextMail(MimeMessage mimeMessage, NormalizedMessage nmsg) throws Exception {
         
         Object content = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT);
         Object charset = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_CHARSET);
@@ -184,19 +176,18 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     /**
      * prepares a multipart mixed mail message 
      * 
-     * @param mct               the mail content type
      * @param mimeMessage       the mail message
      * @param exchange          the message exchange
      * @param nmsg              the normalized message
      * @throws Exception        on errors
      */
-    protected void prepareMixedMail(MailContentType mct, MimeMessage mimeMessage, MessageExchange exchange,
+    protected void prepareMixedMail(MimeMessage mimeMessage, MessageExchange exchange,
                                         NormalizedMessage nmsg) throws Exception {
         
         boolean isText = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT) != null;
         boolean isHtml = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML) != null;
-        boolean useInline = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS) != null && 
-                            ((Boolean)nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS)).booleanValue();
+        boolean useInline = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS) != null &&
+                (Boolean) nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS);
         
         Object content_text = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT);
         Object content_html = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_HTML);
@@ -234,13 +225,12 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
     /**
      * prepares a multipart alternative mail message (both html and text)
      * 
-     * @param mct               the mail content type
      * @param mimeMessage       the mail message
      * @param exchange          the message exchange
      * @param nmsg              the normalized message
      * @throws Exception        on errors
      */
-    protected void prepareAlternativeMail(MailContentType mct, MimeMessage mimeMessage, MessageExchange exchange,
+    protected void prepareAlternativeMail(MimeMessage mimeMessage, MessageExchange exchange,
                                         NormalizedMessage nmsg) throws Exception {
     
         boolean isText = nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_TEXT) != null;
@@ -249,7 +239,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
         
         // only use attachments if it's definitive set so
         if (nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS) != null && 
-            ((Boolean)nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS)).booleanValue() == false) {
+            !(Boolean)nmsg.getProperty(AbstractMailMarshaler.MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS)) {
             useInline = false;
         }
         
@@ -298,7 +288,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                 multipart.addBodyPart(htmlpart);
 
                 // put attachments in place
-                appendAttachments(exchange, nmsg, mmp, useInline ? Part.INLINE : Part.ATTACHMENT);
+                appendAttachments(exchange, nmsg, mmp, Part.ATTACHMENT);
             } else {
                 // use inline attachments
                 MimeMultipart multipartRelated = new MimeMultipart("related");
@@ -313,7 +303,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     multipartRelated.addBodyPart(htmlBodyPart);
                 }
                 // put attachments in place
-                appendAttachments(exchange, nmsg, multipartRelated, useInline ? Part.INLINE : Part.ATTACHMENT);
+                appendAttachments(exchange, nmsg, multipartRelated, Part.INLINE);
             }
         }
         
@@ -339,7 +329,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
 
             if (itAttNames.hasNext()) {
                 // there is at least one attachment
-                MimeBodyPart messageBodyPart = null;
+                MimeBodyPart messageBodyPart;
 
                 // loop the existing attachments and put them to the mail
                 while (itAttNames.hasNext()) {
@@ -388,14 +378,12 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
      * fills the mail headers according to the normalized message headers
      * 
      * @param mimeMessage the mail message to fill
-     * @param exchange the exchange received
      * @param nmsg the normalized message received
      * @param configuredSender the configured sender from xbean
      * @param configuredReceiver the configured receiver from xbean
      * @throws Exception on errors
      */
-    protected void fillMailHeaders(MimeMessage mimeMessage, MessageExchange exchange, 
-                                   NormalizedMessage nmsg, String configuredSender, String configuredReceiver)
+    protected void fillMailHeaders(MimeMessage mimeMessage, NormalizedMessage nmsg, String configuredSender, String configuredReceiver)
         throws Exception {
         // fill the "To" field of the mail
         // if there is a TO property, this overrides the standard receiver

@@ -16,20 +16,19 @@
  */
 package org.apache.servicemix.mail.security;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * CustomSSLSocketFactory providing no security at all
@@ -66,7 +65,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
                 // use defaults
                 sslcontext.init(null, null, null);
             }
-            factory = (SSLSocketFactory)sslcontext.getSocketFactory();
+            factory = sslcontext.getSocketFactory();
         } catch (Exception ex) {
             LOG.error("Failed to create the dummy ssl socket factory.", ex);
         }

@@ -16,18 +16,13 @@
  */
 package org.apache.servicemix.mail.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
+import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
 
 import javax.activation.DataHandler;
-import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.mail.Header;
@@ -39,12 +34,14 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 import javax.mail.util.ByteArrayDataSource;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
-import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * utility class
@@ -52,7 +49,7 @@ import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
  * @author lhein
  */
 public final class MailUtils {
-    private static Log log = LogFactory.getLog(MailUtils.class);
+    private static final Log log = LogFactory.getLog(MailUtils.class);
     
     public static final String KEY_BODY_TEXT = "text";
     public static final String KEY_BODY_HTML = "html";
@@ -244,6 +241,9 @@ public final class MailUtils {
     
     /**
      * Extracts the body from the Mail message
+     *
+     * @param message   the mail message
+     * @return the mail body
      */
     public static Object extractBodyFromMail(Message message) {
         try {
@@ -259,13 +259,12 @@ public final class MailUtils {
     /**
      * copy the headers of the mail message into the normalized message headers
      * 
-     * @param exchange the exchange to use
      * @param nmsg the message to use
      * @param mailMsg the mail message
      * @throws javax.mail.MessagingException on any errors
      */
     @SuppressWarnings("unchecked")
-    public static void extractHeadersFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
+    public static void extractHeadersFromMail(NormalizedMessage nmsg, MimeMessage mailMsg)
         throws javax.mail.MessagingException {
         // first convert the headers of the mail to properties of the message
         Enumeration headers = mailMsg.getAllHeaders();
@@ -349,7 +348,7 @@ public final class MailUtils {
      * extracts attachments from a multipart mail part
      * 
      * @param mp        the multipart
-     * @param map       the map to add the attachments to
+     * @param nmsg      the normalized message
      * @throws javax.mail.MessagingException    on mail errors
      * @throws MessagingException       on jbi messaging errors
      * @throws IOException      on io errors
@@ -429,9 +428,11 @@ public final class MailUtils {
     /**
      * returns the body of the mail 
      * 
-     * @param mp        
-     * @param nmsg
-     * @return
+     * @param mp        the multipart 
+     * @param nmsg      the normalized message
+     * @return  a map of mail bodies
+     * @throws javax.mail.MessagingException on mail message errors
+     * @throws IOException on io errors
      */
     public static Map<String, String> extractBodyFromMultipart(Multipart mp, NormalizedMessage nmsg) 
         throws javax.mail.MessagingException, IOException {
@@ -447,9 +448,7 @@ public final class MailUtils {
                     try {
                         Multipart mup = (Multipart)part.getContent();
                         Map<String, String> res = extractBodyFromMultipart(mup, nmsg);
-                        Iterator<String> keyIt = res.keySet().iterator();
-                        while (keyIt.hasNext()) {
-                            String key = keyIt.next();
+                        for (String key : res.keySet()) {
                             if (content.containsKey(key)) {
                                 content.put(key, content.get(key) + '\n' + res.get(key));
                             } else {
@@ -494,9 +493,9 @@ public final class MailUtils {
      * 
      * @param mbp           the mime body part to parse
      * @param nmsg          the normalized message to fill
-     * @throws MessagingException
-     * @throws javax.mail.MessagingException
-     * @throws IOException
+     * @throws MessagingException   on messaging errors
+     * @throws javax.mail.MessagingException on mail message errors
+     * @throws IOException on io errors
      */
     public static void parsePart(MimeBodyPart mbp, NormalizedMessage nmsg) throws MessagingException,
         javax.mail.MessagingException, IOException {
@@ -536,11 +535,12 @@ public final class MailUtils {
     /**
      * extracts the body from the mail
      * 
-     * @param exchange  the message exchange
      * @param nmsg      the normalized message
      * @param mailMsg   the mail message
+     * @throws javax.jbi.messaging.MessagingException on messaging errors
+     * @throws javax.mail.MessagingException on mail message errors
      */
-    public static void extractBodyFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
+    public static void extractBodyFromMail(NormalizedMessage nmsg, MimeMessage mailMsg)
         throws javax.mail.MessagingException, MessagingException {
         
         Object content = MailUtils.extractBodyFromMail(mailMsg);
@@ -595,11 +595,10 @@ public final class MailUtils {
     /**
      * extracts the attachments from the mail 
      * 
-     * @param exchange  the message exchange
      * @param nmsg      the normalized message
      * @param mailMsg   the mail message
      */
-    public static void extractAttachmentsFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg) {
+    public static void extractAttachmentsFromMail(NormalizedMessage nmsg, MimeMessage mailMsg) {
         Object content = MailUtils.extractBodyFromMail(mailMsg);
         if (content != null && content instanceof Multipart) {
             // mail with attachment
