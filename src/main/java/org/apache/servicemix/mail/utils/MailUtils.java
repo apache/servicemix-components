@@ -76,6 +76,12 @@ public final class MailUtils {
     public static final String PROTOCOL_IMAP = "imap";
     public static final String PROTOCOL_IMAPS = "imaps";
 
+    private static final String MAIL_PREFIX = "mail.";
+    private static final String DEFAULT_INBOX = "INBOX";
+    
+    private static final String URI_PASSWORD_PART = "password=";
+    private static final String URI_USER_PART = "user=";
+    
     public static final String CONNECTION_TIMEOUT = "10000";
 
     /**
@@ -142,7 +148,7 @@ public final class MailUtils {
             config.setProtocol(scheme);
         } else {
             // set smtp as default
-            config.setProtocol("smtp");
+            config.setProtocol(PROTOCOL_SMTP);
         }
 
         String userInfo = uri.getUserInfo();
@@ -164,12 +170,12 @@ public final class MailUtils {
                 config.setFolderName(uri.getPath());
             }
         } else {
-            config.setFolderName("INBOX");
+            config.setFolderName(DEFAULT_INBOX);
         }
 
-        if (uri.getQuery() != null && uri.getQuery().indexOf("password=") != -1) {
+        if (uri.getQuery() != null && uri.getQuery().indexOf(URI_PASSWORD_PART) != -1) {
             // extract the password from query
-            int beginIndex = uri.getQuery().indexOf("password=") + "password=".length();
+            int beginIndex = uri.getQuery().indexOf(URI_PASSWORD_PART) + URI_PASSWORD_PART.length();
             int endIndex = uri.getQuery().indexOf(';', beginIndex + 1) != -1 ? uri.getQuery()
                 .indexOf(';', beginIndex + 1) : uri.getQuery().length();
             config.setPassword(uri.getQuery().substring(beginIndex, endIndex));
@@ -180,9 +186,9 @@ public final class MailUtils {
 
         if (userInfo == null) { 
             // alternative way of specifying the user name
-            if (uri.getQuery() != null && uri.getQuery().indexOf("user=") != -1) {
+            if (uri.getQuery() != null && uri.getQuery().indexOf(URI_USER_PART) != -1) {
                 // extract the password from query
-                int beginIndex = uri.getQuery().indexOf("user=") + "user=".length();
+                int beginIndex = uri.getQuery().indexOf(URI_USER_PART) + URI_USER_PART.length();
                 int endIndex = uri.getQuery().indexOf(';', beginIndex + 1) != -1 ? uri.getQuery()
                     .indexOf(';', beginIndex + 1) : uri.getQuery().length();
                 config.setUsername(uri.getQuery().substring(beginIndex, endIndex));
@@ -207,26 +213,26 @@ public final class MailUtils {
         // Get system properties clone
         Properties mailConnectionProperties = (Properties)System.getProperties().clone();
 
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".connectiontimeout",
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".connectiontimeout",
                                      CONNECTION_TIMEOUT);
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".timeout", CONNECTION_TIMEOUT);
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".host", config.getHost());
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".port", "" + config.getPort());
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".user", config.getUsername());
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".rsetbeforequit", "true");
-        mailConnectionProperties.put("mail." + config.getProtocol() + ".auth", "true");
-        mailConnectionProperties.put("mail.transport.protocol", config.getProtocol());
-        mailConnectionProperties.put("mail.store.protocol", config.getProtocol());
-        mailConnectionProperties.put("mail.host", config.getHost());
-        mailConnectionProperties.put("mail.user", config.getUsername());
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".timeout", CONNECTION_TIMEOUT);
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".host", config.getHost());
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".port", "" + config.getPort());
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".user", config.getUsername());
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".rsetbeforequit", "true");
+        mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".auth", "true");
+        mailConnectionProperties.put(MAIL_PREFIX + "transport.protocol", config.getProtocol());
+        mailConnectionProperties.put(MAIL_PREFIX + "store.protocol", config.getProtocol());
+        mailConnectionProperties.put(MAIL_PREFIX + "host", config.getHost());
+        mailConnectionProperties.put(MAIL_PREFIX + "user", config.getUsername());
 
         if (customTrustManagers != null && customTrustManagers.trim().length() > 0
             && config.isSecureProtocol()) {
             // set java mail properties
             mailConnectionProperties
-                .put("mail." + config.getProtocol() + ".socketFactory.class", SSL_FACTORY);
-            mailConnectionProperties.put("mail." + config.getProtocol() + ".socketFactory.fallback", "false");
-            mailConnectionProperties.put("mail." + config.getProtocol() + ".socketFactory.port",
+                .put(MAIL_PREFIX + config.getProtocol() + ".socketFactory.class", SSL_FACTORY);
+            mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".socketFactory.fallback", "false");
+            mailConnectionProperties.put(MAIL_PREFIX + config.getProtocol() + ".socketFactory.port",
                                          "" + config.getPort());
 
             // set the properties for the custom ssl socket factory
@@ -258,6 +264,7 @@ public final class MailUtils {
      * @param mailMsg the mail message
      * @throws javax.mail.MessagingException on any errors
      */
+    @SuppressWarnings("unchecked")
     public static void extractHeadersFromMail(MessageExchange exchange, NormalizedMessage nmsg, MimeMessage mailMsg)
         throws javax.mail.MessagingException {
         // first convert the headers of the mail to properties of the message
