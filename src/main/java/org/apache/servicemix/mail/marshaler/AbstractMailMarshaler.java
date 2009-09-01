@@ -28,7 +28,7 @@ import java.util.*;
 /**
  * this is the abstract super class of all marshalers which want to convert
  * between normalized messages and mail messages and vice versa.
- * 
+ *
  * @author lhein
  */
 public abstract class AbstractMailMarshaler extends MarshalerSupport {
@@ -75,37 +75,37 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
 
     /**
      * ------------------------------------------------------------------------
-     * the email constants are used for transporting specific information in 
+     * the email constants are used for transporting specific information in
      * message properties
      * ------------------------------------------------------------------------
      */
 
     /**
-     * this tag is used in normalized messages to represent the address the 
+     * this tag is used in normalized messages to represent the address the
      * mail was sent to OR the address this exchange should be mailed to
      */
     public static final String MSG_TAG_TO = "org.apache.servicemix.mail.to";
 
     /**
-     * this tag is used in normalized messages to represent the CC address the 
+     * this tag is used in normalized messages to represent the CC address the
      * mail was sent to OR the CC address this exchange should be mailed to
      */
     public static final String MSG_TAG_CC = "org.apache.servicemix.mail.cc";
 
     /**
-     * this tag is used in normalized messages to represent the BCC address 
+     * this tag is used in normalized messages to represent the BCC address
      * this exchange should be mailed to
      */
     public static final String MSG_TAG_BCC = "org.apache.servicemix.mail.bcc";
 
     /**
-     * this tag is used in normalized messages to represent the address the 
+     * this tag is used in normalized messages to represent the address the
      * mail was received from OR the address this exchange should be sent from
      */
     public static final String MSG_TAG_FROM = "org.apache.servicemix.mail.from";
 
     /**
-     * this tag is used in normalized messages to represent the subject of the 
+     * this tag is used in normalized messages to represent the subject of the
      * mail received OR the subject of the mail to be sent
      */
     public static final String MSG_TAG_SUBJECT = "org.apache.servicemix.mail.subject";
@@ -117,7 +117,7 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     public static final String MSG_TAG_REPLYTO = "org.apache.servicemix.mail.replyto";
 
     /**
-     * this tag is used in normalized messages to represent the date when  
+     * this tag is used in normalized messages to represent the date when
      * the mail was sent
      */
     public static final String MSG_TAG_SENTDATE = "org.apache.servicemix.mail.sentdate";
@@ -127,31 +127,31 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      * the mail received or the mail to be sent
      */
     public static final String MSG_TAG_MAIL_CONTENT_TYPE ="org.apache.servicemix.mail.type";
-    
+
     /**
      * this tag is used in normalized messages to represent the charset used in
      * the received mail or to be used in the mail to be sent
      */
     public static final String MSG_TAG_MAIL_CHARSET = "org.apache.servicemix.mail.charset";
-    
+
     /**
      * this tag is used in normalized messages to flag that the attachments have to be
      * treatened as inline attachments
      */
     public static final String MSG_TAG_MAIL_USE_INLINE_ATTACHMENTS = "org.apache.servicemix.mail.attachments.inline";
-    
+
     /**
      * this tag is used in normalized messages to represent the plain text content used in
      * the received mail or to be used in the mail to be sent
      */
     public static final String MSG_TAG_TEXT = "org.apache.servicemix.mail.text";
-    
+
     /**
      * this tag is used in normalized messages to represent the html content used in
      * the received mail or to be used in the mail to be sent
      */
     public static final String MSG_TAG_HTML = "org.apache.servicemix.mail.html";
-    
+
     /**
      * the default sender address for outgoing mails
      */
@@ -161,23 +161,23 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      * the dummy subject - set if no subject was provided
      */
     public static final String DUMMY_SUBJECT = "no subject";
-    
+
     /**
      * the dummy content - set if no content was provided
      */
-    public static final String DUMMY_CONTENT = "no content";
-    
+    public static final String DUMMY_CONTENT = "<no-content />";
+
     /**
      * a map of files to be cleaned up later on
      */
     private final Map< String, List<File> > temporaryFilesMap = Collections.synchronizedMap(new HashMap<String, List<File> >());
-    
+
     /**
-     * This method is used to convert a mime mail message received via an 
+     * This method is used to convert a mime mail message received via an
      * email server into a normalized message which will be sent to the bus.
      * If you want to specify your own conversion behaviour you have to override
      * this method with your own logic.
-     * 
+     *
      * @param exchange  the message exchange that will be sent to the bus
      * @param nmsg      the normalized in-message to be filled by this method
      * @param mailMsg   the mail message that was received via mail server
@@ -190,8 +190,8 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      * This method is used to convert a normalized message from the bus into a
      * mime mail message to be sent to a mail server.
      * If you want to specify your own conversion behaviour you have to override
-     * this method with your own logic. 
-     * 
+     * this method with your own logic.
+     *
      * @param mimeMessage               the mime mail message to be filled by this method
      * @param exchange                  the message exchange from JBI bus
      * @param nmsg                      the normalized message to transform to mail message
@@ -200,13 +200,13 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
      * @throws javax.mail.MessagingException on conversion errors
      */
     public abstract void convertJBIToMail(MimeMessage mimeMessage, MessageExchange exchange,
-                                          NormalizedMessage nmsg, String configuredSender, 
+                                          NormalizedMessage nmsg, String configuredSender,
                                           String configuredReceiver) throws javax.mail.MessagingException;
 
     /**
      * returns the default sender for outgoing mails
      * Override this method to deliver your own default sender!
-     * 
+     *
      * @return  the default sender address as string
      */
     public String getDefaultSenderForOutgoingMails() {
@@ -214,10 +214,10 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
     }
 
     /**
-     * This helper method extracts all attachments from the normalized message 
+     * This helper method extracts all attachments from the normalized message
      * into a map of attachments which may be used for filling the attachments
      * of an outgoing mail
-     * 
+     *
      * @param normalizedMessage     the normalized message with attachments
      * @return  a map of attachments
      */
@@ -236,30 +236,30 @@ public abstract class AbstractMailMarshaler extends MarshalerSupport {
 
         return attachments;
     }
-    
+
     /**
      * adds a temporary file resource to the list of to be cleaned up resources
-     * 
+     *
      * @param id        the id of the message exchange
      * @param tmpFile   the temp resource
      */
-    protected final void addTemporaryResource(String id, File tmpFile) { 
+    protected final void addTemporaryResource(String id, File tmpFile) {
         if (!this.temporaryFilesMap.containsKey(id)) {
-            this.temporaryFilesMap.put(id, new ArrayList<File>()); 
+            this.temporaryFilesMap.put(id, new ArrayList<File>());
         }
-        this.temporaryFilesMap.get(id).add(tmpFile); 
+        this.temporaryFilesMap.get(id).add(tmpFile);
     }
 
     /**
      * deletes all temporary resources of a given exchange id
-     * 
+     *
      * @param id        the exchange id
      */
     public final void cleanUpResources(String id) {
         List<File> list = this.temporaryFilesMap.get(id);
         if (list != null) {
-            for (File f : list) { 
-                f.delete(); 
+            for (File f : list) {
+                f.delete();
             }
             list.clear();
             this.temporaryFilesMap.remove(id);
