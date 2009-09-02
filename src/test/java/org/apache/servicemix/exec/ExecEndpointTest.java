@@ -152,9 +152,6 @@ public class ExecEndpointTest extends TestCase {
      * @throws Exception if an error occurs during the test.
      */
     public void testInOutWithValidMessage() throws Exception {
-        // test if the endpoint is present
-        assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
-        
         // InOut MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         InOut inOut = client.createInOutExchange();
