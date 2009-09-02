@@ -104,6 +104,16 @@ public class CxfBcComponent extends DefaultComponent {
     }
 
     public Bus getBus() {
+        while (bus == null) {
+            //wait until bus get initialized
+            //espically when restart osgi container, endpoint bundle may retrieve 
+            //bus before the servicemix-cxf-bc bundle completely init bus
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                
+            }
+        }
         return bus;
     }
 
