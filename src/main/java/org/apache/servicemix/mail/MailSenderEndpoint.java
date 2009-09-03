@@ -22,6 +22,7 @@ import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
+import org.apache.servicemix.mail.utils.IgnoreList;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
 import org.apache.servicemix.mail.utils.MailUtils;
 
@@ -34,13 +35,13 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 /**
  * this is the sending endpoint for the mail component
- * 
+ *
  * @org.apache.xbean.XBean element="sender"
  * @author lhein
  */
@@ -54,8 +55,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     private String sender;
     private String receiver;
     private boolean debugMode;
-    private Map<String, String> customProperties;
-    private List<String> ignoreMessageProperties;
+    private Map<String, String> customProperties = new HashMap<String, String>();
+    private IgnoreList ignoreMessageProperties = new IgnoreList();
 
     /*
      * (non-Javadoc)
@@ -117,7 +118,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
 
                 // handle ignore properties
                 handleIgnoreProperties(in);
-                
+
                 // let the marshaler to the conversion of message to mail
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
@@ -186,7 +187,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
 
                 // handle ignore properties
                 handleIgnoreProperties(in);
-                
+
                 // let the marshaler to the conversion of message to mail
                 this.marshaler.convertJBIToMail(msg, exchange, in, this.sender, this.receiver);
 
@@ -211,7 +212,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     /**
      * handles the normalized messages ignored properties, means it will set every
      * property value to null for each key inside the list of properties to ignore
-     * 
+     *
      * @param in	the normalized message
      */
     private void handleIgnoreProperties(NormalizedMessage in) {
@@ -223,11 +224,11 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     		}
         }
     }
-    
+
     /**
      * this will apply the custom properties to the properties map used for
      * connection to mail server
-     * 
+     *
      * @param props the properties to apply to
      */
     private void applyCustomProperties(Properties props) {
@@ -245,10 +246,10 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      * <p>With this method you can specify a marshaler class which provides the
      * logic for converting a normalized message into a mail. This class has
      * to extend the abstract class <code>AbstractMailMarshaler</code> or an
-     * extending class. If you don't specify a marshaler, the 
+     * extending class. If you don't specify a marshaler, the
      * <code>DefaultMailMarshaler</code> will be used.</p>
-     * 
-     * @param marshaler 
+     *
+     * @param marshaler
      * 				a class which extends <code>AbstractMailMarshaler</code>
      */
     public void setMarshaler(AbstractMailMarshaler marshaler) {
@@ -262,8 +263,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     /**
      * <p>Specifies the sender address of the mail which is being sent.</p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>no-reply@localhost</b></i><br/><br/>
-     * 
-     * @param sender 
+     *
+     * @param sender
      * 				a <code>String</code> value containing the sender address
      */
     public void setSender(String sender) {
@@ -317,8 +318,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      * <b><u>Example:</u></b><br />
      * &nbsp;&nbsp;&nbsp;<i>smtp://lhein@myserver?password=myPass</i><br /></p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
-     * 
-     * @param connection 
+     *
+     * @param connection
      * 				a <code>String</code> value containing the connection details
      */
     public void setConnection(String connection) {
@@ -346,8 +347,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      * <br />
      * &nbsp;&nbsp;&nbsp;<b>false</b> - <i>the debug mode is <b>disabled</b></i></p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>false</b></i><br/><br/>
-     * 
-     * @param debugMode 
+     *
+     * @param debugMode
      * 				a <code>boolean</code> value for debug mode
      */
     public void setDebugMode(boolean debugMode) {
@@ -362,13 +363,13 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      * <p>Specifies one or more trust manager classes separated by a semicolon (<b>;</b>).<br/>
      * These classes have to implement the <code>Trustmanager</code> interface and need to provide
      * an empty default constructor to be valid.<br/><br />
-     * If you want to accept all security certificates without a check you may 
+     * If you want to accept all security certificates without a check you may
      * consider using the <code>DummyTrustManager</code> class. It is actually only
      * an empty stub without any checking logic. <br/><b>But be aware that this will be
      * a security risk in production environments. </b></p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
-     * 
-     * @param customTrustManagers 
+     *
+     * @param customTrustManagers
      * 					a <code>String</code> value containing one or more full class names separated by <b>;</b> char
      */
     public void setCustomTrustManagers(String customTrustManagers) {
@@ -382,8 +383,8 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
     /**
      * <p>Specifies the receiver address(es) of the mail which is being sent.</p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
-     * 
-     * @param receiver 
+     *
+     * @param receiver
      * 				a <code>String</code> value containing the receiver address(es)
      */
     public void setReceiver(String receiver) {
@@ -401,21 +402,21 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      * &nbsp;<i><b>key</b>: "mail.pop3.disabletop"</i> <br />
      * &nbsp;<i><b>value</b>: "true"</i></p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
-     * 
-     * @param customProperties 
+     *
+     * @param customProperties
      * 					a <code>java.util.Map&lt;String, String&gt;</code> containing connection properties
      */
     public void setCustomProperties(Map<String, String> customProperties) {
         this.customProperties = customProperties;
     }
 
-	public List<String> getIgnoreMessageProperties() {
+	public IgnoreList getIgnoreMessageProperties() {
 		return this.ignoreMessageProperties;
 	}
 
 	/**
-     * <p>Specifies a <code>java.util.Map</code> which may contain additional
-     * properties for the connection. <br/>
+     * <p>Specifies a <code>java.util.List</code> which may contain message
+     * properties to skip. <br/>
      * <br/><b><u>Example for skipping all kind of addresses from the normalized message:</u></b><br />
      * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.to"</i> <br />
      * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.cc"</i> <br />
@@ -423,11 +424,12 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
      * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.from"</i> <br />
      * &nbsp;<i><b>value</b>: "org.apache.servicemix.mail.replyto"</i> <br /></p>
      * <i>&nbsp;&nbsp;&nbsp;The default value is <b>null</b></i><br/><br/>
-     * 
-     * @param ignoreMessageProperties 
-     * 					a <code>java.util.List&lt;String&gt;</code> containing keys of properties to ignore
+     *
+     * @param ignoreMessageProperties
+     * 					a list containing keys of properties to ignore
+     * @see org.apache.servicemix.mail.utils.IgnoreList
      */
-	public void setIgnoreMessageProperties(List<String> ignoreMessageProperties) {
+	public void setIgnoreMessageProperties(IgnoreList ignoreMessageProperties) {
 		this.ignoreMessageProperties = ignoreMessageProperties;
 	}
 }
