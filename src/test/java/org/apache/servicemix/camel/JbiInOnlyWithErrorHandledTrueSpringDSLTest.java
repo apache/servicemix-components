@@ -44,14 +44,13 @@ import org.springframework.util.Assert;
  */
 public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSupport {
 
+    private static final Level LOG_LEVEL = Logger.getLogger("org.apache.servicemix").getEffectiveLevel();
+    private static final String MESSAGE = "<just><a>test</a></just>";
     private static final QName TEST_SERVICE = new QName("urn:test", "error-handled-true");
 
     private ReceiverComponent receiver;
     private ReceiverComponent deadLetter;
 
-    private static final String MESSAGE = "<just><a>test</a></just>";
-    private static final Level LOG_LEVEL = Logger.getLogger("org.apache.servicemix").getEffectiveLevel();
-    
     @Override
     protected void setUp() throws Exception {
         receiver = new ReceiverComponent() {

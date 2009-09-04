@@ -31,10 +31,12 @@ import javax.xml.namespace.QName;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.id.IdGenerator;
+import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
  * A consumer endpoint that will be used to send JBI exchanges
@@ -128,7 +130,8 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         } else if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
             addHeaders(messageExchange, exchange);
             if (messageExchange.getFault() != null) {
-                exchange.getFault().setBody(messageExchange.getFault().getContent());
+                exchange.getFault().setBody(new FaultException("Fault occured for " + exchange.getPattern() + " exchange", 
+                        messageExchange, messageExchange.getFault()));
                 addHeaders(messageExchange.getFault(), exchange.getFault());
                 addAttachments(messageExchange.getFault(), exchange.getFault());
             } else if (messageExchange.getMessage("out") != null) {

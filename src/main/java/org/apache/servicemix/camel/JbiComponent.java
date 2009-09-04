@@ -74,7 +74,7 @@ public class JbiComponent implements Component<Exchange> {
      */
     public JbiBinding getBinding() {
         if (binding == null) {
-            binding = new JbiBinding();
+            binding = new JbiBinding(camelContext);
         }
         return binding;
     }
@@ -144,8 +144,7 @@ public class JbiComponent implements Component<Exchange> {
                                 + endpointUri);
             }
             jbiEndpoint = new CamelProviderEndpoint(getCamelJbiComponent()
-                    .getServiceUnit(), service, endpoint, camelEndpoint,
-                    getBinding(), processor);
+                    .getServiceUnit(), service, endpoint, getBinding(), processor);
         } else {
             jbiEndpoint = new CamelProviderEndpoint(getCamelJbiComponent()
                     .getServiceUnit(), camelEndpoint, getBinding(), processor);

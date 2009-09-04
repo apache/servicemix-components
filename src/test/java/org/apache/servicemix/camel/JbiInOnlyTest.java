@@ -97,6 +97,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
         getMockEndpoint("mock:aggregated").assertIsSatisfied();
     }
 
+
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
         // no additional activation specs required
@@ -108,6 +109,9 @@ public class JbiInOnlyTest extends JbiTestSupport {
 
             @Override
             public void configure() throws Exception {
+                // let's not retry things too often as this will only slow down the unit tests
+                errorHandler(deadLetterChannel().maximumRedeliveries(0));                            
+                
                 from("jbi:service:urn:test:forward").to("jbi:service:urn:test:in-only?mep=in-only");
                 from("jbi:service:urn:test:in-only").convertBodyTo(String.class).to("mock:done");
                 from("jbi:service:urn:test:in-only-error").process(new Processor() {

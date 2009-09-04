@@ -47,13 +47,12 @@ import org.springframework.util.Assert;
  */
 public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSupport {
 
+    private static final Level LOG_LEVEL = Logger.getLogger("org.apache.servicemix").getEffectiveLevel();
+    private static final String MESSAGE = "<just><a>test</a></just>";
     private static final QName TEST_SERVICE = new QName("urn:test", "fault-handled-true");
 
     private ReceiverComponent receiver;
     private ReceiverComponent deadLetter;
-
-    private static final String MESSAGE = "<just><a>test</a></just>";
-    private static final Level LOG_LEVEL = Logger.getLogger("org.apache.servicemix").getEffectiveLevel();
     
     @Override
     protected void setUp() throws Exception {
@@ -115,7 +114,7 @@ public class JbiInOnlyWithFaultHandledTrueSpringDSLTest extends SpringJbiTestSup
 
         smxClient.send(exchange);
 
-        exchange = (RobustInOnly)smxClient.receive();
+        exchange = (RobustInOnly) smxClient.receive();
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         assertNotNull(exchange.getMessage("in").getProperty(DeadLetterChannel.CAUGHT_EXCEPTION_HEADER));
 

@@ -18,17 +18,21 @@ package org.apache.servicemix.camel;
 
 
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
 
 import org.apache.camel.Endpoint;
+import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
  * A JBI endpoint which when invoked will delegate to a Camel endpoint
@@ -39,22 +43,18 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
 
     public static final QName SERVICE_NAME = new QName("http://activemq.apache.org/camel/schema/jbi", "provider");
 
-    private Endpoint camelEndpoint;
-
     private JbiBinding binding;
 
     private Processor camelProcessor;
 
-    public CamelProviderEndpoint(ServiceUnit serviceUnit, QName service, String endpoint, Endpoint camelEndpoint, JbiBinding binding,
-            Processor camelProcessor) {
+    public CamelProviderEndpoint(ServiceUnit serviceUnit, QName service, String endpoint, JbiBinding binding, Processor camelProcessor) {
         super(serviceUnit, service, endpoint);
         this.camelProcessor = camelProcessor;
-        this.camelEndpoint = camelEndpoint;
         this.binding = binding;
     }
 
     public CamelProviderEndpoint(ServiceUnit serviceUnit, Endpoint camelEndpoint, JbiBinding binding, Processor camelProcessor) {
-        this(serviceUnit, SERVICE_NAME, camelEndpoint.getEndpointUri(), camelEndpoint, binding, camelProcessor);
+        this(serviceUnit, SERVICE_NAME, camelEndpoint.getEndpointUri(), binding, camelProcessor);
     }
 
     @Override
@@ -80,95 +80,84 @@ public class CamelProviderEndpoint extends ProviderEndpoint {
         }
     }
 
-
     protected void handleActiveProviderExchange(MessageExchange exchange) throws Exception {
         // Fault message
         if (exchange.getFault() != null) {
             done(exchange);
         // In message
         } else if (exchange.getMessage("in") != null) {
-            if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Received exchange: " + exchange);
-                }
-                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getCamelContext(), binding, exchange);
-                camelProcessor.process(camelExchange);
-                if (camelExchange.isFailed()
-                        && (camelExchange.getFault(false) == null || camelExchange.getFault(false).getBody() == null)) {
-                    Throwable t = camelExchange.getException();
-                    Exception e;
-                    if (t == null) {
-                        e = new Exception("Unknown error");
-                    } else if (t instanceof Exception) {
-                        e = (Exception) t;
-                    } else {
-                        e = new Exception(t);
-                    }
-                    fail(camelExchange, e);
-                } else {
-                    done(camelExchange);
-                }
-            } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Received exchange: " + exchange);
-                }
-                JbiExchange camelExchange = new JbiExchange(camelEndpoint.getCamelContext(), binding, exchange);
-                camelProcessor.process(camelExchange);
-                if (camelExchange.isFailed()
-                        && (camelExchange.getFault(false) == null || camelExchange.getFault(false).getBody() == null)) {
-                    Throwable t = camelExchange.getException();
-                    Exception e;
-                    if (t == null) {
-                        e = new Exception("Unknown error");
-                    } else if (t instanceof Exception) {
-                        e = (Exception) t;
-                    } else {
-                        e = new Exception(t);
-                    }
-                    fail(camelExchange, e);
-                } else {
-                    boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
-//                    if (camelExchange.getOut(false) == null) {
-//                        camelExchange.getOut().copyFrom(camelExchange.getIn());
-//                    }
-                    if (txSync) {
-                        sendSync(camelExchange);
-                    } else {
-                        send(camelExchange);
-                    }
-                }
+            if (logger.isDebugEnabled()) {
+                logger.debug("Received exchange: " + exchange);
             }
-        // This is not complaint with the default MEPs
+            Exchange camelExchange = binding.createExchange(exchange);
+            camelProcessor.process(camelExchange);
+            if (camelExchange.isFailed()) {
+                handleFailure(exchange, camelExchange);
+            } else {
+                handleSuccess(exchange, camelExchange);
+            }
+        // This is not compliant with the default MEPs
         } else {
             throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
         }
     }
 
     /*
-     * Send the underlying JBI MessageExchange and detach it from the Camel JbiExchange
+     * Handle successful camel invocation
      */
-    private void send(JbiExchange camelExchange) throws MessagingException {
-        send(camelExchange.detach());
+    private void handleSuccess(MessageExchange exchange, Exchange camelExchange) throws MessagingException {
+        binding.copyFromCamelToJbi(camelExchange, exchange);
+        if (exchange instanceof InOnly || exchange instanceof RobustInOnly) {
+            done(exchange);
+        } else {
+            doSend(exchange);
+        }
     }
 
     /*
-     * Synchronously send the underlying JBI MessageExchange and detach it from the Camel JbiExchange
+     * Handle failure during camel route invocation 
      */
-    private void sendSync(JbiExchange camelExchange) throws MessagingException {
-        sendSync(camelExchange.detach());
+    private void handleFailure(MessageExchange exchange, Exchange camelExchange) throws MessagingException {
+        if (camelExchange.getFault(false) == null || camelExchange.getFault(false).getBody() == null) {
+            Throwable t = camelExchange.getException();
+            Exception e;
+            if (t == null) {
+                e = new Exception("Unknown error");
+            } else if (t instanceof Exception) {
+                e = (Exception) t;
+            } else {
+                e = new Exception(t);
+            }
+            fail(exchange, e);
+        } else {
+            Fault fault = exchange.createFault();
+            fault.setContent(camelExchange.getFault().getBody(Source.class));
+            if (isFaultCapable(exchange)) {
+                exchange.setFault(fault);
+                doSend(exchange);
+            } else {
+                // MessageExchange is not capable of conveying faults -- sending the information as an error instead
+                fail(exchange, new FaultException("Fault occured for " + exchange.getPattern() + " exchange", exchange, fault));
+            }
+        } 
     }
 
     /*
-     * Send a DONE status for the underlying JBI MessageExchange and detach it from the Camel JbiExchange
+     * Check if the exchange is capable of conveying fault messages
      */
-    private void done(JbiExchange camelExchange) throws MessagingException {
-        done(camelExchange.detach());
+    private boolean isFaultCapable(MessageExchange exchange) {
+        return !(exchange instanceof InOnly);
     }
-
+    
     /*
-     * Make the underlying JBI MessageExchange fail and detach it from the Camel JbiExchange
+     * Send back the response, taking care to use sendSync when necessary
      */
-    private void fail(JbiExchange camelExchange, Exception e) throws MessagingException {
-        fail(camelExchange.detach(), e);
+    private void doSend(MessageExchange exchange) throws MessagingException {
+        boolean txSync = exchange.isTransacted() && Boolean.TRUE.equals(exchange.getProperty(JbiConstants.SEND_SYNC));
+        if (txSync && ExchangeStatus.ACTIVE.equals(exchange.getStatus())) {
+            sendSync(exchange);
+        } else {
+            send(exchange);
+        }        
     }
 }

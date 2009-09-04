@@ -21,21 +21,23 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
-import javax.activation.DataHandler;
+import javax.jbi.messaging.InOptionalOut;
+import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessageExchangeFactory;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.messaging.RobustInOnly;
+import javax.security.auth.Subject;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.NoTypeConversionAvailableException;
-import org.apache.camel.util.ExchangeHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -46,29 +48,20 @@ import org.apache.commons.logging.LogFactory;
  */
 public class JbiBinding {
 
+    public static final String MESSAGE_EXCHANGE = "JbiMessageExchange";
+    public static final String OPERATION = "JbiOperation";
+    public static final String SECURITY_SUBJECT = "JbiSecuritySubject";
+    
+    @Deprecated
+    public static final String OPERATION_STRING = "jbi.operation";
+    
     private static final Log LOG = LogFactory.getLog(JbiBinding.class);
 
-    private String messageExchangePattern;
-
-    /**
-     * Extracts the body from the given normalized message
-     */
-    public Object extractBodyFromJbi(JbiExchange exchange, NormalizedMessage normalizedMessage) {
-        // TODO we may wish to turn this into a POJO such as a JAXB/DOM
-        return normalizedMessage.getContent();
-    }
-
-    public Source convertBodyToJbi(Exchange exchange, Object body) {
-        if (body instanceof Source) {
-            return (Source) body;
-        } else {
-            try {
-                return ExchangeHelper.convertToType(exchange, Source.class, body);
-            } catch (NoTypeConversionAvailableException e) {
-                LOG.warn("Unable to convert message body of type " + body.getClass() + " into an XML Source");
-                return null;
-            }
-        }
+    private final CamelContext context;
+    
+    public JbiBinding(CamelContext context) {
+        super();
+        this.context = context;
     }
 
     public MessageExchange makeJbiMessageExchange(Exchange camelExchange,
@@ -81,30 +74,10 @@ public class JbiBinding {
             normalizedMessage = jbiExchange.createMessage();
             jbiExchange.setMessage(normalizedMessage, "in");
         }
-        normalizedMessage.setContent(getJbiInContent(camelExchange));
-        addJbiHeaders(jbiExchange, normalizedMessage, camelExchange.getIn());
-        addJbiAttachments(jbiExchange, normalizedMessage, camelExchange);
-        addSecuritySubject(jbiExchange, normalizedMessage, camelExchange.getIn());
+        copyFromCamelToJbi(camelExchange.getIn(), normalizedMessage);
         return jbiExchange;
     }
     
-
-	// Properties
-    // -------------------------------------------------------------------------
-
-    public String getMessageExchangePattern() {
-        return messageExchangePattern;
-    }
-
-    /**
-     * Sets the message exchange pattern to use for communicating with JBI
-     *
-     * @param messageExchangePattern
-     */
-    public void setMessageExchangePattern(String messageExchangePattern) {
-        this.messageExchangePattern = messageExchangePattern;
-    }
-
     protected MessageExchange createJbiMessageExchange(Exchange camelExchange,
         MessageExchangeFactory exchangeFactory, String defaultMep)
         throws MessagingException, URISyntaxException {
@@ -112,11 +85,7 @@ public class JbiBinding {
         // option 1 -- use the MEP that was configured on the endpoint URI
         ExchangePattern mep = ExchangePattern.fromWsdlUri(defaultMep);
         if (mep == null) {
-            // option 2 -- use the MEP configured on the ToJbiProcessor
-            mep = ExchangePattern.fromWsdlUri(getMessageExchangePattern());
-        }
-        if (mep == null) {
-            // option 3 -- use the MEP from the Camel Exchange
+            // option 2 -- use the MEP from the Camel Exchange
             mep = camelExchange.getPattern();
         }
         MessageExchange answer = null;
@@ -145,96 +114,134 @@ public class JbiBinding {
             }
         }
 
-        if (camelExchange.getProperty("jbi.operation") != null) {
-
-            String operationName = (String) camelExchange.getProperty("jbi.operation");
-            QName operationQName = QName.valueOf(operationName);
-            answer.setOperation(operationQName);
-
+        if (getOperation(camelExchange) != null) {
+            answer.setOperation(getOperation(camelExchange));
+        }
+        
+        // let's try to use the old way too
+        if (answer.getOperation() == null && camelExchange.getProperties().containsKey(JbiBinding.OPERATION_STRING)) {
+            answer.setOperation(QName.valueOf(camelExchange.getProperty(JbiBinding.OPERATION_STRING, String.class)));
         }
 
         return answer;
     }
 
-    protected Source getJbiInContent(Exchange camelExchange) {
-        // TODO this should be more smart
-        Source content = null;
-        try {
-            content = camelExchange.getIn().getBody(Source.class);
-        } catch (NoTypeConversionAvailableException e) {
-            if (camelExchange.getIn().getBody() != null) {
-                LOG.warn("'in' message content of type " + camelExchange.getIn().getBody().getClass()
-                         + " could not be converted to Source and will be dropped");
-            }
+    public Exchange createExchange(MessageExchange exchange) {
+        Exchange result = new JbiExchange(context, this);
+        result.setProperty(MESSAGE_EXCHANGE, exchange);
+        result.setPattern(getExchangePattern(exchange));
+        if (exchange.getOperation() != null) {
+            result.setProperty(OPERATION, exchange.getOperation());
+            result.setProperty(OPERATION_STRING, exchange.getOperation().toString());
         }
-        return content;
+        if (exchange.getMessage("in") != null) {
+            copyJbiToCamel(exchange.getMessage("in"), result.getIn());
+        }
+        return result;
     }
 
-    protected void addJbiHeaders(MessageExchange jbiExchange, NormalizedMessage normalizedMessage,
-                                 Message camelMessage) {
-        // get headers from the Camel in message
-        Set<Map.Entry<String, Object>> entries = camelMessage.getHeaders().entrySet();
-        for (Map.Entry<String, Object> entry : entries) {
-            //check if value is Serializable, and if value is Map or collection,
-            //just exclude it since the entry of it may not be Serializable as well
-            if (entry.getValue() instanceof Serializable
-                    && !(entry.getValue() instanceof Map)
-                    && !(entry.getValue() instanceof Collection)) {
-                normalizedMessage.setProperty(entry.getKey(), entry.getValue());
+    /*
+     * Get the corresponding Camel ExchangePattern for a given JBI Exchange
+     */
+    private ExchangePattern getExchangePattern(MessageExchange exchange) {
+        if (exchange instanceof InOut) {
+            return ExchangePattern.InOut;
+        } else if (exchange instanceof InOptionalOut) {
+            return ExchangePattern.InOptionalOut;
+        } else if (exchange instanceof RobustInOnly) {
+            return ExchangePattern.RobustInOnly;
+        } else {
+            return ExchangePattern.InOnly;
+        }
+    }
+
+    private void copyJbiToCamel(NormalizedMessage from, Message to) {
+        to.setBody(from.getContent());
+        if (from.getSecuritySubject() != null) {
+            to.setHeader(SECURITY_SUBJECT, from.getSecuritySubject());
+        }
+        for (Object key : from.getPropertyNames()) {
+            to.setHeader(key.toString(), from.getProperty(key.toString()));
+        }
+        for (Object id : from.getAttachmentNames()) {
+            to.addAttachment(id.toString(), from.getAttachment(id.toString()));
+        }
+    }
+
+    public void copyFromCamelToJbi(Message message, NormalizedMessage normalizedMessage) throws MessagingException {
+        try {
+            normalizedMessage.setContent(message.getBody(Source.class));
+        } catch (NoTypeConversionAvailableException e) {
+            LOG.warn("Unable to convert message body of type " + message.getBody().getClass() + " into an XML Source");
+        }
+        
+        if (getSecuritySubject(message) != null) {
+            normalizedMessage.setSecuritySubject(getSecuritySubject(message));
+        }
+        
+        for (String key : message.getHeaders().keySet()) {
+            Object value = message.getHeader(key);
+            if (isSerializable(value)) {
+                normalizedMessage.setProperty(key, value);
             }
         }
         
-        // if there's a NormalizedMessage inside the Camel Message, copy those headers over as well
-        NormalizedMessage camelNormalizedMessage = getNormalizedMessage(camelMessage);
-        if (camelNormalizedMessage != null) {
-            copyNormalizedMessageHeaders(normalizedMessage, camelNormalizedMessage);
+        for (String id : message.getAttachmentNames()) {
+            normalizedMessage.addAttachment(id, message.getAttachment(id));
         }
     }
-    
-    protected void addSecuritySubject(MessageExchange jbiExchange,
-			NormalizedMessage normalizedMessage, Message camelMessage) {
-    	if (camelMessage instanceof JbiMessage) {
-    		JbiMessage message = (JbiMessage) camelMessage;
-    		if (message.getNormalizedMessage() != null) {
-    			// copy the security subject
-    			normalizedMessage.setSecuritySubject(message.getNormalizedMessage().getSecuritySubject());
-    		}
-    	}	
-		
-	}
 
-    @SuppressWarnings("unchecked")
-    private void copyNormalizedMessageHeaders(NormalizedMessage from, NormalizedMessage to) {
-        Set<String> propertyNames = to.getPropertyNames();
-        for (String propertyName : propertyNames) {
-            if (from.getProperty(propertyName) == null) {
-                Object propertyValue = to.getProperty(propertyName);
-                //check if value is Serializable, and if value is Map or collection,
-                //just exclude it since the entry of it may not be Serializable as well
-                if (propertyValue instanceof Serializable
-                        && !(propertyValue instanceof Map)
-                        && !(propertyValue instanceof Collection)) {
-                    from.setProperty(propertyName, propertyValue);
-                }
+    public void copyFromCamelToJbi(Exchange exchange, MessageExchange messageExchange) throws MessagingException {
+        NormalizedMessage in = messageExchange.getMessage("in");
+        for (String key : exchange.getIn().getHeaders().keySet()) {
+            in.setProperty(key, exchange.getIn().getHeader(key));
+        }        
+        
+        if (isOutCapable(messageExchange)) {
+            if (exchange.getOut(false) == null) {
+                //JBI MEP requires a reply and the Camel exchange failed to produce one -- echoing back the request
+                NormalizedMessage out = messageExchange.createMessage();
+                copyFromCamelToJbi(exchange.getIn(), out);
+                messageExchange.setMessage(out, "out");
+            } else {
+                NormalizedMessage out = messageExchange.createMessage();
+                copyFromCamelToJbi(exchange.getOut(), out);
+                messageExchange.setMessage(out, "out");
             }
         }
     }
 
-    protected void addJbiAttachments(MessageExchange jbiExchange, NormalizedMessage normalizedMessage,
-                                     Exchange camelExchange)
-        throws MessagingException {
-
-        Set<Map.Entry<String, DataHandler>> entries = camelExchange.getIn().getAttachments().entrySet();
-        for (Map.Entry<String, DataHandler> entry : entries) {
-            normalizedMessage.addAttachment(entry.getKey(), entry.getValue());
-        }
+    private boolean isOutCapable(MessageExchange exchange) {
+        return exchange instanceof InOut || exchange instanceof InOptionalOut;
     }
 
-    protected NormalizedMessage getNormalizedMessage(Message message) {
-        if (message instanceof JbiMessage) {
-            return ((JbiMessage) message).getNormalizedMessage();
+    public static MessageExchange getMessageExchange(Exchange exchange) {
+        return exchange.getProperty(MESSAGE_EXCHANGE, MessageExchange.class);
+    }
+    
+    /**
+     * Access the JBI Operation that has been stored on a Camel Exchange
+     * @param exchange the Camel Exchange
+     * @return the JBI Operation as a QName
+     */
+    public static QName getOperation(Exchange exchange) {
+        return exchange.getProperty(OPERATION, QName.class);
+    }
+    
+    /**
+     * Access the security subject that has been stored on the Camel Message
+     * @param message the Camel message
+     * @return the Subject or <code>null</code> is no Subject is available in the headers
+     */
+    public static Subject getSecuritySubject(Message message) {
+        if (message.getHeader(SECURITY_SUBJECT) != null) {
+            return message.getHeader(SECURITY_SUBJECT, Subject.class);
         }
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    protected boolean isSerializable(Object object) {
+        return (object instanceof Serializable) && !(object instanceof Map) && !(object instanceof Collection);
+    }
 }

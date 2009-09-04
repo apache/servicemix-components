@@ -28,7 +28,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxp.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
-import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
  * Tests on handling fault messages with the Camel Exception handler  
@@ -47,7 +47,9 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.sendSync(exchange);
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
-        assertTrue("A FaultException was expected", exchange.getError() instanceof FaultException);
+        // This exception is the 'old' FaultException type being thrown by ComponentSupport 
+        // TODO: Remove explicit package name when SM-1891 has been fixed and released
+        assertTrue("A FaultException was expected", exchange.getError() instanceof org.apache.servicemix.jbi.FaultException);
 
         receiverComponent.getMessageList().assertMessagesReceived(0);
         
@@ -63,12 +65,16 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         exchange.setService(new QName("urn:test", "no-handle-fault"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.sendSync(exchange);
-        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
+        assertEquals(ExchangeStatus.ACTIVE, exchange.getStatus());
         assertNotNull(exchange.getFault());
+        client.done(exchange);
 
         receiverComponent.getMessageList().assertMessagesReceived(0);
-        
+            
         errors.assertIsSatisfied();
+        
+        // let's wait a moment to make sure that the last DONE MessageExchange is handled
+        Thread.sleep(500);
     }
 
     public void testInOnlyWithHandleFault() throws Exception {
@@ -81,7 +87,9 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.sendSync(exchange);
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
-        assertTrue("A FaultException was expected", exchange.getError() instanceof FaultException);
+        // This exception is the 'old' FaultException type being thrown by ComponentSupport 
+        // TODO: Remove explicit package name when SM-1891 has been fixed and released
+        assertTrue("A FaultException was expected", exchange.getError() instanceof org.apache.servicemix.jbi.FaultException);
 
         receiverComponent.getMessageList().assertMessagesReceived(0);
         
@@ -97,8 +105,9 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         exchange.setService(new QName("urn:test", "handle-fault"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
         client.sendSync(exchange);
-        assertEquals(ExchangeStatus.DONE, exchange.getStatus());
-        assertNotNull(exchange.getFault());
+        // fault is being handled as an exception but no exception handler configured for it
+        assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
+        assertTrue("A FaultException was expected", exchange.getError() instanceof FaultException);
 
         receiverComponent.getMessageList().assertMessagesReceived(0);
         

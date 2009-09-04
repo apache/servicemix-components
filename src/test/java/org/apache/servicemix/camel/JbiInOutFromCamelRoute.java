@@ -36,6 +36,9 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
     public void testInOutEchoesReply() throws Exception {
         MockEndpoint inout = getMockEndpoint("mock:in-out");
         inout.expectedMessageCount(2);
+        
+        MockEndpoint done = getMockEndpoint("mock:done");
+        done.expectedMessageCount(2);
 
         // when the route creates a reply, expect that as the out message
         doTestInOutReply("direct:in-out", true, REPLY);
@@ -44,11 +47,15 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
         doTestInOutReply("direct:in-out", false, MESSAGE);
         
         inout.assertIsSatisfied();
+        done.assertIsSatisfied();
     }
     
     public void testInOutEchoesReplyAsync() throws Exception {
         MockEndpoint inout = getMockEndpoint("mock:in-out");
         inout.expectedMessageCount(2);
+        
+        MockEndpoint done = getMockEndpoint("mock:done");
+        done.expectedMessageCount(2);
 
         // when the route creates a reply, expect that as the out message
         doTestInOutReply("direct:async-in-out", true, REPLY);
@@ -57,6 +64,7 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
         doTestInOutReply("direct:async-in-out", false, MESSAGE);
         
         inout.assertIsSatisfied();
+        done.assertIsSatisfied();
     }
 
 
@@ -81,13 +89,15 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
                 from("direct:in-out")
                   .choice()
                     .when(header(REPLY_HEADER).isEqualTo(Boolean.TRUE)).to("jbi:service:urn:test:in-out-reply?mep=in-out")
-                    .otherwise().to("jbi:service:urn:test:in-out-quiet?mep=in-out");
+                    .otherwise().to("jbi:service:urn:test:in-out-quiet?mep=in-out")
+                  .end().to("mock:done");
                 
                 from("direct:async-in-out")
                   .thread(1)
                   .choice()
                     .when(header(REPLY_HEADER).isEqualTo(Boolean.TRUE)).to("jbi:service:urn:test:in-out-reply?mep=in-out")
-                    .otherwise().to("jbi:service:urn:test:in-out-quiet?mep=in-out");
+                    .otherwise().to("jbi:service:urn:test:in-out-quiet?mep=in-out")
+                  .end().to("mock:done");
                 
                 from("jbi:service:urn:test:in-out-quiet").to("mock:in-out");
                 from("jbi:service:urn:test:in-out-reply").setBody(constant(REPLY)).to("mock:in-out");

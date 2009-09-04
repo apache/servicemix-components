@@ -16,16 +16,11 @@
  */
 package org.apache.servicemix.camel;
 
-import javax.jbi.JBIException;
-import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.Fault;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.impl.DefaultExchange;
-import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
  * An {@link org.apache.camel.Exchange} working with JBI which exposes the underlying JBI
@@ -34,23 +29,14 @@ import org.apache.servicemix.jbi.exception.FaultException;
  *
  * @version $Revision: 563665 $
  */
+@Deprecated
 public class JbiExchange extends DefaultExchange {
+    
     private final JbiBinding binding;
-
-    private MessageExchange messageExchange;
 
     public JbiExchange(CamelContext context, JbiBinding binding) {
         super(context);
         this.binding = binding;
-        populateProperties();
-    }
-
-    public JbiExchange(CamelContext context, JbiBinding binding, MessageExchange messageExchange) {
-        super(context);
-        this.binding = binding;
-        this.messageExchange = messageExchange;
-        setPattern(ExchangePattern.fromWsdlUri(messageExchange.getPattern().toString()));
-        populateProperties();
     }
 
     @Override
@@ -82,14 +68,6 @@ public class JbiExchange extends DefaultExchange {
     public org.apache.camel.Exchange newInstance() {    
         return new JbiExchange(this.getContext(), this.getBinding());
     }
-    
-    @Override
-    public final void setProperty(String key, Object value) {
-        if (messageExchange != null && messageExchange.getProperty(key) == null) {
-            messageExchange.setProperty(key, value);
-        }
-        super.setProperty(key, value);
-    }
 
     /**
      * @return the Camel <-> JBI binding
@@ -108,7 +86,7 @@ public class JbiExchange extends DefaultExchange {
      * @return the inbound message exchange
      */
     public MessageExchange getMessageExchange() {
-        return messageExchange;
+        return JbiBinding.getMessageExchange(this);
     }
 
     /**
@@ -148,12 +126,7 @@ public class JbiExchange extends DefaultExchange {
 
     @Override
     protected JbiMessage createOutMessage() {
-        if (messageExchange instanceof InOnly) {
-            //just create an Camel Message without trying to create a matching JBI 'out' NormalizedMessage
-            return new JbiMessage();
-        } else {
-            return createMessage("out");
-        }
+        return createMessage("out");
     }
 
     @Override
@@ -162,46 +135,6 @@ public class JbiExchange extends DefaultExchange {
     }
 
     private JbiMessage createMessage(String name) {
-        if (messageExchange != null) {
-            try {
-                NormalizedMessage msg = messageExchange.getMessage(name);
-                if (msg == null) {
-                    if ("fault".equals(name)) {
-                        Fault f = messageExchange.createFault();
-                        messageExchange.setFault(f);
-                        if (getPattern().equals(ExchangePattern.RobustInOnly)
-                            || getPattern().equals(ExchangePattern.RobustOutOnly)) {                            
-                            setException(new FaultException("Fault occured for " + getPattern() + " exchange", messageExchange, f));
-                        }                        
-                        msg = f;
-                    } else {
-                        msg = messageExchange.createMessage();
-                        messageExchange.setMessage(msg, name);
-                    }
-                }
-                return new JbiMessage(msg);
-            } catch (JBIException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return new JbiMessage();
-        }
-    }
-
-    private void populateProperties() {
-        if (messageExchange != null && messageExchange.getOperation() != null) {
-            setProperty("jbi.operation", messageExchange.getOperation().toString());
-        }
-    }
-
-    /**
-     * Detach from the underlying JBI {@link MessageExchange}
-     * 
-     * @return the underlying {@link MessageExchange}
-     */
-    public MessageExchange detach() {
-        MessageExchange result = messageExchange;
-        messageExchange = null;
-        return result;
+        return new JbiMessage(name);
     }
 }
