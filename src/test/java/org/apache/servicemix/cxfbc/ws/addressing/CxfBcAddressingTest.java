@@ -230,12 +230,6 @@ public class CxfBcAddressingTest extends SpringTestSupport implements Verificati
             //dispatch operation to to greetMeSomeTime method
             assertEquals(greeting, "greetMeSomeTime:How are you explicitly set ot invoke greetMeSomeTime");
             checkVerification();
-            operationName = "sayHi";
-            action.setValue(ns + delimiter + interfaceName + delimiter + operationName 
-                    + delimiter + CxfJbiConstants.JBI_SUFFIX);
-            greeting = greeter.greetMe("explicitly set to invoke sayHi");
-            assertEquals(greeting, "sayHi:Bonjour");
-            checkVerification();
             //disassociate MAPs from request context
             requestContext.remove(CLIENT_ADDRESSING_PROPERTIES);
         } catch (UndeclaredThrowableException ex) {
