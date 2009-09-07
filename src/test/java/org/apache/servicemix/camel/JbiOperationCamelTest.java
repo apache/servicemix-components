@@ -32,7 +32,7 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
  */
 public class JbiOperationCamelTest extends JbiTestSupport {
     
-    private static final String OPERATION = "doit";
+    private static final QName OPERATION = new QName("urn:test", "doit");
     
     public void testInOnlySetOperationOnCamelEndpoint() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-only");
@@ -43,7 +43,7 @@ public class JbiOperationCamelTest extends JbiTestSupport {
         
         inonly.assertIsSatisfied();
         Exchange exchange = inonly.getExchanges().get(0);
-        assertEquals(OPERATION, exchange.getProperty("jbi.operation"));
+        assertEquals(OPERATION, JbiBinding.getOperation(exchange));
     }
     
     public void testInOnlySetOperationOnCamelExchange() throws Exception {
@@ -53,14 +53,14 @@ public class JbiOperationCamelTest extends JbiTestSupport {
         // this time, we set the target operation on the Camel Exchange
         client.send("direct:in-only-noop", new Processor() {
             public void process(Exchange exchange) throws Exception {
-                exchange.setProperty("jbi.operation", OPERATION);
+                exchange.setProperty(JbiBinding.OPERATION, OPERATION);
                 exchange.getIn().setBody(new StringSource("<request>Sending you the operation, could you please perform it?</request>"));
             }    
         });
         
         inonly.assertIsSatisfied();
         Exchange exchange = inonly.getExchanges().get(0);
-        assertEquals(OPERATION, exchange.getProperty("jbi.operation"));
+        assertEquals(OPERATION, JbiBinding.getOperation(exchange));
     }
 
     @Override
@@ -78,8 +78,7 @@ public class JbiOperationCamelTest extends JbiTestSupport {
                 
                 from("jbi:service:urn:test:in-only").process(new Processor() {
                     public void process(Exchange exchange) throws Exception {
-                        JbiExchange jbi = (JbiExchange) exchange;
-                        assertEquals(new QName(OPERATION), jbi.getMessageExchange().getOperation());
+                        assertEquals(OPERATION, JbiBinding.getOperation(exchange));
                     }                    
                 }).to("mock:in-only");
             }

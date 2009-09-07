@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.processor.DeadLetterChannel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -56,9 +57,8 @@ public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSup
         receiver = new ReceiverComponent() {
             public void onMessageExchange(MessageExchange exchange) throws MessagingException {
                 NormalizedMessage inMessage = getInMessage(exchange);
-                Object value = inMessage.getProperty(DeadLetterChannel.CAUGHT_EXCEPTION_HEADER);
-                Assert.notNull(value, DeadLetterChannel.CAUGHT_EXCEPTION_HEADER + " property not set");
                 try {
+                    Assert.notNull(exchange.getProperty(Exchange.EXCEPTION_CAUGHT), Exchange.EXCEPTION_CAUGHT + " property not set");
                     MessageUtil.enableContentRereadability(inMessage);
                     String message = new SourceTransformer().contentToString(inMessage);
                     Assert.isTrue(message.contains(MESSAGE));
@@ -97,7 +97,7 @@ public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSup
 
             exchange = smxClient.receive();
             assertEquals(ExchangeStatus.DONE, exchange.getStatus());
-            assertNotNull(exchange.getMessage("in").getProperty(DeadLetterChannel.CAUGHT_EXCEPTION_HEADER));
+            assertNotNull(exchange.getProperty(Exchange.EXCEPTION_CAUGHT));
         }
 
         receiver.getMessageList().assertMessagesReceived(2);

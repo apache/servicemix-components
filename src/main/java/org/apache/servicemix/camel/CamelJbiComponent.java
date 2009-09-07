@@ -67,7 +67,7 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
      * @return Class[]
      * @see org.apache.servicemix.common.DefaultComponent#getEndpointClasses()
      */
-    @Override
+    @Override @SuppressWarnings("unchecked")
     protected Class[] getEndpointClasses() {
         return new Class[] {CamelProviderEndpoint.class, CamelConsumerEndpoint.class};
     }
@@ -110,6 +110,7 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
         return endpoint;
     }
 
+    @SuppressWarnings("unchecked")
     public CamelProviderEndpoint createEndpoint(String uriString, JbiComponent jbiComponent) throws URISyntaxException {
         URI uri = new URI(uriString);
         Map map = URISupport.parseQuery(uri.getQuery());
@@ -119,9 +120,6 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
         CamelProviderEndpoint endpoint = new CamelProviderEndpoint(getServiceUnit(), camelEndpoint, jbiComponent.getBinding(), processor);
 
         IntrospectionSupport.setProperties(endpoint, map);
-
-        // TODO
-        // endpoint.setRole(MessageExchange.Role.PROVIDER);
 
         return endpoint;
     }

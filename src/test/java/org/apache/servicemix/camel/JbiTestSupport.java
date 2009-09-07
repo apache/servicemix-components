@@ -32,10 +32,10 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.TestSupport;
-import org.apache.camel.AsyncCallback;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.spi.Synchronization;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -60,11 +60,11 @@ public abstract class JbiTestSupport extends TestSupport {
 
     protected CountDownLatch latch = new CountDownLatch(1);
 
-    protected Endpoint<Exchange> endpoint;
+    protected Endpoint endpoint;
 
     protected String startEndpointUri = "jbi:endpoint:serviceNamespace:serviceA:endpointA";
 
-    protected ProducerTemplate<Exchange> client;
+    protected ProducerTemplate client;
 
     protected ServiceMixClient servicemixClient;
 
@@ -86,14 +86,19 @@ public abstract class JbiTestSupport extends TestSupport {
      */
     protected AtomicBoolean sendExchangeAsync(final Object expectedBody) {
         final AtomicBoolean bool = new AtomicBoolean();
-        client.send(endpoint, new Processor() {
+        client.asyncCallback(endpoint, new Processor() {
             public void process(Exchange exchange) {
                 Message in = exchange.getIn();
                 in.setBody(expectedBody);
                 in.setHeader("cheese", 123);
             }
-        }, new AsyncCallback() {
-            public void done(boolean b) {
+        }, new Synchronization() {
+            
+            public void onFailure(Exchange exchange) {
+                // graciously do nothing here    
+            }
+            
+            public void onComplete(Exchange exchange) {
                 bool.set(true);
                 bool.notify();
             }

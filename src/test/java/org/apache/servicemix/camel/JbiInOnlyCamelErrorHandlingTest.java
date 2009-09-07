@@ -173,7 +173,7 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
             public void configure() throws Exception {
                 onException(IllegalStateException.class).handled(false).to("jbi:service:urn:test:receiver-service");
                 onException(NullPointerException.class).handled(true).to("jbi:service:urn:test:receiver-service");
-                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(1).initialRedeliveryDelay(300));
+                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(1).redeliverDelay(300).handled(false));
                 from("jbi:service:urn:test:no-handle-fault").to("jbi:service:urn:test:faulty-service");
                 from("jbi:service:urn:test:handle-fault").handleFault().to("jbi:service:urn:test:faulty-service");
                 from("jbi:service:urn:test:error-not-handled").to("jbi:service:urn:test:iae-error-service");

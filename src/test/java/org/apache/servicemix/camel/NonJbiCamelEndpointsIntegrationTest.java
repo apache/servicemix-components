@@ -76,7 +76,6 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                 client.sendSync(exchange);
                 checkResult(exchange);
                 //assertNotNull(exchange.getMessage("out").getContent());
-                // TODO: check out the exchange
                 if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
                     client.done(exchange);
                 }

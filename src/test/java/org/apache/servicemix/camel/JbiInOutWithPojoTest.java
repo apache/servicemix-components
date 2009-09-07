@@ -62,7 +62,7 @@ public class JbiInOutWithPojoTest extends JbiTestSupport {
             @Override
             public void configure() throws Exception {
                 // let's not retry things too often as this will only slow down the unit tests
-                errorHandler(deadLetterChannel().maximumRedeliveries(0));
+                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(0));
                 
                 from("jbi:service:urn:test:pojo-payload")
                     .setBody().constant(new Object());

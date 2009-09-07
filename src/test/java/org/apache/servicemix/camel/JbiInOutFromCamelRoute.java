@@ -48,6 +48,9 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
         
         inout.assertIsSatisfied();
         done.assertIsSatisfied();
+              
+        // let's wait a moment to make sure that the last DONE MessageExchange is handled
+        Thread.sleep(1000);
     }
     
     public void testInOutEchoesReplyAsync() throws Exception {
@@ -65,6 +68,9 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
         
         inout.assertIsSatisfied();
         done.assertIsSatisfied();
+        
+        // let's wait a moment to make sure that the last DONE MessageExchange is handled
+        Thread.sleep(1000);
     }
 
 
@@ -93,7 +99,7 @@ public class JbiInOutFromCamelRoute extends JbiTestSupport {
                   .end().to("mock:done");
                 
                 from("direct:async-in-out")
-                  .thread(1)
+                  .threads(1)
                   .choice()
                     .when(header(REPLY_HEADER).isEqualTo(Boolean.TRUE)).to("jbi:service:urn:test:in-out-reply?mep=in-out")
                     .otherwise().to("jbi:service:urn:test:in-out-quiet?mep=in-out")

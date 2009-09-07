@@ -115,6 +115,7 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
         return services;
     }
 
+    @SuppressWarnings("unchecked")
     protected Map getParentBeansMap() {
         Map beans =  super.getParentBeansMap();
         beans.put("servicemix-camel", component);

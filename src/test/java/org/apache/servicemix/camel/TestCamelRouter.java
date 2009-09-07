@@ -49,7 +49,8 @@ public class TestCamelRouter extends ContextTestSupport {
     public void testWithFault() throws Exception {
         a.whenExchangeReceived(1, new Processor() {
             public void process(Exchange exchange) throws Exception {
-                exchange.getFault().setBody("fault");
+                exchange.getOut().setBody("fault");
+                exchange.getOut().setFault(true);
             }
         });
         a.expectedMessageCount(1);

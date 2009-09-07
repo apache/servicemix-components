@@ -69,6 +69,7 @@ public class OsgiCamelJbiComponent extends CamelJbiComponent implements BundleCo
         return new BaseServiceUnitManager(this, new Deployer[] {deployer});
     }
 
+    @SuppressWarnings("unchecked")
     public class OsgiCamelSpringDeployer extends CamelSpringDeployer {
         
         public OsgiCamelSpringDeployer(OsgiCamelJbiComponent component) {

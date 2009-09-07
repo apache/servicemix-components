@@ -109,7 +109,7 @@ public class JbiToCamelCbrTest extends JbiTestSupport {
 
             @Override
             public void configure() throws Exception {
-                streamCaching(); // remove streamCaching and the conversion to String once we use Camel 1.5
+                //streamCaching(); // remove streamCaching and the conversion to String once we use Camel 1.5
                 from("jbi:service:urn:test:polyglot").streamCaching().convertBodyTo(String.class)
                     .choice()
                         .when().xpath("/message/text() = 'bonjour'").to("mock:french")

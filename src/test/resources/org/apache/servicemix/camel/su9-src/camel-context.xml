@@ -22,25 +22,20 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-       http://activemq.apache.org/camel/schema/spring http://activemq.apache.org/camel/schema/spring/camel-spring.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
     ">
 
-  <camelContext  xmlns="http://activemq.apache.org/camel/schema/spring">
-    <route errorHandlerRef="deadLetterErrorHandler">
+  <camelContext  xmlns="http://camel.apache.org/schema/spring">
+    <route streamCache="true" handleFault="true" errorHandlerRef="deadLetterErrorHandler">
       <from uri="jbi:service:urn:test:fault-handled-true"/>
-      <interceptor ref="handleFaultProcessor">
-        <to uri="jbi:service:urn:test:faulty-service"/>
-      </interceptor>
       <onException>
         <!-- Catch exception from in-only/robust-in-only message exchange. -->
         <exception>org.apache.servicemix.jbi.exception.FaultException</exception>
-        <interceptor ref="handleFaultProcessor2">
-          <to uri="jbi:service:urn:test:receiver-service"/>
-        </interceptor>
+        <redeliveryPolicy maximumRedeliveries="0"/>
         <handled>
           <constant>true</constant>
         </handled>
-        <redeliveryPolicy maximumRedeliveries="0"/>
+        <to uri="jbi:service:urn:test:receiver-service"/>
       </onException>
       <onException>
         <!-- This clause is needed for testing since the test client still
@@ -51,36 +46,29 @@
              TODO remove this when ServiceMix 3.3.1 is released.
              -->
         <exception>org.apache.servicemix.jbi.FaultException</exception>
-        <interceptor ref="handleFaultProcessor3">
-          <to uri="jbi:service:urn:test:receiver-service"/>
-        </interceptor>
+        <redeliveryPolicy maximumRedeliveries="0"/>
         <handled>
           <constant>true</constant>
         </handled>
-        <redeliveryPolicy maximumRedeliveries="0"/>
+        <to uri="jbi:service:urn:test:receiver-service"/>
       </onException>     
+      <to uri="jbi:service:urn:test:faulty-service"/>
     </route>
   </camelContext>
 
   <bean id="deadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
     <property name="logger" ref="logger" />
-    <property name="defaultDeadLetterEndpointUri" value="log:dlc?showBody=false,log:dlc"/>
+    <property name="deadLetterUri" value="log:dlc?showBody=false,log:dlc"/>
     <property name="redeliveryPolicy" ref="redeliveryPolicyConfig" />
   </bean>
     
   <bean id="redeliveryPolicyConfig" class="org.apache.camel.processor.RedeliveryPolicy">
     <property name="maximumRedeliveries" value="0" />
-    <property name="initialRedeliveryDelay" value="2000" />
+    <property name="redeliverDelay" value="2000" />
     <property name="useExponentialBackOff" value="true" />
     <property name="backOffMultiplier" value="2" />
   </bean>
 
   <bean id="logger" class="org.apache.camel.processor.Logger" />
-
-  <bean id="handleFaultProcessor" class="org.apache.camel.processor.HandleFaultProcessor" />
-
-  <bean id="handleFaultProcessor2" class="org.apache.camel.processor.HandleFaultProcessor" />
-
-  <bean id="handleFaultProcessor3" class="org.apache.camel.processor.HandleFaultProcessor" />
 
 </beans>

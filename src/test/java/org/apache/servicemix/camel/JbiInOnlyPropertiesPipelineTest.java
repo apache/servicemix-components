@@ -56,9 +56,8 @@ public class JbiInOnlyPropertiesPipelineTest extends JbiTestSupport {
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         
         output.assertIsSatisfied();
-        JbiExchange result = (JbiExchange) output.getExchanges().get(0);
         
-        NormalizedMessage normalizedMessage = result.getInMessage();
+        NormalizedMessage normalizedMessage = JbiBinding.getMessageExchange(output.getExchanges().get(0)).getMessage("in");
         assertNotNull(normalizedMessage.getProperty(HEADER_ORIGINAL));
         assertNotNull(normalizedMessage.getProperty(HEADER_TRANSFORMER));
     }

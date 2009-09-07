@@ -23,7 +23,9 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -43,14 +45,11 @@ public class JbiEndpointWithMepSpecifiedTest extends JbiTestSupport {
     }
     
     public void testCamelInOutSendJbiInOnly() throws Exception {
-        client.send("direct:a", new DefaultExchange(camelContext) {
+        client.request("direct:a", new Processor() {
             
-            @Override
-            public ExchangePattern getPattern() {
-                //let's explicitly send an in-out Exchange
-                return ExchangePattern.InOut;
+            public void process(Exchange exchange) throws Exception {
+                // nothing to do here, we just want to send an empty exchange
             }
-            
         });
         assertEquals(1, component.getCount());
     }

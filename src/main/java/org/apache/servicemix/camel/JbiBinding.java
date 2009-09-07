@@ -37,7 +37,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
-import org.apache.camel.NoTypeConversionAvailableException;
+import org.apache.camel.impl.DefaultExchange;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -51,9 +51,6 @@ public class JbiBinding {
     public static final String MESSAGE_EXCHANGE = "JbiMessageExchange";
     public static final String OPERATION = "JbiOperation";
     public static final String SECURITY_SUBJECT = "JbiSecuritySubject";
-    
-    @Deprecated
-    public static final String OPERATION_STRING = "jbi.operation";
     
     private static final Log LOG = LogFactory.getLog(JbiBinding.class);
 
@@ -69,6 +66,9 @@ public class JbiBinding {
         throws MessagingException, URISyntaxException {
 
         MessageExchange jbiExchange = createJbiMessageExchange(camelExchange, exchangeFactory, defaultMep);
+        
+        copyHeadersFromCamelToJbi(camelExchange, jbiExchange);
+        
         NormalizedMessage normalizedMessage = jbiExchange.getMessage("in");
         if (normalizedMessage == null) {
             normalizedMessage = jbiExchange.createMessage();
@@ -102,40 +102,23 @@ public class JbiBinding {
                 answer = exchangeFactory.createExchange(new URI(mep.toString()));
             }
         }
-        // TODO: this is not really usefull as the out will not be
-        // TODO: populated at that time
-        if (answer == null) {
-            // lets try choose the best MEP based on the camel message
-            Message out = camelExchange.getOut(false);
-            if (out == null || out.getBody() == null) {
-                answer = exchangeFactory.createInOnlyExchange();
-            } else {
-                answer = exchangeFactory.createInOutExchange();
-            }
-        }
 
         if (getOperation(camelExchange) != null) {
             answer.setOperation(getOperation(camelExchange));
-        }
-        
-        // let's try to use the old way too
-        if (answer.getOperation() == null && camelExchange.getProperties().containsKey(JbiBinding.OPERATION_STRING)) {
-            answer.setOperation(QName.valueOf(camelExchange.getProperty(JbiBinding.OPERATION_STRING, String.class)));
         }
 
         return answer;
     }
 
     public Exchange createExchange(MessageExchange exchange) {
-        Exchange result = new JbiExchange(context, this);
+        Exchange result = new DefaultExchange(context);
         result.setProperty(MESSAGE_EXCHANGE, exchange);
         result.setPattern(getExchangePattern(exchange));
         if (exchange.getOperation() != null) {
             result.setProperty(OPERATION, exchange.getOperation());
-            result.setProperty(OPERATION_STRING, exchange.getOperation().toString());
         }
         if (exchange.getMessage("in") != null) {
-            copyJbiToCamel(exchange.getMessage("in"), result.getIn());
+            copyFromJbiToCamel(exchange.getMessage("in"), result.getIn());
         }
         return result;
     }
@@ -155,7 +138,13 @@ public class JbiBinding {
         }
     }
 
-    private void copyJbiToCamel(NormalizedMessage from, Message to) {
+    /**
+     * Copies content, headers, security subject and attachments from the JBI NormalizedMessage to the Camel Message.
+     * 
+     * @param from the source {@link NormalizedMessage}
+     * @param to the target {@link Message}
+     */
+    public void copyFromJbiToCamel(NormalizedMessage from, Message to) {
         to.setBody(from.getContent());
         if (from.getSecuritySubject() != null) {
             to.setHeader(SECURITY_SUBJECT, from.getSecuritySubject());
@@ -169,10 +158,12 @@ public class JbiBinding {
     }
 
     public void copyFromCamelToJbi(Message message, NormalizedMessage normalizedMessage) throws MessagingException {
-        try {
-            normalizedMessage.setContent(message.getBody(Source.class));
-        } catch (NoTypeConversionAvailableException e) {
-            LOG.warn("Unable to convert message body of type " + message.getBody().getClass() + " into an XML Source");
+        if (message != null && message.getBody() != null) {
+            if (message.getBody(Source.class) == null) {
+                LOG.warn("Unable to convert message body of type " + message.getBody().getClass() + " into an XML Source");
+            } else {
+                normalizedMessage.setContent(message.getBody(Source.class));
+            }
         }
         
         if (getSecuritySubject(message) != null) {
@@ -192,21 +183,32 @@ public class JbiBinding {
     }
 
     public void copyFromCamelToJbi(Exchange exchange, MessageExchange messageExchange) throws MessagingException {
+        // add Exchange properties to the MessageExchange without overwriting any existing properties
+        copyHeadersFromCamelToJbi(exchange, messageExchange);
+        
         NormalizedMessage in = messageExchange.getMessage("in");
         for (String key : exchange.getIn().getHeaders().keySet()) {
             in.setProperty(key, exchange.getIn().getHeader(key));
         }        
         
         if (isOutCapable(messageExchange)) {
-            if (exchange.getOut(false) == null) {
+            if (exchange.hasOut()) {
+                NormalizedMessage out = messageExchange.createMessage();
+                copyFromCamelToJbi(exchange.getOut(), out);
+                messageExchange.setMessage(out, "out");
+            } else {
                 //JBI MEP requires a reply and the Camel exchange failed to produce one -- echoing back the request
                 NormalizedMessage out = messageExchange.createMessage();
                 copyFromCamelToJbi(exchange.getIn(), out);
                 messageExchange.setMessage(out, "out");
-            } else {
-                NormalizedMessage out = messageExchange.createMessage();
-                copyFromCamelToJbi(exchange.getOut(), out);
-                messageExchange.setMessage(out, "out");
+            }
+        }
+    }
+
+    private void copyHeadersFromCamelToJbi(Exchange exchange, MessageExchange messageExchange) {
+        for (String key : exchange.getProperties().keySet()) {
+            if (messageExchange.getProperty(key) == null) {
+                messageExchange.setProperty(key, exchange.getProperty(key));
             }
         }
     }

@@ -29,6 +29,9 @@ import org.apache.servicemix.tck.mock.MockMessageExchange;
 public class CamelConsumerEndpointTest extends JbiTestSupport {
     
     public void testInvalidMessageExchangeDoesNotThrowException() throws Exception {
+        // sending a message to start the producers and create the external endpoint
+        client.sendBody("direct:a", "<hello>world</hello>");
+        
         String endpointName = 
             jbiContainer.getRegistry().getExternalEndpointsForService(CamelConsumerEndpoint.SERVICE_NAME)[0].getEndpointName();
         CamelConsumerEndpoint endpoint = 

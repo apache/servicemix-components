@@ -110,7 +110,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
             @Override
             public void configure() throws Exception {
                 // let's not retry things too often as this will only slow down the unit tests
-                errorHandler(deadLetterChannel().maximumRedeliveries(0));                            
+                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(0).handled(false));                            
                 
                 from("jbi:service:urn:test:forward").to("jbi:service:urn:test:in-only?mep=in-only");
                 from("jbi:service:urn:test:in-only").convertBodyTo(String.class).to("mock:done");
@@ -121,7 +121,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
                 });
                 from("jbi:service:urn:test:in-only-aggregator")
                     .to("log:info")
-                    .aggregator(header("key"))
+                    .aggregate(header("key"))
                     .setHeader("aggregated").constant(true)
                     .to("log:info")
                     .to("mock:aggregated");

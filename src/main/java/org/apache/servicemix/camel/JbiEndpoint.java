@@ -19,32 +19,33 @@ package org.apache.servicemix.camel;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
+
 import org.apache.camel.Consumer;
+import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.AsyncProcessor;
-import org.apache.camel.AsyncCallback;
-import org.apache.camel.Endpoint;
 import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.DefaultProducer;
 import org.apache.camel.util.URISupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * Represents an {@link org.apache.camel.Endpoint} for interacting with JBI
  *
  * @version $Revision: 563665 $
  */
-public class JbiEndpoint extends DefaultEndpoint<Exchange> {
+public class JbiEndpoint extends DefaultEndpoint {
 
     private String destinationUri;
 
     private String mep;
 
-    private String operation;
+    private QName operation;
 
     private JbiProducer producer;
 
@@ -56,20 +57,20 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         parseUri(uri);
     }
 
-    public synchronized Producer<Exchange> createProducer() throws Exception {
+    public synchronized Producer createProducer() throws Exception {
         if (producer == null) {
             producer = new JbiProducer(this);
         }
         return producer;
     }
 
-    protected class JbiProducer extends DefaultProducer<Exchange> implements AsyncProcessor {
+    protected class JbiProducer extends DefaultProducer {
         
         private final Log log = LogFactory.getLog(JbiProducer.class);
 
         private CamelConsumerEndpoint consumer;
 
-        public JbiProducer(Endpoint<Exchange> exchangeEndpoint) {
+        public JbiProducer(Endpoint exchangeEndpoint) {
             super(exchangeEndpoint);
         }
 
@@ -94,10 +95,6 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         public void process(Exchange exchange) throws Exception {
             consumer.process(exchange);
         }
-
-        public boolean process(Exchange exchange, AsyncCallback asyncCallback) {
-            return consumer.process(exchange, asyncCallback);
-        }
         
         /*
          * Access the underlying JBI Consumer endpoint
@@ -107,6 +104,7 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void parseUri(String uri) {
         destinationUri = uri;
         try {
@@ -117,7 +115,10 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
                 if (mep != null && !mep.startsWith("http://www.w3.org/ns/wsdl/")) {
                     mep = "http://www.w3.org/ns/wsdl/" + mep;
                 }
-                operation = (String) params.get("operation");
+                String oper = (String) params.get("operation");
+                if (StringUtils.hasLength(oper)) {
+                    operation = QName.valueOf(oper);
+                }
                 this.destinationUri = destinationUri.substring(0, idx);
             }
         } catch (URISyntaxException e) {
@@ -129,8 +130,8 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         mep = str;
     }
 
-    public void setOperation(String str) {
-        operation = str;
+    public void setOperation(QName operation) {
+        this.operation = operation;
     }
 
     public void setDestionationUri(String str) {
@@ -141,7 +142,7 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         return mep;
     }
 
-    public String getOperation() {
+    public QName getOperation() {
         return operation;
     }
 
@@ -149,9 +150,9 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
         return destinationUri;
     }
 
-    public Consumer<Exchange> createConsumer(final Processor processor) throws Exception {
-        return new DefaultConsumer<Exchange>(this, processor) {
-            CamelProviderEndpoint jbiEndpoint;
+    public Consumer createConsumer(final Processor processor) throws Exception {
+        return new DefaultConsumer(this, processor) {
+            private CamelProviderEndpoint jbiEndpoint;
 
             @Override
             protected void doStart() throws Exception {
@@ -168,10 +169,6 @@ public class JbiEndpoint extends DefaultEndpoint<Exchange> {
                 super.doStop();
             }
         };
-    }
-
-    public JbiBinding getBinding() {
-        return jbiComponent.getBinding();
     }
 
     public boolean isSingleton() {

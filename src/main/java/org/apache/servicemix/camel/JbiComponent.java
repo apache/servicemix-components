@@ -21,13 +21,13 @@ import javax.xml.namespace.QName;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Component;
 import org.apache.camel.Endpoint;
-import org.apache.camel.Exchange;
 import org.apache.camel.FailedToCreateProducerException;
 import org.apache.camel.Processor;
+import org.apache.camel.processor.UnitOfWorkProcessor;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.id.IdGenerator;
 
-public class JbiComponent implements Component<Exchange> {
+public class JbiComponent implements Component {
 
     private CamelComponent camelJbiComponent;
     private JbiBinding binding;
@@ -51,10 +51,9 @@ public class JbiComponent implements Component<Exchange> {
         camelContext = context;
     }
 
-    public void setCamelJbiComponent(CamelComponent component) {
+    public final void setCamelJbiComponent(CamelComponent component) {
         this.camelJbiComponent = component;
         this.camelJbiComponent.addJbiComponent(this);
-
     }
 
     public CamelComponent getCamelJbiComponent() {
@@ -89,9 +88,12 @@ public class JbiComponent implements Component<Exchange> {
 
     // Resolve Camel Endpoints
     // -------------------------------------------------------------------------
-    public Endpoint<Exchange> createEndpoint(String uri) {
+    public Endpoint createEndpoint(String uri) {
         if (uri.startsWith("jbi:")) {
             uri = uri.substring("jbi:".length());
+            if (uri.startsWith("//")) {
+                uri = uri.substring("//".length());
+            }
             return new JbiEndpoint(this, uri);
         }
         return null;
@@ -171,13 +173,10 @@ public class JbiComponent implements Component<Exchange> {
     protected Processor createCamelProcessor(Endpoint camelEndpoint) {
         Processor processor = null;
         try {
-            processor = camelEndpoint.createProducer();
+            processor = new UnitOfWorkProcessor(camelEndpoint.createProducer());
         } catch (Exception e) {
             throw new FailedToCreateProducerException(camelEndpoint, e);
         }
         return processor;
     }
-
-
-
 }

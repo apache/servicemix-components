@@ -37,6 +37,7 @@ import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.impl.DefaultMessage;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
+import org.apache.servicemix.tck.mock.MockMessageExchange;
 import org.apache.servicemix.tck.mock.MockNormalizedMessage;
 
 public class JbiBindingTest extends TestCase {
@@ -68,8 +69,6 @@ public class JbiBindingTest extends TestCase {
                    me, exchange.getProperty(JbiBinding.MESSAGE_EXCHANGE));
         assertEquals("JBI operation is available as a property",
                      OPERATION, exchange.getProperty(JbiBinding.OPERATION));
-        assertEquals("JBI operation is available as a property (String value)",
-                     OPERATION.toString(), exchange.getProperty(JbiBinding.OPERATION_STRING));
         assertEquals("Camel Exchange uses the same MEP",
                      ExchangePattern.InOnly, exchange.getPattern());
     }
@@ -160,6 +159,21 @@ public class JbiBindingTest extends TestCase {
         binding.copyFromCamelToJbi(from.getIn(), to);
         assertSame("JBI SecuritySubject should have been set from the Camel Message header",
                    SUBJECT, to.getSecuritySubject());
+    }
+    
+    public void testCopyFromCamelToJbiAddExchangeHeaders() throws Exception {
+        MessageExchange me = new MockMessageExchange();
+        me.setProperty(KEY, VALUE);
+        
+        Exchange exchange = binding.createExchange(me);
+        exchange.setProperty(KEY, "another-value");
+        exchange.setProperty("another-key", "another-value");
+        
+        binding.copyFromCamelToJbi(exchange, me);
+        assertEquals("Copy should not override existing MessageExchange properties",
+                     VALUE, me.getProperty(KEY));
+        assertEquals("Copy should have added additional properties to the MessageExchange",
+                     "another-value", me.getProperty("another-key"));
     }
     
     public void testIsSerializable() throws Exception {

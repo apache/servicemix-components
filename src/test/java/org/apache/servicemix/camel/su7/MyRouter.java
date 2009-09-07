@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.camel.su7;
 
+import javax.xml.namespace.QName;
+
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.camel.JbiEndpoint;
 
@@ -30,7 +32,7 @@ public class MyRouter extends RouteBuilder {
         org.apache.camel.Endpoint endpoint = getContext().getEndpoint(toUri);
         if (endpoint instanceof JbiEndpoint) {
             JbiEndpoint jbiEndpoint = (JbiEndpoint) endpoint;
-            jbiEndpoint.setOperation("{http://test}echo");
+            jbiEndpoint.setOperation(new QName("http://test", "echo"));
         }
 
         from("jbi:name:cheese").to(toUri);

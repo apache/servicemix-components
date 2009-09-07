@@ -16,10 +16,7 @@
  */
 package org.apache.servicemix.camel;
 
-import java.net.URISyntaxException;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -28,10 +25,7 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
-import org.apache.camel.AsyncCallback;
-import org.apache.camel.AsyncProcessor;
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
@@ -42,17 +36,14 @@ import org.apache.servicemix.jbi.exception.FaultException;
  * A consumer endpoint that will be used to send JBI exchanges
  * originating from camel.
  */
-public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProcessor {
+public class CamelConsumerEndpoint extends ConsumerEndpoint {
 
-    public static final QName SERVICE_NAME = new QName("http://activemq.apache.org/camel/schema/jbi", "consumer");
+    public static final QName SERVICE_NAME = new QName("http://camel.apache.org/schema/jbi", "provider");
 
     private JbiBinding binding;
 
     private JbiEndpoint jbiEndpoint;
     
-    private Map<String, AsyncCallback> callbacks = new ConcurrentHashMap<String, AsyncCallback>();
-    private Map<String, Exchange> exchanges = new ConcurrentHashMap<String, Exchange>();
-
     public CamelConsumerEndpoint(JbiBinding binding, JbiEndpoint jbiEndpoint) {
         setService(SERVICE_NAME);
         setEndpoint(new IdGenerator().generateId());
@@ -60,45 +51,9 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         this.jbiEndpoint = jbiEndpoint;
     }
 
-    public void process(MessageExchange messageExchange) throws Exception {
-        Exchange exchange = exchanges.remove(messageExchange.getExchangeId());
-        if (exchange == null) {
-            String message = String.format("Unable to find Camel Exchange for JBI MessageExchange %s", messageExchange.getExchangeId());
-            logger.warn(message);
-            if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
-                fail(messageExchange, new JbiException(message));
-            }
-        } else {
-            processReponse(messageExchange, exchange);
-        }
-        
-        AsyncCallback asyncCallback = callbacks.remove(messageExchange.getExchangeId());
-        if (asyncCallback == null) {
-            logger.warn(String.format("Unable to find Camel AsyncCallback for JBI MessageExchange %s", messageExchange.getExchangeId()));
-        } else {
-            asyncCallback.done(false);
-        }
-    }
-
-    public boolean process(Exchange exchange, AsyncCallback asyncCallback) {
-        try {
-            MessageExchange messageExchange = binding.makeJbiMessageExchange(exchange, getExchangeFactory(), jbiEndpoint.getMep());
-
-            if (jbiEndpoint.getOperation() != null) {
-                messageExchange.setOperation(QName.valueOf(jbiEndpoint.getOperation()));
-            }
-
-            URIResolver.configureExchange(messageExchange, getContext(), jbiEndpoint.getDestinationUri());
-            exchanges.put(messageExchange.getExchangeId(), exchange);
-            callbacks.put(messageExchange.getExchangeId(), asyncCallback);
-
-            send(messageExchange);
-            return false;
-        } catch (Exception e) {
-            exchange.setException(e);
-            asyncCallback.done(true);
-            return true;
-        }
+    public void process(MessageExchange exchange) throws Exception {
+        // we don't expect any asynchronous MessageExchange callbacks because we're using sendSync
+        logger.error("Unexpected MessageExchange received: " + exchange);
     }
 
     public void process(Exchange exchange) throws Exception {
@@ -106,7 +61,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
             MessageExchange messageExchange = binding.makeJbiMessageExchange(exchange, getExchangeFactory(), jbiEndpoint.getMep());
 
             if (jbiEndpoint.getOperation() != null) {
-                messageExchange.setOperation(QName.valueOf(jbiEndpoint.getOperation()));
+                messageExchange.setOperation(jbiEndpoint.getOperation());
             }
 
             URIResolver.configureExchange(messageExchange, getContext(), jbiEndpoint.getDestinationUri());
@@ -118,10 +73,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         } catch (MessagingException e) {
             exchange.setException(e);
             throw new JbiException(e);
-        } catch (URISyntaxException e) {
-            exchange.setException(e);
-            throw new JbiException(e);
-        }
+        } 
     }
     
     private void processReponse(MessageExchange messageExchange, Exchange exchange) throws MessagingException {
@@ -130,10 +82,11 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         } else if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
             addHeaders(messageExchange, exchange);
             if (messageExchange.getFault() != null) {
-                exchange.getFault().setBody(new FaultException("Fault occured for " + exchange.getPattern() + " exchange", 
+                exchange.getOut().setBody(new FaultException("Fault occured for " + exchange.getPattern() + " exchange", 
                         messageExchange, messageExchange.getFault()));
-                addHeaders(messageExchange.getFault(), exchange.getFault());
-                addAttachments(messageExchange.getFault(), exchange.getFault());
+                exchange.getOut().setFault(true);
+                addHeaders(messageExchange.getFault(), exchange.getOut());
+                addAttachments(messageExchange.getFault(), exchange.getOut());
             } else if (messageExchange.getMessage("out") != null) {
                 exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
                 addHeaders(messageExchange.getMessage("out"), exchange.getOut());
