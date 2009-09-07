@@ -18,29 +18,15 @@ package org.apache.servicemix.camel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
-import junit.framework.AssertionFailedError;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.converter.jaxp.StringSource;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.management.InstrumentationLifecycleStrategy;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Processor;
-import org.apache.camel.Exchange;
-import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
 
@@ -55,13 +41,11 @@ public class JbiSerializableMessageExchangeTest extends JbiTestSupport {
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedBodiesReceived(MESSAGE);
         
-        client.sendBody("seda:in-only", MESSAGE);
+        // make sure to add a non-serializable header to the exchange
+        client.sendBodyAndHeader("seda:in-only", MESSAGE, "header", this);
         
         done.assertIsSatisfied();
-        
-
     }
-
 
     private void assertSerializable(Object object) throws IOException {
         ObjectOutputStream stream = new ObjectOutputStream(new ByteArrayOutputStream());
@@ -81,12 +65,6 @@ public class JbiSerializableMessageExchangeTest extends JbiTestSupport {
                 }
             }
         }, new QName("urn:test", "receiver")));
-    }
-   
-    protected CamelContext createCamelContext() {
-        DefaultCamelContext context = new DefaultCamelContext();
-        context.setLifecycleStrategy(new InstrumentationLifecycleStrategy());
-        return context;
     }
 
     @Override
