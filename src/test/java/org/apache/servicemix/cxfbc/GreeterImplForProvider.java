@@ -82,7 +82,9 @@ public class GreeterImplForProvider implements Greeter {
                 req.setText("12");
                 HelloHeader header = new HelloHeader();
                 header.setId("345");
-                ret = ret + hello.hello(req, header).getText();
+                Holder<HelloHeader> header1 = new Holder<HelloHeader>();
+                header1.value = header;
+                ret = ret + hello.hello(req, header1).getText();
             
             } else if ("https test".equals(me) || "provider security test".equals(me)) {
                 ret = ret + securityGreeter.greetMe("ffang");

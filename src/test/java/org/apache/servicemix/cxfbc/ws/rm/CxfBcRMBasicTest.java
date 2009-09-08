@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;
 
@@ -93,7 +94,9 @@ public class CxfBcRMBasicTest extends TestCase {
         req.setText("hello");
         HelloHeader header = new HelloHeader();
         header.setId("ffang");
-        HelloResponse rep = port.hello(req, header);
+        Holder<HelloHeader> header1 = new Holder<HelloHeader>();
+        header1.value = header;
+        HelloResponse rep = port.hello(req, header1);
         Thread.sleep(1000);
         assertEquals(rep.getText(), "helloffang");
     }

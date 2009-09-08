@@ -25,6 +25,7 @@ import java.net.URLConnection;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;
 
@@ -34,6 +35,7 @@ import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.cxfse.CxfSeComponent;
 import org.apache.servicemix.cxfse.CxfSeEndpoint;
@@ -152,8 +154,10 @@ public class CxfBcComponentTest extends TestCase {
         HelloRequest req = new HelloRequest();
         req.setText("hello");
         HelloHeader header = new HelloHeader();
+        Holder<HelloHeader> header1 = new Holder<HelloHeader>();
+        header1.value = header;
         header.setId("ffang");
-        HelloResponse rep = port.hello(req, header);
+        HelloResponse rep = port.hello(req, header1);
         Thread.sleep(1000);
         assertEquals(rep.getText(), "helloffang");
     }
@@ -180,13 +184,18 @@ public class CxfBcComponentTest extends TestCase {
         assertNotNull(wsdl);
         HelloService helloService = new HelloService(wsdl, serviceName);
         HelloPortType port = helloService.getHelloPort();
+        ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
+        ClientProxy.getClient(port).getOutInterceptors().add(new LoggingOutInterceptor());
         HelloRequest req = new HelloRequest();
         req.setText("hello");
         HelloHeader header = new HelloHeader();
         header.setId("ffang");
-        HelloResponse rep = port.hello(req, header);
+        Holder<HelloHeader> header1 = new Holder<HelloHeader>();
+        header1.value = header;
+        HelloResponse rep = port.hello(req, header1);
         Thread.sleep(1000);
         assertEquals(rep.getText(), "helloffang");
+        assertEquals(header1.value.getId(), "retffang");
     }
 
     public void testEndpointRPC() throws Exception {

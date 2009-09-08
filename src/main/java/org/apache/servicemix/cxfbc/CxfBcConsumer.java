@@ -100,6 +100,7 @@ import org.apache.cxf.wsdl.WSDLManager;
 import org.apache.cxf.wsdl11.WSDLServiceFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.common.security.AuthenticationService;
+import org.apache.servicemix.cxfbc.interceptors.ExtractHeaderPartIntercepor;
 import org.apache.servicemix.cxfbc.interceptors.JbiInInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiJAASInterceptor;
@@ -466,6 +467,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
             cxfService.getOutInterceptors().add(
                     new JbiOutWsdl1Interceptor(isUseJBIWrapper(), isUseSOAPEnvelope()));
+            cxfService.getOutInterceptors().add(
+                    new ExtractHeaderPartIntercepor());
 
             cxfService.getOutInterceptors().add(new SoapActionOutInterceptor());
             cxfService.getOutInterceptors().add(new AttachmentOutInterceptor());

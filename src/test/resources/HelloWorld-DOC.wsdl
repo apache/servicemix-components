@@ -71,6 +71,7 @@
 
     <message name="HelloResponse">
         <part name="body" element="tns:HelloResponse"/>
+        <part name="header1" element="tns:HelloHeader"/>
     </message>
 
     <message name="HelloFault">
@@ -100,6 +101,7 @@
             </input>
             <output>
                 <soap:body use="literal" parts="body"/>
+                <soap:header use="literal" message="tns:HelloResponse" part="header1"/>
             </output>
             <fault name="fault">
                 <soap:fault name="fault" use="literal" />
