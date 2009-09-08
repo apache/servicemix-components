@@ -23,9 +23,15 @@ import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 import javax.xml.ws.soap.SOAPBinding;
 
+import org.apache.cxf.calculator.CalculatorImpl;
+import org.apache.cxf.calculator.CalculatorPortType;
+import org.apache.cxf.endpoint.Endpoint;
+import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.EndpointImpl;
+import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
+import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.cxfbc.mtom.TestMtomImpl;
 import org.apache.servicemix.cxfse.CxfSeComponent;
@@ -87,7 +93,40 @@ public class CxfBcProviderMtomTest extends SpringTestSupport {
         client.sendSync(io);
         assertTrue(new SourceTransformer().contentToString(
                 io.getOutMessage()).indexOf("testfoobar") >= 0);
-        
+        client.done(io);
+    }
+    
+    public void testMtomWithException() throws Exception {
+      //start external service
+        JaxWsServerFactoryBean factory = new JaxWsServerFactoryBean();
+        factory.setServiceClass(CalculatorPortType.class);
+        factory.setServiceBean(new CalculatorImpl());
+        String address = "http://localhost:9001/providertest";
+        factory.setAddress(address);
+        factory.setBindingId("http://schemas.xmlsoap.org/wsdl/soap12/");
+        Server server = factory.create();
+        Endpoint endpoint = server.getEndpoint();
+        endpoint.getInInterceptors().add(new LoggingInInterceptor());
+        endpoint.getOutInterceptors().add(new LoggingOutInterceptor());
+        ServiceInfo service = endpoint.getEndpointInfo().getService();
+        assertNotNull(service);
+        client = new DefaultServiceMixClient(jbi);
+        io = client.createInOutExchange();
+        io.setService(new QName("http://apache.org/hello_world_soap_http", "SOAPServiceProvider"));
+        io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http", "Greeter"));
+        //send message to proxy
+        io.getInMessage().setContent(new StringSource(
+                "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
+              + "<part> "
+              + "<greetMe xmlns='http://apache.org/hello_world_soap_http/types'><requestType>"
+              + "ffang with mtom exception"
+              + "</requestType></greetMe>"
+              + "</part> "
+              + "</message>"));
+        client.sendSync(io);
+        assertTrue(new SourceTransformer().contentToString(
+                io.getOutMessage()).indexOf("Hello ffang with mtom exception Negative number cant be added!") >= 0);
+        client.done(io);
     }
     
        

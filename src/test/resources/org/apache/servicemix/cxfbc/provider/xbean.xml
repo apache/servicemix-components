@@ -50,6 +50,9 @@
               <property name="mtom">
                   <cxfse:proxy service="mtom:TestMtomService" context="#context" type="org.apache.cxf.mime.TestMtom" mtomEnabled="true"/>
               </property>
+              <property name="calculatorWithMtom">
+                  <cxfse:proxy service="calculator:CalculatorService" context="#context" type="org.apache.cxf.calculator.CalculatorPortType" mtomEnabled="true"/>
+              </property>
           </bean>
               
         </cxfse:pojo>
