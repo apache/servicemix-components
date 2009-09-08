@@ -48,6 +48,12 @@ public class AttachmentInInterceptor extends AbstractPhaseInterceptor<Message> {
         } else { 
             norMessage = (NormalizedMessage) exchange.getMessage("in");
         }
+        if (norMessage == null) {
+            norMessage = (NormalizedMessage) exchange.getFault();
+        }
+        if (norMessage ==null) {
+            return;
+        }
         Set names = norMessage.getAttachmentNames();
         for (Object obj : names) {
             String id = (String)obj;
