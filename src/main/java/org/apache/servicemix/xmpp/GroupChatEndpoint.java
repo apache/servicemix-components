@@ -16,12 +16,11 @@
  */
 package org.apache.servicemix.xmpp;
 
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.muc.MultiUserChat;
+
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.servicedesc.ServiceEndpoint;
-
-import org.jivesoftware.smack.GroupChat;
-import org.jivesoftware.smack.packet.Message;
 
 /**
  * Represents a group chat endpoint
@@ -29,31 +28,18 @@ import org.jivesoftware.smack.packet.Message;
  * @version $Revision: $
  * @org.apache.xbean.XBean element="groupChatEndpoint"
  */
-public class GroupChatEndpoint extends XMPPEndpoint {
+public class GroupChatEndpoint extends XMPPEndpoint implements XMPPEndpointType {
 
-    private GroupChat chat;
+    private MultiUserChat chat;
     private String room;
-
-
-    public GroupChatEndpoint() {
-    }
-
-    public GroupChatEndpoint(XMPPComponent component, ServiceEndpoint serviceEndpoint) {
-        super(component, serviceEndpoint);
-    }
-
-    public GroupChatEndpoint(XMPPComponent component, ServiceEndpoint serviceEndpoint, String room) {
-        super(component, serviceEndpoint);
-        this.room = room;
-    }
 
     public void start() throws Exception {
         super.start();
-        if (chat == null) {
-            if (room == null) {
+        if (this.chat == null) {
+            if (this.room == null) {
                 throw new IllegalArgumentException("No room property specified");
             }
-            chat = getConnection().createGroupChat(room);
+            this.chat = new MultiUserChat(getConnection(), this.room);
         }
     }
 
@@ -67,11 +53,11 @@ public class GroupChatEndpoint extends XMPPEndpoint {
 
     // Properties
     //-------------------------------------------------------------------------
-    public GroupChat getChat() {
-        return chat;
+    public MultiUserChat getChat() {
+        return this.chat;
     }
 
-    public void setChat(GroupChat chat) {
+    public void setChat(MultiUserChat chat) {
         this.chat = chat;
     }
 
@@ -90,7 +76,7 @@ public class GroupChatEndpoint extends XMPPEndpoint {
         Message message = chat.createMessage();
         message.setTo(room);
         message.setFrom(getUser());
-        getMarshaler().fromNMS(message, exchange, normalizedMessage);
+        getMarshaler().fromJBI(message, exchange, normalizedMessage);
         chat.sendMessage(message);
         done(exchange);
     }

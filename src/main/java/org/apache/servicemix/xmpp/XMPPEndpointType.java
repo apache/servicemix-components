@@ -16,22 +16,9 @@
  */
 package org.apache.servicemix.xmpp;
 
-import org.jivesoftware.smack.packet.Packet;
-
 /**
- * A runtime exception thrown when processing inbound XMPP packets.
- *
- * @version $Revision: 426415 $
+ * grouping interface
  */
-public class XMPPListenerException extends RuntimeException {
-    private final Packet packet;
-
-    public XMPPListenerException(Exception cause, Packet packet) {
-        super(cause.getMessage() + ". Was processing packet: " + packet, cause);
-        this.packet = packet;
-    }
-
-    public Packet getPacket() {
-        return packet;
-    }
+public interface XMPPEndpointType
+{
 }

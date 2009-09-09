@@ -14,10 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.xmpp;
+package org.apache.servicemix.xmpp.marshaler.impl;
 
-import java.util.Date;
-import java.util.Iterator;
+import org.apache.servicemix.jbi.jaxp.SourceMarshaler;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.xmpp.marshaler.XMPPMarshalerSupport;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
@@ -26,36 +31,66 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-
-import org.apache.servicemix.jbi.jaxp.SourceMarshaler;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
+import java.util.Date;
 
 /**
  * Marshals Jabber messages into and out of NMS messages
  *
  * @version $Revision: 429277 $
  */
-public class XMPPMarshaler {
+public class DefaultXMPPMarshaler implements XMPPMarshalerSupport
+{
     private SourceMarshaler sourceMarshaler;
-    private String messageBodyOpenTag = "<message>";
-    private String messageBodyCloseTag = "</message>";
+    private static SourceTransformer st = new SourceTransformer();
+    private String messageBodyTag = "message";
+    private String messageBodyOpenTag = "<" + messageBodyTag + ">";
+    private String messageBodyCloseTag = "</" + messageBodyTag + ">";
 
-    public XMPPMarshaler() {
+    public DefaultXMPPMarshaler() {
         this(new SourceMarshaler());
     }
 
-    public XMPPMarshaler(SourceMarshaler sourceMarshaler) {
+    public DefaultXMPPMarshaler(SourceMarshaler sourceMarshaler) {
         this.sourceMarshaler = sourceMarshaler;
     }
 
     /**
-     * Marshals the Jabber message into an NMS message
+     * converts the normalized message into a XMPP message
      *
-     * @throws javax.jbi.messaging.MessagingException
-     *
+     * @param message           the XMPP message to fill
+     * @param exchange          the exchange to use as source
+     * @param normalizedMessage the normalized message to use as source
+     * @throws javax.xml.transform.TransformerException
+     *          on conversion errors
      */
-    public void toNMS(NormalizedMessage normalizedMessage, Packet packet) throws MessagingException {
+    public void fromJBI(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) throws TransformerException {
+        // lets create a text message
+        try {
+            Document doc = st.toDOMDocument(normalizedMessage);
+            NodeList ls = doc.getElementsByTagName(this.getMessageBodyTag());
+            if (ls != null && ls.getLength()>0) {
+                String text = ls.item(0).getTextContent();
+                message.setBody(text);
+            } else {
+                throw new RuntimeException("Missing node for tag " + getMessageBodyTag());
+            }
+        } catch (Exception e) {
+            String xml = messageAsString(normalizedMessage);
+            message.setBody(xml);
+        }
+
+        addJabberProperties(message, exchange, normalizedMessage);
+    }
+
+    /**
+     * converts the xmpp message to a normalized message
+     *
+     * @param normalizedMessage the normalized message to fill
+     * @param packet            the xmpp packet to use
+     * @throws javax.jbi.messaging.MessagingException
+     *          on conversion errors
+     */
+    public void toJBI(NormalizedMessage normalizedMessage, Packet packet) throws MessagingException {
         addNmsProperties(normalizedMessage, packet);
         if (packet instanceof Message) {
             Message message = (Message) packet;
@@ -68,20 +103,6 @@ public class XMPPMarshaler {
 
         // lets add the packet to the NMS
         normalizedMessage.setProperty("org.apache.servicemix.xmpp.packet", packet);
-    }
-
-    /**
-     * Marshals from the Jabber message to the normalized message
-     *
-     * @param message
-     * @param exchange
-     * @param normalizedMessage @throws javax.xml.transform.TransformerException
-     */
-    public void fromNMS(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) throws TransformerException {
-        // lets create a text message
-        String xml = messageAsString(normalizedMessage);
-        message.setBody(xml);
-        addJabberProperties(message, exchange, normalizedMessage);
     }
 
     // Properties
@@ -101,26 +122,19 @@ public class XMPPMarshaler {
         this.sourceMarshaler = sourceMarshaler;
     }
 
-    public String getMessageBodyOpenTag() {
-        return messageBodyOpenTag;
+    public String getMessageBodyTag() {
+        return messageBodyTag;
     }
 
     /**
      * Sets the XML open tag used to wrap inbound Jabber text messages
+     *
+     * @param messageBodyTag    the tag to use
      */
-    public void setMessageBodyOpenTag(String messageBodyOpenTag) {
-        this.messageBodyOpenTag = messageBodyOpenTag;
-    }
-
-    public String getMessageBodyCloseTag() {
-        return messageBodyCloseTag;
-    }
-
-    /**
-     * Sets the XML close tag used to wrap inbound Jabber text messages
-     */
-    public void setMessageBodyCloseTag(String messageBodyCloseTag) {
-        this.messageBodyCloseTag = messageBodyCloseTag;
+    public void setMessageBodyTag(String messageBodyTag) {
+        this.messageBodyTag = messageBodyTag.replace("<", "").replace(">", "");
+        this.messageBodyOpenTag = "<" + this.messageBodyTag + ">";
+        this.messageBodyCloseTag = "</" + this.messageBodyTag + ">";
     }
 
     // Implementation methods
@@ -128,6 +142,10 @@ public class XMPPMarshaler {
 
     /**
      * Converts the inbound message to a String that can be sent
+     *
+     * @param normalizedMessage the normalized message to transform to string
+     * @return  the string content of the normalized message
+     * @throws javax.xml.transform.TransformerException on conversion errors
      */
     protected String messageAsString(NormalizedMessage normalizedMessage) throws TransformerException {
         return sourceMarshaler.asString(normalizedMessage.getContent());
@@ -135,10 +153,14 @@ public class XMPPMarshaler {
 
     /**
      * Appends properties on the NMS to the JMS Message
+     *
+     * @param message               the xmpp message
+     * @param exchange              the message exchange
+     * @param normalizedMessage     the normalized message
      */
     protected void addJabberProperties(Message message, MessageExchange exchange, NormalizedMessage normalizedMessage) {
-        for (Iterator iter = normalizedMessage.getPropertyNames().iterator(); iter.hasNext();) {
-            String name = (String) iter.next();
+        for (Object o : normalizedMessage.getPropertyNames()) {
+            String name = (String) o;
             Object value = normalizedMessage.getProperty(name);
             if (shouldIncludeHeader(normalizedMessage, name, value)) {
                 message.setProperty(name, value);
@@ -163,9 +185,7 @@ public class XMPPMarshaler {
     }
 
     protected void addNmsProperties(NormalizedMessage normalizedMessage, Packet message) {
-        Iterator iter = message.getPropertyNames();
-        while (iter.hasNext()) {
-            String name = (String) iter.next();
+        for (String name : message.getPropertyNames()) {
             Object value = message.getProperty(name);
             normalizedMessage.setProperty(name, value);
         }
@@ -174,9 +194,13 @@ public class XMPPMarshaler {
     /**
      * Decides whether or not the given header should be included in the JMS message.
      * By default this includes all suitable typed values
+     *
+     * @param normalizedMessage the normalized message
+     * @param name              the header name
+     * @param value             the header value
+     * @return  true if it should be included
      */
     protected boolean shouldIncludeHeader(NormalizedMessage normalizedMessage, String name, Object value) {
         return value instanceof String || value instanceof Number || value instanceof Date;
     }
-
 }
