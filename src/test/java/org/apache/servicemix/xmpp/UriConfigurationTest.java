@@ -16,12 +16,9 @@
  */
 package org.apache.servicemix.xmpp;
 
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.xml.namespace.QName;
-
 import junit.framework.TestCase;
 
-import org.apache.servicemix.common.ResolvedEndpoint;
+import java.net.URI;
 
 /**
  * @version $Revision: $
@@ -30,10 +27,8 @@ public class UriConfigurationTest extends TestCase {
 
 
     public void testUriConfiguration() throws Exception {
-        ServiceEndpoint serviceEndpoint = new ResolvedEndpoint("xmpp://servicemix-user@localhost/test-user@localhost", new QName("test"));
-
-        XMPPComponent component = new XMPPComponent();
-        PrivateChatEndpoint endpoint = (PrivateChatEndpoint) component.createEndpoint(serviceEndpoint);
+        PrivateChatEndpoint endpoint = new PrivateChatEndpoint();
+        endpoint.setUri(new URI("xmpp://servicemix-user@localhost/test-user@localhost"));
         assertNotNull("Should have created an endpoint", endpoint);
 
         assertEquals("localhost", endpoint.getHost());
