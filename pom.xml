@@ -51,7 +51,7 @@
         org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.executors.impl,
-        org.apache.servicemix.kernel.jaas.config,
+        org.apache.felix.karaf.jaas.config,
         org.apache.servicemix.nmr.api.security,
         org.apache.woden*;resolution:=optional,
         org.apache.xbean.spring.context.v2,
