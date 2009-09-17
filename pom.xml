@@ -60,8 +60,6 @@
             sun.misc;resolution:=optional,
             org.apache.servicemix.jbi.container*;resolution:=optional,
             org.apache.servicemix.jbi.framework*;resolution:=optional,
-            <!--org.apache.felix.karaf.jaas.config,-->
-            org.apache.servicemix.nmr.api.security,            
             *
         </servicemix.osgi.import>
         <servicemix.osgi.export>
@@ -69,7 +67,6 @@
             META-INF.services.org.apache.xbean.spring.smpp.servicemix.apache.org.smpp
         </servicemix.osgi.export>
         <servicemix.osgi.bundles>
-            org.apache.servicemix.bundles.jaxp-ri,
             org.springframework.core,
             org.springframework.beans,
             org.springframework.context
