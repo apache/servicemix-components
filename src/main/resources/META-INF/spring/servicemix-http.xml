@@ -74,7 +74,7 @@
 
     <osgi:reference id="authenticationService" interface="org.apache.servicemix.nmr.api.security.AuthenticationService" />
 
-    <osgi:reference id="keystoreManager" interface="org.apache.servicemix.kernel.jaas.config.KeystoreManager" />
+    <osgi:reference id="keystoreManager" interface="org.apache.felix.karaf.jaas.config.KeystoreManager" />
 
     <osgi:list id="endpoints"
                interface="org.apache.servicemix.common.osgi.EndpointWrapper"
