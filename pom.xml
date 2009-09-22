@@ -44,7 +44,6 @@
     <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
     <activemq-version>5.2.0</activemq-version>
-    <jencks-version>2.1</jencks-version>
 
     <servicemix.osgi.import>
         javax.security.auth,
@@ -116,33 +115,10 @@
     <dependency>
       <groupId>org.jencks</groupId>
       <artifactId>jencks</artifactId>
-      <version>${jencks-version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>
           <artifactId>spring-aop</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geronimo.modules</groupId>
-      <artifactId>geronimo-connector</artifactId>
-      <version>2.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geronimo.modules</groupId>
-      <artifactId>geronimo-transaction</artifactId>
-      <version>2.0.1</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.geronimo.modules</groupId>
-          <artifactId>geronimo-j2ee</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.geronimo.modules</groupId>
-          <artifactId>geronimo-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -164,28 +140,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-    </dependency>
-      <dependency>
-        <groupId>org.apache.geronimo.specs</groupId>
-        <artifactId>geronimo-javamail_1.4_spec</artifactId>
-        <version>1.5</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geronimo.javamail</groupId>
-        <artifactId>geronimo-javamail_1.4_mail</artifactId>
-        <version>1.5</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geronimo.javamail</groupId>
-        <artifactId>geronimo-javamail_1.4_provider</artifactId>
-        <version>1.5</version>
-        <scope>provided</scope>
-      </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -293,8 +247,20 @@
     <dependency>
       <groupId>org.jencks</groupId>
       <artifactId>jencks-amqpool</artifactId>
-      <version>${jencks-version}</version>
+      <version>${jencks.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
     </dependency>
     <dependency>
       <groupId>com.mockrunner</groupId>
