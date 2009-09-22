@@ -81,15 +81,20 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <scope>provided</scope>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.14</version>
-      <scope>test</scope>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl104-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
@@ -118,7 +123,7 @@
     <dependency>
       <groupId>org.jencks</groupId>
       <artifactId>jencks</artifactId>
-      <version>2.1</version>
+      <version>${jencks.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
