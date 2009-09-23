@@ -72,6 +72,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.jencks</groupId>
+      <artifactId>jencks</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
       <version>${servicemix-shared-version}</version>
@@ -114,6 +118,14 @@
         <exclusion>
           <groupId>org.springframework</groupId>
           <artifactId>spring-jmx</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jencks</groupId>
+          <artifactId>jencks</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jencks</groupId>
+          <artifactId>jencks-parent</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
