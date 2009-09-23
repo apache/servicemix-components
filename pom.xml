@@ -112,10 +112,10 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
+      <groupId>org.jencks</groupId>
+      <artifactId>jencks</artifactId>
+      <scope>test</scope>
     </dependency>
     
     <dependency>
