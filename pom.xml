@@ -111,6 +111,30 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.jencks</groupId>
+      <artifactId>jencks</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl104-over-slf4j</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
         <groupId>org.apache.activemq</groupId>
          <artifactId>activemq-core</artifactId>
          <version>5.2.0</version>  
