@@ -51,7 +51,12 @@ public class QuartzComponentTest extends TestCase {
         assertTrue(receiver.getMessageList().flushMessages().size() > 0);
         
         quartz.stop();
+        // Pause to allow messages triggered before stopping the quartz
+        // component to be delivered.
+        Thread.sleep(1000);
         receiver.getMessageList().flushMessages();
+        // Pause to see if any newly triggered messages are incorrectly
+        // delivered since the quartz component was stopped.
         Thread.sleep(1000);
         assertEquals(0, receiver.getMessageList().flushMessages().size());
         
