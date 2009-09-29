@@ -114,11 +114,6 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         // re-create the openExchanges map
         this.openExchanges = new ConcurrentHashMap<String, InputStream>();
         
-        // resolve the path to a FileObject
-        if (file == null) {
-            file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
-        }
-        
         // create a lock manager
         if (lockManager == null) {
             lockManager = createLockManager();
@@ -228,6 +223,16 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
      */
     @Override
     public void poll() throws Exception {
+        // resolve the path to a FileObject
+        if (file == null) {
+        	try	{
+        		file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
+        	} catch (Exception e) {
+        		logger.debug("Unable to resolve path: " + getPath(), e);
+        		file = null;
+        	}        	
+        }
+
         // SM-192: Force close the file, so that the cached informations are cleared
         if (file != null) {
             file.close();

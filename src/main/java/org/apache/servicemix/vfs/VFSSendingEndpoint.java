@@ -47,22 +47,22 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private String path;
     private FileSystemManager fileSystemManager;
-    
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.common.endpoints.SimpleEndpoint#start()
+
+    /**
+     * resolves the given path to a file object
      */
-    @Override
-    public synchronized void start() throws Exception {
-        super.start();
-        
-        if (file == null) {
-            file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
+    protected void resolvePath() throws Exception {
+    	if (file == null) {
+    		file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
         }
     }
     
     @Override
     protected void processInOnly(MessageExchange exchange, NormalizedMessage in)
     		throws Exception {
+    	// resolve the file path
+    	resolvePath();
+    	
         OutputStream out = null;
         String tmpName = null;
         String name = null;
