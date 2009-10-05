@@ -119,6 +119,30 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+		  <groupId>org.osgi</groupId>
+		  <artifactId>org.osgi.core</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.osgi</groupId>
+		  <artifactId>org.osgi.compendium</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.ops4j.pax.exam</groupId>
+		  <artifactId>pax-exam</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.ops4j.pax.exam</groupId>
+		  <artifactId>pax-exam-junit</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.ops4j.pax.exam</groupId>
+		  <artifactId>pax-exam-container-default</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.ops4j.pax.exam</groupId>
+		  <artifactId>pax-exam-junit-extender-impl</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
