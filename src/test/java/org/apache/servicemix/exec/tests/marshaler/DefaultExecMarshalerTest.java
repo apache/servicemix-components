@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.exec.marshaler;
+package org.apache.servicemix.exec.tests.marshaler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +24,10 @@ import javax.jbi.messaging.NormalizedMessage;
 
 import junit.framework.TestCase;
 
+import org.apache.servicemix.exec.marshaler.DefaultExecMarshaler;
+import org.apache.servicemix.exec.marshaler.ExecMarshalerSupport;
+import org.apache.servicemix.exec.marshaler.ExecRequest;
+import org.apache.servicemix.exec.marshaler.ExecResponse;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.helper.MessageExchangePattern;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;

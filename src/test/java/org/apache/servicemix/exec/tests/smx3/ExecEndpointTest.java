@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.exec;
+package org.apache.servicemix.exec.tests.smx3;
 
 import java.io.File;
 import java.net.URI;
@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.apache.servicemix.client.DefaultServiceMixClient;
+import org.apache.servicemix.exec.ExecComponent;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;

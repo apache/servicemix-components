@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.servicemix.exec.itest.smx4;
+package org.apache.servicemix.exec.tests.smx4;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +57,7 @@ public class AbstractFeatureTest {
         Option[] options = options(
                 profile("log").version("1.4"),
                 org.ops4j.pax.exam.CoreOptions.systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
-                scanFeatures(mavenBundle().groupId("org.apache.servicemix.nmr").artifactId("apache-servicemix-nmr").version("1.1.0-SNAPSHOT").type("xml/features"), "jbi"), felix());
+                scanFeatures(mavenBundle().groupId("org.apache.servicemix.nmr").artifactId("apache-servicemix-nmr").version("1.1.0-SNAPSHOT").type("xml/features"), "jbi/1.1.0-SNAPSHOT"), felix());
         return options;
     }
 

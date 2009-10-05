@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.servicemix.exec.itest.smx4;
+package org.apache.servicemix.exec.tests.smx4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
