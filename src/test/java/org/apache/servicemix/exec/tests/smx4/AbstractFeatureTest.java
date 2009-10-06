@@ -26,7 +26,6 @@ import org.ops4j.pax.exam.Option;
 import org.osgi.framework.BundleContext;
 
 import static org.ops4j.pax.exam.CoreOptions.felix;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.options;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.profile;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.scanFeatures;
@@ -57,7 +56,7 @@ public class AbstractFeatureTest {
         Option[] options = options(
                 profile("log").version("1.4"),
                 org.ops4j.pax.exam.CoreOptions.systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
-                scanFeatures(mavenBundle().groupId("org.apache.servicemix.nmr").artifactId("apache-servicemix-nmr").version("1.1.0-SNAPSHOT").type("xml/features"), "jbi/1.1.0-SNAPSHOT"), felix());
+                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.1.0-SNAPSHOT/xml/features", "jbi/1.1.0-SNAPSHOT"), felix());
         return options;
     }
 
