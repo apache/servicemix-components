@@ -35,6 +35,8 @@ import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.impl.DefaultMessage;
+import org.apache.camel.spi.HeaderFilterStrategy;
+import org.apache.servicemix.camel.JbiInOutPipelineTest.MyHeaderFilterStrategy;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
@@ -45,7 +47,9 @@ public class JbiBindingTest extends TestCase {
     private static final QName OPERATION = new QName("urn:test", "operation");
     private static final Source CONTENT = new StringSource("<my>content</my>");
     private static final String KEY = "key";
+    private static final String FILTERED_KEY = "filtered.key";
     private static final Object VALUE = "value";
+    private static final Object FILTERED_VALUE = "filtered.value";
     private static final DataHandler DATA = new DataHandler(new Object(), "application/dummy");
     private static final String ID = "id";
     private static final Subject SUBJECT = new Subject();
@@ -57,6 +61,7 @@ public class JbiBindingTest extends TestCase {
     protected void setUp() throws Exception {
         factory = new MockExchangeFactory();
         binding = new JbiBinding(new DefaultCamelContext());
+        binding.setHeaderFilterStrategy(new MyHeaderFilterStrategy());
     }
     
     public void testCreateExchangeWithOperation() throws Exception {
@@ -99,6 +104,28 @@ public class JbiBindingTest extends TestCase {
                      CONTENT, exchange.getIn().getBody());
         assertEquals("JBI NormalizedMessage headers are available in the Camel Message",
                      VALUE, exchange.getIn().getHeader(KEY));
+        assertEquals("Camel Exchange uses the same MEP",
+                     ExchangePattern.InOptionalOut, exchange.getPattern());
+    }
+    
+    public void testCreateExchangeWithInContentAndHeaderFilterStrategy() throws Exception {
+        MessageExchange me = factory.createInOptionalOutExchange();
+        MockNormalizedMessage nm = new MockNormalizedMessage();
+        nm.setContent(CONTENT);
+        nm.setProperty(KEY, VALUE);
+        nm.setProperty(FILTERED_KEY, FILTERED_VALUE);
+        me.setMessage(nm, "in");
+        
+        Exchange exchange = binding.createExchange(me);
+        assertNotNull(exchange);
+        assertSame("JBI MessageExchange is available as a property",
+                   me, exchange.getProperty(JbiBinding.MESSAGE_EXCHANGE));
+        assertEquals("JBI NormalizedMessage content is available in the Camel Message",
+                     CONTENT, exchange.getIn().getBody());
+        assertEquals("JBI NormalizedMessage headers are available in the Camel Message",
+                     VALUE, exchange.getIn().getHeader(KEY));
+        assertFalse("JBI NormalizedMessage headers have been filtered by the strategy",
+                    exchange.getIn().getHeaders().containsKey(FILTERED_KEY));
         assertEquals("Camel Exchange uses the same MEP",
                      ExchangePattern.InOptionalOut, exchange.getPattern());
     }
@@ -176,10 +203,36 @@ public class JbiBindingTest extends TestCase {
                      "another-value", me.getProperty("another-key"));
     }
     
+    public void testCopyHeadersFromJbiToCamel() throws Exception {
+        MessageExchange me = new MockMessageExchange();
+        me.setProperty(KEY, VALUE);
+        me.setProperty(FILTERED_KEY, FILTERED_VALUE);
+        
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        binding.copyHeadersFromJbiToCamel(me, exchange);
+        
+        assertEquals("Should copy header properties into the Camel Exchange",
+                     VALUE, exchange.getProperty(KEY));
+        assertNull("Filtered headers should not have been copied",
+                   exchange.getProperty(FILTERED_KEY));
+    }
+    
     public void testIsSerializable() throws Exception {
         assertTrue("A String is serializable", binding.isSerializable("test"));
         assertFalse("JbiBinding is not serializable", binding.isSerializable(binding));
         assertFalse("Maps can contain non-serializable data", binding.isSerializable(new HashMap()));
         assertFalse("Collections can contain non-serializable data", binding.isSerializable(new ArrayList()));
+    }
+    
+    private class MyHeaderFilterStrategy implements HeaderFilterStrategy {
+
+        public boolean applyFilterToCamelHeaders(String headerName, Object headerValue, Exchange exchange) {
+            return headerName.equals(FILTERED_KEY);
+        }
+
+        public boolean applyFilterToExternalHeaders(String headerName, Object headerValue, Exchange exchange) {
+            return false;
+        }
+        
     }
 }

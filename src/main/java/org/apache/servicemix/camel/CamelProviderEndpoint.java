@@ -28,7 +28,10 @@ import javax.xml.transform.Source;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.spi.HeaderFilterStrategy;
+import org.apache.camel.spi.HeaderFilterStrategyAware;
 import org.apache.camel.spi.Synchronization;
+
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
@@ -39,14 +42,14 @@ import org.apache.servicemix.jbi.exception.FaultException;
  *
  * @version $Revision: 426415 $
  */
-public class CamelProviderEndpoint extends ProviderEndpoint implements Synchronization {
+public class CamelProviderEndpoint extends ProviderEndpoint implements Synchronization, HeaderFilterStrategyAware {
 
     public static final QName SERVICE_NAME = new QName("http://camel.apache.org/schema/jbi", "provider");
 
-    private JbiBinding binding;
+    private final JbiBinding binding;
 
     private Processor camelProcessor;
-
+    
     public CamelProviderEndpoint(ServiceUnit serviceUnit, QName service, String endpoint, JbiBinding binding, Processor camelProcessor) {
         super(serviceUnit, service, endpoint);
         this.camelProcessor = camelProcessor;
@@ -159,5 +162,14 @@ public class CamelProviderEndpoint extends ProviderEndpoint implements Synchroni
         } catch (MessagingException e) {
             logger.warn("Unable to send JBI MessageExchange after successful Camel route invocation: " + me, e);
         } 
+    }
+    
+
+    public HeaderFilterStrategy getHeaderFilterStrategy() {
+        return binding.getHeaderFilterStrategy();
+    }
+
+    public void setHeaderFilterStrategy(HeaderFilterStrategy strategy) {
+        binding.setHeaderFilterStrategy(strategy);
     }
 }

@@ -29,6 +29,9 @@ import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.spi.HeaderFilterStrategy;
+import org.apache.camel.spi.HeaderFilterStrategyAware;
+import org.apache.camel.spi.Registry; 
 import org.apache.camel.util.URISupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +42,7 @@ import org.springframework.util.StringUtils;
  *
  * @version $Revision: 563665 $
  */
-public class JbiEndpoint extends DefaultEndpoint {
+public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategyAware {
 
     private String destinationUri;
 
@@ -49,11 +52,16 @@ public class JbiEndpoint extends DefaultEndpoint {
 
     private JbiProducer producer;
 
+    private HeaderFilterStrategy headerFilterStrategy;    
+    
     private final JbiComponent jbiComponent;
 
+    private final JbiBinding binding;
+    
     public JbiEndpoint(JbiComponent jbiComponent, String uri) {
         super(uri, jbiComponent);
         this.jbiComponent = jbiComponent;
+        this.binding = jbiComponent.createBinding();
         parseUri(uri);
     }
 
@@ -76,7 +84,7 @@ public class JbiEndpoint extends DefaultEndpoint {
 
         @Override
         public void start() throws Exception {
-            consumer = new CamelConsumerEndpoint(jbiComponent.getBinding(), JbiEndpoint.this);
+            consumer = new CamelConsumerEndpoint(binding, JbiEndpoint.this);
             jbiComponent.getCamelJbiComponent().addEndpoint(consumer);
             super.start();
         }
@@ -120,6 +128,23 @@ public class JbiEndpoint extends DefaultEndpoint {
                     operation = QName.valueOf(oper);
                 }
                 this.destinationUri = destinationUri.substring(0, idx);
+                
+                String filter = (String) params.get("headerFilterStrategy");
+                if (StringUtils.hasLength(filter)) {
+                	Registry registry = jbiComponent.getCamelContext().getRegistry();
+                	if((idx = filter.indexOf('#')) != -1) {
+                		filter = filter.substring(1);
+                	}
+                	Object object = registry.lookup(filter);
+                	if (object instanceof HeaderFilterStrategy) {
+                		headerFilterStrategy = (HeaderFilterStrategy)object;
+                		binding.setHeaderFilterStrategy(headerFilterStrategy);
+                	}
+                	params.remove("headerFilterStrategy");
+                	String endpointUri = this.destinationUri + URISupport.createQueryString(params);
+                	this.setEndpointUri(endpointUri); 
+                	
+                }
             }
         } catch (URISyntaxException e) {
             throw new JbiException(e);
@@ -173,5 +198,13 @@ public class JbiEndpoint extends DefaultEndpoint {
 
     public boolean isSingleton() {
         return true;
+    }
+    
+    public HeaderFilterStrategy getHeaderFilterStrategy() {
+        return binding.getHeaderFilterStrategy();
+    }
+
+    public void setHeaderFilterStrategy(HeaderFilterStrategy strategy) {
+        binding.setHeaderFilterStrategy(strategy);
     }
 }

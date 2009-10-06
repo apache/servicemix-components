@@ -38,6 +38,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultExchange;
+import org.apache.camel.impl.DefaultHeaderFilterStrategy;
+import org.apache.camel.spi.HeaderFilterStrategy;
+import org.apache.camel.spi.HeaderFilterStrategyAware;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -46,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @version $Revision: 563665 $
  */
-public class JbiBinding {
+public class JbiBinding implements HeaderFilterStrategyAware {
 
     public static final String MESSAGE_EXCHANGE = "JbiMessageExchange";
     public static final String OPERATION = "JbiOperation";
@@ -55,6 +58,7 @@ public class JbiBinding {
     private static final Log LOG = LogFactory.getLog(JbiBinding.class);
 
     private final CamelContext context;
+    private HeaderFilterStrategy strategy;
     
     public JbiBinding(CamelContext context) {
         super();
@@ -137,6 +141,22 @@ public class JbiBinding {
             return ExchangePattern.InOnly;
         }
     }
+    
+    /**
+     * Copies headers from the JBI MessageExchange to the Camel Exchange, taking into account the
+     * {@link HeaderFilterStrategy} that has been configured on this binding.
+     * 
+     * @param from the JBI MessageExchange
+     * @param to the Camel Exchange
+     */
+    public void copyHeadersFromJbiToCamel(MessageExchange from, Exchange to) {
+        for (Object object : from.getPropertyNames()) {
+            String key = object.toString();
+            if (!getHeaderFilterStrategy().applyFilterToCamelHeaders(key, from.getProperty(key), null)) {
+                to.setProperty(key, from.getProperty(key));
+            }
+        }
+    }
 
     /**
      * Copies content, headers, security subject and attachments from the JBI NormalizedMessage to the Camel Message.
@@ -149,8 +169,11 @@ public class JbiBinding {
         if (from.getSecuritySubject() != null) {
             to.setHeader(SECURITY_SUBJECT, from.getSecuritySubject());
         }
-        for (Object key : from.getPropertyNames()) {
-            to.setHeader(key.toString(), from.getProperty(key.toString()));
+        for (Object object : from.getPropertyNames()) {
+            String key = object.toString();
+            if (!strategy.applyFilterToCamelHeaders(key, from.getProperty(key), to.getExchange())) { 
+                to.setHeader(key, from.getProperty(key));
+            }
         }
         for (Object id : from.getAttachmentNames()) {
             to.addAttachment(id.toString(), from.getAttachment(id.toString()));
@@ -172,7 +195,7 @@ public class JbiBinding {
         
         for (String key : message.getHeaders().keySet()) {
             Object value = message.getHeader(key);
-            if (isSerializable(value)) {
+            if (isSerializable(value) && !getHeaderFilterStrategy().applyFilterToCamelHeaders(key, value, message.getExchange())) {
                 normalizedMessage.setProperty(key, value);
             }
         }
@@ -245,5 +268,16 @@ public class JbiBinding {
     @SuppressWarnings("unchecked")
     protected boolean isSerializable(Object object) {
         return (object instanceof Serializable) && !(object instanceof Map) && !(object instanceof Collection);
+    }
+
+    public HeaderFilterStrategy getHeaderFilterStrategy() {
+        if (strategy == null) {
+            strategy = new DefaultHeaderFilterStrategy();
+        }
+        return strategy;
+    }
+
+    public void setHeaderFilterStrategy(HeaderFilterStrategy strategy) {
+        this.strategy = strategy;
     }
 }

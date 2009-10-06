@@ -30,7 +30,6 @@ import org.apache.servicemix.id.IdGenerator;
 public class JbiComponent implements Component {
 
     private CamelComponent camelJbiComponent;
-    private JbiBinding binding;
     private CamelContext camelContext;
     private IdGenerator idGenerator;
     private String suName;
@@ -68,22 +67,8 @@ public class JbiComponent implements Component {
         return suName;
     }
 
-    /**
-     * @return the binding
-     */
-    public JbiBinding getBinding() {
-        if (binding == null) {
-            binding = new JbiBinding(camelContext);
-        }
-        return binding;
-    }
-
-    /**
-     * @param binding
-     *            the binding to set
-     */
-    public void setBinding(JbiBinding binding) {
-        this.binding = binding;
+    public JbiBinding createBinding() {
+        return new JbiBinding(camelContext);
     }
 
     // Resolve Camel Endpoints
@@ -146,10 +131,11 @@ public class JbiComponent implements Component {
                                 + endpointUri);
             }
             jbiEndpoint = new CamelProviderEndpoint(getCamelJbiComponent()
-                    .getServiceUnit(), service, endpoint, getBinding(), processor);
+                    .getServiceUnit(), service, endpoint, createBinding(), processor);   
+            jbiEndpoint.setHeaderFilterStrategy(((JbiEndpoint) camelEndpoint).getHeaderFilterStrategy());
         } else {
             jbiEndpoint = new CamelProviderEndpoint(getCamelJbiComponent()
-                    .getServiceUnit(), camelEndpoint, getBinding(), processor);
+                    .getServiceUnit(), camelEndpoint, createBinding(), processor);
         }
         return jbiEndpoint;
     }

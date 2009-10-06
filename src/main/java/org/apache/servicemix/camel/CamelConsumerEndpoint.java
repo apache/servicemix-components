@@ -16,17 +16,13 @@
  */
 package org.apache.servicemix.camel;
 
-import java.util.Set;
-
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.id.IdGenerator;
@@ -41,8 +37,8 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint {
     public static final QName SERVICE_NAME = new QName("http://camel.apache.org/schema/jbi", "provider");
 
     private JbiBinding binding;
-
-    private JbiEndpoint jbiEndpoint;
+    
+    private JbiEndpoint jbiEndpoint;    
     
     public CamelConsumerEndpoint(JbiBinding binding, JbiEndpoint jbiEndpoint) {
         setService(SERVICE_NAME);
@@ -80,17 +76,16 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint {
         if (messageExchange.getStatus() == ExchangeStatus.ERROR) {
             exchange.setException(messageExchange.getError());
         } else if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
-            addHeaders(messageExchange, exchange);
+            // first copy the exchange headers
+	        binding.copyHeadersFromJbiToCamel(messageExchange, exchange);
+	        // then copy the out/fault message
             if (messageExchange.getFault() != null) {
+                binding.copyFromJbiToCamel(messageExchange.getMessage("fault"), exchange.getOut());
                 exchange.getOut().setBody(new FaultException("Fault occured for " + exchange.getPattern() + " exchange", 
                         messageExchange, messageExchange.getFault()));
                 exchange.getOut().setFault(true);
-                addHeaders(messageExchange.getFault(), exchange.getOut());
-                addAttachments(messageExchange.getFault(), exchange.getOut());
             } else if (messageExchange.getMessage("out") != null) {
-                exchange.getOut().setBody(messageExchange.getMessage("out").getContent());
-                addHeaders(messageExchange.getMessage("out"), exchange.getOut());
-                addAttachments(messageExchange.getMessage("out"), exchange.getOut());
+                binding.copyFromJbiToCamel(messageExchange.getMessage("out"), exchange.getOut());
             }
             done(messageExchange);
         }
@@ -100,32 +95,4 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint {
     public void validate() throws DeploymentException {
         // No validation required
     }
-
-    @SuppressWarnings("unchecked")
-    private void addHeaders(MessageExchange messageExchange, Exchange camelExchange) {
-        Set entries = messageExchange.getPropertyNames();
-        for (Object o : entries) {
-            String key = o.toString();
-            camelExchange.setProperty(key, messageExchange.getProperty(key));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void addHeaders(NormalizedMessage normalizedMessage, Message camelMessage) {
-        Set entries = normalizedMessage.getPropertyNames();
-        for (Object o : entries) {
-            String key = o.toString();
-            camelMessage.setHeader(key, normalizedMessage.getProperty(key));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void addAttachments(NormalizedMessage normalizedMessage, Message camelMessage) {
-        Set entries = normalizedMessage.getAttachmentNames();
-        for (Object o : entries) {
-            String id = o.toString();
-            camelMessage.addAttachment(id, normalizedMessage.getAttachment(id));
-        }
-    }
-
 }
