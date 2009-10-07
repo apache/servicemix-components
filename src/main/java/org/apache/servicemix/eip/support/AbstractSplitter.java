@@ -29,6 +29,8 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.transform.Source;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.common.util.MessageUtil;
 
@@ -47,6 +49,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     public static final String SPLITTER_INDEX = "org.apache.servicemix.eip.splitter.index";
     public static final String SPLITTER_CORRID = "org.apache.servicemix.eip.splitter.corrid";
 
+    private static final Log LOG = LogFactory.getLog(AbstractSplitter.class);
     /**
      * The address of the target endpoint
      */
@@ -232,10 +235,12 @@ public abstract class AbstractSplitter extends EIPEndpoint {
         if (exchange.getRole() == MessageExchange.Role.CONSUMER) {
             String corrId = (String) exchange.getMessage("in").getProperty(SPLITTER_CORRID);
             int count = (Integer) exchange.getMessage("in").getProperty(SPLITTER_COUNT);
+            Integer acks = null;
             Lock lock = lockManager.getLock(corrId);
             lock.lock();
+            boolean removeLock = true;
             try {
-                Integer acks = (Integer) store.load(corrId + ".acks");
+                acks = (Integer) store.load(corrId + ".acks");
                 if (exchange.getStatus() == ExchangeStatus.DONE) {
                     // If the acks integer is not here anymore, the message response has been sent already
                     if (acks != null) {
@@ -244,6 +249,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                             done(me);
                         } else {
                             store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                            removeLock = false;
                         }
                     }
                 } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
@@ -257,6 +263,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                             done(me);
                         } else {
                             store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                            removeLock = false;
                         }
                     }
                 } else if (exchange.getFault() != null) {
@@ -272,17 +279,31 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                             done(me);
                         } else {
                             store.store(corrId + ".acks", Integer.valueOf(acks + 1));
+                            removeLock = false;
                         }
                     } else {
                         done(exchange);
                     }
                 }
             } finally {
-                lock.unlock();
+                try {
+                    lock.unlock();
+                } catch (Exception ex) {
+                    LOG.info("Caught exception while attempting to release lock", ex);
+                }
+                if (removeLock) {
+                    lockManager.removeLock(corrId);
+                }
             }
         } else {
-            if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                return;
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                return;
+            } else if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {
                 fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
+            } else if (exchange.getFault() != null) {
+                done(exchange);
             } else {
                 store.store(exchange.getExchangeId(), exchange);
                 MessageExchange[] parts = createParts(exchange);
@@ -291,6 +312,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                     target.configureTarget(parts[i], getContext());
                     send(parts[i]);
                 }
+                done(exchange);
             }
         }
     }
