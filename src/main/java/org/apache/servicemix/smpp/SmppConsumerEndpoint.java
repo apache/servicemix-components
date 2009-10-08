@@ -181,6 +181,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
                     NormalizedMessage in = exchange.createMessage();
                     exchange.setInMessage(in);
                     marshaler.toNMS(in, deliverSm);
+                    send(exchange);
                 } catch (MessagingException messagingException) {
                     log.error("Unable to send the received SMS to the NMR", messagingException);
                 }
