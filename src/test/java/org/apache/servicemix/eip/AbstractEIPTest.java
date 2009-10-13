@@ -32,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
+import org.apache.activemq.broker.BrokerService;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.client.DefaultServiceMixClient;
@@ -40,6 +41,7 @@ import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.container.JBIContainer;
+import org.apache.servicemix.jbi.nmr.DefaultBroker;
 import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.tck.ReceiverComponent;
@@ -47,6 +49,7 @@ import org.apache.servicemix.tck.ReceiverComponent;
 public abstract class AbstractEIPTest extends TestCase {
 
     protected JBIContainer jbi;
+    protected BrokerService broker;
     protected DefaultServiceMixClient client;
     protected ExchangeCompletedListener listener;
 

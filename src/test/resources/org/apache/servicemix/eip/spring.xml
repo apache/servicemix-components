@@ -22,6 +22,14 @@
 
   <!-- the JBI container -->
   <sm:container id="jbi" embedded="true" autoEnlistInTransaction="true">
+    <sm:flows>
+      <sm:sedaFlow />
+      <!--
+      <sm:jmsFlow jmsURL="tcp://localhost:${activemq.port1}" />
+      <sm:jcaFlow connectionManager="#connectionManager"
+      jmsURL="tcp://localhost:${activemq.port1}" />
+      -->
+    </sm:flows>
     <sm:transactionManager>
       <bean class="org.jencks.GeronimoPlatformTransactionManager" />  
     </sm:transactionManager>
