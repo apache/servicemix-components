@@ -313,8 +313,33 @@
           </excludes>
           <forkedProcessTimeoutInSeconds>90</forkedProcessTimeoutInSeconds>
           <forkMode>pertest</forkMode>
+          <systemProperties>
+            <property>
+              <name>activemq.port1</name>
+              <value>${activemq.port1}</value>
+            </property>
+          </systemProperties>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.4</version>
+            <executions>
+                <execution>
+                    <id>reserve-network-port</id>
+                    <goals>
+                        <goal>reserve-network-port</goal>
+                    </goals>
+                    <phase>process-resources</phase>
+                    <configuration>
+                        <portNames>
+                            <portName>activemq.port1</portName>
+                        </portNames>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
   </build>
 </project>
