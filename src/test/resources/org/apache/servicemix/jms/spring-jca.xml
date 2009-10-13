@@ -24,6 +24,8 @@
        xmlns:jencks="http://jencks.org/2.0"
 	     xmlns:test="http://test">
 
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
   <!-- the JBI container -->
   <sm:container id="jbi" 
                 embedded="true" 
@@ -33,7 +35,7 @@
     <sm:flows>
       <sm:sedaFlow />
       <sm:jcaFlow connectionManager="#connectionManager"
-                  jmsURL="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true" />
+                  jmsURL="tcp://localhost:${activemq.port1}?jms.asyncDispatch=true&amp;jms.useAsyncSend=true" />
     </sm:flows>
 
     <sm:activationSpecs>
@@ -116,7 +118,7 @@
   
   <!-- A managed JMS ConnectionFactory for ActiveMQ -->
   <amqra:managedConnectionFactory id="activemqMCF" resourceAdapter="#resourceAdapter" />
-  <amqra:resourceAdapter  id="resourceAdapter" serverUrl="tcp://localhost:61616?jms.asyncDispatch=true&amp;jms.useAsyncSend=true"/>
+  <amqra:resourceAdapter  id="resourceAdapter" serverUrl="tcp://localhost:${activemq.port1}?jms.asyncDispatch=true&amp;jms.useAsyncSend=true"/>
   <jencks:connectionFactory  id="connectionFactory"
                              managedConnectionFactory="#activemqMCF"
                              connectionManager="#connectionManager" />
@@ -124,7 +126,7 @@
   <amq:broker id="broker" persistent="false">
 
     <amq:transportConnectors>
-       <amq:transportConnector uri="tcp://localhost:61616" />
+       <amq:transportConnector uri="tcp://localhost:${activemq.port1}" />
     </amq:transportConnectors>
 
   </amq:broker>

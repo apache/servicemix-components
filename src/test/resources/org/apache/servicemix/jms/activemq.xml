@@ -21,11 +21,13 @@
 <!-- START SNIPPET: xbean -->
 <beans>
 
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
   <broker persistent="false" useJmx="false" xmlns="http://activemq.org/config/1.0">
 
     <!--
     <transportConnectors>
-      <transportConnector uri="tcp://localhost:61216" />
+      <transportConnector uri="tcp://localhost:${activemq.port1}" />
     </transportConnectors>
     -->
   </broker>
