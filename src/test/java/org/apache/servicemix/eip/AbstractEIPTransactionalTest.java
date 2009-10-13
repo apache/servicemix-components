@@ -48,7 +48,7 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         broker = new BrokerService();
         broker.setUseJmx(false);
         broker.setPersistent(false);
-        broker.addConnector("tcp://localhost:" + System.getProperty("activemq.port1", "61616"));
+        broker.addConnector("tcp://localhost:" + System.getenv("activemq.port1"));
         broker.start();
         
         tm = new GeronimoPlatformTransactionManager();
@@ -69,7 +69,7 @@ public abstract class AbstractEIPTransactionalTest extends AbstractEIPTest {
         
         jbi = new JBIContainer();
         jbi.setFlows(new Flow[] {new SedaFlow(),
-            new JCAFlow("tcp://localhost:" + System.getProperty("activemq.port1", "61616")) });
+            new JCAFlow("tcp://localhost:" + System.getenv("activemq.port1")) });
         jbi.setEmbedded(true);
         jbi.setUseMBeanServer(false);
         jbi.setCreateMBeanServer(false);

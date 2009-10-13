@@ -195,12 +195,17 @@
             <!-- exclude abstract test cases -->
             <exclude>**/Abstract*.*</exclude>
           </excludes>
+<!--
           <systemProperties>
             <property>
                 <name>activemq.port1</name>
-                <value>${activemq.port1}</value>
+                <value>${port1}</value>
             </property>
           </systemProperties>
+-->
+          <environmentVariables>
+            <activemq.port1>${port1}</activemq.port1>
+          </environmentVariables>
         </configuration>
       </plugin>
         <plugin>
@@ -216,7 +221,7 @@
                     <phase>process-resources</phase>
                     <configuration>
                         <portNames>
-                            <portName>activemq.port1</portName>
+                            <portName>port1</portName>
                         </portNames>
                     </configuration>
                 </execution>
