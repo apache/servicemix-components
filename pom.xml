@@ -232,6 +232,37 @@
           </execution>
         </executions>
       </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <environmentVariables>
+              <activemq.port1>${port1}</activemq.port1>
+              <activemq.port2>${port2}</activemq.port2>
+            </environmentVariables>
+          </configuration>
+        </plugin>
+          <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>build-helper-maven-plugin</artifactId>
+              <version>1.4</version>
+              <executions>
+                  <execution>
+                      <id>reserve-network-port</id>
+                      <goals>
+                          <goal>reserve-network-port</goal>
+                      </goals>
+                      <phase>process-resources</phase>
+                      <configuration>
+                          <portNames>
+                              <portName>port1</portName>
+                              <portName>port2</portName>
+                          </portNames>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+        
     </plugins>
   </build>
 </project>

@@ -77,7 +77,7 @@ public class WSNComponentTest extends TestCase {
     protected void setUp() throws Exception {
         jmsBroker = new BrokerService();
         jmsBroker.setPersistent(false);
-        jmsBroker.addConnector("tcp://localhost:61616");
+        jmsBroker.addConnector("tcp://localhost:" + System.getenv("activemq.port1"));
         jmsBroker.start();
 
         jbi = new JBIContainer();
@@ -89,7 +89,7 @@ public class WSNComponentTest extends TestCase {
         client = new DefaultServiceMixClient(jbi);
 
         wsnComponent = new WSNComponent();
-        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory("tcp://localhost:61616"));
+        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory("tcp://localhost:" + System.getenv("activemq.port1")));
         ActivationSpec as = new ActivationSpec();
         as.setComponentName("servicemix-wsn2005");
         as.setComponent(wsnComponent);

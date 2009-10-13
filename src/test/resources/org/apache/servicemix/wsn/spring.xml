@@ -21,6 +21,8 @@
   xmlns:wsn="http://servicemix.apache.org/wsn/1.0" xmlns:amq="http://activemq.org/config/1.0"
   xmlns:test="http://servicemix.org/test">
 
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
   <!-- the JBI container -->
   <sm:container id="jbi" embedded="true">
     <sm:activationSpecs>
@@ -76,13 +78,13 @@
 
   <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory"
     depends-on="broker">
-    <property name="brokerURL" value="tcp://localhost:61216" />
+    <property name="brokerURL" value="tcp://localhost:${activemq.port2}" />
   </bean>
 
   <amq:broker id="broker" persistent="false">
 
     <amq:transportConnectors>
-      <amq:transportConnector uri="tcp://localhost:61216" />
+      <amq:transportConnector uri="tcp://localhost:${activemq.port2}" />
     </amq:transportConnectors>
 
   </amq:broker>
