@@ -26,6 +26,11 @@ public class WSNSpringComponentTest extends SpringTestSupport {
     protected AbstractXmlApplicationContext createBeanFactory() {
         return new ClassPathXmlApplicationContext("org/apache/servicemix/wsn/spring.xml");
     }
+
+    public void tearDown() throws Exception {
+        Thread.sleep(5000);
+        super.tearDown();
+    }
     
     public void test() throws Exception {
         // Wait for the publisher to be registered
