@@ -88,6 +88,7 @@ public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
 
         // Ensure that only one temporary replyTo queue was created for multiple messages sent
 //
+        Thread.sleep(2000);
         assertEquals(0, countBrokerTemporaryQueues());
 
         logger.info(new SourceTransformer().toString(src));
