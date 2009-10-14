@@ -210,12 +210,14 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
     	}
     	// get the target endpoint descriptor
     	Document targetEndpointDescriptor = componentContext.getEndpointDescriptor(targetEndpoint);
-        // TODO: check for null
+        if (targetEndpointDescriptor == null) {
+            throw new JBIException("The target endpoint descriptor is null.");
+        }
     	// get the target endpoint definition (based on the descriptor)
     	Definition targetEndpointDefinition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, targetEndpointDescriptor);
     	// check if the WSDL is the target component as a WSDL definition
     	if (targetEndpointDefinition == null) {
-    		throw new JBIException("The target component has no WSDL definition.");
+    		throw new JBIException("The target endpoint has no WSDL definition.");
     	}
     	// get the targetService in the endpoint definition
     	Service targetServiceInDefinition = targetEndpointDefinition.getService(this.getTargetService());
