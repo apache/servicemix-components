@@ -17,6 +17,9 @@
 package org.apache.servicemix.camel;
 
 import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+
+import org.apache.servicemix.client.ServiceMixClient;
 
 /**
  * @version $Revision$
@@ -29,6 +32,15 @@ public class JavaCamelRouteDslTest extends JbiInOutTest {
     protected void setUp() throws Exception {
         super.setUp();
         suName = "su7";
+    }
+    
+    @Override
+    protected void configureExchange(ServiceMixClient client,
+            MessageExchange exchange) {
+        ServiceEndpoint endpoint = client.getContext().getEndpoint(
+                CamelProviderEndpoint.SERVICE_NAME, "cheese");
+        assertNotNull("Should have a Camel endpoint exposed in JBI!", endpoint);
+        exchange.setEndpoint(endpoint);
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.jbi.messaging.InOptionalOut;
 import javax.jbi.messaging.InOut;
@@ -60,9 +61,37 @@ public class JbiBinding implements HeaderFilterStrategyAware {
     private final CamelContext context;
     private HeaderFilterStrategy strategy;
     
+    /**
+     * Create the binding instance for a given CamelContext
+     * 
+     * @param context the CamelContext
+     */
     public JbiBinding(CamelContext context) {
         super();
         this.context = context;
+    }
+    
+    /**
+     * Run a block of code with the {@link CamelContext#getApplicationContextClassLoader()} set as the thread context classloader.
+     * 
+     * @param callable the block of code to be run
+     * @throws Exception exceptions being thrown while running the block of code
+     */
+    public void runWithCamelContextClassLoader(Callable<Object> callable) throws Exception {
+        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        try {
+            ClassLoader loader = context.getApplicationContextClassLoader();
+            if (loader != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Set the thread context classloader " + loader);
+                }
+                Thread.currentThread().setContextClassLoader(loader);
+            }
+            callable.call();
+        } finally {
+            // restore CL
+            Thread.currentThread().setContextClassLoader(original);
+        }        
     }
 
     public MessageExchange makeJbiMessageExchange(Exchange camelExchange,

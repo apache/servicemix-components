@@ -17,7 +17,6 @@
 package org.apache.servicemix.camel;
 
 import java.util.List;
-import javax.naming.Context;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -34,7 +33,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultHeaderFilterStrategy;
 import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.util.jndi.JndiContext;
-
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;

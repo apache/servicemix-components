@@ -24,10 +24,8 @@ import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.DefaultExchange;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
 

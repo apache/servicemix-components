@@ -25,7 +25,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.MessageList;
 import org.apache.servicemix.tck.ReceiverComponent;
-import org.apache.servicemix.components.util.EchoComponent;
 
 /**
  * @version $Revision: 563665 $

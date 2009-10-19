@@ -37,8 +37,8 @@
   </scm>
 
   <properties>
-    <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01</previous.releases>
-    <camel-version>2.0.0</camel-version>
+    <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01</previous.releases>
+    <camel-version>2.1-SNAPSHOT</camel-version>
     <servicemix-version>3.3.1</servicemix-version>
     <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
     <servicemix.osgi.import>      
@@ -145,9 +145,8 @@
     <!-- testing -->
     <dependency>
       <groupId>org.apache.camel</groupId>
-      <artifactId>camel-core</artifactId>
+      <artifactId>camel-test</artifactId>
       <version>${camel-version}</version>
-      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>

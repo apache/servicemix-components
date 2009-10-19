@@ -16,16 +16,16 @@
  */
 package org.apache.servicemix.camel;
 
-import org.apache.camel.ContextTestSupport;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.CamelTestSupport;
 
 /**
  * @version $Revision: 563665 $
  */
-public class TestCamelRouter extends ContextTestSupport {
+public class TestCamelRouter extends CamelTestSupport {
     private MockEndpoint a;
     private MockEndpoint b;
     private MockEndpoint c;

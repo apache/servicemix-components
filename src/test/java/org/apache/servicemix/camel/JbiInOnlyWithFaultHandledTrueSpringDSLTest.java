@@ -31,7 +31,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.processor.DeadLetterChannel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.servicemix.MessageExchangeListener;

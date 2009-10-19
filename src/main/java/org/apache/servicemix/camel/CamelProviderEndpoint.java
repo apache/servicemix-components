@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.camel;
 
+import java.util.concurrent.Callable;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
@@ -92,11 +94,17 @@ public class CamelProviderEndpoint extends ProviderEndpoint implements Synchroni
             if (logger.isDebugEnabled()) {
                 logger.debug("Received exchange: " + exchange);
             }
-            Exchange camelExchange = binding.createExchange(exchange);
+            final Exchange camelExchange = binding.createExchange(exchange);
             camelExchange.addOnCompletion(this);
-            camelProcessor.process(camelExchange);
-        // This is not compliant with the default MEPs
+            
+            binding.runWithCamelContextClassLoader(new Callable<Object>() {
+                public Object call() throws Exception {
+                    camelProcessor.process(camelExchange);
+                    return null;
+                }
+            });
         } else {
+            // This is not complaint with the default MEPs
             throw new IllegalStateException("Provider exchange is ACTIVE, but no in or fault is provided");
         }
     }

@@ -18,6 +18,7 @@ package org.apache.servicemix.camel;
 
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.xml.namespace.QName;
 
@@ -100,8 +101,13 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
             }
         }
 
-        public void process(Exchange exchange) throws Exception {
-            consumer.process(exchange);
+        public void process(final Exchange exchange) throws Exception {
+            binding.runWithCamelContextClassLoader(new Callable<Object>() {                
+                public Object call() throws Exception {
+                    consumer.process(exchange);
+                    return null;
+                }
+            });
         }
         
         /*
