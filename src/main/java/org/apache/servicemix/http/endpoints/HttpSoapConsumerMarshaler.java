@@ -114,6 +114,8 @@ public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
     public void sendOut(MessageExchange exchange, NormalizedMessage outMsg, HttpServletRequest request, HttpServletResponse response) throws Exception {
         addResponseHeaders(exchange, request, response);
+        // the content type is specific to this marshaler
+        response.setContentType("application/soap+xml");
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
         OutputStream encodingStream = getResponseEncodingStream(request.getHeader(HttpHeaders.CONTENT_ENCODING), response.getOutputStream());
@@ -125,7 +127,6 @@ public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
         InterceptorChain phase = getChain(Phase.ServerOut);
         phase.doIntercept(msg);
         encodingStream.close();
-        // TODO: handle http headers: Content-Type, ...
     }
 
     public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -152,6 +153,8 @@ public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
     public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
         addResponseHeaders(exchange, request, response);
+        // the content type is specific to this marshaler
+        response.setContentType("application/soap+xml");
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
@@ -168,7 +171,6 @@ public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
         msg.setContent(Exception.class, soapFault);
         phase.doIntercept(msg);
         encodingStream.close();
-        // TODO: handle http headers: Content-Type, ...
     }
 
     protected InterceptorChain getChain(Phase phase) {
