@@ -16,31 +16,31 @@
  */
 package org.apache.servicemix.camel.osgi;
 
-import org.springframework.osgi.context.BundleContextAware;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.DisposableBean;
-import org.apache.servicemix.camel.JbiComponent;
 import org.apache.servicemix.camel.CamelComponent;
+import org.apache.servicemix.camel.JbiComponent;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * OSGi-specific servicemix-camel {@link JbiComponent} implementation that looks up the {@link CamelComponent} in the OSGi Service Registry
  */
-public class OsgiJbiComponent extends JbiComponent implements BundleContextAware, InitializingBean, DisposableBean {
+public class OsgiJbiComponent extends JbiComponent implements InitializingBean, DisposableBean {
 
     private BundleContext bundleContext;
     private ServiceReference reference;
 
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public void afterPropertiesSet() throws Exception {
+        // get the servicemix-camel bundle's context
+        bundleContext = FrameworkUtil.getBundle(OsgiJbiComponent.class).getBundleContext();
+        
         reference = bundleContext.getServiceReference(CamelComponent.class.getName());
         if (reference == null) {
             throw new IllegalStateException(CamelComponent.class.getName() + " not found in the OSGi registry");
         }
+        
         CamelComponent component = (CamelComponent) bundleContext.getService(reference);
         setCamelJbiComponent(component);
     }
