@@ -43,7 +43,7 @@
     <!-- Due to the use of: JBIContainer.setUseNewTransactionModel(boolean) -->
     <servicemix-version>3.3</servicemix-version>
     <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
-    <activemq-version>5.2.0</activemq-version>
+    <activemq-version>5.3.0</activemq-version>
 
     <servicemix.osgi.import>
         javax.security.auth,
