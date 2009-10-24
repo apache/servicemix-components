@@ -250,12 +250,18 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     @Override
     public void validate() throws DeploymentException {
         if (getPojo() == null) {
-            throw new DeploymentException("pojo must be set");
+            // check if the POJO attribute is given.
+            throw new DeploymentException("pojo attribute is mandatory.");
         }
+        
+        // construct the JBI address
+        String address = "jbi://" + ID_GENERATOR.generateSanitizedId();
+        
+        // construct the CXF server (using JAXB or Aegis)
         if (isUseAegis()) {
             sf = new ServerFactoryBean();
             sf.setServiceBean(getPojo());
-            sf.setAddress("jbi://" + ID_GENERATOR.generateSanitizedId());
+            sf.setAddress(address);
             sf.getServiceFactory().setDataBinding(new AegisDatabinding());
           
             sf.getServiceFactory().setPopulateFromClass(true);
@@ -323,6 +329,42 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             }
 
         }
+        
+        // prepare the CXF server in case of JAXB
+        if (!isUseAegis()) {
+            endpoint.publish(address);
+            server = endpoint.getServer();
+        }
+
+        if (getService() == null) {
+            // set the service using CXF endpoint service name
+            setService(server.getEndpoint().getService().getName());
+        }
+
+        if (getEndpoint() == null) {
+            // set the endpoint using the CXF endpoint info
+            setEndpoint(server.getEndpoint().getEndpointInfo()
+                .getName().getLocalPart());
+        }
+        setPojoService(server.getEndpoint().getService().getName());
+        setPojoEndpoint(server.getEndpoint().getEndpointInfo().getName().getLocalPart());
+        if (!isUseJBIWrapper() && !isUseSOAPEnvelope()) {
+            // cleanup interceptors
+            removeInterceptor(server.getEndpoint().getBinding().getInInterceptors(), "ReadHeadersInterceptor");
+            removeInterceptor(server.getEndpoint().getBinding().getInFaultInterceptors(), "ReadHeadersInterceptor");
+            removeInterceptor(server.getEndpoint().getBinding().getOutInterceptors(), "SoapOutInterceptor");
+            removeInterceptor(server.getEndpoint().getBinding().getOutFaultInterceptors(), "SoapOutInterceptor");
+            removeInterceptor(server.getEndpoint().getBinding().getOutInterceptors(), "StaxOutInterceptor");
+        }
+
+        // publish the WSDL in the endpoint descriptor
+        try {
+            definition = new ServiceWSDLBuilder(getBus(), server.getEndpoint().getService().getServiceInfos().iterator().next()).build();
+            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
+        } catch (WSDLException e) {
+            throw new DeploymentException(e);
+        }
+        
         super.validate();
 
     }
@@ -407,52 +449,17 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     @Override
     public void start() throws Exception {
         super.start();
-        address = "jbi://" + ID_GENERATOR.generateSanitizedId();
-        try {
-            if (isUseAegis()) {
-                server.start();
-            } else {
-                endpoint.publish(address);
-                server = endpoint.getServer();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        
+        if (isUseAegis()) {
+            // if aegis databinding is used, start the server
+            server.start();
         }
-
-        if (getService() == null) {
-            setService(server.getEndpoint().getService().getName());
-        }
-        if (getEndpoint() == null) {
-            setEndpoint(server.getEndpoint().getEndpointInfo()
-                .getName().getLocalPart());
-        }
-        setPojoService(server.getEndpoint().getService().getName());
-        setPojoEndpoint(server.getEndpoint().getEndpointInfo()
-                .getName().getLocalPart());
-        if (!isUseJBIWrapper() && !isUseSOAPEnvelope()) {
-            removeInterceptor(server.getEndpoint().getBinding().getInInterceptors(), "ReadHeadersInterceptor");
-            removeInterceptor(server.getEndpoint().getBinding().getInFaultInterceptors(),
-                              "ReadHeadersInterceptor");
-            removeInterceptor(server.getEndpoint().getBinding().getOutInterceptors(), "SoapOutInterceptor");
-            removeInterceptor(server.getEndpoint().getBinding().getOutFaultInterceptors(),
-                              "SoapOutInterceptor");
-            removeInterceptor(server.getEndpoint().getBinding().getOutInterceptors(), "StaxOutInterceptor");
-        }
-
-        try {
-            definition = new ServiceWSDLBuilder(getBus(), server.getEndpoint().getService().getServiceInfos()
-                .iterator().next()).build();
-            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
-        } catch (WSDLException e) {
-            throw new DeploymentException(e);
-        }
+        
         ReflectionUtils.doWithFields(getPojo().getClass(), new FieldCallback() {
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
                 if (field.getAnnotation(WebServiceRef.class) != null) {
                     ServiceImpl s = new ServiceImpl(getBus(), null, null, field.getType());
-                    s
-                        .addPort(new QName("port"), JBITransportFactory.TRANSPORT_ID,
-                                 "jbi://" + ID_GENERATOR.generateSanitizedId());
+                    s.addPort(new QName("port"), JBITransportFactory.TRANSPORT_ID, "jbi://" + ID_GENERATOR.generateSanitizedId());
                     Object o = s.getPort(new QName("port"), field.getType());
                     field.setAccessible(true);
                     field.set(getPojo(), o);
@@ -460,6 +467,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             }
         });
         ReflectionUtils.callLifecycleMethod(getPojo(), PostConstruct.class);
+        // inject the POJO
         injectPojo();
     }
 
