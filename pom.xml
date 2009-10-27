@@ -54,6 +54,9 @@
       sun.misc;resolution:=optional,
       *
     </servicemix.osgi.import>
+    <servicemix.osgi.dynamic.import>
+	javax.*,org.w3c.*,org.xml.*,org.drools.*
+    </servicemix.osgi.dynamic.import>
     <servicemix.osgi.export>
       org.apache.servicemix.drools*;version=${project.version},
       META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.drools
