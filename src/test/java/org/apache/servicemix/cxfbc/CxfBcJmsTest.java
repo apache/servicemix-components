@@ -90,6 +90,7 @@ public class CxfBcJmsTest extends SpringTestSupport {
     }
     
     protected void tearDown() throws Exception {
+        super.tearDown();
         try {
             embeddedLauncher.stopServer();         
         } catch (IOException ex) {
