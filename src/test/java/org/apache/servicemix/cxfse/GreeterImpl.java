@@ -61,6 +61,9 @@ public class GreeterImpl implements Greeter {
         if ("WebServiceContext".equals(me)) {
             testWebServiceContext();
         }
+        if ("runtime exception".equals(me)) {
+            throw new RuntimeException("this is a runtime exception");
+        }
         String txt = null;
         try {
             
