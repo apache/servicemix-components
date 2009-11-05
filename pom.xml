@@ -39,7 +39,7 @@
 
 	<properties>
 		<servicemix-version>3.3</servicemix-version>
-		<servicemix-shared-version>2009.01</servicemix-shared-version>
+		<servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
 		<jaxb-version>2.1.6</jaxb-version>
 
 		<servicemix.osgi.import>
