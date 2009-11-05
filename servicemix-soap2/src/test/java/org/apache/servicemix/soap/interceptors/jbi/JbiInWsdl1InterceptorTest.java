@@ -80,4 +80,41 @@ public class JbiInWsdl1InterceptorTest extends TestCase {
         log.info(baos.toString());
     }
     
+    public void testNamespace() throws Exception {
+        
+        Wsdl1SoapOperationImpl wsdlOperation = new Wsdl1SoapOperationImpl();
+        Wsdl1SoapMessageImpl wsdlMessage = new Wsdl1SoapMessageImpl();
+        wsdlMessage.setName(new QName("urn:test", "message"));
+        Wsdl1SoapPartImpl part = new Wsdl1SoapPartImpl();
+        part.setBody(true);
+        wsdlMessage.addPart(part);
+        wsdlMessage.setMessageName("message");
+        wsdlOperation.setInput(wsdlMessage);
+        wsdlOperation.setStyle(Wsdl1SoapBinding.Style.DOCUMENT);
+
+        String input = "<echo xmlns='http://www.example.org'><request xmlns=''><message>hello</message></request></echo>";
+        
+        Message message = new MessageImpl();
+        message.put(Operation.class, wsdlOperation);
+        XMLStreamReader reader = StaxUtil.createReader(new ByteArrayInputStream(input.getBytes()));
+        reader.nextTag();
+        message.setContent(XMLStreamReader.class, reader);
+        
+        JbiInWsdl1Interceptor interceptor = new JbiInWsdl1Interceptor(true);
+        interceptor.handleMessage(message);
+        Source source = message.getContent(Source.class);
+        assertNotNull(source);
+        Document doc = DomUtil.parse(source);
+        Element root = doc.getDocumentElement();
+        assertEquals(JbiConstants.WSDL11_WRAPPER_NAMESPACE, root.getNamespaceURI());
+        assertEquals(JbiConstants.WSDL11_WRAPPER_MESSAGE_LOCALNAME, root.getLocalName());
+        
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
+  
+        //assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\" xmlns:msg=\"urn:test\" name=\"message\" type=\"msg:message\" version=\"1.0\"><jbi:part><echo xmlns=\"http://www.example.org\"><request xmlns=\"\"><message>hello</message></request></echo></jbi:part></jbi:message>", baos.toString());
+        log.info(baos.toString());
+    }
+    
 }
