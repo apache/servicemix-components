@@ -46,7 +46,7 @@
     
     <properties>
         <servicemix-version>3.3</servicemix-version>
-        <servicemix-shared-version>2009.01</servicemix-shared-version>
+        <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
         <servicemix-utils-version>1.1.0</servicemix-utils-version>
         <jsmpp-version>2.0</jsmpp-version>
         <slf4j-version>1.4.3</slf4j-version>
