@@ -113,7 +113,7 @@ public class JbiInWsdl1InterceptorTest extends TestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
   
-        //assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\" xmlns:msg=\"urn:test\" name=\"message\" type=\"msg:message\" version=\"1.0\"><jbi:part><echo xmlns=\"http://www.example.org\"><request xmlns=\"\"><message>hello</message></request></echo></jbi:part></jbi:message>", baos.toString());
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\" xmlns:msg=\"urn:test\" name=\"message\" type=\"msg:message\" version=\"1.0\"><jbi:part><echo xmlns=\"http://www.example.org\"><request xmlns=\"\"><message>hello</message></request></echo></jbi:part></jbi:message>", baos.toString());
         log.info(baos.toString());
     }
     

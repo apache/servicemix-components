@@ -545,15 +545,25 @@ public class JbiInWsdl1Interceptor extends AbstractInterceptor {
         }
 
         public int getNamespaceCount() {
-            return 0;
+            switch (state) {
+            case STATE_START_ELEMENT_WRAPPER:
+            case STATE_END_ELEMENT_WRAPPER:
+            case STATE_START_ELEMENT_PART:
+            case STATE_END_ELEMENT_PART:
+                return 0;
+            case STATE_RUN_PART:
+                return parts.get(part).get(reader).getNamespaceCount();
+            default:
+                throw new IllegalStateException();
+        }
         }
 
         public String getNamespacePrefix(int i) {
-            throw new UnsupportedOperationException("Not implemented");
+            return parts.get(part).get(reader).getNamespacePrefix(i);
         }
 
         public String getNamespaceURI(int i) {
-            throw new UnsupportedOperationException("Not implemented");
+            return parts.get(part).get(reader).getNamespaceURI(i);
         }
 
         public NamespaceContext getNamespaceContext() {
