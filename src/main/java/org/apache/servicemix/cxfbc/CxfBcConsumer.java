@@ -314,7 +314,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             registerListServiceHandler();
             applyFeatures();
             checkJmsTransportTransaction();
-            server.start();
         } catch (Exception ex){
             super.deactivate();
             throw ex;
@@ -367,6 +366,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     @Override
     public void start() throws Exception {
+        server.start();
         super.start();
         this.started = true;
     }
