@@ -21,6 +21,7 @@ import java.io.InputStream;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
@@ -45,11 +46,12 @@ import org.xml.sax.SAXException;
 public class DomUtil {
 
     private static DocumentBuilderFactory documentBuilderFactory;
+    private static DocumentBuilder documentBuilder;
     private static TransformerFactory transformerFactory;
     
     public static Document createDocument() {
         try {
-            return getDocumentBuilderFactory().newDocumentBuilder().newDocument();
+            return getDocumentBuilder().newDocument();
         } catch (ParserConfigurationException e) {
             throw new Fault(e);
         }
@@ -88,6 +90,17 @@ public class DomUtil {
             documentBuilderFactory = f;
         }
         return documentBuilderFactory;
+    }
+
+    /**
+     * Returns a cached DocumentBuilder instance - should only be used for methods that are considered thread-safe
+     * (e.g. {@link DocumentBuilder#newDocument})
+     */
+    public static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
+        if (documentBuilder == null) {
+            documentBuilder = getDocumentBuilderFactory().newDocumentBuilder();
+        }
+        return documentBuilder;
     }
     
     public static TransformerFactory getTransformerFactory() {
