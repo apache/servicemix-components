@@ -45,7 +45,7 @@ import org.osgi.framework.Bundle;
  * When deploying a JBI packaged SU to camel component, camel-spring and camel-osgi 
  * can not be found by Spring/XBean, thus leading to an exception about the spring 
  * and osgi namespaces not being found.  We need to hack the classloader for SUs to 
- * force a reference to camel-spring and camel-osgi in the SU classloader parents.
+ * force a reference to camel-spring, camel-osgi and camel-cxf in the SU classloader parents.
  *
  * We also need to inject the bundleContext into the CamelContextFactoryBean to 
  * make sure the CamelContextFactoryBean will replace the regular ResolverUtils 
@@ -131,7 +131,7 @@ public class OsgiCamelJbiComponent extends CamelJbiComponent implements BundleCo
             for (Bundle bundle : bundleContext.getBundles()) {
                 try {
                     String symbolicName = bundle.getSymbolicName();
-                    if (symbolicName.contains("camel-spring") || symbolicName.contains("camel-osgi")) {
+                    if (symbolicName.contains("camel-spring") || symbolicName.contains("camel-osgi") || symbolicName.contains("camel-cxf")) {
                         parents.add(BundleDelegatingClassLoader.createBundleClassLoaderFor(bundle));
                     }
                 } catch (Throwable e) {
