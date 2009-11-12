@@ -40,15 +40,26 @@ import org.xml.sax.SAXException;
 
 /**
  * DOM related utilities.
- * 
+ *
  * @author <a href="mailto:gnodet [at] gmail.com">Guillaume Nodet</a>
  */
 public class DomUtil {
 
-    private static DocumentBuilderFactory documentBuilderFactory;
-    private static DocumentBuilder documentBuilder;
-    private static TransformerFactory transformerFactory;
-    
+    private static TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    private static DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+
+    private static final ThreadLocal<DocumentBuilder> documentBuilderLocal =
+            new ThreadLocal<DocumentBuilder>() {
+                @Override
+                protected DocumentBuilder initialValue() {
+                    try {
+                        return documentBuilderFactory.newDocumentBuilder();
+                    } catch (ParserConfigurationException e) {
+                        throw new Fault(e);
+                    }
+                }
+            };
+
     public static Document createDocument() {
         try {
             return getDocumentBuilder().newDocument();
@@ -56,19 +67,17 @@ public class DomUtil {
             throw new Fault(e);
         }
     }
-    
+
     public static Document parse(InputStream is) {
         try {
-            return getDocumentBuilderFactory().newDocumentBuilder().parse(is);
+            return documentBuilderLocal.get().parse(is);
         } catch (SAXException e) {
             throw new Fault(e);
         } catch (IOException e) {
             throw new Fault(e);
-        } catch (ParserConfigurationException e) {
-            throw new Fault(e);
         }
     }
-    
+
     public static Document parse(Source source) {
         try {
             Document doc = createDocument();
@@ -84,11 +93,6 @@ public class DomUtil {
     }
 
     public static DocumentBuilderFactory getDocumentBuilderFactory() {
-        if (documentBuilderFactory == null) {
-            DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-            f.setNamespaceAware(true);
-            documentBuilderFactory = f;
-        }
         return documentBuilderFactory;
     }
 
@@ -97,21 +101,16 @@ public class DomUtil {
      * (e.g. {@link DocumentBuilder#newDocument})
      */
     public static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
-        if (documentBuilder == null) {
-            documentBuilder = getDocumentBuilderFactory().newDocumentBuilder();
-        }
-        return documentBuilder;
+        return documentBuilderLocal.get();
     }
-    
+
     public static TransformerFactory getTransformerFactory() {
-        if (transformerFactory == null) {
-            transformerFactory =  TransformerFactory.newInstance();
-        }
         return transformerFactory;
     }
 
     /**
      * Get the first child element
+     *
      * @param parent
      * @return
      */
@@ -125,7 +124,7 @@ public class DomUtil {
         }
         return null;
     }
-    
+
     /**
      * Returns the text of the element
      */
@@ -143,6 +142,7 @@ public class DomUtil {
 
     /**
      * Get the next sibling element
+     *
      * @param el
      * @return
      */
@@ -154,7 +154,7 @@ public class DomUtil {
         }
         return null;
     }
-    
+
     public static Element createElement(Node parent, QName name) {
         Document doc = parent instanceof Document ? (Document) parent : parent.getOwnerDocument();
         Element element;
@@ -162,28 +162,28 @@ public class DomUtil {
             element = doc.createElementNS(name.getNamespaceURI(), name.getPrefix() + ":" + name.getLocalPart());
             String attr = recursiveGetAttributeValue(parent, XMLConstants.XMLNS_ATTRIBUTE + ":" + name.getPrefix());
             if (attr == null || !attr.equals(name.getNamespaceURI())) {
-                element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + name.getPrefix(), 
-                                     name.getNamespaceURI());
+                element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + name.getPrefix(),
+                        name.getNamespaceURI());
             }
         } else if (name.getNamespaceURI() != null && name.getNamespaceURI().length() > 0) {
             element = doc.createElementNS(name.getNamespaceURI(), name.getLocalPart());
             String attr = recursiveGetAttributeValue(parent, XMLConstants.XMLNS_ATTRIBUTE);
             if (attr == null || !attr.equals(name.getNamespaceURI())) {
-                element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE, 
-                                     name.getNamespaceURI());
+                element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE,
+                        name.getNamespaceURI());
             }
         } else {
             element = doc.createElementNS(null, name.getLocalPart());
             String attr = recursiveGetAttributeValue(parent, XMLConstants.XMLNS_ATTRIBUTE);
             if (attr == null || attr.length() > 0) {
-                element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE, 
-                                     "");
+                element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE,
+                        "");
             }
         }
         parent.appendChild(element);
         return element;
     }
-    
+
     /**
      * Creates a QName instance from the given namespace context for the given qualifiedName
      *
@@ -198,8 +198,7 @@ public class DomUtil {
             String localName = qualifiedName.substring(index + 1);
             String uri = recursiveGetAttributeValue(element, XMLConstants.XMLNS_ATTRIBUTE + ":" + prefix);
             return new QName(uri, localName, prefix);
-        }
-        else {
+        } else {
             String uri = recursiveGetAttributeValue(element, XMLConstants.XMLNS_ATTRIBUTE);
             if (uri != null) {
                 return new QName(uri, qualifiedName);
