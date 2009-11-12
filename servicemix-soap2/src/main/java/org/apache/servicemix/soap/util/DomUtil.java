@@ -46,7 +46,11 @@ import org.xml.sax.SAXException;
 public class DomUtil {
 
     private static TransformerFactory transformerFactory = TransformerFactory.newInstance();
-    private static DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    private static DocumentBuilderFactory documentBuilderFactory;
+    static {
+        documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+    }
 
     private static final ThreadLocal<DocumentBuilder> documentBuilderLocal =
             new ThreadLocal<DocumentBuilder>() {
