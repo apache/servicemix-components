@@ -115,7 +115,14 @@ public class JmsSoapProviderEndpoint extends JmsProviderEndpoint {
         if (wsdl == null) {
             throw new DeploymentException("wsdl property must be set");
         }
-        JmsSoapProviderMarshaler marshaler = new JmsSoapProviderMarshaler();
+        JmsSoapProviderMarshaler marshaler;
+        if (this.getMarshaler() instanceof JmsSoapProviderMarshaler) {
+            marshaler = (JmsSoapProviderMarshaler) this.getMarshaler();
+        } else if (this.getMarshaler() == null) {
+            marshaler = new JmsSoapProviderMarshaler();
+        } else {
+            throw new DeploymentException("The configured marshaler must inherit JmsSoapProviderMarshaler");
+        }
         try {
             description = DomUtil.parse(wsdl.getInputStream());
             Element elem = description.getDocumentElement();
