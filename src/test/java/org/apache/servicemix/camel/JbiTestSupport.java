@@ -16,6 +16,10 @@
  */
 package org.apache.servicemix.camel;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jbi.JBIException;
+import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.CamelContext;
@@ -41,6 +46,8 @@ import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.container.SpringJBIContainer;
+import org.apache.servicemix.jbi.event.ExchangeEvent;
+import org.apache.servicemix.jbi.event.ExchangeListener;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 
 /**
@@ -67,7 +74,7 @@ public abstract class JbiTestSupport extends TestSupport {
     protected ProducerTemplate client;
 
     protected ServiceMixClient servicemixClient;
-
+    
     /**
      * Sends an exchange to the endpoint
      */
@@ -155,7 +162,7 @@ public abstract class JbiTestSupport extends TestSupport {
 
         camelContext.start();
     }
-
+    
     protected CamelContext createCamelContext() {
         return new DefaultCamelContext();
     }
@@ -181,10 +188,10 @@ public abstract class JbiTestSupport extends TestSupport {
         return createActivationSpec(comp, service, "endpoint");
     }
 
-    protected ActivationSpec createActivationSpec(Object comp, QName service, String endpoint) {
+    protected ActivationSpec createActivationSpec(Object comp, QName service, String endpointName) {
         ActivationSpec spec = new ActivationSpec(comp);
         spec.setService(service);
-        spec.setEndpoint(endpoint);
+        spec.setEndpoint(endpointName);
         return spec;
     }
 
@@ -198,7 +205,28 @@ public abstract class JbiTestSupport extends TestSupport {
     }
 
     protected MockEndpoint getMockEndpoint(String uri) {
-        return (MockEndpoint)camelContext.getEndpoint(uri);
+        return (MockEndpoint) camelContext.getEndpoint(uri);
+    }
+
+    protected void enableCheckForSerializableExchanges() {
+        jbiContainer.addListener(new ExchangeListener() {
+
+            public void exchangeSent(ExchangeEvent exchangeEvent) {
+                MessageExchange exchange = exchangeEvent.getExchange();
+                try {
+                    ObjectOutputStream oos = new ObjectOutputStream(new ByteArrayOutputStream());
+                    oos.writeObject(exchange);
+                } catch (NotSerializableException e) {
+                    fail("Non-serializable MessageExchange found: " + exchange);
+                } catch (IOException e) {
+                    fail("Error while trying to serialize MessageExchange " + exchange + ":" + e.getMessage());
+                }
+            }
+
+            public void exchangeAccepted(ExchangeEvent exchangeEvent) {
+                // graciously do nothing
+            }
+        });
     }
 
 

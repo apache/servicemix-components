@@ -116,9 +116,8 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
         Map map = URISupport.parseQuery(uri.getQuery());
         String camelUri = uri.getSchemeSpecificPart();
         Endpoint camelEndpoint = jbiComponent.getCamelContext().getEndpoint(camelUri);
-        Processor processor = jbiComponent.createCamelProcessor(camelEndpoint);
-        CamelProviderEndpoint endpoint = new CamelProviderEndpoint(getServiceUnit(), camelEndpoint, jbiComponent.createBinding(), processor);
-
+        Processor processor = jbiComponent.createCamelProcessor(camelEndpoint);        
+        CamelProviderEndpoint endpoint = new CamelProviderEndpoint(getServiceUnit(), camelEndpoint, jbiComponent.createBinding(camelEndpoint), processor);
         IntrospectionSupport.setProperties(endpoint, map);
 
         return endpoint;

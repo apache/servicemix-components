@@ -24,13 +24,11 @@ import org.apache.camel.CamelContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class TwoServicemixCamelSusTest extends
-        NonJbiCamelEndpointsIntegrationTest {
-    private static final transient Log LOG = LogFactory
-            .getLog(TwoServicemixCamelSusTest.class);
+public class TwoServicemixCamelSusTest extends NonJbiCamelEndpointsIntegrationTest {
+    
+    private static final transient Log LOG = LogFactory.getLog(TwoServicemixCamelSusTest.class);
 
-    private void deploySu(CamelJbiComponent component, String suName)
-            throws Exception {
+    private void deploySu(CamelJbiComponent component, String suName) throws Exception {
         String serviceUnitConfiguration = suName + "-src/camel-context.xml";
         URL url = getClass().getResource(serviceUnitConfiguration);
         File path = new File(new URI(url.toString()));
@@ -43,8 +41,7 @@ public class TwoServicemixCamelSusTest extends
         component.getServiceUnitManager().start(suName);
     }
 
-    private void undeploySu(CamelJbiComponent component, String suName)
-            throws Exception {
+    private void undeploySu(CamelJbiComponent component, String suName) throws Exception {
         String serviceUnitConfiguration = suName + "-src/camel-context.xml";
         URL url = getClass().getResource(serviceUnitConfiguration);
         File path = new File(new URI(url.toString()));

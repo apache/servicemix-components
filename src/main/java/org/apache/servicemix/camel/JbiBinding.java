@@ -16,11 +16,8 @@
  */
 package org.apache.servicemix.camel;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.jbi.messaging.InOptionalOut;
@@ -39,18 +36,20 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultExchange;
-import org.apache.camel.impl.DefaultHeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategy;
-import org.apache.camel.spi.HeaderFilterStrategyAware;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.servicemix.camel.util.BasicSerializationHeaderFilterStrategy;
+import org.apache.servicemix.camel.util.HeaderFilterStrategies;
+import org.apache.servicemix.camel.util.StrictSerializationHeaderFilterStrategy;
+import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
  *
  * @version $Revision: 563665 $
  */
-public class JbiBinding implements HeaderFilterStrategyAware {
+public class JbiBinding {
 
     public static final String MESSAGE_EXCHANGE = "JbiMessageExchange";
     public static final String OPERATION = "JbiOperation";
@@ -59,18 +58,36 @@ public class JbiBinding implements HeaderFilterStrategyAware {
     private static final Log LOG = LogFactory.getLog(JbiBinding.class);
 
     private final CamelContext context;
-    private HeaderFilterStrategy strategy;
-    
+
+    private HeaderFilterStrategies strategies = new HeaderFilterStrategies();
+    private boolean convertExceptions;
+
     /**
      * Create the binding instance for a given CamelContext
      * 
      * @param context the CamelContext
      */
     public JbiBinding(CamelContext context) {
-        super();
-        this.context = context;
+    	this(context, false);
     }
-    
+
+    public JbiBinding(CamelContext context, boolean strictSerialization) {
+        this.context = context;
+        if (strictSerialization) {
+            strategies.add(new StrictSerializationHeaderFilterStrategy());
+        } else {
+            strategies.add(new BasicSerializationHeaderFilterStrategy());
+        }
+    }
+
+    public void addHeaderFilterStrategy(HeaderFilterStrategy strategy) {
+        strategies.add(strategy);
+    }
+
+    public void setConvertExceptions(boolean convertExceptions) {
+        this.convertExceptions = convertExceptions;
+    }
+
     /**
      * Run a block of code with the {@link CamelContext#getApplicationContextClassLoader()} set as the thread context classloader.
      * 
@@ -181,7 +198,7 @@ public class JbiBinding implements HeaderFilterStrategyAware {
     public void copyHeadersFromJbiToCamel(MessageExchange from, Exchange to) {
         for (Object object : from.getPropertyNames()) {
             String key = object.toString();
-            if (!getHeaderFilterStrategy().applyFilterToCamelHeaders(key, from.getProperty(key), null)) {
+            if (!strategies.applyFilterToCamelHeaders(key, from.getProperty(key), null)) {
                 to.setProperty(key, from.getProperty(key));
             }
         }
@@ -200,7 +217,7 @@ public class JbiBinding implements HeaderFilterStrategyAware {
         }
         for (Object object : from.getPropertyNames()) {
             String key = object.toString();
-            if (!strategy.applyFilterToCamelHeaders(key, from.getProperty(key), to.getExchange())) { 
+            if (!strategies.applyFilterToCamelHeaders(key, from.getProperty(key), to.getExchange())) { 
                 to.setHeader(key, from.getProperty(key));
             }
         }
@@ -224,8 +241,8 @@ public class JbiBinding implements HeaderFilterStrategyAware {
         
         for (String key : message.getHeaders().keySet()) {
             Object value = message.getHeader(key);
-            if (isSerializable(value) && !getHeaderFilterStrategy().applyFilterToCamelHeaders(key, value, message.getExchange())) {
-                normalizedMessage.setProperty(key, value);
+            if (value != null && !strategies.applyFilterToCamelHeaders(key, value, message.getExchange())) {
+            	normalizedMessage.setProperty(key, value);
             }
         }
         
@@ -257,10 +274,28 @@ public class JbiBinding implements HeaderFilterStrategyAware {
         }
     }
 
+    /**
+     * Extract an Exception from the exchange.  This method will always return a
+     *
+     * @param exchange the Camel exchange
+     * @return an exception
+     */
+    public Exception extractException(Exchange exchange) {
+    	 Exception e  = exchange.getException();
+         if (e == null || convertExceptions) {
+             e = context.getTypeConverter().convertTo(FaultException.class, exchange);
+         }
+         return e;
+    }
+
     private void copyHeadersFromCamelToJbi(Exchange exchange, MessageExchange messageExchange) {
         for (String key : exchange.getProperties().keySet()) {
             if (messageExchange.getProperty(key) == null) {
-                messageExchange.setProperty(key, exchange.getProperty(key));
+                Object value = exchange.getProperty(key);
+                if (!MESSAGE_EXCHANGE.equals(key) && value != null
+                        && !strategies.applyFilterToCamelHeaders(key, value, exchange)) {
+                    messageExchange.setProperty(key, value);
+                }
             }
         }
     }
@@ -269,6 +304,10 @@ public class JbiBinding implements HeaderFilterStrategyAware {
         return exchange instanceof InOut || exchange instanceof InOptionalOut;
     }
 
+    /**
+     * Access the JBI MessageExchange that has been stored on the Camel Exchange
+     * @return the JBI MessageExchange
+     */
     public static MessageExchange getMessageExchange(Exchange exchange) {
         return exchange.getProperty(MESSAGE_EXCHANGE, MessageExchange.class);
     }
@@ -292,21 +331,5 @@ public class JbiBinding implements HeaderFilterStrategyAware {
             return message.getHeader(SECURITY_SUBJECT, Subject.class);
         }
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected boolean isSerializable(Object object) {
-        return (object instanceof Serializable) && !(object instanceof Map) && !(object instanceof Collection);
-    }
-
-    public HeaderFilterStrategy getHeaderFilterStrategy() {
-        if (strategy == null) {
-            strategy = new DefaultHeaderFilterStrategy();
-        }
-        return strategy;
-    }
-
-    public void setHeaderFilterStrategy(HeaderFilterStrategy strategy) {
-        this.strategy = strategy;
     }
 }

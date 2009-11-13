@@ -17,11 +17,16 @@
 package org.apache.servicemix.camel.converter;
 
 import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.transform.Source;
 
 import junit.framework.TestCase;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.impl.DefaultExchange;
+import org.apache.servicemix.camel.JbiBinding;
 import org.apache.servicemix.camel.converter.JbiConverter;
 import org.apache.servicemix.jbi.exception.FaultException;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -50,4 +55,35 @@ public class JbiConverterTest extends TestCase {
         assertEquals(FAULT_CONTENTS, converter.convertFaultExceptionToSource(exception));
     }
 
+    public void testConvertExchangeToFaultException() {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        MessageExchange me = new MockMessageExchange();
+        exchange.setProperty(JbiBinding.MESSAGE_EXCHANGE, me);
+
+        FaultException exception = converter.convertExchangeToFaultException(exchange);
+        assertNotNull(exception);
+        assertEquals("Unknown error", exception.getMessage());       
+        assertSame(me, exception.getExchange());
+    }
+
+    public void testConvertExchangeToFaultExceptionWithExistingException() {
+        Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+        Exception original = new Exception("The original exception");
+        exchange.setException(original);
+        MessageExchange me = new MockMessageExchange();
+        exchange.setProperty(JbiBinding.MESSAGE_EXCHANGE, me);
+
+        FaultException exception = converter.convertExchangeToFaultException(exchange);
+        assertNotNull(exception);
+        assertEquals(original.getMessage(), exception.getMessage());
+        assertEqualStackTraces(original.getStackTrace(), exception.getStackTrace());
+        assertSame(me, exception.getExchange());
+    }
+
+    private void assertEqualStackTraces(StackTraceElement[] trace1, StackTraceElement[] trace2) {
+        assertEquals(trace1.length, trace2.length);
+        for (int i = 0 ; i < trace1.length ; i++) {
+            assertEquals(trace1[i], trace2[i]);
+        }
+    }
 }

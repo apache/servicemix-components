@@ -43,12 +43,12 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  * 
  */
 public class JbiInOutPipelineTest extends JbiTestSupport {
-    
-    private static final String MESSAGE = "<just><a>test</a></just>";
-    private MyHeaderFilterStrategy myFilterStrategy = new MyHeaderFilterStrategy();
-    
+
     private static final String HEADER_ORIGINAL = "original";
-    private static final String HEADER_TRANSFORMER = "transformer";    
+    private static final String HEADER_TRANSFORMER = "transformer";
+    private static final String MESSAGE = "<just><a>test</a></just>";
+
+    private MyHeaderFilterStrategy myFilterStrategy = new MyHeaderFilterStrategy();
 
     public void testPipelineWithMessageHeadersAndAttachements() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
@@ -60,7 +60,7 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         assertNotNull("Expecting to receive a DONE/ERROR MessageExchange", client.receive(10000));
         client.done(exchange);
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
-        
+
         // check the exchange message
         NormalizedMessage normalizedMessage = exchange.getOutMessage();
         assertNotNull(normalizedMessage);
@@ -71,11 +71,11 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         assertNotNull(normalizedMessage.getProperty(HEADER_TRANSFORMER));
         Thread.sleep(1000);
     }
-    
+
     public void testPipelineWithMessageProviderHeaderFiltering() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();
-        
+
         // Test providerEndpoint filterStrategy
         exchange.setService(new QName("urn:test", "filterProvider"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
@@ -85,14 +85,14 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         client.done(exchange);
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         assertNull(exchange.getOutMessage().getProperty(HEADER_TRANSFORMER));
-		Thread.sleep(1000);
+        Thread.sleep(1000);
     }
-    
+
     public void testPipelineWithMessageConsumerHeaderFiltering() throws Exception {
-    	
-    	ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
+
+        ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();
-        
+
         // Test consumerEndpoint filterStrategy
         exchange.setService(new QName("urn:test", "filterConsumer"));
         exchange.getInMessage().setContent(new StringSource(MESSAGE));
@@ -102,9 +102,9 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         client.done(exchange);
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         assertNull(exchange.getOutMessage().getProperty(HEADER_TRANSFORMER));
-		Thread.sleep(1000);
+        Thread.sleep(1000);
     }
-    
+
 
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {
@@ -118,15 +118,15 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
             @Override
             public void configure() throws Exception {
                 from("jbi:service:urn:test:input")
-                    .process(new Processor() {
-                        public void process(Exchange exchange) throws Exception {
-                            // do nothing here , just walk around the issue of CAMEL-1955
-                        }
-                    }) 
-                    .to("jbi:service:urn:test:addAttachments?mep=in-out")
-                    .to("jbi:service:urn:test:transformer?mep=in-out");
-                    
-                
+                        .process(new Processor() {
+                            public void process(Exchange exchange) throws Exception {
+                                // do nothing here , just walk around the issue of CAMEL-1955
+                            }
+                        })
+                        .to("jbi:service:urn:test:addAttachments?mep=in-out")
+                        .to("jbi:service:urn:test:transformer?mep=in-out");
+
+
                 from("jbi:service:urn:test:transformer").process(new Processor() {
                     public void process(Exchange exchange) throws Exception {
                         // let's copy everything
@@ -136,12 +136,12 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
                         assertNotNull(exchange.getOut().getAttachment("test1.xml"));
                         exchange.getOut().removeAttachment("test1.xml");
                         exchange.getOut().removeAttachment("test2.xml");
-                        
+
                         exchange.getOut().setHeader(HEADER_TRANSFORMER, "my-transformer-header-value");
                         exchange.getOut().removeHeader(HEADER_ORIGINAL);
-                    }                    
+                    }
                 });
-                
+
                 from("jbi:service:urn:test:addAttachments").process(new Processor() {
                     public void process(Exchange exchange) throws Exception {
                         // let's copy everything
@@ -150,43 +150,43 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
                         exchange.getOut().addAttachment("test1.xml", new DataHandler(new FileDataSource("pom.xml")));
                         exchange.getOut().addAttachment("test2.xml", new DataHandler(new FileDataSource("pom.xml")));
                     }
-                    
+
                 });
-                
+
                 from("jbi:service:urn:test:filterProvider?headerFilterStrategy=#myFilterStrategy")
-	                .process(new Processor() {
-	                    public void process(Exchange exchange) throws Exception {
-	                        // do nothing here , just walk around the issue of CAMEL-1955
-	                    }
-	                }) 
-	                .to("jbi:service:urn:test:addAttachments?mep=in-out")
-	                .to("jbi:service:urn:test:transformer?mep=in-out");
-                
-                
+                        .process(new Processor() {
+                            public void process(Exchange exchange) throws Exception {
+                                // do nothing here , just walk around the issue of CAMEL-1955
+                            }
+                        })
+                        .to("jbi:service:urn:test:addAttachments?mep=in-out")
+                        .to("jbi:service:urn:test:transformer?mep=in-out");
+
+
                 from("jbi:service:urn:test:filterConsumer")
-	                .process(new Processor() {
-	                    public void process(Exchange exchange) throws Exception {
-	                        // do nothing here , just walk around the issue of CAMEL-1955
-	                    }
-	                }) 
-	                .to("jbi:service:urn:test:addAttachments?mep=in-out")
-	                .to("jbi:service:urn:test:transformer?mep=in-out&headerFilterStrategy=#myFilterStrategy");
-	                
+                        .process(new Processor() {
+                            public void process(Exchange exchange) throws Exception {
+                                // do nothing here , just walk around the issue of CAMEL-1955
+                            }
+                        })
+                        .to("jbi:service:urn:test:addAttachments?mep=in-out")
+                        .to("jbi:service:urn:test:transformer?mep=in-out&headerFilterStrategy=#myFilterStrategy");
+
             }
         };
     }
-    
+
     @Override
     protected CamelContext createCamelContext() {
-    	try {
-	        JndiContext context = new JndiContext();
-	        context.bind("myFilterStrategy", myFilterStrategy);
-	        JndiRegistry registry = new JndiRegistry(context);   
-	        return new DefaultCamelContext(registry);
-    	} catch (Exception e) {
-    		fail(e.getMessage());
-    	}
-    	return null;
+        try {
+            JndiContext context = new JndiContext();
+            context.bind("myFilterStrategy", myFilterStrategy);
+            JndiRegistry registry = new JndiRegistry(context);
+            return new DefaultCamelContext(registry);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        return null;
     }
 
     public class MyHeaderFilterStrategy extends DefaultHeaderFilterStrategy {
@@ -196,8 +196,7 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         }
 
         protected void initialize() {
-        	getOutFilter().add(HEADER_TRANSFORMER); 
+            getOutFilter().add(HEADER_TRANSFORMER);
         }
     }
-
 }

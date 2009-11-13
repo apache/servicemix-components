@@ -21,11 +21,11 @@ import java.util.List;
 import javax.jbi.messaging.InOnly;
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxp.StringSource;
-import org.apache.camel.Processor;
-import org.apache.camel.Exchange;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -73,7 +73,7 @@ public class JbiInOnlyToCamelObjectTest extends JbiTestSupport {
         };
     }
         
-    public static class MessageContainer {
+    public static final class MessageContainer {
         
         private String message;
 

@@ -16,22 +16,21 @@
  */
 package org.apache.servicemix.camel;
 
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.Fault;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
+import org.apache.camel.converter.jaxp.StringSource;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.FaultException;
-import org.apache.camel.converter.jaxp.StringSource;
 
 /**
  * @version $Revision: 1.1 $
  */
-public class JbiInOutFaultTest extends
-        NonJbiCamelEndpointsIntegrationTest {
+public class JbiInOutFaultTest extends NonJbiCamelEndpointsIntegrationTest {
     /*
      * @see TestCase#setUp()
      */

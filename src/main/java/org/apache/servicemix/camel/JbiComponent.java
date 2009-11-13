@@ -67,10 +67,6 @@ public class JbiComponent implements Component {
         return suName;
     }
 
-    public JbiBinding createBinding() {
-        return new JbiBinding(camelContext);
-    }
-
     // Resolve Camel Endpoints
     // -------------------------------------------------------------------------
     public Endpoint createEndpoint(String uri) {
@@ -131,16 +127,26 @@ public class JbiComponent implements Component {
                                 + endpointUri);
             }
             jbiEndpoint = new CamelProviderEndpoint(getCamelJbiComponent()
-                    .getServiceUnit(), service, endpoint, createBinding(), processor);   
-            jbiEndpoint.setHeaderFilterStrategy(((JbiEndpoint) camelEndpoint).getHeaderFilterStrategy());
+                    .getServiceUnit(), service, endpoint, createBinding(camelEndpoint), processor);
         } else {
             jbiEndpoint = new CamelProviderEndpoint(getCamelJbiComponent()
-                    .getServiceUnit(), camelEndpoint, createBinding(), processor);
+                    .getServiceUnit(), camelEndpoint, createBinding(camelEndpoint), processor);
         }
         return jbiEndpoint;
     }
 
-     protected String createEndpointName() {
+    /*
+     * Creates a binding for the given endpoint
+     */
+    protected JbiBinding createBinding(Endpoint camelEndpoint) {
+        if (camelEndpoint instanceof JbiEndpoint) {
+            return ((JbiEndpoint) camelEndpoint).createBinding();
+        } else {
+            return new JbiBinding(camelContext);
+        }
+    }
+
+    protected String createEndpointName() {
             if (idGenerator == null) {
                 idGenerator = new IdGenerator("camel");
             }

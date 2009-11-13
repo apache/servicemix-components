@@ -42,7 +42,7 @@ public class JbiToCamelCbrTest extends JbiTestSupport {
     private static final String MESSAGE_IN_FRENCH = "<message>bonjour</message>";
     private static final String MESSAGE_IN_ENGLISH = "<message>hello</message>";
     private final SourceTransformer transformer = new SourceTransformer();
-    private Level level = null;
+    private Level level;
     
     @Override
     protected void setUp() throws Exception {

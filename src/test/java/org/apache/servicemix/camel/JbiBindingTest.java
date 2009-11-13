@@ -60,8 +60,8 @@ public class JbiBindingTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         factory = new MockExchangeFactory();
-        binding = new JbiBinding(new DefaultCamelContext());
-        binding.setHeaderFilterStrategy(new MyHeaderFilterStrategy());
+        binding = new JbiBinding(new DefaultCamelContext(), false);
+        binding.addHeaderFilterStrategy(new MyHeaderFilterStrategy());
     }
     
     public void testCreateExchangeWithOperation() throws Exception {
@@ -215,13 +215,6 @@ public class JbiBindingTest extends TestCase {
                      VALUE, exchange.getProperty(KEY));
         assertNull("Filtered headers should not have been copied",
                    exchange.getProperty(FILTERED_KEY));
-    }
-    
-    public void testIsSerializable() throws Exception {
-        assertTrue("A String is serializable", binding.isSerializable("test"));
-        assertFalse("JbiBinding is not serializable", binding.isSerializable(binding));
-        assertFalse("Maps can contain non-serializable data", binding.isSerializable(new HashMap()));
-        assertFalse("Collections can contain non-serializable data", binding.isSerializable(new ArrayList()));
     }
     
     private class MyHeaderFilterStrategy implements HeaderFilterStrategy {

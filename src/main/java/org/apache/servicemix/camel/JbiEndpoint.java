@@ -45,6 +45,8 @@ import org.springframework.util.StringUtils;
  */
 public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategyAware {
 
+    private static final String STRICT_SERIALIZATION = "strict";
+
     private String destinationUri;
 
     private String mep;
@@ -52,18 +54,31 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
     private QName operation;
 
     private JbiProducer producer;
+    
+    private boolean convertExceptions;
+    
+    private boolean strictSerialization;
 
     private HeaderFilterStrategy headerFilterStrategy;    
     
     private final JbiComponent jbiComponent;
 
     private final JbiBinding binding;
-    
+
     public JbiEndpoint(JbiComponent jbiComponent, String uri) {
         super(uri, jbiComponent);
         this.jbiComponent = jbiComponent;
-        this.binding = jbiComponent.createBinding();
         parseUri(uri);
+
+        //now create the binding based on the information read from the URI
+        this.binding = createBinding();
+    }
+    
+    public JbiBinding createBinding() {
+        JbiBinding result = new JbiBinding(this.getCamelContext(), strictSerialization);
+        result.setConvertExceptions(convertExceptions);
+        result.addHeaderFilterStrategy(headerFilterStrategy);
+        return result;
     }
 
     public synchronized Producer createProducer() throws Exception {
@@ -144,13 +159,21 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
                 	Object object = registry.lookup(filter);
                 	if (object instanceof HeaderFilterStrategy) {
                 		headerFilterStrategy = (HeaderFilterStrategy)object;
-                		binding.setHeaderFilterStrategy(headerFilterStrategy);
                 	}
                 	params.remove("headerFilterStrategy");
-                	String endpointUri = this.destinationUri + URISupport.createQueryString(params);
-                	this.setEndpointUri(endpointUri); 
-                	
                 }
+                String convertExceptions = (String) params.get("convertExceptions");
+                if (StringUtils.hasLength(convertExceptions)) {
+                    this.setConvertExceptions(Boolean.valueOf(convertExceptions));
+                	params.remove("convertExceptions");
+                }
+                String serialization = (String) params.get("serialization");
+                if (StringUtils.hasLength(serialization)) {
+                	this.setStrictSerialization(STRICT_SERIALIZATION.equalsIgnoreCase(serialization));
+                	params.remove("serialization");
+                }
+                String endpointUri = this.destinationUri + URISupport.createQueryString(params);
+                this.setEndpointUri(endpointUri);
             }
         } catch (URISyntaxException e) {
             throw new JbiException(e);
@@ -207,10 +230,26 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
     }
     
     public HeaderFilterStrategy getHeaderFilterStrategy() {
-        return binding.getHeaderFilterStrategy();
+        return headerFilterStrategy;
     }
 
     public void setHeaderFilterStrategy(HeaderFilterStrategy strategy) {
-        binding.setHeaderFilterStrategy(strategy);
+        this.headerFilterStrategy = strategy;
+    }
+
+    public void setConvertExceptions(boolean convertExceptions) {
+        this.convertExceptions = convertExceptions;
+    }
+
+    public boolean isConvertExceptions() {
+        return convertExceptions;
+    }
+
+    public void setStrictSerialization(boolean strictSerialization) {
+        this.strictSerialization = strictSerialization;
+    }
+
+    public boolean isStrictSerialization() {
+        return strictSerialization;
     }
 }

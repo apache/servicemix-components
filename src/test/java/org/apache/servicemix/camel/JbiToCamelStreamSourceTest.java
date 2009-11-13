@@ -94,8 +94,8 @@ public class JbiToCamelStreamSourceTest extends JbiTestSupport {
             @Override
             public void configure() throws Exception {
                 from("jbi:service:urn:test:stream")
-                  .to("jbi:service:urn:test:echo?mep=in-out")
-                  .convertBodyTo(String.class).to("mock:result");
+                    .to("jbi:service:urn:test:echo?mep=in-out")
+                    .convertBodyTo(String.class).to("mock:result");
             }            
         };
     }       

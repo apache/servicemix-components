@@ -19,6 +19,8 @@ package org.apache.servicemix.camel.converter;
 import javax.xml.transform.Source;
 
 import org.apache.camel.Converter;
+import org.apache.camel.Exchange;
+import org.apache.servicemix.camel.JbiBinding;
 import org.apache.servicemix.jbi.exception.FaultException;
 
 /**
@@ -30,6 +32,18 @@ public class JbiConverter {
     @Converter
     public Source convertFaultExceptionToSource(FaultException e) {
         return e.getFault().getContent();
+    }
+
+    @Converter
+    public FaultException convertExchangeToFaultException(Exchange exchange) {
+        Exception exception = exchange.getException();
+        if (exception == null) {
+            return new FaultException("Unknown error", JbiBinding.getMessageExchange(exchange), null);
+        } else {
+            FaultException result = new FaultException(exception.getMessage(), JbiBinding.getMessageExchange(exchange), null);
+            result.setStackTrace(exception.getStackTrace());
+            return result;
+        }
     }
    
 }
