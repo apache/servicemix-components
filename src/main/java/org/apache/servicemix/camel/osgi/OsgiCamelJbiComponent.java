@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.camel.osgi;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,16 +30,16 @@ import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.xbean.ClassLoaderXmlPreprocessor;
-import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.apache.xbean.classloader.JarFileClassLoader;
+import org.apache.xbean.spring.context.SpringApplicationContext;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.osgi.context.BundleContextAware;
 import org.springframework.osgi.util.BundleDelegatingClassLoader;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Bundle;
 
 /**
  * When deploying a JBI packaged SU to camel component, camel-spring and camel-osgi 
@@ -131,7 +131,9 @@ public class OsgiCamelJbiComponent extends CamelJbiComponent implements BundleCo
             for (Bundle bundle : bundleContext.getBundles()) {
                 try {
                     String symbolicName = bundle.getSymbolicName();
-                    if (symbolicName.contains("camel-spring") || symbolicName.contains("camel-osgi") || symbolicName.contains("camel-cxf")) {
+                    if (symbolicName.contains("camel-spring")
+                        || symbolicName.contains("camel-osgi")
+                        || symbolicName.contains("camel-cxf")) {
                         parents.add(BundleDelegatingClassLoader.createBundleClassLoaderFor(bundle));
                     }
                 } catch (Throwable e) {

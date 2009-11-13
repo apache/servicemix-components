@@ -16,18 +16,14 @@
  */
 package org.apache.servicemix.camel;
 
-import java.io.ByteArrayOutputStream;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxp.StringSource;
-import org.apache.servicemix.camel.test.InvalidSerializableObject;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.exception.FaultException;
@@ -61,11 +57,11 @@ public class JbiConvertExceptionsTest extends JbiCamelErrorHandlingTestSupport {
                 errorHandler(noErrorHandler());
                 
                 from("jbi:endpoint:urn:test:exceptions:endpoint?convertExceptions=true")
-                  .process(new Processor() {
-                      public void process(Exchange exchange) throws Exception {
-                          throw new RuntimeException(EXCEPTION);
-                      }
-                  });
+                    .process(new Processor() {
+                        public void process(Exchange exchange) throws Exception {
+                            throw new RuntimeException(EXCEPTION);
+                        }
+                    });
             }
         };
     }

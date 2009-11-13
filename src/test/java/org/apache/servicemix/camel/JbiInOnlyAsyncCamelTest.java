@@ -68,9 +68,9 @@ public class JbiInOnlyAsyncCamelTest extends JbiTestSupport {
                 errorHandler(deadLetterChannel("mock:dlc").maximumRedeliveries(0).handled(false));
 
                 from("jbi:service:urn:test:in-only")
-                  .threads(1)
-                    .to("mock:done")
-                    .to("jbi:service:urn:test:non-existent-service");
+                    .threads(1)
+                        .to("mock:done")
+                        .to("jbi:service:urn:test:non-existent-service");
             }
         };
     }

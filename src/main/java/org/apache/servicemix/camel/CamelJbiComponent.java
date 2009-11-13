@@ -94,14 +94,14 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
         if (jbiComponent != null) {
             // skip the su-name part
             int index = 0;
-            for(String name : names) {
+            for (String name : names) {
                 if (index == 0) {
                     uriString = name;
                 }
                 if (index > 1) {
                     uriString += ":" + name;
                 }
-                index ++;
+                index++;
             }
             endpoint = createEndpoint(uriString, jbiComponent);
         } else {
@@ -117,7 +117,9 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
         String camelUri = uri.getSchemeSpecificPart();
         Endpoint camelEndpoint = jbiComponent.getCamelContext().getEndpoint(camelUri);
         Processor processor = jbiComponent.createCamelProcessor(camelEndpoint);        
-        CamelProviderEndpoint endpoint = new CamelProviderEndpoint(getServiceUnit(), camelEndpoint, jbiComponent.createBinding(camelEndpoint), processor);
+        CamelProviderEndpoint endpoint =
+            new CamelProviderEndpoint(getServiceUnit(), camelEndpoint,
+                                      jbiComponent.createBinding(camelEndpoint), processor);
         IntrospectionSupport.setProperties(endpoint, map);
 
         return endpoint;
@@ -136,7 +138,7 @@ public class CamelJbiComponent extends DefaultComponent implements CamelComponen
 
     public synchronized JbiComponent getJbiComponent(String suName) {
         JbiComponent result = null;
-        for (JbiComponent component: jbiComponents) {
+        for (JbiComponent component : jbiComponents) {
             if (suName.equals(component.getSuName())) {
                 result = component;
                 break;

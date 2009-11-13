@@ -32,7 +32,7 @@ import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.impl.DefaultProducer;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategyAware;
-import org.apache.camel.spi.Registry; 
+import org.apache.camel.spi.Registry;
 import org.apache.camel.util.URISupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,13 +54,13 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
     private QName operation;
 
     private JbiProducer producer;
-    
+
     private boolean convertExceptions;
-    
+
     private boolean strictSerialization;
 
-    private HeaderFilterStrategy headerFilterStrategy;    
-    
+    private HeaderFilterStrategy headerFilterStrategy;
+
     private final JbiComponent jbiComponent;
 
     private final JbiBinding binding;
@@ -73,7 +73,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
         //now create the binding based on the information read from the URI
         this.binding = createBinding();
     }
-    
+
     public JbiBinding createBinding() {
         JbiBinding result = new JbiBinding(this.getCamelContext(), strictSerialization);
         result.setConvertExceptions(convertExceptions);
@@ -89,7 +89,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
     }
 
     protected class JbiProducer extends DefaultProducer {
-        
+
         private final Log log = LogFactory.getLog(JbiProducer.class);
 
         private CamelConsumerEndpoint consumer;
@@ -104,7 +104,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
             jbiComponent.getCamelJbiComponent().addEndpoint(consumer);
             super.start();
         }
-        
+
         @Override
         public void stop() throws Exception {
             if (isStopped()) {
@@ -117,17 +117,17 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
         }
 
         public void process(final Exchange exchange) throws Exception {
-            binding.runWithCamelContextClassLoader(new Callable<Object>() {                
+            binding.runWithCamelContextClassLoader(new Callable<Object>() {
                 public Object call() throws Exception {
                     consumer.process(exchange);
                     return null;
                 }
             });
         }
-        
+
         /*
-         * Access the underlying JBI Consumer endpoint
-         */
+        * Access the underlying JBI Consumer endpoint
+        */
         protected CamelConsumerEndpoint getCamelConsumerEndpoint() {
             return consumer;
         }
@@ -149,28 +149,28 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
                     operation = QName.valueOf(oper);
                 }
                 this.destinationUri = destinationUri.substring(0, idx);
-                
+
                 String filter = (String) params.get("headerFilterStrategy");
                 if (StringUtils.hasLength(filter)) {
-                	Registry registry = jbiComponent.getCamelContext().getRegistry();
-                	if((idx = filter.indexOf('#')) != -1) {
-                		filter = filter.substring(1);
-                	}
-                	Object object = registry.lookup(filter);
-                	if (object instanceof HeaderFilterStrategy) {
-                		headerFilterStrategy = (HeaderFilterStrategy)object;
-                	}
-                	params.remove("headerFilterStrategy");
+                    Registry registry = jbiComponent.getCamelContext().getRegistry();
+                    if (filter.indexOf('#') != -1) {
+                        filter = filter.substring(1);
+                    }
+                    Object object = registry.lookup(filter);
+                    if (object instanceof HeaderFilterStrategy) {
+                        headerFilterStrategy = (HeaderFilterStrategy)object;
+                    }
+                    params.remove("headerFilterStrategy");
                 }
-                String convertExceptions = (String) params.get("convertExceptions");
-                if (StringUtils.hasLength(convertExceptions)) {
-                    this.setConvertExceptions(Boolean.valueOf(convertExceptions));
-                	params.remove("convertExceptions");
+                String convert = (String) params.get("convertExceptions");
+                if (StringUtils.hasLength(convert)) {
+                    this.setConvertExceptions(Boolean.valueOf(convert));
+                    params.remove("convertExceptions");
                 }
                 String serialization = (String) params.get("serialization");
                 if (StringUtils.hasLength(serialization)) {
-                	this.setStrictSerialization(STRICT_SERIALIZATION.equalsIgnoreCase(serialization));
-                	params.remove("serialization");
+                    this.setStrictSerialization(STRICT_SERIALIZATION.equalsIgnoreCase(serialization));
+                    params.remove("serialization");
                 }
                 String endpointUri = this.destinationUri + URISupport.createQueryString(params);
                 this.setEndpointUri(endpointUri);
@@ -228,7 +228,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
     public boolean isSingleton() {
         return true;
     }
-    
+
     public HeaderFilterStrategy getHeaderFilterStrategy() {
         return headerFilterStrategy;
     }

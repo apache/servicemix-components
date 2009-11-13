@@ -68,7 +68,7 @@ public class JbiBinding {
      * @param context the CamelContext
      */
     public JbiBinding(CamelContext context) {
-    	this(context, false);
+        this(context, false);
     }
 
     public JbiBinding(CamelContext context, boolean strictSerialization) {
@@ -242,7 +242,7 @@ public class JbiBinding {
         for (String key : message.getHeaders().keySet()) {
             Object value = message.getHeader(key);
             if (value != null && !strategies.applyFilterToCamelHeaders(key, value, message.getExchange())) {
-            	normalizedMessage.setProperty(key, value);
+                normalizedMessage.setProperty(key, value);
             }
         }
         
@@ -281,11 +281,11 @@ public class JbiBinding {
      * @return an exception
      */
     public Exception extractException(Exchange exchange) {
-    	 Exception e  = exchange.getException();
-         if (e == null || convertExceptions) {
-             e = context.getTypeConverter().convertTo(FaultException.class, exchange);
-         }
-         return e;
+        Exception e  = exchange.getException();
+        if (e == null || convertExceptions) {
+            e = context.getTypeConverter().convertTo(FaultException.class, exchange);
+        }
+        return e;
     }
 
     private void copyHeadersFromCamelToJbi(Exchange exchange, MessageExchange messageExchange) {

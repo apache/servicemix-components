@@ -18,14 +18,14 @@ package org.apache.servicemix.camel.util;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.HeaderFilterStrategy;
 
 /**
  * {@link HeaderFilterStrategy} implementation that will evaluate a set of
- * strategies
+ * strategies in an OR-like fashion (if one of the strategies filters the property,
+ * the HeaderFilter
  */
 public class HeaderFilterStrategies implements HeaderFilterStrategy {
 

@@ -23,7 +23,7 @@ import junit.framework.TestCase;
  */
 public class JbiComponentTest extends TestCase {
     
-    private final static String IN_OUT = "http://www.w3.org/ns/wsdl/in-out";
+    private static final String IN_OUT = "http://www.w3.org/ns/wsdl/in-out";
     
     public void testGetUriWithMep() throws Exception {
         JbiComponent component = createJbiComponent();

@@ -35,9 +35,9 @@ import org.apache.servicemix.tck.ReceiverComponent;
  */
 public abstract class JbiCamelErrorHandlingTestSupport extends JbiTestSupport {
 
-    protected ReceiverComponent receiverComponent = new ReceiverComponent();
-
     protected static final String MESSAGE = "<just><a>test</a></just>";
+
+    protected ReceiverComponent receiverComponent = new ReceiverComponent();
 
     @Override
     protected void appendJbiActivationSpecs(List<ActivationSpec> activationSpecList) {

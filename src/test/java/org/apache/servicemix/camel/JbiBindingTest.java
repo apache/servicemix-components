@@ -16,7 +16,6 @@
  */
 package org.apache.servicemix.camel;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.activation.DataHandler;
@@ -36,7 +35,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.impl.DefaultMessage;
 import org.apache.camel.spi.HeaderFilterStrategy;
-import org.apache.servicemix.camel.JbiInOutPipelineTest.MyHeaderFilterStrategy;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.tck.mock.MockMessageExchange;

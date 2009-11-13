@@ -76,7 +76,7 @@ public class JbiEndpointWithMepSpecifiedTest extends JbiTestSupport {
         private int count;
         
         public int getCount() {
-        	return count;
+            return count;
         }
         
         @Override

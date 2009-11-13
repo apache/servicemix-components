@@ -77,8 +77,8 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint {
             exchange.setException(messageExchange.getError());
         } else if (messageExchange.getStatus() == ExchangeStatus.ACTIVE) {
             // first copy the exchange headers
-	        binding.copyHeadersFromJbiToCamel(messageExchange, exchange);
-	        // then copy the out/fault message
+            binding.copyHeadersFromJbiToCamel(messageExchange, exchange);
+            // then copy the out/fault message
             if (messageExchange.getFault() != null) {
                 binding.copyFromJbiToCamel(messageExchange.getMessage("fault"), exchange.getOut());
                 exchange.getOut().setBody(new FaultException("Fault occured for " + exchange.getPattern() + " exchange", 

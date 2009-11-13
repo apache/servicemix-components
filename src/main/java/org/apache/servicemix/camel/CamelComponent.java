@@ -16,9 +16,9 @@
  */
 package org.apache.servicemix.camel;
 
+import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.Endpoint;
 
 /**
  */

@@ -46,13 +46,13 @@ public class JbiCamelAttachmentTest extends JbiTestSupport {
         DataHandler attachment = new DataHandler(new FileDataSource(TEST_FILE));
         exchange.getIn().addAttachment(ATTACHMENT_ID, attachment);
         
-        MockEndpoint mock_a = getMockEndpoint("mock:a");
-        mock_a.expectedMessageCount(1);
+        MockEndpoint mockA = getMockEndpoint("mock:a");
+        mockA.expectedMessageCount(1);
         
         client.send("direct:a", exchange);
         
-        mock_a.assertIsSatisfied();
-        Exchange received = mock_a.getReceivedExchanges().get(0);
+        mockA.assertIsSatisfied();
+        Exchange received = mockA.getReceivedExchanges().get(0);
         assertNotNull(received.getIn().getAttachment(ATTACHMENT_ID));
         if (received.getIn().getAttachment(ATTACHMENT_ID).getDataSource() instanceof FileDataSource) {
             FileDataSource fds = (FileDataSource)received.getIn().getAttachment(ATTACHMENT_ID).getDataSource();

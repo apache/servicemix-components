@@ -147,11 +147,11 @@ public class JbiComponent implements Component {
     }
 
     protected String createEndpointName() {
-            if (idGenerator == null) {
-                idGenerator = new IdGenerator("camel");
-            }
-            return idGenerator.generateSanitizedId();
+        if (idGenerator == null) {
+            idGenerator = new IdGenerator("camel");
         }
+        return idGenerator.generateSanitizedId();
+    }
 
     /**
      * Returns a JBI endpoint created for the given Camel endpoint

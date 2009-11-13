@@ -27,7 +27,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.servicemix.camel.JbiBinding;
-import org.apache.servicemix.camel.converter.JbiConverter;
 import org.apache.servicemix.jbi.exception.FaultException;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
@@ -82,7 +81,7 @@ public class JbiConverterTest extends TestCase {
 
     private void assertEqualStackTraces(StackTraceElement[] trace1, StackTraceElement[] trace2) {
         assertEquals(trace1.length, trace2.length);
-        for (int i = 0 ; i < trace1.length ; i++) {
+        for (int i = 0; i < trace1.length; i++) {
             assertEquals(trace1[i], trace2[i]);
         }
     }

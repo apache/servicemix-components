@@ -61,15 +61,13 @@ public class JbiCamelExceptionsTest extends JbiCamelErrorHandlingTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-
-                
                 errorHandler(noErrorHandler());
 
                 from("jbi:endpoint:urn:test:failsafe:endpoint")
-                  .doTry()
-                    .to("jbi:endpoint:urn:test:service:endpoint")
-                  .doCatch(BusinessException.class)
-                    .setBody(constant("<response>We handled that pretty well, didn't we?</response>"));
+                    .doTry()
+                        .to("jbi:endpoint:urn:test:service:endpoint")
+                    .doCatch(BusinessException.class)
+                        .setBody(constant("<response>We handled that pretty well, didn't we?</response>"));
 
                 from("jbi:endpoint:urn:test:service:endpoint").bean(new MyPojo());
             }
