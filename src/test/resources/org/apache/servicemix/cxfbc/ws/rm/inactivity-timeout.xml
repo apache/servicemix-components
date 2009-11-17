@@ -30,7 +30,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 
 	<wsrm-mgr:rmManager id="org.apache.cxf.ws.rm.RMManager">
 		<wsrm-policy:RMAssertion>
-			<wsrm-policy:InactivityTimeout Milliseconds="200" />
+			<wsrm-policy:InactivityTimeout Milliseconds="1000" />
 		</wsrm-policy:RMAssertion>
 	</wsrm-mgr:rmManager>
 

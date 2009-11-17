@@ -773,7 +773,7 @@ public class CxfBcRMSequenceTest extends SpringTestSupport {
         greeter.greetMe("one");
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(2000);
         } catch (InterruptedException ex) {
             // ignore
         }
