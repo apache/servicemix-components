@@ -547,37 +547,48 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     
     private void retrieveWSDL() throws JBIException, WSDLException, DeploymentException, IOException {
         if (wsdl == null) {
+            ServiceEndpoint targetEndpoint = null;
+            // the user has provided the targetService and targetEndpoint attributes
             if (getTargetService() != null && getTargetEndpoint() != null) {
-                ServiceEndpoint serviceEndpoint 
-                    = getServiceUnit().getComponent().getComponentContext().getEndpoint(getTargetService(), getTargetEndpoint());
-                if (serviceEndpoint != null) {
-                    description = 
-                        this.getServiceUnit().getComponent().getComponentContext().getEndpointDescriptor(serviceEndpoint);
-                    definition = getBus().getExtension(WSDLManager.class)
-                        .getDefinition((Element)description.getFirstChild());
-                    List address = definition.getService(getTargetService()).getPort(getTargetEndpoint()).getExtensibilityElements();
-                    if (address == null || address.size() == 0) {
-                        SOAPAddressImpl soapAddress = new SOAPAddressImpl();
-                        //specify default transport if there is no one in the internal wsdl
-                        soapAddress.setLocationURI("http://localhost");
-                        definition.getService(getTargetService()).getPort(getTargetEndpoint()).addExtensibilityElement(soapAddress);
-                    }
-                    List binding = definition.getService(getTargetService()).getPort(
-                            getTargetEndpoint()).getBinding().getExtensibilityElements();
-                    if (binding == null || binding.size() == 0) {
-                        //no binding info in the internal wsdl so we need add default soap11 binding
-                        SOAPBinding soapBinding = new SOAPBindingImpl();
-                        soapBinding.setTransportURI("http://schemas.xmlsoap.org/soap/http");
-                        soapBinding.setStyle("document");
-                        definition.getService(getTargetService()).getPort(getTargetEndpoint()).getBinding().
-                            addExtensibilityElement(soapBinding);
-                    }
-                    
+                targetEndpoint = getServiceUnit().getComponent().getComponentContext().getEndpoint(getTargetService(), getTargetEndpoint());
+            }
+            // the user has provided only the targetService attribute
+            if (getTargetService() != null && getTargetEndpoint() == null) {
+                ServiceEndpoint[] endpoints = getServiceUnit().getComponent().getComponentContext().getEndpointsForService(getTargetService());
+                if (endpoints != null && endpoints.length > 0) {
+                    targetEndpoint = endpoints[0];
                 }
-            } else {
-                throw new DeploymentException("can't get wsdl");
+            }
+            // the user has provided only the targetInterfaceName attribute
+            if (getTargetEndpoint() == null && getTargetInterface() != null) {
+                ServiceEndpoint[] endpoints = getServiceUnit().getComponent().getComponentContext().getEndpoints(getTargetInterface());
+                if (endpoints != null && endpoints.length > 0) {
+                    targetEndpoint = endpoints[0];
+                }
             }
             
+            if (targetEndpoint == null) {
+                throw new DeploymentException("The target endpoint is not found.");
+            }
+            
+            description = this.getServiceUnit().getComponent().getComponentContext().getEndpointDescriptor(targetEndpoint);
+            definition = getBus().getExtension(WSDLManager.class).getDefinition((Element)description.getFirstChild());
+            List address = definition.getService(getTargetService()).getPort(getTargetEndpoint()).getExtensibilityElements();
+            if (address == null || address.size() == 0) {
+                SOAPAddressImpl soapAddress = new SOAPAddressImpl();
+                //specify default transport if there is no one in the internal wsdl
+                soapAddress.setLocationURI("http://localhost");
+                definition.getService(getTargetService()).getPort(getTargetEndpoint()).addExtensibilityElement(soapAddress);
+            }
+            List binding = definition.getService(getTargetService()).getPort(getTargetEndpoint()).getBinding().getExtensibilityElements();
+            if (binding == null || binding.size() == 0) {
+                //no binding info in the internal wsdl so we need add default soap11 binding
+                SOAPBinding soapBinding = new SOAPBindingImpl();
+                soapBinding.setTransportURI("http://schemas.xmlsoap.org/soap/http");
+                soapBinding.setStyle("document");
+                definition.getService(getTargetService()).getPort(getTargetEndpoint()).getBinding().
+                addExtensibilityElement(soapBinding);
+            }
         } else {
             description = DomUtil.parse(wsdl.getInputStream());
             try {
