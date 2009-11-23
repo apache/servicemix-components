@@ -58,7 +58,7 @@
 
   <bean id="deadLetterErrorHandler" class="org.apache.camel.builder.DeadLetterChannelBuilder">
     <property name="logger" ref="logger" />
-    <property name="deadLetterUri" value="log:dlc?showBody=false,log:dlc"/>
+    <property name="deadLetterUri" value="log:dlc"/>
     <property name="redeliveryPolicy" ref="redeliveryPolicyConfig" />
   </bean>
     
