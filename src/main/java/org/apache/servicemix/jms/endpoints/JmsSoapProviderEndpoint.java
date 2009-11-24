@@ -112,14 +112,13 @@ public class JmsSoapProviderEndpoint extends JmsProviderEndpoint {
 
     @Override
     public void validate() throws DeploymentException {
+        super.validate();
         if (wsdl == null) {
             throw new DeploymentException("wsdl property must be set");
         }
         JmsSoapProviderMarshaler marshaler;
         if (this.getMarshaler() instanceof JmsSoapProviderMarshaler) {
             marshaler = (JmsSoapProviderMarshaler) this.getMarshaler();
-        } else if (this.getMarshaler() == null) {
-            marshaler = new JmsSoapProviderMarshaler();
         } else {
             throw new DeploymentException("The configured marshaler must inherit JmsSoapProviderMarshaler");
         }
@@ -141,7 +140,6 @@ public class JmsSoapProviderEndpoint extends JmsProviderEndpoint {
         } catch (Exception e) {
             throw new DeploymentException("Unable to read WSDL from: " + wsdl, e);
         }
-        super.validate();
     }
 
     protected void validateWsdl1(JmsSoapProviderMarshaler marshaler) throws WSDLException, IOException, DeploymentException {
@@ -224,4 +222,8 @@ public class JmsSoapProviderEndpoint extends JmsProviderEndpoint {
         marshaler.setBinding(BindingFactory.createBinding(endpoint));
     }
 
+    @Override
+    protected JmsProviderMarshaler createDefaultMarshaler() {
+        return new JmsSoapProviderMarshaler();
+    }
 }

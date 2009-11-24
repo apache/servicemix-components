@@ -79,7 +79,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private static final String MSG_SELECTOR_START = "JMSCorrelationID='";
     private static final String MSG_SELECTOR_END = "'";
 
-    private JmsProviderMarshaler marshaler = new DefaultProviderMarshaler();
+    private JmsProviderMarshaler marshaler;
     private DestinationChooser destinationChooser = new SimpleDestinationChooser();
     private DestinationChooser replyDestinationChooser = new SimpleDestinationChooser();
     private JmsTemplateUtil template;
@@ -888,6 +888,9 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      */
     public void validate() throws DeploymentException {
         super.validate();
+        if (marshaler == null) {
+            marshaler = createDefaultMarshaler();
+        }
         if (getService() == null) {
             throw new DeploymentException("service must be set");
         }
@@ -897,6 +900,15 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         if (getConnectionFactory() == null) {
             throw new DeploymentException("connectionFactory is required");
         }
+    }
+
+    /**
+     * Creates the default marshaler for the endpoint if no custom marshaler has been set
+     *
+     * @return the default marshaler implementation
+     */
+    protected JmsProviderMarshaler createDefaultMarshaler() {
+        return new DefaultProviderMarshaler();
     }
 
     /**
