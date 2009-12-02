@@ -28,7 +28,6 @@ import java.util.ListIterator;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.apache.servicemix.common.ServiceMixComponent;
-import org.apache.servicemix.common.Container;
 import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.xbean.classloader.JarFileClassLoader;
 import org.apache.xbean.spring.context.SpringApplicationContext;
@@ -189,9 +188,6 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 String library = ((Text) locationElement.getFirstChild()).getData().trim();
                 sls.add(library);
             }
-            if (sls.size() > 0 && component.getContainer().getType() != Container.Type.ServiceMix3) {
-                throw new IllegalStateException("Can not reference shared libraries if the component is not deployed in ServiceMix 3");
-            }
 
             // Add components
             List<String> components = new ArrayList<String>();
@@ -200,9 +196,6 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
                 Element locationElement = (Element) componentList.item(i);
                 String component = ((Text) locationElement.getFirstChild()).getData().trim();
                 components.add(component);
-            }
-            if (components.size() > 0 && component.getContainer().getType() != Container.Type.ServiceMix3) {
-                throw new IllegalStateException("Can not reference other components if the component is not deployed in ServiceMix 3");
             }
 
             // convert the paths to URLS

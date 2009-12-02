@@ -16,6 +16,13 @@
  */
 package org.apache.servicemix.common;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
+import org.springframework.osgi.util.BundleDelegatingClassLoader;
+
 import java.lang.reflect.Method;
 
 import javax.jbi.component.ComponentContext;
@@ -123,6 +130,47 @@ public abstract class Container {
         }
         public boolean handleTransactions() {
             return false;
+        }
+        public ClassLoader getSharedLibraryClassLoader(String name) {
+            try {
+                BundleContext context = FrameworkUtil.getBundle(this.context.getClass()).getBundleContext();
+                if (name.startsWith("osgi:")) {
+                    name = name.substring("osgi:".length());
+                    String symbolicName;
+                    Version version;
+                    if (name.indexOf('/') > 0) {
+                        symbolicName = name.substring(0, name.indexOf('/'));
+                        version = new Version(name.substring(name.indexOf('/') + 1));
+                    } else {
+                        symbolicName = name;
+                        version = null;
+                    }
+                    for (Bundle b : context.getBundles()) {
+                        if (symbolicName.equals(b.getSymbolicName())&& (version == null || version.equals(b.getVersion()))) {
+                            return BundleDelegatingClassLoader.createBundleClassLoaderFor(b);    
+                        }
+                    }
+                    return null;
+                } else {
+                    ServiceReference[] references = context.getAllServiceReferences("org.apache.servicemix.jbi.deployer.SharedLibrary",
+                            "(NAME=" + name + ")");
+                    Object sl = context.getService(references[0]);
+                    return (ClassLoader) sl.getClass().getMethod("getClassLoader").invoke(sl);
+                }
+            } catch (Throwable t) {
+                return null;
+            }
+        }
+        public ClassLoader getComponentClassLoader(String name) {
+            try {
+                BundleContext context = FrameworkUtil.getBundle(this.context.getClass()).getBundleContext();
+                ServiceReference[] references = context.getAllServiceReferences("javax.jbi.component.Component",
+                        "(NAME=" + name + ")");
+                Object cmp = context.getService(references[0]);
+                return cmp.getClass().getClassLoader();
+            } catch (Throwable t) {
+                return null;
+            }
         }
     }
 
