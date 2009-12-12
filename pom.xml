@@ -54,5 +54,20 @@
     <module>servicemix-soap2</module>
     <module>servicemix-shared</module>
   </modules>
+  <repositories>
+    <!--This is a hack to short circuit the jencks 2.1 problem with servicemix.org repo
+        It can probably be deleted if we update to jencks 2.2 in ServiceMix 3.3.x -->
+    <repository>
+        <id>servicemix-repo</id>
+        <name>ServiceMix Repository</name>
+        <url>http://svn.apache.org/repos/asf/servicemix/m2-repo/</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+  </repositories>
   
 </project>
