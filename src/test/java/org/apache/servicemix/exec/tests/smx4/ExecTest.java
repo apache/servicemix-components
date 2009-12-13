@@ -16,6 +16,11 @@
  */
 package org.apache.servicemix.exec.tests.smx4;
 
+import static org.ops4j.pax.exam.CoreOptions.felix;
+import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.profile;
+import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.scanFeatures;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Option;
@@ -24,13 +29,13 @@ import org.ops4j.pax.exam.junit.JUnit4TestRunner;
 
 /**
  * <p>
- * Test the Exec component deployment on NMR.
+ * Test the Exec component deployment into the NMR.
  * </p>
  * 
  * @author jbonofre
  */
 @RunWith(JUnit4TestRunner.class)
-public class ExecTest extends AbstractFeatureTest {
+public class ExecTest {
 
     @Test
     public void test() throws Exception {
@@ -38,8 +43,14 @@ public class ExecTest extends AbstractFeatureTest {
     }
 
     @Configuration
-    public static Option[] configure() {
-        return configure("Exec");
+    public static Option[] configuration() {
+        Option[] options = options(
+                profile("log").version("1.4"),
+                org.ops4j.pax.exam.CoreOptions.systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
+                scanFeatures("mvn:org.apache.felix.karaf/apache-felix-karaf/1.2.0/xml/features", "spring-dm/1.2.0"),
+                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.0.0/xml/features", "jbi/1.0.0"),
+                felix());
+        return options;
     }
 
 }
