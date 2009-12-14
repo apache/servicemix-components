@@ -20,6 +20,9 @@ import static org.ops4j.pax.exam.CoreOptions.felix;
 import static org.ops4j.pax.exam.CoreOptions.options;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.profile;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.scanFeatures;
+import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.repositories;
+import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.localRepository;
+import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.excludeDefaultRepositories;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +50,16 @@ public class ExecTest {
         Option[] options = options(
                 profile("log").version("1.4"),
                 org.ops4j.pax.exam.CoreOptions.systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
+                excludeDefaultRepositories(),
+                repositories(
+                        "http://repo1.maven.org/maven2", 
+                        "http://repository.apache.org/content/groups/public",
+                        "http://repository.apache.org/content/groups/snapshots-group",
+                        "http://repository.ops4j.org/maven2",
+                        "http://svn.apache.org/repos/asf/servicemix/m2-repo",
+                        "http://repository.springsource.com/maven/bundles/release",
+                        "http://repository.springsource.com/maven/bundles/external"
+                        ),
                 scanFeatures("mvn:org.apache.felix.karaf/apache-felix-karaf/1.2.0/xml/features", "spring-dm/1.2.0"),
                 scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.0.0/xml/features", "jbi/1.0.0"),
                 felix());
