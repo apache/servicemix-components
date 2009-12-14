@@ -26,9 +26,14 @@ import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.excludeDefaultRe
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.ops4j.pax.exam.CoreOptions;
+import org.ops4j.pax.exam.Inject;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.Configuration;
 import org.ops4j.pax.exam.junit.JUnit4TestRunner;
+import org.ops4j.pax.exam.options.MavenArtifactProvisionOption;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
 /**
  * <p>
@@ -39,10 +44,15 @@ import org.ops4j.pax.exam.junit.JUnit4TestRunner;
  */
 @RunWith(JUnit4TestRunner.class)
 public class ExecTest {
+    
+    @Inject
+    protected BundleContext bundleContext;
 
     @Test
     public void test() throws Exception {
-        
+        MavenArtifactProvisionOption execUrl = CoreOptions.mavenBundle().groupId("org.apache.servicemix").artifactId("servicemix-exec").versionAsInProject();
+        Bundle execBundle = bundleContext.installBundle(execUrl.getURL());
+        System.out.println(execBundle);
     }
 
     @Configuration
