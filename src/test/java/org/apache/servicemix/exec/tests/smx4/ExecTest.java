@@ -18,11 +18,15 @@ package org.apache.servicemix.exec.tests.smx4;
 
 import static org.ops4j.pax.exam.CoreOptions.felix;
 import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
+import static org.ops4j.pax.exam.CoreOptions.systemPackages;
+import static org.ops4j.pax.exam.CoreOptions.bootClasspathLibrary;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.profile;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.scanFeatures;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.repositories;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.localRepository;
-import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.excludeDefaultRepositories;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,20 +62,55 @@ public class ExecTest {
     @Configuration
     public static Option[] configuration() {
         Option[] options = options(
-                profile("log").version("1.4"),
-                org.ops4j.pax.exam.CoreOptions.systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
-                excludeDefaultRepositories(),
+                // this is how you set the default log level when using pax logging (logProfile)
+                systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
+                systemProperty("karaf.name").value("root"),
+                systemProperty("karaf.home").value("target/karaf.home"),
+                systemProperty("karaf.base").value("target/karaf.home"),
+                systemProperty("karaf.startLocalConsole").value("false"),
+                systemProperty("karaf.startRemoteShell").value("false"),
+                
+                // define maven repository
                 repositories(
                         "http://repo1.maven.org/maven2", 
-                        "http://repository.apache.org/content/groups/public",
                         "http://repository.apache.org/content/groups/snapshots-group",
                         "http://repository.ops4j.org/maven2",
                         "http://svn.apache.org/repos/asf/servicemix/m2-repo",
                         "http://repository.springsource.com/maven/bundles/release",
                         "http://repository.springsource.com/maven/bundles/external"
                         ),
-                scanFeatures("mvn:org.apache.felix.karaf/apache-felix-karaf/1.2.0/xml/features", "spring-dm/1.2.0"),
-                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.0.0/xml/features", "jbi/1.0.0"),
+                
+                // hack system packages
+                systemPackages("org.apache.felix.karaf.jaas.boot;version=1.99"),
+                bootClasspathLibrary(mavenBundle("org.apache.felix.karaf.jaas", "org.apache.felix.karaf.jaas.boot")).afterFramework(),
+                bootClasspathLibrary(mavenBundle("org.apache.felix.karaf", "org.apache.felix.karaf.main")).afterFramework(),
+                
+                // log
+                mavenBundle("org.ops4j.pax.logging", "pax-logging-api"),
+                mavenBundle("org.ops4j.pax.logging", "pax-logging-service"),
+                // felix config admin
+                mavenBundle("org.apache.felix", "org.apache.felix.configadmin"),
+                // felix preference service
+                mavenBundle("org.apache.felix", "org.apache.felix.prefs"),
+                // blueprint
+                mavenBundle("org.apache.geronimo.blueprint", "geronimo-blueprint"),
+                
+                // bundles
+                mavenBundle("org.apache.mina", "mina-core"),
+                mavenBundle("org.apache.sshd", "sshd-core"),
+                mavenBundle("org.apache.felix.karaf.jaas", "org.apache.felix.karaf.jaas.config"),
+                mavenBundle("org.apache.felix.karaf.shell", "org.apache.felix.karaf.shell.console"),
+                mavenBundle("org.apache.felix.gogo", "org.apache.felix.gogo.runtime"),
+                mavenBundle("org.apache.felix.karaf.shell", "org.apache.felix.karaf.shell.osgi"),
+                mavenBundle("org.apache.felix.karaf.shell", "org.apache.felix.karaf.shell.log").noStart(),
+                
+                // load karaf feature (obr, wrapper)
+                scanFeatures("mvn:org.apache.felix.karaf/apache-felix-karaf/1.2.0/xml/features", "obr", "wrapper"),
+                
+                // load smx nmr feature (jbi)
+                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.0.0/xml/features", "jbi"),
+                
+                // start felix framework
                 felix());
         return options;
     }
