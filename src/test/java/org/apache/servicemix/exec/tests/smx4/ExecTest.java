@@ -23,10 +23,8 @@ import static org.ops4j.pax.exam.CoreOptions.systemPackages;
 import static org.ops4j.pax.exam.CoreOptions.bootClasspathLibrary;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
-import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.profile;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.scanFeatures;
 import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.repositories;
-import static org.ops4j.pax.exam.container.def.PaxRunnerOptions.localRepository;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,19 +46,22 @@ import org.osgi.framework.BundleContext;
  */
 @RunWith(JUnit4TestRunner.class)
 public class ExecTest {
-    
+
+    private static MavenArtifactProvisionOption execUrl;
+
     @Inject
     protected BundleContext bundleContext;
 
     @Test
     public void test() throws Exception {
-        MavenArtifactProvisionOption execUrl = CoreOptions.mavenBundle().groupId("org.apache.servicemix").artifactId("servicemix-exec").versionAsInProject();
-        Bundle execBundle = bundleContext.installBundle(execUrl.getURL());
+        Bundle execBundle = bundleContext.installBundle(System.getProperty("servicemix.exec.url"));
         System.out.println(execBundle);
     }
 
     @Configuration
     public static Option[] configuration() {
+        execUrl = CoreOptions.mavenBundle().groupId("org.apache.servicemix").artifactId("servicemix-exec").versionAsInProject();
+
         Option[] options = options(
                 // this is how you set the default log level when using pax logging (logProfile)
                 systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("DEBUG"),
@@ -69,6 +70,7 @@ public class ExecTest {
                 systemProperty("karaf.base").value("target/karaf.home"),
                 systemProperty("karaf.startLocalConsole").value("false"),
                 systemProperty("karaf.startRemoteShell").value("false"),
+                systemProperty("servicemix.exec.url").value(execUrl.getURL()),
                 
                 // define maven repository
                 repositories(
@@ -88,6 +90,10 @@ public class ExecTest {
                 // log
                 mavenBundle("org.ops4j.pax.logging", "pax-logging-api"),
                 mavenBundle("org.ops4j.pax.logging", "pax-logging-service"),
+
+                //mvn: url handler
+                mavenBundle("org.ops4j.pax.url", "pax-url-mvn"),
+
                 // felix config admin
                 mavenBundle("org.apache.felix", "org.apache.felix.configadmin"),
                 // felix preference service
@@ -108,8 +114,8 @@ public class ExecTest {
                 scanFeatures("mvn:org.apache.felix.karaf/apache-felix-karaf/1.2.0/xml/features", "obr", "wrapper"),
                 
                 // load smx nmr feature (jbi)
-                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.0.0/xml/features", "jbi"),
-                
+                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.1.0-SNAPSHOT/xml/features", "jbi"),
+
                 // start felix framework
                 felix());
         return options;
