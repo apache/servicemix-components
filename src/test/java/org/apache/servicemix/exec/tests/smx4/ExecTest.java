@@ -54,6 +54,7 @@ public class ExecTest {
 
     @Test
     public void test() throws Exception {
+        // install the servicemix-exec bundle
         Bundle execBundle = bundleContext.installBundle(System.getProperty("servicemix.exec.url"));
         System.out.println(execBundle);
     }
@@ -114,7 +115,7 @@ public class ExecTest {
                 scanFeatures("mvn:org.apache.felix.karaf/apache-felix-karaf/1.2.0/xml/features", "obr", "wrapper"),
                 
                 // load smx nmr feature (jbi)
-                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.1.0-SNAPSHOT/xml/features", "jbi"),
+                scanFeatures("mvn:org.apache.servicemix.nmr/apache-servicemix-nmr/1.0.0/xml/features", "jbi"),
 
                 // start felix framework
                 felix());
