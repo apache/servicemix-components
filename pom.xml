@@ -302,7 +302,20 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!-- configure the release plugin to skip the validate phase - result in a problem at bundle build time -->
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <preparationGoals>clean install</preparationGoals>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
   </build>
+
 </project>
