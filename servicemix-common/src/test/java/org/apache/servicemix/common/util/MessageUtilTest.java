@@ -93,7 +93,7 @@ public class MessageUtilTest extends TestCase {
         src.addAttachment("urlId", urlDataHandler);
         MessageUtil.NormalizedMessageImpl nmsg3 = new MessageUtil.NormalizedMessageImpl(src);   
         DataHandler dh = nmsg3.getAttachment("urlId");
-        assertEquals("text/html", dh.getDataSource().getContentType());                
+        assertTrue(dh.getDataSource().getContentType().startsWith("text/html"));                
     }
     
     public void testTransfers() throws Exception {      	
