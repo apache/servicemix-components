@@ -26,15 +26,15 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-script</artifactId>
-  <version>2009.02</version>
+  <version>2010.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: Scripting Service Engine</name>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-script/tags/servicemix-script-2009.02</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-script/tags/servicemix-script-2009.02</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-script/tags/servicemix-script-2009.02</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-script/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-script/trunk</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-script/trunk</url>
   </scm>
 
   <properties>
