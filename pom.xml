@@ -178,6 +178,8 @@
                     <excludes>
                         <!-- exclude abstract test classes -->
                         <exclude>**/Abstract*.*</exclude>
+                        <!-- temporarily disable pax-exam tests for ServiceMix 4 -->
+                        <exclude>**/smx4/*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
