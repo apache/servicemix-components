@@ -19,28 +19,28 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>4-SNAPSHOT</version>
+    <version>4</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-camel</artifactId>
   <packaging>jbi-component</packaging>
-  <version>2009.02-SNAPSHOT</version>
+  <version>2009.02</version>
   
   <name>ServiceMix :: Camel</name>
   <description>Camel Service Engine</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-camel/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-camel/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-camel/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-camel/tags/servicemix-camel-2009.02</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-camel/tags/servicemix-camel-2009.02</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-camel/tags/servicemix-camel-2009.02</url>
   </scm>
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01</previous.releases>
     <camel-version>2.1.0</camel-version>
     <servicemix-version>3.3.1</servicemix-version>
-    <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
+    <servicemix-shared-version>2009.02</servicemix-shared-version>
     <servicemix.osgi.import>      
       org.apache.camel.converter,
       org.apache.camel.converter.jaxp,
