@@ -22,9 +22,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.apache.servicemix</groupId>
-		<artifactId>components-pom</artifactId>
-		<version>4-SNAPSHOT</version>
+	  <groupId>org.apache.servicemix</groupId>
+	  <artifactId>components-pom</artifactId>
+	  <version>4</version>
 	</parent>
 
 	<groupId>org.apache.servicemix</groupId>
@@ -39,7 +39,7 @@
 
 	<properties>
 		<servicemix-version>3.3.1</servicemix-version>
-		<servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
+		<servicemix-shared-version>2009.02</servicemix-shared-version>
 		<jaxb-version>2.1.6</jaxb-version>
 
 		<servicemix.osgi.import>
