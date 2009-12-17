@@ -21,12 +21,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>shared-libraries-pom</artifactId>
-    <version>2009.02</version>
+    <version>2010.01-SNAPSHOT</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-common</artifactId>
-  <version>2009.02</version>
+  <version>2010.01-SNAPSHOT</version>
   <packaging>jar</packaging>
   
   <name>ServiceMix :: Common</name>
