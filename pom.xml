@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<!--
 
@@ -29,7 +28,7 @@
 
 	<groupId>org.apache.servicemix</groupId>
 	<artifactId>servicemix-exec</artifactId>
-	<version>2009.02-SNAPSHOT</version>
+	<version>2009.02</version>
 	<packaging>jbi-component</packaging>
 
 	<name>ServiceMix :: Exec</name>
@@ -66,9 +65,9 @@
 	</properties>
 
 	<scm>
-		<connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-exec/trunk</connection>
-		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-exec/trunk</developerConnection>
-		<url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-exec/trunk</url>
+		<connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-exec/tags/servicemix-exec-2009.02</connection>
+		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-exec/tags/servicemix-exec-2009.02</developerConnection>
+		<url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-exec/tags/servicemix-exec-2009.02</url>
 	</scm>
 
 	<dependencies>
