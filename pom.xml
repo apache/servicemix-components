@@ -21,12 +21,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>components-pom</artifactId>
-        <version>4-SNAPSHOT</version>
+        <version>4</version>
     </parent>
     
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-smpp</artifactId>
-    <version>2009.02-SNAPSHOT</version>
+    <version>2009.02</version>
     <packaging>jbi-component</packaging>
     
     <name>ServiceMix :: SMPP</name>
@@ -39,15 +39,15 @@
     </description>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/trunk</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-smpp/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2009.02</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2009.02</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2009.02</url>
     </scm>
     
     <properties>
-        <servicemix-version>3.3</servicemix-version>
-        <servicemix-shared-version>2009.02-SNAPSHOT</servicemix-shared-version>
-        <servicemix-utils-version>1.1.0</servicemix-utils-version>
+        <servicemix-version>3.3.1</servicemix-version>
+        <servicemix-shared-version>2009.02</servicemix-shared-version>
+        <servicemix-utils-version>1.2.0</servicemix-utils-version>
         <jsmpp-version>2.0</jsmpp-version>
         <slf4j-version>1.4.3</slf4j-version>
         
