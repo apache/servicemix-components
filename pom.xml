@@ -26,16 +26,16 @@
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-vfs</artifactId>
-  <version>2009.02-SNAPSHOT</version>
+  <version>2009.02</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: VFS</name>
   <description>A Commons-VFS component</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-vfs/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-vfs/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-vfs/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-vfs/tags/servicemix-vfs-2009.02</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-vfs/tags/servicemix-vfs-2009.02</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-vfs/tags/servicemix-vfs-2009.02</url>
   </scm>
 
   <properties>
