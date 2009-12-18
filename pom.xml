@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>components-pom</artifactId>
-        <version>4</version>
+        <version>5-SNAPSHOT</version>
     </parent>
     
     <groupId>org.apache.servicemix</groupId>
@@ -46,7 +46,7 @@
     
     <properties>
         <servicemix-version>3.3.1</servicemix-version>
-        <servicemix-shared-version>2009.02</servicemix-shared-version>
+        <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
         <servicemix-utils-version>1.2.0</servicemix-utils-version>
         <jsmpp-version>2.0</jsmpp-version>
         <slf4j-version>1.4.3</slf4j-version>
