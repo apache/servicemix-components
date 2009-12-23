@@ -173,7 +173,9 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
      */
     protected void useProvidedWsdl() throws Exception {
         description = DomUtil.parse(wsdl.getInputStream());
-        definition = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader().readWSDL(null, description);
+        javax.wsdl.xml.WSDLReader reader = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader();
+        reader.setFeature("javax.wsdl.verbose", false);
+        definition = reader.readWSDL(null, description);
     }
 
     /**
@@ -418,6 +420,7 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
     protected class Wsdl2Validator {
         public void validate() throws Exception {
             WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+            reader.setFeature(WSDLReader.FEATURE_VERBOSE, false);
             DescriptionElement descElement = reader.readWSDL(wsdl.getURL().toString());
             Description desc = descElement.toComponent();
             org.apache.woden.wsdl20.Service svc;

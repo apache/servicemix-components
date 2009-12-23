@@ -248,6 +248,7 @@ public class HttpSoapProviderEndpoint extends HttpProviderEndpoint {
     protected class Wsdl2Validator {
         public void validate(HttpSoapProviderMarshaler marshaler) throws Exception {
             WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+            reader.setFeature(WSDLReader.FEATURE_VERBOSE, false);
             DescriptionElement descElement = reader.readWSDL(wsdl.getURL().toString());
             Description desc = descElement.toComponent();
             org.apache.woden.wsdl20.Service svc;
