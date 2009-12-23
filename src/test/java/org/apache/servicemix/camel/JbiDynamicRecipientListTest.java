@@ -18,11 +18,9 @@ package org.apache.servicemix.camel;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Consume;
 import org.apache.camel.RecipientList;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;

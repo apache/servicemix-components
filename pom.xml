@@ -216,6 +216,12 @@
       <version>1.2.14</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.5.8</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>
@@ -234,10 +240,6 @@
         <configuration>          
           <childDelegation>false</childDelegation>
           <useFile>true</useFile>
-          <excludes>
-            <!-- Enable this test when we upgrade to Camel 1.5.1 or 2.0.0 (Fix is in CAMEL-1146) -->
-            <exclude>**/MinaEndpointSpringDSLTest.*</exclude>
-          </excludes>
         </configuration>
       </plugin>
     </plugins>
