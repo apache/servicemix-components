@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.jbi.management.DeploymentException;
 
 import org.apache.camel.Endpoint;
-import org.apache.camel.component.bean.BeanComponent;
 import org.apache.camel.spring.SpringCamelContext;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.xbean.AbstractXBeanDeployer;
@@ -103,15 +102,11 @@ public class CamelSpringDeployer extends AbstractXBeanDeployer {
                     services.add(jbiComponent.createJbiEndpointFromCamel(endpoint));
                 }
             }
-            // lets add a control bus endpoint to ensure we have at least one endpoint to deploy
-            BeanComponent beanComponent = camelContext.getComponent("bean", BeanComponent.class);
-            Endpoint endpoint = beanComponent.createEndpoint(new CamelControlBus(camelContext),
-                                                             "camel:" + serviceUnitName + "-controlBus");
-            services.add(jbiComponent.createJbiEndpointFromCamel(endpoint));
+
+            // Here we just add a CamelContextEndpoint to delegate the servicemix start and stop lifecycle call
+            CamelContextEndpoint camelContextEndpoint = new CamelContextEndpoint(camelContext, serviceUnitName);
+            services.add(camelContextEndpoint);            
         }
-
-
-
         return services;
     }
 
