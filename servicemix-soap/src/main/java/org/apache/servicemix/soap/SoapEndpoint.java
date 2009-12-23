@@ -375,7 +375,17 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
                 processor = createConsumerProcessor();
             }
         }
-        processor.init();
+        try {
+            processor.init();
+        } catch (Exception e) {
+            if (!dynamic && getRole() != Role.PROVIDER) {
+                //ensure deregister external endpoint if endpoint init failed so that
+                //it won't block the redeployment with correct endpoint
+                ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
+                ctx.deregisterExternalEndpoint(activated);
+            }
+            throw e;
+        }
     }
     
     public void start() throws Exception {
