@@ -152,6 +152,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     private Bus bus;
 
+    private Bus providedBus;
+    
     private boolean mtomEnabled;
 
     private String locationURI;
@@ -382,8 +384,13 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         server.stop();
         if (!isComponentBus()) {
             //if use the endpoint own bus, then shutdown it
-            bus.shutdown(true);
-            bus = null;
+            if (providedBus != null) {
+                providedBus.shutdown(true);
+                providedBus = null;
+            } else {
+                bus.shutdown(true);
+                bus = null;
+            }
         }
         super.deactivate();
     }
@@ -606,7 +613,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     }
 
     protected Bus getBus() {
-        if (getBusCfg() != null) {
+        if (providedBus != null) {
+            return providedBus;
+        } else if (getBusCfg() != null) {
             if (bus == null) {
                 SpringBusFactory bf = new SpringBusFactory();
                 bus = bf.createBus(getBusCfg());
@@ -1132,5 +1141,18 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         this.schemaValidationEnabled = schemaValidationEnabled;
     }
 
+    /**
+     * Specifies a preconfigured CXF bus to use.
+     *
+     * @param providedBus   
+     * @org.apache.xbean.Property description="a preconfigured CXF Bus object to use; overrides busCfg"
+     * */
+     public void setProvidedBus(Bus providedBus) {
+         this.providedBus = providedBus;
+     }
+     
+     public Bus getProvidedBus() {
+         return this.providedBus;
+     }
 
 }

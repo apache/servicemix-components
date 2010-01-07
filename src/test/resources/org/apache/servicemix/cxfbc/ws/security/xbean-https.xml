@@ -21,7 +21,12 @@
        xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
        xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
        xmlns:greeter="http://apache.org/hello_world_soap_http">
-  
+ 
+  <import resource="classpath:org/apache/servicemix/cxfbc/ws/security/provider/CherryServer.xml"/>
+  <import resource="classpath:META-INF/cxf/cxf.xml" /> 
+  <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+  <import resource="classpath:META-INF/cxf/cxf-extension-http.xml" />
+  <import resource="classpath:META-INF/cxf/cxf-extension-http-jetty.xml" />
   <sm:container id="jbi" embedded="true">
     
     <sm:endpoints>
@@ -47,8 +52,10 @@
                       targetService="greeter:SOAPServiceWSSecurity"
 		      targetInterface="greeter:Greeter"
                       locationURI="https://localhost:9001/SoapContext/SoapPort"
-                      busCfg="org/apache/servicemix/cxfbc/ws/security/provider/CherryServer.xml"
                       >
+        <cxfbc:providedBus>
+           <ref bean="cxf"/>
+        </cxfbc:providedBus>
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
         </cxfbc:inInterceptors>

@@ -136,6 +136,8 @@ public class CxfBcProvider extends ProviderEndpoint implements
     private String busCfg;
 
     private Bus bus;
+    
+    private Bus providedBus;
 
     private ConduitInitiator conduitInit;
     private Conduit conduit;
@@ -595,7 +597,9 @@ public class CxfBcProvider extends ProviderEndpoint implements
     }
 
     protected Bus getBus() {
-        if (getBusCfg() != null) {
+        if (providedBus != null) {
+            return providedBus;
+        } else if (getBusCfg() != null) {
             if (bus == null) {
                 SpringBusFactory bf = new SpringBusFactory();
                 bus = bf.createBus(getBusCfg());
@@ -741,10 +745,25 @@ public class CxfBcProvider extends ProviderEndpoint implements
      * @param schemaValidationEnabled
      *            a boolean
      * @org.apache.xbean.Property description="Specifies if the endpoint use schemavalidation for the incoming/outgoing message.
-     *  Default is <code>false</code>. 
+     *  Default is <code>false</code>. "
      */
 
     public void setSchemaValidationEnabled(boolean schemaValidationEnabled) {
         this.schemaValidationEnabled = schemaValidationEnabled;
-    } 
+    }
+    
+    /**
+     * Specifies a preconfigured CXF bus to use.
+     *
+     * @param providedBus   
+     * @org.apache.xbean.Property description="a preconfigured CXF Bus object to use; overrides busCfg"
+     * */
+     public void setProvidedBus(Bus providedBus) {
+         this.providedBus = providedBus;
+     }
+     
+     public Bus getProvidedBus() {
+         return this.providedBus;
+     }
+     
 }

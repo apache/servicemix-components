@@ -36,7 +36,6 @@
             http://cxf.apache.org/schemas/configuration/http-jetty.xsd
             http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
-
   <http:destination name="{http://apache.org/hello_world_soap_http}TimestampSignEncrypt.http-destination"> 
   </http:destination>
 
@@ -67,6 +66,4 @@
    </httpj:engine>
   </httpj:engine-factory>
   
-  <!-- We need a bean named "cxf" -->
-  <bean id="cxf" class="org.apache.cxf.bus.CXFBusImpl"/>
 </beans>
