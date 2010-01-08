@@ -48,6 +48,8 @@ import org.apache.servicemix.tck.ReceiverComponent;
 
 public abstract class AbstractEIPTest extends TestCase {
 
+    protected static final String BROKER_URI = "tcp://localhost:" + System.getProperty("activemq.port1", "61616");
+
     protected JBIContainer jbi;
     protected BrokerService broker;
     protected DefaultServiceMixClient client;
@@ -229,5 +231,4 @@ public abstract class AbstractEIPTest extends TestCase {
             }
         }
     }
-    
 }

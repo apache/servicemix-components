@@ -26,7 +26,7 @@ public class WireTapJmsFlowTest extends WireTapTest {
     protected void setUp() throws Exception {
         broker = new BrokerService();
         broker.setPersistent(false);
-        broker.addConnector("tcp://localhost:" + System.getenv("activemq.port1"));
+        broker.addConnector(BROKER_URI);
         broker.start();
         
         super.setUp();
@@ -38,7 +38,7 @@ public class WireTapJmsFlowTest extends WireTapTest {
     }
     
     protected void configureContainer() throws Exception {
-        jbi.setFlowName("jms?jmsURL=tcp://localhost:" + System.getenv("activemq.port1"));
+        jbi.setFlowName("jms?jmsURL=" + BROKER_URI);
     }
     
 }
