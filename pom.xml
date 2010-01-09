@@ -318,17 +318,7 @@
           </excludes>
           <forkedProcessTimeoutInSeconds>90</forkedProcessTimeoutInSeconds>
           <forkMode>pertest</forkMode>
-<!--
-          <systemProperties>
-            <property>
-                <name>activemq.port1</name>
-                <value>${port1}</value>
-            </property>
-          </systemProperties>
--->
-          <environmentVariables>
-            <activemq.port1>${port1}</activemq.port1>
-          </environmentVariables>
+          <argLine>-Dactivemq.port1=${port1}</argLine>
         </configuration>
       </plugin>
         <plugin>
