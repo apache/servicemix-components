@@ -64,6 +64,7 @@ import org.oasis_open.docs.wsrf.rp_2.ObjectFactory;
 
 public class WSNComponentTest extends TestCase {
 
+    private static final String BROKER_URL = "tcp://localhost:" + System.getProperty("activemq.port1", "61616");
     public static final QName NOTIFICATION_BROKER =
         new QName("http://servicemix.org/wsnotification", "NotificationBroker");
 
@@ -77,7 +78,7 @@ public class WSNComponentTest extends TestCase {
     protected void setUp() throws Exception {
         jmsBroker = new BrokerService();
         jmsBroker.setPersistent(false);
-        jmsBroker.addConnector("tcp://localhost:" + System.getenv("activemq.port1"));
+        jmsBroker.addConnector(BROKER_URL);
         jmsBroker.start();
 
         jbi = new JBIContainer();
@@ -89,7 +90,7 @@ public class WSNComponentTest extends TestCase {
         client = new DefaultServiceMixClient(jbi);
 
         wsnComponent = new WSNComponent();
-        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory("tcp://localhost:" + System.getenv("activemq.port1")));
+        wsnComponent.setConnectionFactory(new ActiveMQConnectionFactory(BROKER_URL));
         ActivationSpec as = new ActivationSpec();
         as.setComponentName("servicemix-wsn2005");
         as.setComponent(wsnComponent);
