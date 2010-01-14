@@ -236,7 +236,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <argLine>-Dactivemq.port1=${port1} -Dactivemq.port2=${port2} -Xmx196m</argLine>
+            <argLine>-Dactivemq.port1=${port1} -Dactivemq.port2=${port2} -Xmx1024m</argLine>
           </configuration>
         </plugin>
           <plugin>
