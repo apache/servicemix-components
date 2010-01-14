@@ -42,20 +42,25 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
     private AuthenticationService authenticationService;
     private ThreadLocal<Subject> currentSubject = new ThreadLocal<Subject>();
     private boolean x509;
+    private boolean delegateToJaas;
     
     
-    public JbiJAASInterceptor(AuthenticationService authenticationService, boolean x509) {
+    public JbiJAASInterceptor(AuthenticationService authenticationService, boolean x509, boolean delegateToJaas) {
         super();
         setPhase(Phase.PRE_PROTOCOL);
         getAfter().add(WSS4JInInterceptor.class.getName());
         this.authenticationService = authenticationService;
         this.x509 = x509;
+        this.delegateToJaas = delegateToJaas;
     }
     
     
     public void handleMessage(SoapMessage message) throws Fault {
      
         try {
+            if (!delegateToJaas) {
+                return;
+            }
             Subject subject = (Subject) currentSubject.get();
             
             if (subject == null) {

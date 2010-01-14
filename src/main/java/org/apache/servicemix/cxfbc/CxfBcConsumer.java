@@ -179,6 +179,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private boolean x509;
     
     private boolean schemaValidationEnabled;
+    
+    private boolean delegateToJaas = true;
 
     /**
      * @return the wsdl
@@ -466,7 +468,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getInInterceptors().add(new JbiJAASInterceptor(
                     AuthenticationService.Proxy.create(
                         ((CxfBcComponent)this.getServiceUnit().getComponent()).
-                            getConfiguration().getAuthenticationService()), isX509()));
+                            getConfiguration().getAuthenticationService()), isX509(), isDelegateToJaas()));
             cxfService.getInInterceptors().add(new JbiInvokerInterceptor());
             cxfService.getInInterceptors().add(new JbiPostInvokerInterceptor());
 
@@ -1153,6 +1155,22 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
      
      public Bus getProvidedBus() {
          return this.providedBus;
+     }
+
+     /**
+      * Specifies if the endpoint delegate to JAASAuthenticationService to do the authentication.
+      * 
+      * @param delegateToJaas
+      *            a boolean
+      * @org.apache.xbean.Property description="Specifies if the endpoint delegate to JAASAuthenticationService to do the authentication.
+      *  Default is <code>true</code>. 
+      */
+     public void setDelegateToJaas(boolean delegateToJaas) {
+         this.delegateToJaas = delegateToJaas;
+     }
+
+     public boolean isDelegateToJaas() {
+         return delegateToJaas;
      }
 
 }
