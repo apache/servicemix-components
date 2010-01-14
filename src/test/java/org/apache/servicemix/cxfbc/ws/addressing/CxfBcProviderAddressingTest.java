@@ -60,7 +60,7 @@ public class CxfBcProviderAddressingTest extends SpringTestSupport {
         io.getInMessage().setContent(
                 new StringSource(
                         "<message xmlns='http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper'>"
-                                + "<part> " + "<sayHi/>" + "</part> "
+                                + "<part> " + "<sayHi xmlns='http://apache.org/hello_world_soap_http_provider/types'/>" + "</part> "
                                 + "</message>"));
         client.sendSync(io);
         if (io.getFault() != null) {
