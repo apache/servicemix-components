@@ -134,7 +134,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         receiver.getMessageList().assertMessagesReceived(1);
         NormalizedMessage msg = (NormalizedMessage) receiver.getMessageList().getMessages().get(0);
@@ -142,7 +142,7 @@ public class WSNComponentTest extends TestCase {
         assertEquals("Notify", node.getLocalName());
 
         // Wait for acks to be processed
-        Thread.sleep(500);
+        Thread.sleep(5000);
     }
 
     public void testNotifyWithJbiWrapper() throws Exception {
@@ -156,7 +156,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         receiver.getMessageList().assertMessagesReceived(1);
         NormalizedMessage msg = (NormalizedMessage) receiver.getMessageList().getMessages().get(0);
@@ -164,7 +164,7 @@ public class WSNComponentTest extends TestCase {
         assertEquals("Notify", node.getLocalName());
 
         // Wait for acks to be processed
-        Thread.sleep(500);
+        Thread.sleep(5000);
     }
 
     public void testRawNotify() throws Exception {
@@ -180,7 +180,7 @@ public class WSNComponentTest extends TestCase {
         // END SNIPPET: notify
 
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         receiver.getMessageList().assertMessagesReceived(1);
         NormalizedMessage msg = (NormalizedMessage) receiver.getMessageList().getMessages().get(0);
@@ -188,7 +188,7 @@ public class WSNComponentTest extends TestCase {
         assertEquals("hello", node.getLocalName());
 
         // Wait for acks to be processed
-        Thread.sleep(500);
+        Thread.sleep(5000);
     }
 
     public void testUnsubscribe() throws Exception {
@@ -199,7 +199,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", new Notify());
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(1, pullPoint.getMessages(0).size());
 
@@ -207,12 +207,12 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", new Notify());
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(0, pullPoint.getMessages(0).size());
 
         // Wait for acks to be processed
-        Thread.sleep(500);
+        Thread.sleep(5000);
     }
 
     public void testPauseResume() throws Exception {
@@ -221,7 +221,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", new Notify());
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(1, pullPoint.getMessages(0).size());
 
@@ -229,7 +229,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", new Notify());
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(0, pullPoint.getMessages(0).size());
 
@@ -237,12 +237,12 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", new Notify());
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(1, pullPoint.getMessages(0).size());
 
         // Wait for acks to be processed
-        Thread.sleep(500);
+        Thread.sleep(5000);
     }
 
     public void testPull() throws Exception {
@@ -251,14 +251,14 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", new Notify());
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         List<NotificationMessageHolderType> msgs = pullPoint.getMessages(0);
         assertNotNull(msgs);
         assertEquals(1, msgs.size());
 
         // Wait for acks to be processed
-        Thread.sleep(500);
+        Thread.sleep(5000);
     }
 
     public void testPullWithFilter() throws Exception {
@@ -269,21 +269,21 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<msg type='a'/>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(1, pullPoint1.getMessages(0).size());
         assertEquals(0, pullPoint2.getMessages(0).size());
 
         wsnBroker.notify("myTopic", parse("<msg type='b'/>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(5000);
 
         assertEquals(0, pullPoint1.getMessages(0).size());
         assertEquals(1, pullPoint2.getMessages(0).size());
 
         wsnBroker.notify("myTopic", parse("<msg type='c'/>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         assertEquals(0, pullPoint1.getMessages(0).size());
         assertEquals(0, pullPoint2.getMessages(0).size());
@@ -326,7 +326,7 @@ public class WSNComponentTest extends TestCase {
         PullPoint pullPoint = new PullPoint(
                         client.getContext(),
                         AbstractWSAClient.createWSA("http://www.consumer.org/service/endpoint"));
-        Thread.sleep(500);
+        Thread.sleep(2000);
         assertEquals(1, pullPoint.getMessages(0).size());
     }
 
@@ -348,7 +348,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
         receiver.getMessageList().assertMessagesReceived(1);
         receiver.getMessageList().flushMessages();
 
@@ -357,7 +357,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
         assertEquals(0, receiver.getMessageList().flushMessages().size());
 
         wsnComponent.getServiceUnitManager().init("subscription", path.getAbsolutePath());
@@ -365,7 +365,7 @@ public class WSNComponentTest extends TestCase {
 
         wsnBroker.notify("myTopic", parse("<hello>world</hello>"));
         // Wait for notification
-        Thread.sleep(500);
+        Thread.sleep(2000);
         receiver.getMessageList().assertMessagesReceived(1);
         receiver.getMessageList().flushMessages();
     }
