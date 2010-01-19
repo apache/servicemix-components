@@ -25,14 +25,14 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 
 import org.apache.servicemix.common.BaseServiceUnitManager;
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.servicemix.common.Deployer;
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.DefaultServiceUnit;
 import org.apache.servicemix.common.util.IntrospectionSupport;
 import org.apache.servicemix.common.util.URISupport;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
+import org.apache.servicemix.jms.endpoints.JmsJcaConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
 
 /**
@@ -52,7 +52,8 @@ public class JmsComponent extends DefaultComponent {
     protected Class[] getEndpointClasses() {
         return new Class[] {JmsEndpoint.class, 
                             JmsConsumerEndpoint.class, 
-                            JmsProviderEndpoint.class};
+                            JmsProviderEndpoint.class,
+                            JmsJcaConsumerEndpoint.class};
     }
     
     /**
