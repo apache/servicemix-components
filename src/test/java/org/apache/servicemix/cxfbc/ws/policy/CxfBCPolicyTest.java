@@ -18,6 +18,7 @@ package org.apache.servicemix.cxfbc.ws.policy;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -49,9 +50,19 @@ public class CxfBCPolicyTest extends TestCase {
         if (serversStarted) {
             return;
         }
+        Map<String, String> props = new HashMap<String, String>();                
+        if (System.getProperty("javax.xml.transform.TransformerFactory") != null) {
+            props.put("javax.xml.transform.TransformerFactory", System.getProperty("javax.xml.transform.TransformerFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLInputFactory") != null) {
+            props.put("javax.xml.stream.XMLInputFactory", System.getProperty("javax.xml.stream.XMLInputFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLOutputFactory") != null) {
+            props.put("javax.xml.stream.XMLOutputFactory", System.getProperty("javax.xml.stream.XMLOutputFactory"));
+        }
         
         assertTrue("JBIContainers did not launch correctly", 
-                launchServer(JBIServer.class, null, false));
+                launchServer(JBIServer.class, props, false));
        
         
         serversStarted = true;

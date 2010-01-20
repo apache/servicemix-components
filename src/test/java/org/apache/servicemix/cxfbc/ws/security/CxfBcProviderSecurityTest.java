@@ -76,11 +76,20 @@ public class CxfBcProviderSecurityTest extends SpringTestSupport {
             // around some security test issues.  Check our system properties
             // for this key, and if it's set, then propagate the property on
             // to the server we launch as well.
-            Map<String, String> properties = null;
+            Map<String, String> properties = new HashMap<String, String>();;
             if (System.getProperty("java.security.properties") != null) {
-                properties = new HashMap<String, String>();
+               
                 properties.put("java.security.properties",
                     System.getProperty("java.security.properties"));
+            }
+            if (System.getProperty("javax.xml.transform.TransformerFactory") != null) {
+                properties.put("javax.xml.transform.TransformerFactory", System.getProperty("javax.xml.transform.TransformerFactory"));
+            }
+            if (System.getProperty("javax.xml.stream.XMLInputFactory") != null) {
+                properties.put("javax.xml.stream.XMLInputFactory", System.getProperty("javax.xml.stream.XMLInputFactory"));
+            }
+            if (System.getProperty("javax.xml.stream.XMLOutputFactory") != null) {
+                properties.put("javax.xml.stream.XMLOutputFactory", System.getProperty("javax.xml.stream.XMLOutputFactory"));
             }
             sl = new ServerLauncher(clz.getName(), properties, null, inProcess);
             ok = sl.launchServer();            

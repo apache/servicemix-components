@@ -19,6 +19,8 @@ package org.apache.servicemix.cxfbc.ws.security;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
@@ -48,11 +50,22 @@ public class CxfBcProviderHttpsTest extends SpringTestSupport {
         component.getServiceUnitManager().deploy("proxy", getServiceUnitPath("provider"));
         component.getServiceUnitManager().init("proxy", getServiceUnitPath("provider"));
         component.getServiceUnitManager().start("proxy");
+        Map<String, String> props = new HashMap<String, String>();                
+        if (System.getProperty("javax.xml.transform.TransformerFactory") != null) {
+            props.put("javax.xml.transform.TransformerFactory", System.getProperty("javax.xml.transform.TransformerFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLInputFactory") != null) {
+            props.put("javax.xml.stream.XMLInputFactory", System.getProperty("javax.xml.stream.XMLInputFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLOutputFactory") != null) {
+            props.put("javax.xml.stream.XMLOutputFactory", System.getProperty("javax.xml.stream.XMLOutputFactory"));
+        }
+        
         assertTrue(
             "Server failed to launch",
             // run the server in another process
             // set this to false to fork
-            launchServer(HttpsServer.class, false));
+            launchServer(HttpsServer.class, props, false));
     }
     
     protected void tearDown() throws Exception {
@@ -67,10 +80,10 @@ public class CxfBcProviderHttpsTest extends SpringTestSupport {
         } 
     }
     
-    public boolean launchServer(Class<?> clz, boolean inProcess) {
+    public boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
         boolean ok = false;
         try { 
-            sl = new ServerLauncher(clz.getName(), inProcess);
+            sl = new ServerLauncher(clz.getName(), p, null, inProcess);
             ok = sl.launchServer();            
             assertTrue("server failed to launch", ok);
             

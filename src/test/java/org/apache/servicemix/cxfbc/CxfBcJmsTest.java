@@ -61,8 +61,18 @@ public class CxfBcJmsTest extends SpringTestSupport {
         assertTrue("server did not launch correctly", 
                    launchServer(EmbededJMSBrokerLauncher.class, props, false));
         embeddedLauncher =  sl;
+        props = new HashMap<String, String>();                
+        if (System.getProperty("javax.xml.transform.TransformerFactory") != null) {
+            props.put("javax.xml.transform.TransformerFactory", System.getProperty("javax.xml.transform.TransformerFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLInputFactory") != null) {
+            props.put("javax.xml.stream.XMLInputFactory", System.getProperty("javax.xml.stream.XMLInputFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLOutputFactory") != null) {
+            props.put("javax.xml.stream.XMLOutputFactory", System.getProperty("javax.xml.stream.XMLOutputFactory"));
+        }
         assertTrue("server did not launch correctly", 
-                launchServer(MyJMSServer.class, null, false));
+                launchServer(MyJMSServer.class, props, false));
         jmsLauncher = sl;
         
         serversStarted = true;
