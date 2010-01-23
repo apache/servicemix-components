@@ -81,6 +81,32 @@ public class CxfBcSecurityJAASTest extends SpringTestSupport {
         assertEquals(ret, "Hello ffang");
     }
     
+    public void testAuthFailed() {
+        LOG.info("test security");
+        Bus bus = new SpringBusFactory().createBus(
+                "org/apache/servicemix/cxfbc/ws/security/client-jaas-dummy.xml"); 
+        BusFactory.setDefaultBus(bus);
+        LoggingInInterceptor in = new LoggingInInterceptor();
+        bus.getInInterceptors().add(in);
+        bus.getInFaultInterceptors().add(in);
+        LoggingOutInterceptor out = new LoggingOutInterceptor();
+        bus.getOutInterceptors().add(out);
+        bus.getOutFaultInterceptors().add(out);
+        final javax.xml.ws.Service svc = javax.xml.ws.Service.create(WSDL_LOC,
+                new javax.xml.namespace.QName(
+                        "http://apache.org/hello_world_soap_http",
+                        "SOAPServiceWSSecurity"));
+        final Greeter greeter = svc.getPort(new javax.xml.namespace.QName(
+                "http://apache.org/hello_world_soap_http",
+                "TimestampSignEncrypt"), Greeter.class);
+        try {
+            greeter.sayHi();
+            fail("should catch exception");
+        } catch (Exception e) {
+            assertEquals(e.getMessage(), "User does not exist");
+        }
+    }
+    
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
         // load cxf se and bc from spring config file
