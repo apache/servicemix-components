@@ -109,6 +109,15 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
             message.put(Subject.class, subject);
         } catch (GeneralSecurityException e) {
             throw new Fault(e);
+        } catch (java.lang.reflect.UndeclaredThrowableException e) {
+            java.lang.Throwable undeclared = e.getUndeclaredThrowable();
+            if (undeclared != null
+                    && undeclared instanceof java.lang.reflect.InvocationTargetException) {
+                throw new Fault(
+                        ((java.lang.reflect.InvocationTargetException) undeclared)
+                                .getTargetException());
+            }
+
         } finally {
             currentSubject.set(null);
         }
