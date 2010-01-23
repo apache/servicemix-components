@@ -39,6 +39,11 @@
         </jaxws:inInterceptors>
     </jaxws:client>
 
+    <!-- -->
+    <!-- This bean is an Out interceptor which will add a Timestamp, -->
+    <!-- sign the Timstamp and Body, and then encrypt the Timestamp -->
+    <!-- and Body.  It uses 3DES as the symmetric key algorithm. -->
+    <!-- -->
     <bean 
         class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor"
         id="TimestampSignEncrypt_Request">
@@ -46,7 +51,7 @@
             <map>
                 <entry key="action" value="UsernameToken"/>
                 <entry key="passwordType" value="PasswordText" />
-                <entry key="user" value="alice"/>
+                <entry key="user" value="dummy"/>
                 <entry key="passwordCallbackClass" value="org.apache.servicemix.cxfbc.ws.security.KeystorePasswordCallback"/>
             </map>
         </constructor-arg>

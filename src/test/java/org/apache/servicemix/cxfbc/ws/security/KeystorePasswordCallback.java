@@ -35,6 +35,7 @@ public class KeystorePasswordCallback implements CallbackHandler {
         passwords.put("alice", "password");
         passwords.put("bob", "password");
         passwords.put("dummy", "dummy");
+        passwords.put("joe", "dummypassword");
     }
 
     /**

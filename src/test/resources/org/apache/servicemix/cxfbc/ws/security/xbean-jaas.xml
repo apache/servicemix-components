@@ -108,14 +108,8 @@
         id="TimestampSignEncrypt_Request">
         <constructor-arg>
             <map>
-                <!-- Use this action order for local clients -->
                 <entry key="action" value="UsernameToken"/>
                 <entry key="passwordType" value="PasswordText" />
-                <!-- Use this action spec for WCF clients
-                <entry key="action" value="Signature Encrypt Timestamp"/>
-                -->
-                <entry key="signaturePropFile" value="org/apache/servicemix/cxfbc/ws/security/alice.properties"/>
-                <entry key="decryptionPropFile" value="org/apache/servicemix/cxfbc/ws/security/bob.properties"/>
                 <entry key="passwordCallbackClass" value="org.apache.servicemix.cxfbc.ws.security.KeystorePasswordCallback"/>
             </map>
         </constructor-arg>
