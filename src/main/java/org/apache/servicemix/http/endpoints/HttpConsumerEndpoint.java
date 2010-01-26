@@ -246,7 +246,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         } else {
             isSTFlow = false;
             // synchronized block
-            synchronized (cont) {
+            synchronized (cont.getObject()) {
                 if (locks.remove(exchange.getExchangeId()) == null) {
                     throw new Exception("HTTP request has timed out for exchange: "
                                         + exchange.getExchangeId());
@@ -299,7 +299,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                 request.setAttribute(MessageExchange.class.getName(), exchange.getExchangeId());
                 // Put the continuation in a map under the exchange id key
                 locks.put(exchange.getExchangeId(), cont);
-                synchronized (cont) {
+                synchronized (cont.getObject()) {
                     // Send the exchange
                     send(exchange);
                     if (!isSTFlow) {
@@ -353,7 +353,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             //  * the continuation has been resumed because the exchange has been received
             //  * the continuation has timed out
             } else {
-                synchronized (cont) {
+                synchronized (cont.getObject()) {
                     // Get the exchange id from the request
                     String id = (String) request.getAttribute(MessageExchange.class.getName());
                     // Remove the continuation from the map, indicating it has been processed or timed out
@@ -376,7 +376,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             if (exchange.getStatus() == ExchangeStatus.ERROR) {
                 Exception e = exchange.getError();
                 if (e == null) {
-                    e = new Exception("Unkown error (exchange aborted ?)");
+                    e = new Exception("Unknown error (exchange aborted ?)");
                 }
                 throw e;
             } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
@@ -409,13 +409,16 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private Continuation createContinuation(HttpServletRequest request) {
         // not giving a specific mutex will synchronize on the continuation itself
         Continuation continuation = ContinuationSupport.getContinuation(request, null);
-        if (continuation instanceof WaitingContinuation) {
-            return continuation;
-        } else {
-            // wrap the continuation to avoid a deadlock between this endpoint and the Jetty continuation timeout mechanism
-            // the endpoint now synchronizes on the wrapper while Jetty synchronizes on the continuation itself
-            return new ContinuationWrapper(continuation);
+        // Set the continuation's object that the endpoint will use to synchronize on to avoid a
+        // deadlock between this endpoint and the Jetty continuation timeout mechanism
+        // the endpoint now synchronizes on the continuation's object while Jetty synchronizes on 
+        // the continuation itself
+        synchronized (continuation) {
+            if (continuation.getObject() == null) {
+                continuation.setObject(new Object());
+            }
         }
+        return continuation;
     }
 
     protected void loadStaticResources() throws Exception {
