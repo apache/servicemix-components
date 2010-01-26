@@ -48,11 +48,14 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
      */
     private static final String MSG_PROPERTY = "PropertyTest";
     private static final String MSG_PROPERTY_BLACKLISTED = "BadPropertyTest";
+    
+    private static final String MSG_PRIORITY_PROPERTY = "JMSPriority";
+    private static final String MSG_EXPIRATION_PROPERTY = "JMSExpiration";
 
     protected List<String> blackList;
     
     public void testSendWithoutProperties() throws Exception {
-        container.activateComponent(createEndpoint(false), "servicemix-jms");
+        container.activateComponent(createEndpoint(false, false), "servicemix-jms");
         
         InOnly me = client.createInOnlyExchange();
         NormalizedMessage inMessage = me.getInMessage();
@@ -92,6 +95,26 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         assertNull("Found " + JbiConstants.DATESTAMP_PROPERTY_NAME + " property", msg
             .getObjectProperty(JbiConstants.DATESTAMP_PROPERTY_NAME));
         assertNotNull(msg);
+    }
+    
+    public void testProviderInOnlyWithMessageQoS() throws Exception {
+        container.activateComponent(createEndpoint(true, true), "servicemix-jms");
+        
+        InOnly me = client.createInOnlyExchange();
+        NormalizedMessage inMessage = me.getInMessage();
+        inMessage.setProperty(MSG_PRIORITY_PROPERTY, 2);
+        long ttl = System.currentTimeMillis() + 5000;
+        inMessage.setProperty(MSG_EXPIRATION_PROPERTY, ttl);
+        inMessage.setContent(new StringSource("<hello>world</hello>"));
+        me.setService(new QName("jms"));
+        client.sendSync(me);
+        assertEquals(ExchangeStatus.DONE, me.getStatus());
+        
+        Message msg = jmsTemplate.receive("destination");
+        assertNotNull(msg);
+        assertEquals(2, msg.getJMSPriority());
+        assertTrue("Found none-zero value for JMSExpiration", msg
+        		.getLongProperty(MSG_EXPIRATION_PROPERTY) != 0);
     }
     
     public void testProviderInOnlyWithoutReplyDest() throws Exception {
@@ -290,10 +313,10 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
 
     // Helper methods
     private JmsComponent createEndpoint() {
-        return createEndpoint(true);
+        return createEndpoint(true, false);
     }
 
-    private JmsComponent createEndpoint(boolean copyProperties) {
+    private JmsComponent createEndpoint(boolean copyProperties, boolean preserveMsgQoS) {
         // initialize the black list
         blackList = new LinkedList<String>();
         blackList.add(MSG_PROPERTY_BLACKLISTED);
@@ -308,6 +331,7 @@ public class JmsProviderEndpointTest extends AbstractJmsTestSupport {
         endpoint.setEndpoint("endpoint");
         endpoint.setConnectionFactory(connectionFactory);
         endpoint.setDestinationName("destination");
+        endpoint.setPreserveMessageQos(preserveMsgQoS);
         component.setEndpoints(new JmsProviderEndpoint[] {endpoint});
         return component;
     }

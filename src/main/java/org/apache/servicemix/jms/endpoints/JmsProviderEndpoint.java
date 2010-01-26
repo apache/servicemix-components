@@ -106,6 +106,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
     private Store store;
 
     private AbstractMessageListenerContainer listenerContainer;
+    
+    private boolean preserveMessageQos;
 
     /**
      * @return the destination
@@ -469,6 +471,24 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
      */
     public void setReplyDestinationName(String replyDestinationName) {
         this.replyDestinationName = replyDestinationName;
+    }
+    
+    /**
+     * @return the preserveMessageQos
+     */
+    public boolean isPreserveMessageQos() {
+    	return preserveMessageQos;
+    }
+    
+    /**
+     * Specifies whether we want to send message using the QoS settings
+     * specified on the message instead in order to preserve message QoS. 
+     * The default is <code>false</code>.
+     *
+     * @param preserveMessageQos should support per message QoS?
+     */
+    public void setPreserveMessageQos(boolean preserveMessageQos) {
+    	this.preserveMessageQos = preserveMessageQos;
     }
 
     /**
@@ -976,7 +996,8 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         return cont;
     }
 
-    public static class JmsTemplateUtil extends JmsTemplate {
+    public class JmsTemplateUtil extends JmsTemplate {
+
         public void send(Session session, Destination destination, MessageCreator messageCreator) throws JmsException {
             try {
                 doSend(session, destination, messageCreator);
@@ -991,9 +1012,38 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 throw convertJmsAccessException(ex);
             }
         }
+        
+        /**
+         * Override so we can support preserving the Qos settings that have
+         * been set on the message.
+         */
+        protected void doSend(MessageProducer producer, Message message) throws JMSException {
+            if (isPreserveMessageQos()) {
+                producer.send(message, message.getJMSDeliveryMode(), message.getJMSPriority(), getTimeToLive(message));
+            } else {
+                super.doSend(producer, message);
+            }
+        }
+
+        /**
+         * Determine the remaining time-to-live for a JMS Message
+         * @return 0 if no ttl has been set, the remaining ttl otherwise
+         */
+        protected long getTimeToLive(Message message) throws JMSException {
+            long ttl = message.getJMSExpiration();
+            if (ttl != 0) {
+                ttl = ttl - System.currentTimeMillis();
+                // Message had expired.. so set the ttl as small as possible
+                if (ttl <= 0) {
+                    ttl = 1;
+                }
+            }
+            return ttl;
+        }
     }
 
-    public static class JmsTemplate102Util extends JmsTemplateUtil {
+    public class JmsTemplate102Util extends JmsTemplateUtil {
+
         protected void initDefaultStrategies() {
             setMessageConverter(new SimpleMessageConverter102());
         }
@@ -1064,17 +1114,26 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
         }
 
         protected void doSend(MessageProducer producer, Message message) throws JMSException {
-            if (isPubSubDomain()) {
-                if (isExplicitQosEnabled()) {
-                    ((TopicPublisher) producer).publish(message, getDeliveryMode(), getPriority(), getTimeToLive());
+        	if (isPreserveMessageQos()) {
+                long ttl = getTimeToLive(message);
+                if (isPubSubDomain()) {
+                	((TopicPublisher) producer).publish(message, message.getJMSDeliveryMode(), message.getJMSPriority(), ttl); 
                 } else {
-                    ((TopicPublisher) producer).publish(message);
+                    ((QueueSender) producer).send(message, message.getJMSDeliveryMode(), message.getJMSPriority(), ttl);
                 }
             } else {
-                if (isExplicitQosEnabled()) {
-                    ((QueueSender) producer).send(message, getDeliveryMode(), getPriority(), getTimeToLive());
+                if (isPubSubDomain()) {
+                    if (isExplicitQosEnabled()) {
+                        ((TopicPublisher) producer).publish(message, getDeliveryMode(), getPriority(), getTimeToLive());
+                    } else {
+                        ((TopicPublisher) producer).publish(message);
+                    }
                 } else {
-                    ((QueueSender) producer).send(message);
+                    if (isExplicitQosEnabled()) {
+                        ((QueueSender) producer).send(message, getDeliveryMode(), getPriority(), getTimeToLive());
+                    } else {
+                        ((QueueSender) producer).send(message);
+                    }
                 }
             }
         }
