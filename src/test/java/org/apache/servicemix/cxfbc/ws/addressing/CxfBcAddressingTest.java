@@ -226,10 +226,17 @@ public class CxfBcAddressingTest extends SpringTestSupport implements Verificati
             Map<String, Object> requestContext =
                 ((BindingProvider)greeter).getRequestContext();
             requestContext.put(CLIENT_ADDRESSING_PROPERTIES, maps);
-            String greeting = greeter.greetMe("explicitly set ot invoke greetMeSomeTime");
+            try {
+                greeter.greetMe("explicitly set ot invoke greetMeSomeTime");
+                fail();
+            } catch (Exception e) {
+                //as deliberately dispatch operation to greetMeSomeTime method
+                //so we should get exception as response message is greetMeSomeTime element
+                //which isn't greetMe element as greetMe method expected
+                assertTrue(e.getMessage().indexOf("Unexpected wrapper element") >= 0);
+            }
             //dispatch operation to to greetMeSomeTime method
-            assertEquals(greeting, "greetMeSomeTime:How are you explicitly set ot invoke greetMeSomeTime");
-            checkVerification();
+            
             //disassociate MAPs from request context
             requestContext.remove(CLIENT_ADDRESSING_PROPERTIES);
         } catch (UndeclaredThrowableException ex) {
