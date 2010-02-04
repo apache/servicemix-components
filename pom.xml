@@ -41,7 +41,8 @@
     <camel-version>2.1.0</camel-version>
     <servicemix-version>3.3.1</servicemix-version>
     <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
-    <servicemix.osgi.import>      
+    <servicemix.osgi.import>
+      !org.apache.servicemix.camel*,  
       org.apache.camel.converter,
       org.apache.camel.converter.jaxp,
       org.apache.camel.converter.stream,
