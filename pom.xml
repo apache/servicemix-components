@@ -42,6 +42,7 @@
 		<jaxb-version>2.1.6</jaxb-version>
 
 		<servicemix.osgi.import>
+		    !org.apache.servicemix.exec*,
 			org.apache.servicemix.common,
 			org.apache.servicemix.common.osgi,
             org.apache.servicemix.executors.impl,
