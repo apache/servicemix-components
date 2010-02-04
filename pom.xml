@@ -45,6 +45,7 @@
     <cxf-version>2.2.6</cxf-version>
 
     <servicemix.osgi.import>
+        !org.apache.servicemix.cxfse*,
         javax.jws,
         javax.xml.bind.annotation,
         org.apache.cxf*;version="[2.1.0,3.0.0)",
