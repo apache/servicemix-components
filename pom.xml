@@ -44,6 +44,7 @@
     <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
     <saxon-version>9.1.0.1</saxon-version>
     <servicemix.osgi.import>
+      !org.apache.servicemix.saxon*,
       org.apache.servicemix.common,
       org.apache.servicemix.common.osgi,
       org.apache.servicemix.executors.impl,
