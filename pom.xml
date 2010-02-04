@@ -39,6 +39,7 @@
     <servicemix-version>3.3.1</servicemix-version>
     <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
     <servicemix.osgi.import>
+      !org.apache.servicemix.bean*,
       org.apache.commons.jexl*;resolution:=optional,
       org.apache.servicemix;resolution:=optional,
       org.apache.servicemix.client*;resolution:=optional,
