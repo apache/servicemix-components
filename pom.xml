@@ -48,6 +48,7 @@
     <jsr223-version>20080611</jsr223-version>
 
     <servicemix.osgi.import>
+      !org.apache.servicemix.scripting*,
       org.apache.servicemix.common,
       org.apache.servicemix.common.osgi,
       org.apache.servicemix.executors.impl,
