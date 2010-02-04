@@ -83,7 +83,6 @@ import org.apache.cxf.interceptor.StaxOutInterceptor;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
-import org.apache.cxf.phase.PhaseChainCache;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.Service;
@@ -208,14 +207,12 @@ public class CxfBcProvider extends ProviderEndpoint implements
         cxfExchange.put(Endpoint.class, ep);
         cxfExchange.put(Service.class, cxfService);
         cxfExchange.put(Bus.class, getBus());
-        PhaseChainCache outboundChainCache = new PhaseChainCache();
         PhaseManager pm = getBus().getExtension(PhaseManager.class);
         List<Interceptor> outList = new ArrayList<Interceptor>();
         if (isMtomEnabled()) {
             outList.add(new JbiOutInterceptor());
             outList.add(new MtomCheckInterceptor(true));
             outList.add(new AttachmentOutInterceptor());
-
         }
          
         outList.add(new JbiOutInterceptor());
@@ -229,15 +226,13 @@ public class CxfBcProvider extends ProviderEndpoint implements
         outList.add(new StaxOutInterceptor());
         
         
-        getInInterceptors().addAll(getBus().getInInterceptors());
-        getInFaultInterceptors().addAll(getBus().getInFaultInterceptors());
-        getOutInterceptors().addAll(getBus().getOutInterceptors());
-        getOutFaultInterceptors()
-                .addAll(getBus().getOutFaultInterceptors());
-        PhaseInterceptorChain outChain = outboundChainCache.get(pm
-                .getOutPhases(), outList);
+        PhaseInterceptorChain outChain = new PhaseInterceptorChain(pm.getOutPhases());
+        outChain.add(outList);
+        outChain.add(getBus().getOutInterceptors());
+        outChain.add(getBus().getOutFaultInterceptors());
         outChain.add(getOutInterceptors());
         outChain.add(getOutFaultInterceptors());
+
         message.setInterceptorChain(outChain);
         InputStream is = convertMessageToInputStream(nm
                 .getContent());

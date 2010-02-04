@@ -47,7 +47,6 @@ import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
-import org.apache.cxf.phase.PhaseChainCache;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.model.BindingOperationInfo;
@@ -110,7 +109,6 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             
             // create Interceptor chain
 
-            PhaseChainCache inboundChainCache = new PhaseChainCache();
             PhaseManager pm = providerEndpoint.getBus().getExtension(
                     PhaseManager.class);
             List<Interceptor> inList = new ArrayList<Interceptor>();
@@ -124,8 +122,9 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
                         this.providerEndpoint.isUseSOAPEnvelope()));
             }
             inList.add(new AttachmentInInterceptor());
-            PhaseInterceptorChain inChain = inboundChainCache.get(pm
-                    .getInPhases(), inList);
+            PhaseInterceptorChain inChain = new PhaseInterceptorChain(pm.getInPhases());
+            inChain.add(providerEndpoint.getBus().getInInterceptors());
+            inChain.add(inList);
             inChain.add(providerEndpoint.getInInterceptors());
             soapMessage.setInterceptorChain(inChain);
             inChain.doIntercept(soapMessage);
