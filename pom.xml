@@ -46,6 +46,7 @@
     <drools-version>4.0.7</drools-version>
 
     <servicemix.osgi.import>
+      !org.apache.servicemix.drools*,
       org.apache.servicemix.common,
       org.apache.servicemix.common.osgi,
       org.apache.servicemix.executors.impl,
