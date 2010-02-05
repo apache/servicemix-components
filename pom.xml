@@ -56,6 +56,7 @@
     <surefire.fork.mode>pertest</surefire.fork.mode>
 
     <servicemix.osgi.import>
+        !org.apache.servicemix.cxfbc*,
         org.apache.cxf*;version="[2.1.0,3.0.0)",
         org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
