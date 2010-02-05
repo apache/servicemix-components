@@ -47,6 +47,7 @@
     <activemq-version>5.3.0</activemq-version>
 
     <servicemix.osgi.import>
+        !org.apache.servicemix.http*,
         com.thoughtworks.xstream*;resolution:=optional,
         org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
