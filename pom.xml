@@ -46,6 +46,7 @@
     <activemq-version>5.3.0</activemq-version>
 
     <servicemix.osgi.import>
+        !org.apache.servicemix.jms*,
         javax.security.auth,
         org.apache.servicemix.common,
         org.apache.servicemix.common.osgi,
