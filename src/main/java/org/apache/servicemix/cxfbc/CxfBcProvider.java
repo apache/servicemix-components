@@ -234,13 +234,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
         outChain.add(getOutFaultInterceptors());
 
         message.setInterceptorChain(outChain);
-        InputStream is = convertMessageToInputStream(nm
-                .getContent());
-
-        StreamSource source = new StreamSource(is);
-        message.setContent(Source.class, source);
-
-        message.setContent(InputStream.class, is);
+        message.setContent(Source.class, nm.getContent());
 
         conduit.prepare(message);
         OutputStream os = message.getContent(OutputStream.class);
@@ -260,7 +254,6 @@ public class CxfBcProvider extends ProviderEndpoint implements
             
             os = message.getContent(OutputStream.class);
             os.flush();
-            is.close();
             os.close();
         } catch (Exception e) {
             if (!(exchange instanceof InOnly)) {
@@ -690,14 +683,6 @@ public class CxfBcProvider extends ProviderEndpoint implements
 	public boolean isUseSOAPEnvelope() {
 		return useSOAPEnvelope;
 	}
-
-    protected InputStream convertMessageToInputStream(Source src) throws IOException, TransformerException {
-        final Transformer transformer = TRANSFORMER_FACTORY.newTransformer();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamResult result = new StreamResult(baos);
-        transformer.transform(src, result);
-        return new ByteArrayInputStream(baos.toByteArray());
-    }
 
     /**
      * Specifies if the endpoints send message synchronously to external server using underlying 
