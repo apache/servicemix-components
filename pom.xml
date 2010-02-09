@@ -39,10 +39,7 @@
   </scm>
 
   <properties>
-    <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01</previous.releases>
-    <servicemix-version>3.3.1</servicemix-version>
-    <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
-
+    <activemq.version>5.3.0</activemq.version>
     <servicemix.osgi.import>
         !org.apache.servicemix.eip*,
         org.apache.commons.jexl*;resolution:=optional,
@@ -74,7 +71,6 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
-      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix.specs</groupId>
@@ -100,13 +96,13 @@
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-ra</artifactId>
-      <version>5.2.0</version>
+      <version>${activemq.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-pool</artifactId>
-      <version>5.2.0</version>
+      <version>${activemq.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -142,7 +138,6 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
-      <version>${servicemix-version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -155,7 +150,6 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-common</artifactId>
-      <version>${servicemix-shared-version}</version>
       <classifier>sources</classifier>
       <scope>provided</scope>
       <optional>true</optional>
