@@ -45,13 +45,11 @@
 
   <properties>
     <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01</previous.releases>
-    <servicemix-version>3.3.1</servicemix-version>
     <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
     <servicemix-cxf-se-version>2010.01-SNAPSHOT</servicemix-cxf-se-version>
     <cxf-version>2.2.6</cxf-version>
     <activemq-version>5.3.0</activemq-version>
     <jetty-version>6.1.14</jetty-version>
-    <spring-version>2.5.6</spring-version>
     <derby-version>10.5.3.0_1</derby-version>
     <surefire.fork.mode>pertest</surefire.fork.mode>
 
@@ -87,7 +85,6 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
-      <version>${servicemix-version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -360,7 +357,6 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-core</artifactId>
-      <version>${servicemix-version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
