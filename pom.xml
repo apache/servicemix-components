@@ -35,8 +35,6 @@
   <description>A Bean component</description>
 
   <properties>
-    <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01</previous.releases>
-    <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
     <servicemix.osgi.import>
       !org.apache.servicemix.bean*,
       org.apache.commons.jexl*;resolution:=optional,
@@ -78,7 +76,6 @@
     <dependency>
       <groupId>org.apache.servicemix</groupId>
       <artifactId>servicemix-shared</artifactId>
-      <version>${servicemix-shared-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.servicemix.specs</groupId>
