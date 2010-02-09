@@ -37,22 +37,20 @@
     </description>
 
 	<properties>
-		<servicemix-version>3.3.1</servicemix-version>
 		<servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
-		<jaxb-version>2.1.6</jaxb-version>
 
 		<servicemix.osgi.import>
 		    !org.apache.servicemix.exec*,
-			org.apache.servicemix.common,
-			org.apache.servicemix.common.osgi,
-            org.apache.servicemix.executors.impl,
-            org.apache.servicemix.jbi.container*;resolution:=optional,
-            org.apache.servicemix.jbi.framework*;resolution:=optional,
-			org.apache.xbean.spring.context.v2,
-			org.springframework.beans.factory.xml,
-			javax.xml.bind*,
-			sun.misc;resolution:=optional,
-			*
+			 org.apache.servicemix.common,
+			 org.apache.servicemix.common.osgi,
+          org.apache.servicemix.executors.impl,
+          org.apache.servicemix.jbi.container*;resolution:=optional,
+          org.apache.servicemix.jbi.framework*;resolution:=optional,
+			 org.apache.xbean.spring.context.v2,
+			 org.springframework.beans.factory.xml,
+			 javax.xml.bind*,
+			 sun.misc;resolution:=optional,
+			 *
         </servicemix.osgi.import>
 		<servicemix.osgi.export>
 			org.apache.servicemix.exec*;version=${project.version},
@@ -85,7 +83,6 @@
 	    <dependency>
 	       <groupId>com.sun.xml.bind</groupId>
 	       <artifactId>jaxb-impl</artifactId>
-	       <version>${jaxb-version}</version>
 	    </dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.specs</groupId>
@@ -110,7 +107,6 @@
 		<dependency>
 			<groupId>org.apache.servicemix</groupId>
 			<artifactId>servicemix-core</artifactId>
-			<version>${servicemix-version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
