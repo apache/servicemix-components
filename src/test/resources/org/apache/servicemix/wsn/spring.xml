@@ -18,7 +18,7 @@
 
 -->
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
-  xmlns:wsn="http://servicemix.apache.org/wsn/1.0" xmlns:amq="http://activemq.org/config/1.0"
+  xmlns:wsn="http://servicemix.apache.org/wsn/1.0" xmlns:amq="http://activemq.apache.org/schema/core"
   xmlns:test="http://servicemix.org/test">
 
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
