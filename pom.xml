@@ -45,11 +45,7 @@
     </scm>
     
     <properties>
-        <servicemix-version>3.3.1</servicemix-version>
-        <servicemix-shared-version>2010.01-SNAPSHOT</servicemix-shared-version>
-        <servicemix-utils-version>1.2.0</servicemix-utils-version>
         <jsmpp-version>2.0</jsmpp-version>
-        <slf4j-version>1.4.3</slf4j-version>
         
         <servicemix.osgi.import>
             !org.apache.servicemix.smpp*,
@@ -78,7 +74,6 @@
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-shared</artifactId>
-            <version>${servicemix-shared-version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix.specs</groupId>
@@ -98,17 +93,14 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j-version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j-version}</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.14</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
@@ -129,7 +121,6 @@
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
-            <version>${servicemix-version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
