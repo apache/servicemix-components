@@ -43,9 +43,11 @@
         </cxfse:outFaultInterceptors>
       </cxfse:endpoint>
       <cxfbc:consumer wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="greeter:SOAPServiceWSSecurity"
+                      endpoint="TimestampSignEncrypt"
                       targetEndpoint="TimestampSignEncrypt"
                       targetService="greeter:SOAPServiceWSSecurity"
-		      targetInterface="greeter:Greeter"
+		              targetInterface="greeter:Greeter"
                       x509="false"
                       >
         <cxfbc:inInterceptors>

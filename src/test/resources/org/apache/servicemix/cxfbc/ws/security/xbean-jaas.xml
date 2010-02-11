@@ -54,10 +54,11 @@
         </cxfse:outFaultInterceptors>
       </cxfse:endpoint>
       <cxfbc:consumer wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="greeter:SOAPServiceWSSecurity"
+                      endpoint="TimestampSignEncrypt"
                       targetEndpoint="TimestampSignEncrypt"
                       targetService="greeter:SOAPServiceWSSecurity"
-		      targetInterface="greeter:Greeter"
-                      >
+		              targetInterface="greeter:Greeter">
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
           <ref bean="TimestampSignEncrypt_Request"/>
@@ -67,6 +68,26 @@
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
           <ref bean="saajout"/>
           <ref bean="TimestampSignEncrypt_Response"/>
+        </cxfbc:outInterceptors>
+        <cxfbc:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inFaultInterceptors>
+        <cxfbc:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfbc:outFaultInterceptors>
+      </cxfbc:consumer>
+      <cxfbc:consumer wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="greeter:SOAPServiceWSSecurity"
+                      endpoint="TimestampSignEncryptPolicy"
+                      targetEndpoint="TimestampSignEncrypt"
+                      targetService="greeter:SOAPServiceWSSecurity"
+                      targetInterface="greeter:Greeter"
+                      busCfg="org/apache/servicemix/cxfbc/ws/security/xbean-jaas-policy-bus-context.xml">
+        <cxfbc:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inInterceptors>
+        <cxfbc:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfbc:outInterceptors>
         <cxfbc:inFaultInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>

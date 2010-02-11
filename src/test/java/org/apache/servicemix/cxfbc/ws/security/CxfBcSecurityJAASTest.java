@@ -16,9 +16,15 @@
  */
 package org.apache.servicemix.cxfbc.ws.security;
 
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import junit.framework.TestCase;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -26,13 +32,14 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.testutil.common.ServerLauncher;
 import org.apache.hello_world_soap_http.Greeter;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 
-public class CxfBcSecurityJAASTest extends SpringTestSupport {
+public class CxfBcSecurityJAASTest extends TestCase {
 
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSecurityTest.class);
     
@@ -55,6 +62,54 @@ public class CxfBcSecurityJAASTest extends SpringTestSupport {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
+    }
+    
+    
+    protected static boolean serversStarted;
+    private ServerLauncher sl;
+    
+    public void setUp() throws Exception {
+        startJBIContainers();
+        Thread.sleep(3000);
+    }
+    
+    public void tearDown() throws Exception {
+        try {
+            sl.stopServer();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to stop jbi container " + sl.getClass());
+        } 
+        serversStarted = false;
+        
+        super.tearDown();
+    }
+    
+    
+    
+    
+    public void testJAASPolicy() {
+        LOG.info("test security ws-policy");
+        Bus bus = new SpringBusFactory().createBus(
+                "org/apache/servicemix/cxfbc/ws/security/client-jaas.xml"); 
+        BusFactory.setDefaultBus(bus);
+        LoggingInInterceptor in = new LoggingInInterceptor();
+        bus.getInInterceptors().add(in);
+        bus.getInFaultInterceptors().add(in);
+        LoggingOutInterceptor out = new LoggingOutInterceptor();
+        bus.getOutInterceptors().add(out);
+        bus.getOutFaultInterceptors().add(out);
+        final javax.xml.ws.Service svc = javax.xml.ws.Service.create(WSDL_LOC,
+                new javax.xml.namespace.QName(
+                        "http://apache.org/hello_world_soap_http",
+                        "SOAPServiceWSSecurity"));
+        final Greeter greeter = svc.getPort(new javax.xml.namespace.QName(
+                "http://apache.org/hello_world_soap_http",
+                "TimestampSignEncryptPolicy"), Greeter.class);
+        String ret = greeter.sayHi();
+        assertEquals(ret, "Bonjour");
+        ret = greeter.greetMe("ffang");
+        assertEquals(ret, "Hello ffang");
     }
     
     public void testJAAS() {
@@ -132,12 +187,54 @@ public class CxfBcSecurityJAASTest extends SpringTestSupport {
             assertEquals(e.getMessage(), "Password does not match");
         }
     }
-    
+    /***
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
         // load cxf se and bc from spring config file
         return new ClassPathXmlApplicationContext(
             "org/apache/servicemix/cxfbc/ws/security/xbean-jaas.xml");
     }
+    **/
+    
+    protected void startJBIContainers() throws Exception {
+        if (serversStarted) {
+            return;
+        }
+        Map<String, String> props = new HashMap<String, String>();                
+        if (System.getProperty("javax.xml.transform.TransformerFactory") != null) {
+            props.put("javax.xml.transform.TransformerFactory", System.getProperty("javax.xml.transform.TransformerFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLInputFactory") != null) {
+            props.put("javax.xml.stream.XMLInputFactory", System.getProperty("javax.xml.stream.XMLInputFactory"));
+        }
+        if (System.getProperty("javax.xml.stream.XMLOutputFactory") != null) {
+            props.put("javax.xml.stream.XMLOutputFactory", System.getProperty("javax.xml.stream.XMLOutputFactory"));
+        }
+        if (System.getProperty("java.security.auth.login.config") != null) {
+            props.put("java.security.auth.login.config", System.getProperty("java.security.auth.login.config"));
+        }
+        
+        assertTrue("JBIContainers did not launch correctly", 
+                launchServer(JAASServer.class, props, true));
+       
+        
+        serversStarted = true;
+    }
+    
+    protected boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
+        boolean ok = false;
+        try { 
+            sl = new ServerLauncher(clz.getName(), p, null, inProcess);
+            ok = sl.launchServer();
+            assertTrue("server failed to launch", ok);
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            fail("failed to launch server " + clz);
+        }
+        
+        return ok;
+    }
+    
 
 }
