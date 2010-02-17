@@ -37,7 +37,7 @@
   </scm>
 
   <properties>
-    <camel-version>2.1.0</camel-version>
+    <camel-version>2.2.0</camel-version>
     <servicemix.osgi.import>
       !org.apache.servicemix.camel*,  
       org.apache.camel.converter,
