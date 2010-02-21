@@ -41,6 +41,27 @@
   <properties>
     <xfire-version>1.2.5</xfire-version>    
     <xbean-version>3.4.3</xbean-version>
+    
+    <servicemix.osgi.import>
+        org.apache.servicemix.common,
+        org.apache.servicemix.common.osgi,
+        org.apache.servicemix.executors.impl,
+        org.codehaus.xfire*,
+        org.apache.servicemix.nmr.api.security,
+        org.apache.xbean.spring.context.v2,
+        org.springframework.beans.factory.xml,
+        sun.misc;resolution:=optional,
+        *
+    </servicemix.osgi.import>
+    <servicemix.osgi.export>
+        org.apache.servicemix.jsr181*;version=${project.version},
+        META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.jsr181
+    </servicemix.osgi.export>
+    <servicemix.osgi.bundles>
+        org.springframework.core,
+        org.springframework.beans,
+        org.springframework.context
+    </servicemix.osgi.bundles>
   </properties>
 
   <dependencies>
