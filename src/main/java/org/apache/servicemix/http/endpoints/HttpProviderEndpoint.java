@@ -363,6 +363,11 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         protected void onException(Throwable throwable) {
             handleException(this, jbiExchange, throwable);
         }
+        
+        protected void onExpire() {
+            handleException(this, jbiExchange, new Exception("Http request expired."));
+        }
+       
     }
 
     protected class SSLManagedHttpClient extends HttpClient {
