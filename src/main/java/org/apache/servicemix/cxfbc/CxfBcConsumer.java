@@ -181,6 +181,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private boolean schemaValidationEnabled;
     
     private boolean delegateToJaas = true;
+    
+    private Map<String, Object> properties = new ConcurrentHashMap<String, Object>();
 
     /**
      * @return the wsdl
@@ -515,6 +517,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             ep.getOutInterceptors().add(new AttachmentOutInterceptor());
             ep.getOutInterceptors().add(new StaxOutInterceptor());
             ep.getOutInterceptors().add(new SoapOutInterceptor(getBus()));
+            ep.putAll(this.getProperties());
 
             cxfService.getInInterceptors().addAll(getBus().getInInterceptors());
             cxfService.getInFaultInterceptors().addAll(
@@ -1173,4 +1176,19 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
          return delegateToJaas;
      }
 
+     /**
+      * Sets arbitrary properties that are added to the CXF context at
+      * the Endpoint level.
+      *
+      * @param properties
+      *             the properties to add
+      * @org.apache.xbean.Property description="Sets arbitrary properties that are added to the CXF context at the Endpoint level"             
+      */
+     public void setProperties(Map<String, Object> properties) {
+         this.properties.putAll(properties);
+     }
+     
+     public Map<String, Object> getProperties() {
+         return this.properties;
+     }
 }

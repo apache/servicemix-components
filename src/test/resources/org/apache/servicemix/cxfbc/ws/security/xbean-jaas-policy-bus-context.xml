@@ -42,30 +42,7 @@
   <import resource="classpath:META-INF/cxf/cxf-extension-http.xml" />
   <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 
-  <cxf:bus>
-    <!-- We have to put these at the bus level because the CXF-BC Provider/Consumer
-         configuration does not allow one to specify them at the client level. -->
-    <cxf:properties>
-      <entry value="org.apache.servicemix.cxfbc.ws.security.KeystorePasswordCallback">
-        <key>
-          <util:constant 
-            static-field="org.apache.cxf.ws.security.SecurityConstants.CALLBACK_HANDLER"/>
-        </key>
-      </entry>
-      <entry value="bob">
-        <key>
-          <util:constant 
-            static-field="org.apache.cxf.ws.security.SecurityConstants.SIGNATURE_USERNAME"/>
-        </key>
-      </entry>
-      <entry value="org/apache/servicemix/cxfbc/ws/security/bob.properties">
-        <key>
-          <util:constant 
-            static-field="org.apache.cxf.ws.security.SecurityConstants.SIGNATURE_PROPERTIES"/>
-        </key>
-      </entry>
-    </cxf:properties>
-  </cxf:bus>
+  <cxf:bus/>
   
   <bean class="org.apache.cxf.ws.policy.attachment.external.ExternalAttachmentProvider">
     <constructor-arg ref="cxf"/>

@@ -20,6 +20,7 @@
 <beans xmlns:sm="http://servicemix.apache.org/config/1.0"
        xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
        xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:greeter="http://apache.org/hello_world_soap_http">
   
   <sm:container id="jbi" embedded="true">
@@ -82,7 +83,8 @@
                       targetEndpoint="TimestampSignEncrypt"
                       targetService="greeter:SOAPServiceWSSecurity"
                       targetInterface="greeter:Greeter"
-                      busCfg="org/apache/servicemix/cxfbc/ws/security/xbean-jaas-policy-bus-context.xml">
+                      busCfg="org/apache/servicemix/cxfbc/ws/security/xbean-jaas-policy-bus-context.xml"
+                      properties="#properties">
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
         </cxfbc:inInterceptors>
@@ -97,8 +99,28 @@
         </cxfbc:outFaultInterceptors>
       </cxfbc:consumer>
     </sm:endpoints>
-    
   </sm:container>
+  
+  <util:map id="properties">
+    <entry value="org.apache.servicemix.cxfbc.ws.security.KeystorePasswordCallback">
+      <key>
+        <util:constant 
+          static-field="org.apache.cxf.ws.security.SecurityConstants.CALLBACK_HANDLER"/>
+      </key>
+    </entry>
+    <entry value="bob">
+      <key>
+        <util:constant 
+          static-field="org.apache.cxf.ws.security.SecurityConstants.SIGNATURE_USERNAME"/>
+      </key>
+    </entry>
+    <entry value="org/apache/servicemix/cxfbc/ws/security/bob.properties">
+      <key>
+        <util:constant 
+          static-field="org.apache.cxf.ws.security.SecurityConstants.SIGNATURE_PROPERTIES"/>
+      </key>
+    </entry>
+  </util:map>
   
   <bean class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" id="saajin"/>
     <bean class="org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor" id="saajout"/>

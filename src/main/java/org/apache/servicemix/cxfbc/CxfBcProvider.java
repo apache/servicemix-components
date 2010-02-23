@@ -17,16 +17,13 @@
 package org.apache.servicemix.cxfbc;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jbi.management.DeploymentException;
@@ -42,12 +39,8 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,7 +50,6 @@ import org.xml.sax.SAXException;
 import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.binding.AbstractBindingFactory;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.SoapVersion;
@@ -160,6 +152,9 @@ public class CxfBcProvider extends ProviderEndpoint implements
     private boolean schemaValidationEnabled;
  
     private List<AbstractFeature> features = new CopyOnWriteArrayList<AbstractFeature>();
+    
+    private Map<String, Object> properties = new ConcurrentHashMap<String, Object>();    
+    
 
     public void processExchange(MessageExchange exchange) {
 
@@ -480,6 +475,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 
 
                 ep = new EndpointImpl(getBus(), cxfService, ei);
+                this.ep.putAll(this.getProperties());
 
                 // init transport
                 if (locationURI != null) {
@@ -746,4 +742,19 @@ public class CxfBcProvider extends ProviderEndpoint implements
          return this.providedBus;
      }
      
+     /**
+      * Sets arbitrary properties that are added to the CXF context at
+      * the Endpoint level.
+      *
+      * @param properties
+      *             the properties to add
+      * @org.apache.xbean.Property description="Sets arbitrary properties that are added to the CXF context at the Endpoint level"             
+      */
+     public void setProperties(Map<String, Object> properties) {
+         this.properties = properties;
+     }
+     
+     public Map<String, Object> getProperties() {
+         return this.properties;
+     }
 }
