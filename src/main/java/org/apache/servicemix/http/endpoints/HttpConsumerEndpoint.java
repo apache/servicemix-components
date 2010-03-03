@@ -237,6 +237,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
       if (logger.isDebugEnabled()) {
         logger.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
       }
+      // In case of the SEDA flow isn't used, the exchange could be a different instance, so it should be updated.
+      cont.setObject(exchange);
       // Resume continuation
       cont.resume();
     }
