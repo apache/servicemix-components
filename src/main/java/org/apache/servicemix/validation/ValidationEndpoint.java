@@ -81,6 +81,8 @@ public class ValidationEndpoint extends ProviderEndpoint implements
     private Source schemaSource;
 
     private Resource schemaResource;
+    
+    private Resource noNamespaceSchemaResource;
 
     private MessageAwareErrorHandlerFactory errorHandlerFactory = new CountingErrorHandlerFactory();
 
@@ -102,19 +104,20 @@ public class ValidationEndpoint extends ProviderEndpoint implements
 
                 if (schemaSource == null) {
                     if (schemaResource == null) {
-                        throw new JBIException(
-                                "You must specify a schema, schemaSource or schemaResource property");
-                    }
-                    if (schemaResource.getURL() == null) {
-                        schemaSource = new StreamSource(schemaResource
-                                .getInputStream());
+                        if (noNamespaceSchemaResource == null) {
+                            throw new JBIException("You must specify schema, schemaSource, schemaResource or noNamespaceSchemaResource property.");
+                        }
+                        // Don't instantiate the schema here
+                        schema = factory.newSchema();
                     } else {
-                        schemaSource = new StreamSource(schemaResource
-                                .getInputStream(), schemaResource.getURL()
-                                    .toExternalForm());
+                        if (schemaResource.getURL() == null) {
+                            schemaSource = new StreamSource(schemaResource.getInputStream());
+                        } else {
+                            schemaSource = new StreamSource(schemaResource.getInputStream(), schemaResource.getURL().toExternalForm());
+                        }
+                        schema = factory.newSchema(schemaSource);
                     }
                 }
-                schema = factory.newSchema(schemaSource);
             }
         } catch (IOException e) {
             throw new JBIException("Failed to load schema: " + e, e);
@@ -180,7 +183,14 @@ public class ValidationEndpoint extends ProviderEndpoint implements
     public void startValidation(MessageExchange exchange, NormalizedMessage in,
             NormalizedMessage out, Fault fault) throws Exception {
         Validator validator = schema.newValidator();
-
+        
+        if (noNamespaceSchemaResource != null) {
+            logger.info("Enabling validation for noNamespace-XML documents.");
+            validator.setFeature("http://xml.org/sax/features/validation", true);
+            validator.setFeature("http://apache.org/xml/features/validation/schema", true);
+            validator.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", noNamespaceSchemaResource.getURL().toExternalForm());
+        }
+        
         // create a new errorHandler and set it on the validator
         MessageAwareErrorHandler errorHandler = errorHandlerFactory
                 .createMessageAwareErrorHandler();
@@ -373,6 +383,14 @@ public class ValidationEndpoint extends ProviderEndpoint implements
 
     public void setSchemaResource(Resource schemaResource) {
         this.schemaResource = schemaResource;
+    }
+    
+    public Resource getNoNamespaceSchemaResource() {
+        return noNamespaceSchemaResource;
+    }
+    
+    public void setNoNamespaceSchemaResource(Resource schemaResource) {
+        this.noNamespaceSchemaResource = schemaResource;
     }
 
     public MessageAwareErrorHandlerFactory getErrorHandlerFactory() {
