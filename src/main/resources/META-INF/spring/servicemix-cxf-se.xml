@@ -40,9 +40,14 @@
     <import resource="classpath:META-INF/cxf/transport/jbi/cxf-transport-jbi.xml" />
     <import resource="classpath:META-INF/cxf/binding/jbi/cxf-binding-jbi.xml" />
 
+    <osgi:reference id="componentRegistry"
+                    interface="org.apache.servicemix.jbi.runtime.ComponentRegistry"
+                    cardinality="1..1" />
+
     <bean id="servicemix-cxf-se" class="org.apache.servicemix.cxfse.CxfSeComponent">
         <property name="bus" ref="cxf" />
         <property name="executorFactory" ref="executorFactory" />
+        <property name="componentRegistry" ref="componentRegistry"/>
     </bean>
 
     <bean id="executorFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">

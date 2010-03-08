@@ -50,6 +50,7 @@
         org.apache.servicemix.common.osgi,
         org.apache.servicemix.client*;resolution:=optional,
         org.apache.servicemix.executors.impl,
+        org.apache.servicemix.jbi.runtime,
         org.apache.servicemix.jbi.container*;resolution:=optional,
         org.apache.servicemix.jbi.framework*;resolution:=optional,
         org.apache.xbean.spring.context.v2,

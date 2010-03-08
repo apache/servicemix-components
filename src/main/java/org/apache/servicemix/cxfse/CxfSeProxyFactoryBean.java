@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.cxfse;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.jbi.component.ComponentContext;
@@ -25,6 +26,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
@@ -49,6 +51,13 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         DisposableBean {
+    
+    private static final String[] CXF_CONFIG = new String[] {
+        "META-INF/cxf/cxf.xml",
+        "META-INF/cxf/cxf-extension-soap.xml",
+        "META-INF/cxf/transport/jbi/cxf-transport-jbi.xml",
+        "META-INF/cxf/binding/jbi/cxf-binding-jbi.xml"
+    };
 
     private String name = ClientFactory.DEFAULT_JNDI_NAME;
 
@@ -96,16 +105,19 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         if (isUseJBIWrapper()) {
             cf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
         }
-        Bus bus = BusFactory.getDefaultBus();
+        ComponentContext internalContext = getInternalContext();
+       
+        Bus bus = new SpringBusFactory().createBus(CXF_CONFIG);;
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) bus
                 .getExtension(ConduitInitiatorManager.class)
                 .getConduitInitiator(JBITransportFactory.TRANSPORT_ID);
-        if (getInternalContext() != null) { 
-            DeliveryChannel dc = getInternalContext().getDeliveryChannel();
+        if (internalContext != null) { 
+            DeliveryChannel dc = internalContext.getDeliveryChannel();
             if (dc != null) {
                 jbiTransportFactory.setDeliveryChannel(dc);
             }
         }
+        cf.setBus(bus);
         Object proxy = cf.create();
         if (!isUseJBIWrapper() && !isUseSOAPEnvelope()) {
         	removeInterceptor(ClientProxy.getClient(proxy).getEndpoint().getBinding().getInInterceptors(), 
@@ -145,6 +157,15 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     }
 
     protected ComponentContext getInternalContext() throws Exception {
+        if (CxfSeComponent.getComponentRegistry() != null) {
+            //in osgi container
+            Object componentRegistry = CxfSeComponent.getComponentRegistry();
+            //use reflection to avoid nmr project dependency
+            Method mth = componentRegistry.getClass().getMethod("createComponentContext");
+            if (mth != null) {
+                context = (ComponentContext) mth.invoke(componentRegistry);
+            }
+        }
         if (context == null) {
             if (factory == null) {
                 if (container != null) {

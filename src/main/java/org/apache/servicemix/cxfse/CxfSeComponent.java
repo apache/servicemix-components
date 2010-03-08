@@ -42,6 +42,7 @@ public class CxfSeComponent extends DefaultComponent {
     private CxfSeEndpoint[] endpoints;
     private Bus bus;
     private CxfSeConfiguration configuration = new CxfSeConfiguration();
+    private static Object componentRegistry;
     
     public CxfSeComponent() {
         
@@ -96,6 +97,7 @@ public class CxfSeComponent extends DefaultComponent {
         super.doShutDown();
     }
     
+    
     public Bus getBus() {
         return bus;
     }
@@ -106,5 +108,13 @@ public class CxfSeComponent extends DefaultComponent {
      */
    public void setBus(Bus bus) {
         this.bus = bus;
+    }
+
+    public void setComponentRegistry(Object componentRegistry) {
+        this.componentRegistry = componentRegistry;
+    }
+
+    public static Object getComponentRegistry() {
+        return componentRegistry;
     }
 }
