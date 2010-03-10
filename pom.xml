@@ -26,7 +26,7 @@
     
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-smpp</artifactId>
-    <version>2010.01</version>
+    <version>2010.02-SNAPSHOT</version>
     <packaging>jbi-component</packaging>
     
     <name>ServiceMix :: SMPP</name>
@@ -39,9 +39,9 @@
     </description>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2010.01</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2010.01</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-smpp/tags/servicemix-smpp-2010.01</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-smpp/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-smpp/trunk</url>
     </scm>
     
     <properties>
