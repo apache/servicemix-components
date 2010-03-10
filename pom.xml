@@ -21,21 +21,21 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>5-SNAPSHOT</version>
+    <version>5</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-truezip</artifactId>
-  <version>2010.01-SNAPSHOT</version>
+  <version>2010.01</version>
   <packaging>jbi-component</packaging>
 
   <name>ServiceMix :: TrueZIP</name>
   <description>A File TrueZIP component</description>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-truezip/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/tags/servicemix-truezip-2010.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-truezip/tags/servicemix-truezip-2010.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-truezip/tags/servicemix-truezip-2010.01</url>
   </scm>
 
   <properties>
