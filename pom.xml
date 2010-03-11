@@ -26,16 +26,16 @@
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-eip</artifactId>
-  <version>2010.01-SNAPSHOT</version>
+  <version>2010.01</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: EIP</name>
   <description>EIP Service Engine</description>
   
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/trunk</developerConnection>
-    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-eip/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/tags/servicemix-eip-2010.01</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/engines/servicemix-eip/tags/servicemix-eip-2010.01</developerConnection>
+    <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/engines/servicemix-eip/tags/servicemix-eip-2010.01</url>
   </scm>
 
   <properties>
@@ -221,7 +221,7 @@
             <useReleaseProfile>false</useReleaseProfile>
             <preparationGoals>clean install</preparationGoals>
             <goals>deploy</goals>
-            <arguments>-Prelease,deploy</arguments>
+            <arguments>-Prelease,deploy -Dmaven.test.skip=true</arguments>
             <autoVersionSubmodules>true</autoVersionSubmodules>
           </configuration>
         </plugin>
