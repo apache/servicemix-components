@@ -18,6 +18,7 @@ package org.apache.servicemix.camel;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.jbi.messaging.InOptionalOut;
@@ -239,8 +240,9 @@ public class JbiBinding {
             normalizedMessage.setSecuritySubject(getSecuritySubject(message));
         }
         
-        for (String key : message.getHeaders().keySet()) {
-            Object value = message.getHeader(key);
+        for (Map.Entry<String, Object> entry : message.getHeaders().entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
             if (value != null && !strategies.applyFilterToCamelHeaders(key, value, message.getExchange())) {
                 normalizedMessage.setProperty(key, value);
             }
@@ -256,8 +258,8 @@ public class JbiBinding {
         copyHeadersFromCamelToJbi(exchange, messageExchange);
         
         NormalizedMessage in = messageExchange.getMessage("in");
-        for (String key : exchange.getIn().getHeaders().keySet()) {
-            in.setProperty(key, exchange.getIn().getHeader(key));
+        for (Map.Entry<String, Object> entry : exchange.getIn().getHeaders().entrySet()) {
+            in.setProperty(entry.getKey(), entry.getValue());
         }        
         
         if (isOutCapable(messageExchange)) {

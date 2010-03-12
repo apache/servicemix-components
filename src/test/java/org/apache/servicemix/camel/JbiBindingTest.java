@@ -175,7 +175,39 @@ public class JbiBindingTest extends TestCase {
         assertEquals("Should only have copied one property (ignore non-serializable properties)", 
                      1, to.getPropertyNames().size());
     }
-    
+
+    public void testCopyCamelMessageToJbiPreserveKeyCase() throws Exception {
+        NormalizedMessage to = new MockNormalizedMessage();
+
+        Message from = new DefaultMessage();
+        from.setBody(CONTENT);
+        from.setHeader("Key 1", "Key 1's value");
+        from.setHeader("KEY 2", "KEY 2's value");
+        from.setHeader("keY 3", "keY 3's value");
+
+        binding.copyFromCamelToJbi(from, to);
+
+        assertEquals("Key 1's value", to.getProperty("Key 1"));
+        assertEquals("KEY 2's value", to.getProperty("KEY 2"));
+        assertEquals("keY 3's value", to.getProperty("keY 3"));
+    }
+
+    public void testCopyCamelExchangeToJbiPreserveKeyCase() throws Exception {
+        MessageExchange to = new MockMessageExchange();
+        to.setMessage(to.createMessage(), "in");
+
+        Exchange from = binding.createExchange(to);
+        from.getIn().setHeader("Key 1", "Key 1's value");
+        from.getIn().setHeader("KEY 2", "KEY 2's value");
+        from.getIn().setHeader("keY 3", "keY 3's value");
+
+        binding.copyFromCamelToJbi(from, to);
+
+        assertEquals("Key 1's value", to.getMessage("in").getProperty("Key 1"));
+        assertEquals("KEY 2's value", to.getMessage("in").getProperty("KEY 2"));
+        assertEquals("keY 3's value", to.getMessage("in").getProperty("keY 3"));
+    }
+
     public void testCopyFromCamelToJbiWithSecuritySubject() throws Exception {
         Exchange from = new DefaultExchange(new DefaultCamelContext());
         from.getIn().setHeader(JbiBinding.SECURITY_SUBJECT, SUBJECT);
