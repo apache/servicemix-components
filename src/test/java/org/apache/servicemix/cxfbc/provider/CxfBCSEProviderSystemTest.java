@@ -217,6 +217,27 @@ public class CxfBCSEProviderSystemTest extends SpringTestSupport {
         client.done(io);
         assertTrue(txt.indexOf("Hello Edell") >= 0);
         
+        if (useDynamicUri) {
+            //the second round use dummy uri to verify the dynamic uri could be overriden for each message
+            io = client.createInOutExchange();
+            io.setService(new QName("http://apache.org/hello_world_soap_http_provider", "SOAPService"));
+            io.setInterfaceName(new QName("http://apache.org/hello_world_soap_http_provider", "Greeter"));
+            io.getInMessage()
+                    .setContent(
+                            new StringSource(
+                                    "<greetMe xmlns='http://apache.org/hello_world_soap_http_provider/types'><requestType>"
+                                            + "ffang"
+                                            + "</requestType></greetMe>"));
+            if (useDynamicUri) {
+                io.getInMessage().setProperty(
+                        JbiConstants.HTTP_DESTINATION_URI,
+                        "http://localhost:9003/dynamicuritest");
+            }
+            client.sendSync(io);
+            // the out message should be null as the server not exist at all
+            assertNull(io.getOutMessage());
+        }
+        
     }
 
     private void greetMeProviderWithoutOperationNameTestBase() throws Exception {

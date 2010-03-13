@@ -168,11 +168,13 @@ public class CxfBcProvider extends ProviderEndpoint implements
         NormalizedMessage nm = exchange.getMessage("in");
 
         Object newDestinationURI = nm.getProperty(JbiConstants.HTTP_DESTINATION_URI);
-        if (newDestinationURI != null) {
-            ei.setAddress((String) newDestinationURI);
-        }
+        
         
         Message message = ep.getBinding().createMessage();
+        if (newDestinationURI != null) {
+            ei.setAddress((String) newDestinationURI);
+            message.put(Message.ENDPOINT_ADDRESS, newDestinationURI);
+        }
         message.put(MessageExchange.class, exchange);
         Exchange cxfExchange = new ExchangeImpl();
         cxfExchange.setConduit(conduit);
