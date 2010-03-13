@@ -44,7 +44,7 @@
   </scm>
 
   <properties>
-    <servicemix-cxf-se-version>2010.02-SNAPSHOT</servicemix-cxf-se-version>
+    <servicemix-cxf-se-version>2010.01</servicemix-cxf-se-version>
     <cxf-version>2.2.6</cxf-version>
     <activemq-version>5.3.0</activemq-version>
     <jetty-version>6.1.22</jetty-version>
