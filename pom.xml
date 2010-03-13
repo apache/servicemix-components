@@ -23,12 +23,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>5</version>
+    <version>5-SNAPSHOT</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>shared-libraries-pom</artifactId>
-  <version>2010.02-SNAPSHOT</version>
+  <version>2010.01-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>ServiceMix :: Shared Libraries</name>
