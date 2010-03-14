@@ -22,12 +22,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components-pom</artifactId>
-    <version>5</version>
+    <version>5-SNAPSHOT</version>
   </parent>
   
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-cxf-bc</artifactId>
-  <version>2010.02-SNAPSHOT</version>
+  <version>2010.01-SNAPSHOT</version>
   <packaging>jbi-component</packaging>
   
   <name>ServiceMix :: CXF Binding Component</name>
@@ -44,7 +44,7 @@
   </scm>
 
   <properties>
-    <servicemix-cxf-se-version>2010.01</servicemix-cxf-se-version>
+    <servicemix-cxf-se-version>2010.01-SNAPSHOT</servicemix-cxf-se-version>
     <cxf-version>2.2.6</cxf-version>
     <activemq-version>5.3.0</activemq-version>
     <jetty-version>6.1.22</jetty-version>
