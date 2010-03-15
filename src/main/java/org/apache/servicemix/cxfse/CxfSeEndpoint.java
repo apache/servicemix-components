@@ -117,7 +117,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     private boolean useXmlBeans;
 
     private QName pojoService;
-    private String pojoEndpoint;
+    private QName pojoEndpoint;
     private QName pojoInterfaceName;
 
     private Server soapBindingServer;
@@ -269,6 +269,12 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             if (isUseJBIWrapper()) {
                 sf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
             }
+            if (getPojoService() != null) {
+                sf.setServiceName(getPojoService());
+            }
+            if (getPojoEndpoint() != null) {
+                sf.setEndpointName(getPojoEndpoint());
+            }
             server = sf.create();
             server.getEndpoint().getInInterceptors().addAll(getInInterceptors());
             server.getEndpoint().getInFaultInterceptors().addAll(getInFaultInterceptors());
@@ -279,13 +285,17 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                 server.getEndpoint().getOutInterceptors().add(new AttachmentOutInterceptor());
             }
             if (sf.getServiceFactory().getServiceQName() != null) {
-                setPojoService(sf.getServiceFactory().getServiceQName());
+                if (getPojoService() == null) {
+                    setPojoService(sf.getServiceFactory().getServiceQName());
+                }
                 if (getService() == null) {
                     setService(sf.getServiceFactory().getServiceQName());
                 }
             }
             if (sf.getServiceFactory().getEndpointInfo().getName() != null) {
-                setPojoEndpoint(sf.getServiceFactory().getEndpointInfo().getName().getLocalPart());
+                if (getPojoEndpoint() == null) {
+                    setPojoEndpoint(sf.getServiceFactory().getEndpointInfo().getName());
+                }
                 if (getEndpoint() == null) {
                     setEndpoint(sf.getServiceFactory().getEndpointInfo().getName().getLocalPart());
                 }
@@ -299,6 +309,12 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
         } else {
             JaxWsServiceFactoryBean serviceFactory = new JaxWsServiceFactoryBean();
             serviceFactory.setPopulateFromClass(true);
+            if (getPojoService() != null) {
+                serviceFactory.setServiceName(getPojoService());
+            }
+            if (getPojoEndpoint() != null) {
+                serviceFactory.setEndpointName(getPojoEndpoint());
+            }
             endpoint = new EndpointImpl(getBus(), getPojo(), new JaxWsServerFactoryBean(serviceFactory));
             if (isUseJBIWrapper()) {
                 endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
@@ -315,9 +331,13 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                 endpoint.getOutInterceptors().add(new AttachmentOutInterceptor());
             }
             JaxWsImplementorInfo implInfo = new JaxWsImplementorInfo(getPojo().getClass());
-            setPojoService(implInfo.getServiceName());
+            if (getPojoService() == null) {
+                setPojoService(implInfo.getServiceName());
+            }
             setPojoInterfaceName(implInfo.getInterfaceName());
-            setPojoEndpoint(implInfo.getEndpointName().getLocalPart());
+            if (getPojoEndpoint() == null ) {
+                setPojoEndpoint(implInfo.getEndpointName());
+            }
             if (getService() == null) {
                 setService(implInfo.getServiceName());
             }
@@ -347,7 +367,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                 .getName().getLocalPart());
         }
         setPojoService(server.getEndpoint().getService().getName());
-        setPojoEndpoint(server.getEndpoint().getEndpointInfo().getName().getLocalPart());
+        setPojoEndpoint(server.getEndpoint().getEndpointInfo().getName());
         if (!isUseJBIWrapper() && !isUseSOAPEnvelope()) {
             // cleanup interceptors
             removeInterceptor(server.getEndpoint().getBinding().getInInterceptors(), "ReadHeadersInterceptor");
@@ -620,19 +640,33 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
         return useAegis;
     }
 
-    protected void setPojoService(QName pojoService) {
+    /**
+     * Specifies the servicemodel service name generated from the pojo
+     * 
+     * @org.apache.xbean.Property description="Specifies the servicemodel 
+     *                                         service name generated from the pojo. 
+     *                                         The default is <code>null</code>.
+     */
+    public void setPojoService(QName pojoService) {
         this.pojoService = pojoService;
     }
 
-    protected QName getPojoService() {
+    public QName getPojoService() {
         return pojoService;
     }
 
-    protected void setPojoEndpoint(String pojoEndpoint) {
+    /**
+     * Specifies the servicemodel endpoint name generated from the pojo
+     * 
+     * @org.apache.xbean.Property description="Specifies the servicemodel 
+     *                                         endpoint name generated from the pojo. 
+     *                                         The default is <code>null</code>.
+     */
+    public void setPojoEndpoint(QName pojoEndpoint) {
         this.pojoEndpoint = pojoEndpoint;
     }
 
-    protected String getPojoEndpoint() {
+    public QName getPojoEndpoint() {
         return pojoEndpoint;
     }
 
