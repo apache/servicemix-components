@@ -31,6 +31,10 @@ import org.apache.servicemix.jbi.FaultException;
  * @version $Revision: 1.1 $
  */
 public class JbiInOutFaultTest extends NonJbiCamelEndpointsIntegrationTest {
+
+    private static final String KEY = "fault.key";
+    private static final String VALUE = "fault.value";
+
     /*
      * @see TestCase#setUp()
      */
@@ -43,6 +47,7 @@ public class JbiInOutFaultTest extends NonJbiCamelEndpointsIntegrationTest {
             protected boolean transform(MessageExchange exchange, NormalizedMessage in, NormalizedMessage out) throws MessagingException {
                 Fault f = exchange.createFault();
                 f.setContent(new StringSource("<fault/>"));
+                f.setProperty(KEY, VALUE);
                 throw new FaultException("Error", exchange, f);
             }
         };
@@ -62,8 +67,10 @@ public class JbiInOutFaultTest extends NonJbiCamelEndpointsIntegrationTest {
 
     @Override
     protected void checkResult(MessageExchange exchange) {
-        assertNotNull(exchange.getMessage("fault"));
-        assertNotNull(exchange.getMessage("fault").getContent());
-    }
+        NormalizedMessage fault = exchange.getMessage("fault");
 
+        assertNotNull(fault);
+        assertNotNull(fault.getContent());
+        assertEquals(VALUE, fault.getProperty(KEY));
+    }
 }

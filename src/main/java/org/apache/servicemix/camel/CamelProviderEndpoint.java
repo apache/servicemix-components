@@ -145,7 +145,7 @@ public class CamelProviderEndpoint extends ProviderEndpoint implements Synchroni
         try {
             if (exchange.hasOut()) {
                 Fault fault = me.createFault();
-                fault.setContent(exchange.getOut().getBody(Source.class));
+                binding.copyFromCamelToJbi(exchange.getOut(), fault);
                 if (isFaultCapable(me)) {
                     me.setFault(fault);
                     doSend(me);
