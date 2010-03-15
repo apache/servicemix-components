@@ -22,12 +22,12 @@
   <parent>
     <groupId>org.apache.servicemix</groupId>
     <artifactId>shared-libraries-pom</artifactId>
-    <version>2010.01-SNAPSHOT</version>
+    <version>2010.01</version>
   </parent>
 
   <groupId>org.apache.servicemix</groupId>
   <artifactId>servicemix-shared</artifactId>
-  <version>2010.01-SNAPSHOT</version>
+  <version>2010.01</version>
   <packaging>jbi-shared-library</packaging>
   
   <name>ServiceMix :: Shared</name>
