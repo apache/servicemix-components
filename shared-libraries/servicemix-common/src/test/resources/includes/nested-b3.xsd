@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://mycompany.com/nested/types"
+	xmlns:tns="http://mycompany.com/nested/types"
+	elementFormDefault="qualified">
+	<complexType name="pet">
+		<sequence>
+			<element name="name" type="string"></element>
+			<element name="kind" type="string"></element>
+		</sequence>
+	</complexType>
+</schema>

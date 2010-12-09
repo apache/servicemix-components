@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!--
+
+        Licensed to the Apache Software Foundation (ASF) under one or more
+        contributor license agreements.  See the NOTICE file distributed with
+        this work for additional information regarding copyright ownership.
+        The ASF licenses this file to You under the Apache License, Version 2.0
+        (the "License"); you may not use this file except in compliance with
+        the License.  You may obtain a copy of the License at
+
+           http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+    -->
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.apache.servicemix</groupId>
+        <artifactId>service-engines</artifactId>
+        <version>2010.02-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>servicemix-saxon</artifactId>
+    <packaging>jbi-component</packaging>
+
+    <name>Apache ServiceMix :: Components :: Saxon Service Engine</name>
+
+    <repositories>
+        <repository>
+            <!-- required for saxon-9.0 -->
+            <id>servicemix-m2-repo</id>
+            <name>Servicemix Maven2 Repository</name>
+            <url>http://svn.apache.org/repos/asf/servicemix/m2-repo/</url>
+        </repository>
+    </repositories>    
+
+    <properties>
+        <saxon.version>9.1.0.8</saxon.version>
+
+        <servicemix.osgi.import>
+            !org.apache.servicemix.saxon*,
+            !META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.saxon,
+            org.apache.servicemix.common,
+            org.apache.servicemix.common.osgi,
+            org.apache.servicemix.executors.impl,
+            org.apache.xbean.spring.context.v2,
+            org.springframework.beans.factory.xml,
+            sun.misc;resolution:=optional,
+            *
+        </servicemix.osgi.import>
+        <servicemix.osgi.export>
+            org.apache.servicemix.saxon*;version=${project.version},
+            META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.saxon
+        </servicemix.osgi.export>
+        <servicemix.osgi.bundles>
+            org.springframework.core,
+            org.springframework.beans,
+            org.springframework.context
+        </servicemix.osgi.bundles>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>saxon</artifactId>
+            <version>${saxon.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>saxon-dom</artifactId>
+            <version>${saxon.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jta_1.1_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-shared</artifactId>
+        </dependency>
+
+        <!-- provided -->
+        <dependency>
+            <groupId>org.apache.servicemix.specs</groupId>
+            <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-core</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jmx</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- documentation -->
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+            <classifier>sources</classifier>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.servicemix.tooling</groupId>
+                <artifactId>jbi-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <type>service-engine</type>
+                    <component>org.apache.servicemix.saxon.SaxonComponent</component>
+                    <serviceUnitAnalyzerClass>org.apache.servicemix.saxon.packaging.SaxonServiceUnitAnalyzer</serviceUnitAnalyzerClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>maven-xbean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <namespace>http://servicemix.apache.org/saxon/1.0</namespace>
+                        </configuration>
+                        <goals>
+                            <goal>mapping</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- exclude generated DefaultBootstrap class from Cobertura reports -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>org/apache/servicemix/common/DefaultBootstrap.class</exclude>
+                        </excludes>
+                    </instrumentation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

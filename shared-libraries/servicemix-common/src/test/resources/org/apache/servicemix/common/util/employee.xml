@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<organization xmlns="http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper">
+
+<employee xmlns:number="1">
+    <firstname type="letters" >Jack</firstname>
+    <lastname>Rose</lastname>
+</employee>
+
+<employee number="2">
+    <firstname type="letters">Paul</firstname>
+    <lastname>McNealy</lastname>
+</employee>
+
+<employee>
+    <firstname type="letters">Joe</firstname>
+    <lastname>Bloggs</lastname>
+</employee>
+
+</organization>
+
+

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	     xmlns:saxon="http://servicemix.apache.org/saxon/1.0"
+       xmlns:test="urn:test">
+
+  <sm:container id="jbi" embedded="true" createMBeanServer="false">
+    
+    <sm:endpoints>
+
+      <!-- START SNIPPET: xslt -->
+      <saxon:xslt service="test:xslt" endpoint="endpoint"
+                  resource="classpath:transform.xsl" />
+      <!-- END SNIPPET: xslt -->
+      
+      <!-- START SNIPPET: xslt-string -->
+      <saxon:xslt service="test:xslt-string" endpoint="endpoint"
+                  resource="classpath:transform.xsl" result="string" />
+      <!-- END SNIPPET: xslt-string -->
+ 
+      	      
+      <!-- START SNIPPET: xslt-params -->
+      <saxon:xslt service="test:xslt-params" endpoint="endpoint"
+                  resource="classpath:parameter-test.xsl">
+        <property name="parameters">
+          <map>
+            <entry key="stringParam" value="cheeseyCheese"/>
+            <entry key="integerParam">
+              <bean class="java.lang.Integer">
+                <constructor-arg index="0" value="4002"/>
+              </bean>
+            </entry>
+          </map>
+        </property>
+      </saxon:xslt>
+      <!-- END SNIPPET: xslt-params -->
+      	      
+      <!-- START SNIPPET: xslt-dynamic -->
+      <saxon:xslt service="test:xslt-dynamic" endpoint="endpoint">
+        <saxon:expression>
+          <bean class="org.apache.servicemix.expression.PropertyExpression">
+            <property name="property" value="xslt.source" />
+          </bean>
+        </saxon:expression>
+      </saxon:xslt>
+      <!-- END SNIPPET: xslt-dynamic -->
+
+      <saxon:xslt service="test:xslt-doccall" endpoint="endpoint"
+                  resource="classpath:doc-call.xsl"
+                  useDomSourceForXslt="true"
+                  useDomSourceForContent="false"
+                  reload="true"
+                  result="bytes" />
+
+      <!-- START SNIPPET: xquery -->
+      <saxon:xquery service="test:xquery" endpoint="endpoint"
+                    resource="classpath:query.xq" />
+      <!-- END SNIPPET: xquery -->
+      
+      <!-- START SNIPPET: xquery-string -->
+      <saxon:xquery service="test:xquery-string" endpoint="endpoint"
+                    resource="classpath:query.xq" result="string" />
+      <!-- END SNIPPET: xquery-string -->
+      
+      <!-- START SNIPPET: xquery-params -->
+      <saxon:xquery service="test:xquery-params" endpoint="endpoint"
+                  resource="classpath:parameter-test-query.xq" result="bytes">
+        <property name="parameters">
+          <map>
+            <entry key="max_price">
+              <bean class="java.lang.Integer">
+                <constructor-arg index="0" value="30"/>
+              </bean>
+            </entry>
+          </map>
+        </property>
+      </saxon:xquery>
+      <!-- END SNIPPET: xquery-params -->
+   
+      	      
+      <!-- START SNIPPET: xquery-inline -->
+      <saxon:xquery service="test:xquery-inline" endpoint="endpoint" reload="true">
+        <!-- CDATA are not supported currently -->
+        <saxon:query>
+           for $x in /bookstore/book
+           where $x/price > 30
+           return $x/title
+        </saxon:query>
+        <saxon:outputProperties>
+          <saxon:property key="{http://saxon.sf.net/}wrap-result-sequence">yes</saxon:property>
+        </saxon:outputProperties>
+      </saxon:xquery>
+      <!-- END SNIPPET: xquery-inline -->
+      	      
+      <!-- START SNIPPET: xquery-dynamic -->
+      <saxon:xquery service="test:xquery-dynamic" endpoint="endpoint">
+        <saxon:expression>
+          <bean class="org.apache.servicemix.expression.PropertyExpression">
+            <property name="property" value="xquery.source" />
+          </bean>
+        </saxon:expression>
+      </saxon:xquery>
+      <!-- END SNIPPET: xquery-dynamic -->
+
+      <!-- START SNIPPET: xslt-proxy -->
+      <saxon:proxy service="test:proxy" endpoint="endpoint"
+                   useDomSourceForXslt="true"
+                   useDomSourceForContent="false"
+                   result="dom"
+                   resource="classpath:transform-in.xsl"
+                   reload="true"
+                   outResource="classpath:transform-out.xsl">
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy -->
+      
+      <!--  START SNIPPET: xslt-proxy-string -->
+      <saxon:proxy service="test:proxy-string" endpoint="endpoint"
+                   useDomSourceForXslt="false"
+                   useDomSourceForContent="false"
+                   result="string"
+                   resource="classpath:transform-in.xsl" >
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy-string -->
+      
+      <!--  START SNIPPET: xslt-proxy-bytes -->
+      <saxon:proxy service="test:proxy-bytes" endpoint="endpoint"
+                   useDomSourceForXslt="true"
+                   useDomSourceForContent="true"
+                   result="bytes"
+                   resource="classpath:transform-in.xsl" >
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy-bytes -->
+      
+      <!-- START SNIPPET: xslt-proxy-params -->
+      <saxon:proxy service="test:xslt-proxy-params" endpoint="endpoint"
+                  resource="classpath:transform-in.xsl">
+        <property name="parameters">
+          <map>
+            <entry key="symbol" value="IBM"/>
+            <entry key="volume">
+              <bean class="java.lang.Integer">
+                <constructor-arg index="0" value="10"/>
+              </bean>
+            </entry>
+          </map>
+        </property>
+        <saxon:target>
+          <saxon:exchange-target service="test:echo" />
+        </saxon:target>
+      </saxon:proxy>
+      <!-- END SNIPPET: xslt-proxy-params -->
+      
+    </sm:endpoints>
+    <sm:activationSpecs>
+        <sm:activationSpec service="test:echo" endpoint="endpoint">
+            <sm:component>
+                <bean class="org.apache.servicemix.components.util.EchoComponent" />
+            </sm:component>
+        </sm:activationSpec>
+    </sm:activationSpecs>
+  </sm:container>
+
+</beans>

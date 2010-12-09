@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+       xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
+       xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
+       xmlns:test="urn:test"
+       xmlns:greeter="http://apache.org/hello_world_soap_http"
+       >
+  <sm:container id="jbi" embedded="true">
+    <sm:executorFactory>
+    <bean class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
+      <property name="configs">
+        <map>
+          <entry key="flow.seda.servicemix-cxfse">
+            <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
+              <property name="corePoolSize" value="1"/>
+              <property name="queueSize" value="16"/>
+            </bean>
+          </entry>
+        </map>
+      </property>
+    </bean>
+  </sm:executorFactory>
+    
+    <sm:endpoints>
+      <cxfbc:consumer wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      service="greeter:HelloWorldService"
+                      endpoint="HelloWorldPort"
+                      targetEndpoint="TimestampSignEncrypt"
+                      targetService="greeter:SOAPServiceWSSecurity"
+                      targetInterface="greeter:Greeter"
+                      synchronous="false"
+                      timeout="3"
+                      >
+        <cxfbc:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inInterceptors>
+        <cxfbc:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfbc:outInterceptors>
+        <cxfbc:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inFaultInterceptors>
+        <cxfbc:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfbc:outFaultInterceptors>
+        <cxfbc:features>
+           <bean class="org.apache.cxf.transport.jms.JMSConfigFeature">
+                <property name="jmsConfig">
+                    <bean class="org.apache.cxf.transport.jms.JMSConfiguration">
+                        <property name="connectionFactory">
+                            <ref bean="myConnectionFactory" />
+                        </property>
+                        <property name="targetDestination">
+                            <value>test.jmstransport.text</value>
+                        </property>
+                        <property name="timeToLive">
+                            <value>500000</value>
+                        </property>
+                        <property name="concurrentConsumers">
+                            <value>1</value>
+                        </property>
+                        <property name="maxConcurrentConsumers">
+                            <value>1</value>
+                        </property>
+                        <property name="maxSuspendedContinuations">
+                            <!--since corePoolSize of cxf se is 1, so set maxSuspendedContinuations aslo 1 to avoid the message queued in cxf se-->
+                            <value>1</value>
+                        </property>
+                        <property name="cacheLevel">
+                            <value>2</value>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </cxfbc:features>
+      </cxfbc:consumer>
+       <cxfse:endpoint>
+        <cxfse:pojo>
+          <bean class="org.apache.servicemix.cxfbc.ws.security.GreeterImpl" />
+        </cxfse:pojo>
+        <cxfse:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inInterceptors>
+        <cxfse:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outInterceptors>
+        <cxfse:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inFaultInterceptors>
+        <cxfse:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outFaultInterceptors>
+      </cxfse:endpoint>
+     
+    </sm:endpoints>
+    
+  </sm:container>
+  <bean id="myConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+      <property name="brokerURL" value="tcp://localhost:61616" />
+  </bean>
+  
+</beans>

@@ -1,0 +1,338 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.servicemix.eip.patterns;
+
+import java.util.Iterator;
+
+import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.eip.EIPEndpoint;
+import org.apache.servicemix.eip.support.ExchangeTarget;
+import org.apache.servicemix.jbi.helper.MessageUtil;
+import org.apache.servicemix.store.Store;
+
+/**
+ *
+ * A WireTap component can be used to forward a copy of the input message to a listener.
+ * This component implements the 
+ * <a href="http://www.enterpriseintegrationpatterns.com/WireTap.html">WireTap</a> 
+ * pattern.
+ * It can handle all 4 standard MEPs, but will only send an In-Only MEP to the listener.
+ * In addition, this component is fully asynchronous and uses an exchange store to provide
+ * full HA and recovery for clustered / persistent flows. 
+ * 
+ * @author gnodet
+ * @version $Revision: 376451 $
+ * @org.apache.xbean.XBean element="wire-tap"
+ */
+public class WireTap extends EIPEndpoint {
+
+    /**
+     * The main target destination which will receive the exchange
+     */
+    private ExchangeTarget target;
+    /**
+     * The listener destination for in messages
+     */
+    private ExchangeTarget inListener;
+    /**
+     * The listener destination for out messages
+     */
+    private ExchangeTarget outListener;
+    /**
+     * The listener destination for fault messages
+     */
+    private ExchangeTarget faultListener;
+    /**
+     * The correlation property used by this component
+     */
+    private String correlation;
+    /**
+     * If copyProperties is <code>true</code>, properties
+     * on the in message will be copied to the out / fault
+     * message before it is sent.
+     */
+    private boolean copyProperties = true;
+    
+    /**
+     * @return Returns the target.
+     */
+    public ExchangeTarget getTarget() {
+        return target;
+    }
+
+    /**
+     * The main target destination which will receive the exchange
+     *
+     * @param target The target to set.
+     */
+    public void setTarget(ExchangeTarget target) {
+        this.target = target;
+        this.wsdlExchangeTarget = target;
+    }
+
+    /**
+     * @return Returns the faultListener.
+     */
+    public ExchangeTarget getFaultListener() {
+        return faultListener;
+    }
+
+    /**
+     * The listener destination for fault messages
+     *
+     * @param faultListener The faultListener to set.
+     */
+    public void setFaultListener(ExchangeTarget faultListener) {
+        this.faultListener = faultListener;
+    }
+
+    /**
+     * @return Returns the inListener.
+     */
+    public ExchangeTarget getInListener() {
+        return inListener;
+    }
+
+    /**
+     * The listener destination for in messages
+     *
+     * @param inListener The inListener to set.
+     */
+    public void setInListener(ExchangeTarget inListener) {
+        this.inListener = inListener;
+    }
+
+    /**
+     * @return Returns the outListener.
+     */
+    public ExchangeTarget getOutListener() {
+        return outListener;
+    }
+
+    /**
+     * The listener destination for out messages
+     *
+     * @param outListener The outListener to set.
+     */
+    public void setOutListener(ExchangeTarget outListener) {
+        this.outListener = outListener;
+    }
+
+    /**
+     * @return the copyProperties
+     */
+    public boolean isCopyProperties() {
+        return copyProperties;
+    }
+
+    /**
+     * If copyProperties is <code>true</code>, properties
+     * on the in message will be copied to the out / fault
+     * message before it is sent.
+     * 
+     * @param copyProperties the copyProperties to set
+     */
+    public void setCopyProperties(boolean copyProperties) {
+        this.copyProperties = copyProperties;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#validate()
+     */
+    public void validate() throws DeploymentException {
+        super.validate();
+        // Check target
+        if (target == null) {
+            throw new IllegalArgumentException("target should be set to a valid ExchangeTarget");
+        }
+        // Create correlation property
+        correlation = "WireTap.Correlation." + getService() + "." + getEndpoint();
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processSync(javax.jbi.messaging.MessageExchange)
+     */
+    protected void processSync(MessageExchange exchange) throws Exception {
+        if (null == target.getOperation()) {
+            //not specify operation for the target, so save the src one by default
+            target.setOperation(exchange.getOperation());
+        }
+        // Create exchange for target
+        MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
+        target.configureTarget(tme, getContext());
+        sendSyncToListenerAndTarget(exchange, tme, inListener, "in", false);
+        if (tme.getStatus() == ExchangeStatus.DONE) {
+            done(exchange);
+        } else if (tme.getStatus() == ExchangeStatus.ERROR) {
+            fail(exchange, tme.getError());
+        } else if (tme.getFault() != null) {
+            sendSyncToListenerAndTarget(tme, exchange, faultListener, "fault", isCopyProperties());
+            done(tme);
+        } else if (tme.getMessage("out") != null) {
+            sendSyncToListenerAndTarget(tme, exchange, outListener, "out", isCopyProperties());
+            done(tme);
+        } else {
+            done(tme);
+            throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
+                    + " but has no Out nor Fault message");
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
+     */
+    protected void processAsync(MessageExchange exchange) throws Exception {
+        if (null == target.getOperation()) {
+            //not specify operation for the target, so save the src one by default
+            target.setOperation(exchange.getOperation());
+        }
+        if (exchange.getRole() == MessageExchange.Role.PROVIDER
+            && exchange.getProperty(correlation) == null) {
+            // Create exchange for target
+            MessageExchange tme = getExchangeFactory().createExchange(exchange.getPattern());
+            if (store.hasFeature(Store.CLUSTERED)) {
+                exchange.setProperty(JbiConstants.STATELESS_PROVIDER, Boolean.TRUE);
+                tme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
+            }
+            target.configureTarget(tme, getContext());
+            // Set correlations
+            exchange.setProperty(correlation, tme.getExchangeId());
+            tme.setProperty(correlation, exchange.getExchangeId());
+            // Put exchange to store
+            store.store(exchange.getExchangeId(), exchange);
+            // Send in to listener and target
+            sendToListenerAndTarget(exchange, tme, inListener, "in", false);
+        // Mimic the exchange on the other side and send to needed listener
+        } else {
+            String id = (String) exchange.getProperty(correlation);
+            if (id == null) {
+                if (exchange.getRole() == MessageExchange.Role.CONSUMER
+                    && exchange.getStatus() != ExchangeStatus.ACTIVE) {
+                    // This must be a listener status, so ignore
+                    return;
+                }
+                throw new IllegalStateException(correlation + " property not found");
+            }
+            MessageExchange org = (MessageExchange) store.load(id);
+            if (org == null) {
+                throw new IllegalStateException("Could not load original exchange with id " + id);
+            }
+            // Reproduce DONE status to the other side
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                done(org);
+            // Reproduce ERROR status to the other side
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                fail(org, exchange.getError());
+            // Reproduce faults to the other side and listeners
+            } else if (exchange.getFault() != null) {
+                store.store(exchange.getExchangeId(), exchange);
+                sendToListenerAndTarget(exchange, org, faultListener, "fault", isCopyProperties());
+            // Reproduce answers to the other side
+            } else if (exchange.getMessage("out") != null) {
+                store.store(exchange.getExchangeId(), exchange);
+                sendToListenerAndTarget(exchange, org, outListener, "out", isCopyProperties());
+            } else {
+                throw new IllegalStateException("Exchange status is " + ExchangeStatus.ACTIVE
+                        + " but has no Out nor Fault message");
+            }
+        }
+    }
+    
+    private void sendToListenerAndTarget(MessageExchange source, 
+                                         MessageExchange dest, 
+                                         ExchangeTarget listener,
+                                         String message,
+                                         boolean copy) throws Exception {
+        if (listener != null) {
+            NormalizedMessage msg = MessageUtil.copy(source.getMessage(message));
+            InOnly lme = getExchangeFactory().createInOnlyExchange();
+            if (store.hasFeature(Store.CLUSTERED)) {
+                lme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
+            }
+            listener.configureTarget(lme, getContext());
+            MessageUtil.transferToIn(msg, lme);
+            send(lme);
+            MessageUtil.transferTo(msg, dest, message);
+            if (copy) {
+                copyExchangeProperties(dest, "in", message);
+            }
+            send(dest);
+        } else {
+            MessageUtil.transferTo(source, dest, message);
+            if (copy) {
+                copyExchangeProperties(dest, "in", message);
+            }
+            send(dest);
+        }
+    }
+
+    private void sendSyncToListenerAndTarget(MessageExchange source, 
+                                             MessageExchange dest, 
+                                             ExchangeTarget listener,
+                                             String message,
+                                             boolean copy) throws Exception {
+        if (listener != null) {
+            NormalizedMessage msg = MessageUtil.copy(source.getMessage(message));
+            InOnly lme = getExchangeFactory().createInOnlyExchange();
+            if (store.hasFeature(Store.CLUSTERED)) {
+                lme.setProperty(JbiConstants.STATELESS_CONSUMER, Boolean.TRUE);
+            }
+            listener.configureTarget(lme, getContext());
+            MessageUtil.transferToIn(msg, lme);
+            sendSync(lme);
+            MessageUtil.transferTo(msg, dest, message);
+            if (copy) {
+                copyExchangeProperties(dest, "in", message);
+            }
+            sendSync(dest);
+        } else {
+            MessageUtil.transferTo(source, dest, message);
+            if (copy) {
+                copyExchangeProperties(dest, "in", message);
+            }
+            sendSync(dest);
+        }
+    }
+    
+    /**
+     * A utility method to copy properties from the input of the original 
+     * exchange to the output of the original exchange. 
+     * 
+     * @param exchange
+     * @param srcMessage
+     * @param @dstMessage
+     * @throws Exception
+     */
+    private void copyExchangeProperties(MessageExchange exchange, String srcMessage, String dstMessage) {
+        NormalizedMessage src = exchange.getMessage(srcMessage);
+        NormalizedMessage dst = exchange.getMessage(dstMessage);
+        for (Iterator iter = src.getPropertyNames().iterator(); iter.hasNext();) {
+            String name = (String) iter.next();
+            if (dst.getProperty(name) == null) {
+                Object prop = src.getProperty(name);
+                dst.setProperty(name, prop);
+            }
+        }
+    }
+    
+}

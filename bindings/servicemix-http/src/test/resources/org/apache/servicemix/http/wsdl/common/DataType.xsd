@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://test.namespace/schemas/common"
+	xmlns="http://test.namespace/schemas/common"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:include schemaLocation="./TestEnum.xsd"/>
+
+	<xsd:simpleType name="Char7">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="7"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

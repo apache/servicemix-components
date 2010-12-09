@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	
+	Licensed to the Apache Software Foundation (ASF) under one or more
+	contributor license agreements.  See the NOTICE file distributed with
+	this work for additional information regarding copyright ownership.
+	The ASF licenses this file to You under the Apache License, Version 2.0
+	(the "License"); you may not use this file except in compliance with
+	the License.  You may obtain a copy of the License at
+	
+	http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+	
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+	xmlns:script="http://org.apache.servicemix/script/1.0"
+	xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:test="urn:test">
+
+	<sm:container id="jbi" embedded="true" createMBeanServer="false">
+		<sm:activationSpecs>
+			<sm:activationSpec service="test:echo">
+				<sm:component>
+                    <bean class="org.apache.servicemix.components.util.EchoComponent" />
+                </sm:component>
+            </sm:activationSpec>
+        </sm:activationSpecs>
+
+        <sm:endpoints>
+
+            <!-- Groovy Endpoint  -->
+            <script:exchangeProcessor
+                service="test:groovy" endpoint="endpoint">
+                <property name="helpers">
+                    <list>
+                        <ref bean="groovyExchangeHelper" />
+                    </list>
+                </property>
+                <property name="implementation" ref="groovyExchangeProcessor" />
+            </script:exchangeProcessor>
+
+            <!-- Groovy Endpoint  -->
+            <script:exchangeProcessor
+                service="test:groovyConsumer" endpoint="endpoint">
+                <property name="helpers">
+                    <list>
+                        <ref bean="groovyConsumerExchangeHelper" />
+                    </list>
+                </property>
+                <property name="implementation" ref="groovyConsumerExchangeProcessor" />
+            </script:exchangeProcessor>
+
+            <!-- JRuby Endpoint  -->
+            <script:exchangeProcessor
+                service="test:jruby" endpoint="endpoint">
+                <property name="helpers">
+                    <list>
+                        <ref bean="jrubyExchangeHelper" />
+                    </list>
+                </property>
+                <property name="implementation" ref="jrubyExchangeProcessor" />
+            </script:exchangeProcessor>
+
+        </sm:endpoints>
+    </sm:container>
+
+    <script:exchangeHelper id="groovyExchangeHelper" singleton="true" />
+
+    <script:exchangeHelper id="groovyConsumerExchangeHelper" singleton="true" />
+
+	<script:exchangeHelper id="jrubyExchangeHelper" singleton="true" />
+
+    <lang:groovy id="groovyExchangeProcessor"
+        script-source="classpath:GroovyExchangeProcessor.groovy">
+        <lang:property name="exchangeHelper" ref="groovyExchangeHelper" />
+    </lang:groovy>
+
+    <lang:groovy id="groovyConsumerExchangeProcessor"
+        script-source="classpath:GroovyConsumerExchangeProcessor.groovy">
+        <lang:property name="exchangeHelper" ref="groovyConsumerExchangeHelper" />
+    </lang:groovy>
+
+	<lang:jruby id="jrubyExchangeProcessor"
+		script-interfaces="org.apache.servicemix.common.ExchangeProcessor"
+		script-source="classpath:RubyExchangeProcessor.rb">
+		<lang:property name="exchangeHelper" ref="jrubyExchangeHelper" />
+	</lang:jruby>
+
+</beans>

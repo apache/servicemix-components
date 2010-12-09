@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:sm="http://servicemix.apache.org/config/1.0"
+       xmlns:eip="http://servicemix.apache.org/eip/1.0" 
+       xmlns:test="http://test">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true" autoEnlistInTransaction="true">
+    <sm:flows>
+      <sm:sedaFlow />
+      <!--
+      <sm:jmsFlow jmsURL="tcp://localhost:${activemq.port1}" />
+      <sm:jcaFlow connectionManager="#connectionManager"
+      jmsURL="tcp://localhost:${activemq.port1}" />
+      -->
+    </sm:flows>
+    <sm:transactionManager>
+      <bean class="org.jencks.GeronimoPlatformTransactionManager" />  
+    </sm:transactionManager>
+    <sm:executorFactory>
+      <bean class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
+        <property name="defaultConfig">
+          <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
+            <property name="corePoolSize" value="0" />
+            <property name="maximumPoolSize" value="16" />
+            <property name="allowCoreThreadsTimeout" value="true" />
+            <property name="queueSize" value="0" />
+            <property name="keepAliveTime" value="500" />
+          </bean>
+        </property>
+      </bean>
+    </sm:executorFactory>
+
+    <sm:listeners>
+      <sm:dotViewFlowListener />
+      <bean class="org.apache.servicemix.tck.ExchangeCompletedListener" />
+    </sm:listeners>
+    
+    <sm:endpoints>
+
+      <!-- main test entry point -->
+      <eip:static-recipient-list service="test:entryPoint" endpoint="endpoint">
+        <eip:recipients>
+          <eip:exchange-target service="test:wireTap" />
+          <eip:exchange-target service="test:aggregatorSplitter" />
+        </eip:recipients>
+      </eip:static-recipient-list>
+
+      <!-- splitter used to test the aggregator -->
+      <eip:xpath-splitter service="test:aggregatorSplitter" endpoint="endpoint"
+                          xpath="/*/*" namespaceContext="#nsContext">
+        <eip:target>
+          <eip:exchange-target service="test:pipeline-aggregator" />
+        </eip:target>
+      </eip:xpath-splitter>
+
+      <eip:pipeline service="test:pipeline-aggregator" endpoint="endpoint">
+        <eip:transformer>
+          <eip:exchange-target service="test:wiretap-echo" />
+        </eip:transformer>
+        <eip:target>
+          <eip:exchange-target service="test:aggregator" />
+        </eip:target>
+      </eip:pipeline>
+
+      <eip:wire-tap service="test:wiretap-echo" endpoint="endpoint"
+                    copyProperties="true">
+        <eip:target>
+          <eip:exchange-target service="test:echo" />
+        </eip:target>
+      </eip:wire-tap>
+
+      <!-- START SNIPPET: split-aggregator -->
+      <eip:split-aggregator service="test:aggregator" endpoint="endpoint">
+        <eip:target>
+          <eip:exchange-target service="test:trace5" />
+        </eip:target>
+      </eip:split-aggregator>
+      <!-- END SNIPPET: split-aggregator -->
+
+      <!-- START SNIPPET: wire-tap -->
+      <eip:wire-tap service="test:wireTap" endpoint="endpoint">
+        <eip:target>
+          <eip:exchange-target service="test:xpathSplitter" />
+        </eip:target>
+        <eip:inListener>
+          <eip:exchange-target service="test:trace1" />
+        </eip:inListener>
+      </eip:wire-tap>
+      <!-- END SNIPPET: wire-tap -->
+
+      <!-- START SNIPPET: xpath-splitter -->
+      <eip:xpath-splitter service="test:xpathSplitter" endpoint="endpoint"
+                          xpath="/*/*" namespaceContext="#nsContext">
+        <eip:target>
+          <eip:exchange-target uri="service:http://test/router" />
+        </eip:target>
+      </eip:xpath-splitter>
+      <!-- END SNIPPET: xpath-splitter -->
+
+      <!-- START SNIPPET: content-based-router -->
+      <eip:content-based-router service="test:router" endpoint="endpoint">
+        <eip:rules>
+          <eip:routing-rule>
+            <eip:predicate>
+              <eip:xpath-predicate xpath="count(/test:echo) = 1" namespaceContext="#nsContext" />
+            </eip:predicate>
+            <eip:target>
+              <eip:exchange-target uri="endpoint:http://test/pipeline/endpoint" />
+            </eip:target>
+          </eip:routing-rule>
+          <eip:routing-rule>
+            <!-- there is no predicate, so this is the default destination -->
+            <eip:target>
+              <eip:exchange-target service="test:recipients" />
+            </eip:target>
+          </eip:routing-rule>
+        </eip:rules>
+      </eip:content-based-router>
+      <!-- END SNIPPET: content-based-router -->
+
+      <!-- START SNIPPET: pipeline -->
+      <eip:pipeline service="test:pipeline" endpoint="endpoint">
+        <eip:transformer>
+          <eip:exchange-target service="test:routingSlip" />
+        </eip:transformer>
+        <eip:target>
+          <eip:exchange-target service="test:trace2" />
+        </eip:target>
+      </eip:pipeline>
+      <!-- END SNIPPET: pipeline -->
+
+      <!-- START SNIPPET: static-recipient-list -->
+      <eip:static-recipient-list service="test:recipients" endpoint="endpoint">
+        <eip:recipients>
+          <eip:exchange-target service="test:messageFilter" />
+          <eip:exchange-target service="test:trace4" />
+        </eip:recipients>
+      </eip:static-recipient-list>
+      <!-- END SNIPPET: static-recipient-list -->
+
+      <!-- START SNIPPET: static-routing-slip -->
+      <eip:static-routing-slip service="test:routingSlip" endpoint="endpoint">
+        <eip:targets>
+          <eip:exchange-target service="test:echo" />
+          <eip:exchange-target service="test:echo" />
+        </eip:targets>
+      </eip:static-routing-slip>
+      <!-- END SNIPPET: static-routing-slip -->
+
+      <!-- START SNIPPET: message-filter -->
+      <eip:message-filter service="test:messageFilter" endpoint="endpoint">
+        <eip:target>
+          <eip:exchange-target service="test:trace3" />
+        </eip:target>
+        <eip:filter>
+          <eip:xpath-predicate xpath="count(/test:world) = 1" namespaceContext="#nsContext"/>
+        </eip:filter>
+      </eip:message-filter>
+      <!-- END SNIPPET: message-filter -->
+              
+    </sm:endpoints>
+
+    <sm:activationSpecs>
+
+      <sm:activationSpec id="echo" service="test:echo">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent">
+            <property name="copyProperties" value="false" />
+          </bean>
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec id="trace1" service="test:trace1">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace2" service="test:trace2">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace3" service="test:trace3">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace4" service="test:trace4">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      <sm:activationSpec id="trace5" service="test:trace5">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+      
+    </sm:activationSpecs>
+  </sm:container>
+  
+  <!-- START SNIPPET: namespace-context -->
+  <eip:namespace-context id="nsContext">
+    <eip:namespaces>
+      <eip:namespace prefix="test">http://test</eip:namespace>
+    </eip:namespaces>
+  </eip:namespace-context>
+  <!-- END SNIPPET: namespace-context -->
+
+</beans>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this http to You under the Apache License, Version 2.0
+    (the "License"); you may not use this http except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+           xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0">
+
+    <!-- Retrieve ManagementStrategy from OSGi service registry -->
+    <reference id="managementStrategy" interface="org.fusesource.commons.management.ManagementStrategy"/>
+
+    <bean id="servicemix-http" class="org.apache.servicemix.http.HttpComponent">
+        <property name="configuration" ref="servicemix-http-configuration" />
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="keystoreManager" ref="keystoreManager" />
+        <property name="executorFactory" ref="executorFactory" />
+    </bean>
+
+    <bean id="servicemix-http-configuration" class="org.apache.servicemix.http.HttpConfiguration">
+        <property name="connectorMaxIdleTime" value="${connectorMaxIdleTime}" />
+        <property name="soLingerTime" value="${soLingerTime}" />
+        <property name="consumerProcessorSuspendTime" value="${consumerProcessorSuspendTime}" />
+        <property name="providerExpirationTime" value="${providerExpirationTime}" />
+        <property name="jettyClientThreadPoolSize" value="${jettyClientThreadPoolSize}" />
+        <property name="jettyConnectorClassName" value="${jettyConnectorClassName}" />
+        <property name="jettyThreadPoolSize" value="${jettyThreadPoolSize}" />
+        <property name="jettyManagement" value="${jettyManagement}" />
+        <property name="maxConnectionsPerHost" value="${maxConnectionsPerHost}" />
+        <property name="maxTotalConnections" value="${maxTotalConnections}" />
+        <property name="proxyHost" value="${proxyHost}" />
+        <property name="proxyPort" value="${proxyPort}" />
+        <property name="retryCount" value="${retryCount}" />
+        <property name="streamingEnabled" value="${streamingEnabled}" />
+        <property name="wantHeadersFromHttpIntoExchange" value="${wantHeadersFromHttpIntoExchange}" />
+    </bean>
+
+    <bean id="executorFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
+        <property name="defaultConfig">
+            <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
+                <property name="corePoolSize" value="${threadPoolCorePoolSize}"/>
+                <property name="maximumPoolSize" value="${threadPoolMaximumPoolSize}"/>
+                <property name="queueSize" value="${threadPoolQueueSize}"/>
+            </bean>
+        </property>
+        <property name="managementStrategy" ref="managementStrategy"/>
+    </bean>
+
+    <bean id="endpoint-tracker" class="org.apache.servicemix.common.osgi.EndpointTracker">
+        <property name="component" ref="servicemix-http" />
+    </bean>
+
+    <reference id="authenticationService" interface="org.apache.servicemix.nmr.api.security.AuthenticationService" />
+
+    <reference id="keystoreManager" interface="org.apache.karaf.jaas.config.KeystoreManager" />
+
+    <reference-list id="endpoints"
+               interface="org.apache.servicemix.common.osgi.EndpointWrapper"
+               availability="optional">
+        <reference-listener ref="endpoint-tracker" bind-method="register" unbind-method="unregister" />
+    </reference-list>
+
+    <service ref="servicemix-http" interface="javax.jbi.component.Component">
+        <service-properties>
+            <entry key="NAME" value="servicemix-http" />
+            <entry key="TYPE" value="binding-component" />
+        </service-properties>
+    </service>
+
+    <service interface="org.apache.aries.blueprint.NamespaceHandler">
+        <service-properties>
+            <entry key="osgi.service.blueprint.namespace" value="http://servicemix.apache.org/http/1.0"/>
+        </service-properties>
+        <bean class="org.apache.xbean.blueprint.context.impl.XBeanNamespaceHandler">
+            <argument value="http://servicemix.apache.org/http/1.0"/>
+            <argument value="servicemix-http.xsd"/>
+            <argument ref="blueprintBundle"/>
+            <argument value="META-INF/services/org/apache/xbean/spring/http/servicemix.apache.org/http/1.0"/>
+        </bean>
+    </service>
+
+    <cm:property-placeholder persistent-id="org.apache.servicemix.components.http">
+        <cm:default-properties>
+			<cm:property name="connectorMaxIdleTime" value="30000"/>
+                        <cm:property name="soLingerTime" value="-1"/>
+			<cm:property name="consumerProcessorSuspendTime" value="60000"/>
+                        <cm:property name="providerExpirationTime" value="300000"/>
+			<cm:property name="jettyClientThreadPoolSize" value="16"/>
+			<cm:property name="jettyConnectorClassName" value="org.mortbay.jetty.nio.SelectChannelConnector"/>
+			<cm:property name="jettyThreadPoolSize" value="255"/>
+			<cm:property name="jettyManagement" value="false"/>
+			<cm:property name="maxConnectionsPerHost" value="65536"/>
+			<cm:property name="maxTotalConnections" value="65536"/>
+			<cm:property name="proxyHost" value=""/>
+			<cm:property name="proxyPort" value="0"/>
+			<cm:property name="retryCount" value="3"/>
+			<cm:property name="streamingEnabled" value="false"/>
+			<cm:property name="threadPoolCorePoolSize" value="8"/>
+			<cm:property name="threadPoolMaximumPoolSize" value="32"/>
+			<cm:property name="threadPoolQueueSize" value="256"/>
+			<cm:property name="wantHeadersFromHttpIntoExchange" value="false"/>
+	    </cm:default-properties>
+    </cm:property-placeholder>
+    
+</blueprint>

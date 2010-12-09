@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!--
+
+        Licensed to the Apache Software Foundation (ASF) under one or more
+        contributor license agreements.  See the NOTICE file distributed with
+        this work for additional information regarding copyright ownership.
+        The ASF licenses this file to You under the Apache License, Version 2.0
+        (the "License"); you may not use this file except in compliance with
+        the License.  You may obtain a copy of the License at
+
+           http://www.apache.org/licenses/LICENSE-2.0
+
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+    -->
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.apache.servicemix</groupId>
+        <artifactId>binding-components</artifactId>
+        <version>2010.02-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.apache.servicemix</groupId>
+    <artifactId>servicemix-file</artifactId>
+    <version>2010.02-SNAPSHOT</version>
+    <packaging>jbi-component</packaging>
+
+    <name>Apache ServiceMix :: Components :: File Binding Component</name>
+
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-file/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-file/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-file/trunk</url>
+    </scm>
+
+    <properties>
+        <backport-util-concurrent.version>3.1</backport-util-concurrent.version>
+
+        <servicemix.osgi.import>
+            !org.apache.servicemix.file*,
+            !META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.file,
+            org.apache.servicemix.common,
+            org.apache.servicemix.common.osgi,
+            org.apache.servicemix.executors.impl,
+            org.apache.xbean.spring.context.v2,
+            org.springframework.beans.factory.xml,
+            sun.misc;resolution:=optional,
+            *
+        </servicemix.osgi.import>
+        <servicemix.osgi.export>
+            org.apache.servicemix.file*;version=${project.version},
+            META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.file
+        </servicemix.osgi.export>
+        <servicemix.osgi.bundles>
+            org.springframework.core,
+            org.springframework.beans,
+            org.springframework.context
+        </servicemix.osgi.bundles>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jta_1.1_spec</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-shared</artifactId>
+        </dependency>
+
+        <!-- provided -->
+        <!-- include servicemix-common as a source for the XSD documentation generator -->
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+            <version>${servicemix-shared.version}</version>
+            <classifier>sources</classifier>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>        
+        <dependency>
+            <groupId>org.apache.servicemix.specs</groupId>
+            <artifactId>org.apache.servicemix.specs.jbi-api-1.0</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- testing -->
+        <dependency>
+            <groupId>backport-util-concurrent</groupId>
+            <artifactId>backport-util-concurrent</artifactId>
+            <version>${backport-util-concurrent.version}</version>
+            <scope>test</scope>
+        </dependency>        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-core</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jmx</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.servicemix.tooling</groupId>
+                <artifactId>jbi-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <type>binding-component</type>
+                    <component>org.apache.servicemix.file.FileComponent</component>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.xbean</groupId>
+                <artifactId>maven-xbean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>mapping</goal>
+                        </goals>
+                        <configuration>
+                            <namespace>http://servicemix.apache.org/file/1.0</namespace>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- exclude generated DefaultBootstrap class from Cobertura reports -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>org/apache/servicemix/common/DefaultBootstrap.class</exclude>
+                        </excludes>
+                    </instrumentation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>

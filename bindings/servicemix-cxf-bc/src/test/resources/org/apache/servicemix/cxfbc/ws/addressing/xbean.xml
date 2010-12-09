@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+       xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
+       xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
+       xmlns:greeter="http://apache.org/hello_world_soap_http">
+  
+  <sm:container id="jbi" embedded="true">
+    
+    <sm:endpoints>
+      <cxfse:endpoint>
+        <cxfse:pojo>
+          <bean class="org.apache.servicemix.cxfbc.ws.addressing.GreeterImpl" />
+        </cxfse:pojo>
+        <cxfse:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inInterceptors>
+        <cxfse:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outInterceptors>
+        <cxfse:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inFaultInterceptors>
+        <cxfse:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outFaultInterceptors>
+      </cxfse:endpoint>
+      <cxfse:endpoint>
+        <cxfse:pojo>
+          <bean class="org.apache.servicemix.cxfbc.ws.addressing.AnotherGreeterImpl" />
+        </cxfse:pojo>
+        <cxfse:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inInterceptors>
+        <cxfse:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outInterceptors>
+        <cxfse:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfse:inFaultInterceptors>
+        <cxfse:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfse:outFaultInterceptors>
+      </cxfse:endpoint>
+      <cxfbc:consumer wsdl="org/apache/servicemix/cxfbc/ws/addressing/hello_world.wsdl"
+                      targetEndpoint="SoapPort"
+                      targetService="greeter:SOAPServiceAddressing"
+                      targetInterface="greeter:Greeter"
+                      busCfg="org/apache/servicemix/cxfbc/ws/addressing/wsa_interceptors.xml"
+                      >
+        <cxfbc:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          <ref bean="mapVerifier"/>
+          <ref bean="headVerifier"/>
+          <ref bean="addressingInInterceptor"/>
+        </cxfbc:inInterceptors>
+        <cxfbc:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          <ref bean="mapVerifier"/>
+          <ref bean="headVerifier"/>
+        </cxfbc:outInterceptors>
+        <cxfbc:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          <ref bean="mapVerifier"/>
+          <ref bean="headVerifier"/>
+        </cxfbc:inFaultInterceptors>
+        <cxfbc:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          <ref bean="mapVerifier"/>
+          <ref bean="headVerifier"/>
+        </cxfbc:outFaultInterceptors>
+      </cxfbc:consumer>
+    </sm:endpoints>
+    
+  </sm:container>
+  <bean class="org.apache.servicemix.cxfbc.ws.addressing.MAPVerifier" id="mapVerifier"/>
+  <bean class="org.apache.servicemix.cxfbc.ws.addressing.HeaderVerifier" id="headVerifier"/>
+  <bean class="org.apache.servicemix.cxfbc.interceptors.JbiAddressingInterceptor" id="addressingInInterceptor"/>
+</beans>

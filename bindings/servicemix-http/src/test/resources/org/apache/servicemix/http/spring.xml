@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0" 
+	   xmlns:http="http://servicemix.apache.org/http/1.0"
+	   xmlns:test="http://test"
+	   xmlns:testSsl="http://test/ssl">
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true">
+    <sm:activationSpecs>
+
+      <!-- output using a POJO -->
+      <sm:activationSpec>
+      	<sm:component>
+            <http:component>
+            	<http:endpoints>
+            	  
+            	  <http:endpoint service="test:MyConsumerService"
+            	    endpoint="myConsumer"
+            	    role="consumer" 
+            	    locationURI="http://localhost:18192/Service/"
+            	    defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
+            	  
+            	  <http:endpoint service="test:MyProviderService"
+            	    endpoint="myProvider"
+            	    role="provider" 
+            	    locationURI="http://localhost:18192/Service/" />
+            	  
+                  <!-- START SNIPPET: ssl -->
+            	  <http:endpoint service="testSsl:MyConsumerService"
+            	    endpoint="myConsumer"
+            	    role="consumer" 
+            	    locationURI="https://localhost:8193/Service/"
+            	    defaultMep="http://www.w3.org/2004/08/wsdl/in-out">
+            	    <http:ssl>
+            	      <http:sslParameters keyStore="classpath:org/apache/servicemix/http/server.keystore"
+            	      keyStorePassword="password"/>
+            	    </http:ssl>
+            	  </http:endpoint>
+            	  
+            	  <http:endpoint service="testSsl:MyProviderService"
+            	    endpoint="myProvider"
+            	    role="provider" 
+            	    locationURI="https://localhost:8193/Service/">
+            	    <http:ssl>
+            	      <http:sslParameters keyStore="classpath:org/apache/servicemix/http/server.keystore"
+            	        keyStorePassword="password"
+            	        trustStore="classpath:org/apache/servicemix/http/client.keystore"
+            	        trustStorePassword="password"/>
+            	    </http:ssl>
+            	  </http:endpoint>
+                  <!-- END SNIPPET: ssl -->
+            	  
+            	</http:endpoints>
+            </http:component>
+        </sm:component>
+      </sm:activationSpec>
+      
+      <sm:activationSpec service="test:MyConsumerService" endpoint="myConsumer">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec service="testSsl:MyConsumerService" endpoint="myConsumer">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.util.EchoComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+
+</beans>

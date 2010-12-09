@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+       xmlns:cxfse="http://servicemix.apache.org/cxfse/1.0"
+       xmlns:cxfbc="http://servicemix.apache.org/cxfbc/1.0"
+       xmlns:test="urn:test"
+       xmlns:greeter="http://apache.org/hello_world_soap_http">
+  
+  <sm:container id="jbi" embedded="true">
+    
+    <sm:endpoints>
+      
+      <cxfbc:provider wsdl="org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
+                      locationURI="http://localhost:9001/SoapContext/SoapPort"
+                      endpoint="TimestampSignEncrypt"
+                      service="greeter:SOAPServiceWSSecurity"
+                      interfaceName="greeter:Greeter"
+                      >
+        <cxfbc:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+          <ref bean="TimestampSignEncrypt_Response"/>
+            <bean class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor"/>
+        </cxfbc:inInterceptors>
+        <cxfbc:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+          <bean class="org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor"/>
+            <ref bean="TimestampSignEncrypt_Request"/>
+        </cxfbc:outInterceptors>
+        <cxfbc:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inFaultInterceptors>
+        <cxfbc:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfbc:outFaultInterceptors>
+      </cxfbc:provider>
+
+    <cxfbc:provider wsdl="/wsdl/hello_world.wsdl"
+                      locationURI="http://localhost:9002/providertest_oneway"
+                      endpoint="SoapPort"
+                      service="greeter:SOAPService"
+                      interfaceName="greeter:Greeter"
+                      >
+        <cxfbc:inInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inInterceptors>
+        <cxfbc:outInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfbc:outInterceptors>
+        <cxfbc:inFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+        </cxfbc:inFaultInterceptors>
+        <cxfbc:outFaultInterceptors>
+          <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
+        </cxfbc:outFaultInterceptors>
+      </cxfbc:provider>
+    </sm:endpoints>
+    
+  </sm:container>
+  
+  <!-- -->
+    <!-- This bean is an Out interceptor which will add a Timestamp, -->
+    <!-- sign the Timstamp and Body, and then encrypt the Timestamp -->
+    <!-- and Body.  It uses 3DES as the symmetric key algorithm. -->
+    <!-- -->
+    <bean
+        class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor"
+        id="TimestampSignEncrypt_Request">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="Timestamp Signature Encrypt"/>
+                <!-- <entry key="action" value="Timestamp Signature"/> -->
+                <entry key="user" value="alice"/>
+                <entry key="signaturePropFile" value="org/apache/servicemix/cxfbc/ws/security/alice.properties"/>
+                <entry key="encryptionPropFile" value="org/apache/servicemix/cxfbc/ws/security/bob.properties"/>
+                <entry key="encryptionUser" value="Bob"/>
+                <entry key="signatureKeyIdentifier" value="DirectReference"/>
+                <entry key="passwordCallbackClass" value="org.apache.servicemix.cxfbc.ws.security.KeystorePasswordCallback"/>
+                <entry key="signatureParts" value="{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp;{Element}{http://schemas.xmlsoap.org/soap/envelope/}Body"/>
+                <!-- -->
+                <!-- Recommendation: signatures should be encrypted -->
+                <!-- -->
+                <entry key="encryptionParts" value="{Element}{http://www.w3.org/2000/09/xmldsig#}Signature;{Content}{http://schemas.xmlsoap.org/soap/envelope/}Body"/>
+                <!-- <entry key="encryptionKeyTransportAlgorithm" value="RSA15"/> -->
+                <entry key="encryptionSymAlgorithm" value="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- -->
+    <!-- This bean is an In interceptor which validated a signed, -->
+    <!-- encrypted resposne, and timestamped. -->
+    <!-- -->
+    <!-- -->
+    <bean
+        class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor"
+        id="TimestampSignEncrypt_Response">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="Timestamp Signature Encrypt"/>
+                <entry key="signaturePropFile" value="org/apache/servicemix/cxfbc/ws/security/bob.properties"/>
+                <entry key="decryptionPropFile" value="org/apache/servicemix/cxfbc/ws/security/alice.properties"/>
+                <entry key="passwordCallbackClass" value="org.apache.servicemix.cxfbc.ws.security.KeystorePasswordCallback"/>
+            </map>
+        </constructor-arg>
+    </bean>
+</beans>

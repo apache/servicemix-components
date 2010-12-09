@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns:sm="http://servicemix.apache.org/config/1.0"
+  xmlns:wsn="http://servicemix.apache.org/wsn/1.0" xmlns:amq="http://activemq.apache.org/schema/core"
+  xmlns:test="http://servicemix.org/test">
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
+  <!-- the JBI container -->
+  <sm:container id="jbi" embedded="true">
+    <sm:activationSpecs>
+
+      <sm:activationSpec id="receiver" service="test:service" endpoint="endpoint">
+        <sm:component>
+          <bean class="org.apache.servicemix.tck.ReceiverComponent" />
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec>
+        <sm:component>
+          <wsn:component connectionFactory="#connectionFactory">
+            <wsn:requests>
+              <wsn:subscribe consumer="http://servicemix.org/test/service/endpoint" topic="myTopic"
+               />
+            </wsn:requests>
+          </wsn:component>
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec service="test:publisher" endpoint="endpoint">
+        <sm:component>
+          <wsn:publisher topic="myTopic" />
+        </sm:component>
+      </sm:activationSpec>
+
+      <sm:activationSpec destinationService="test:publisher" destinationEndpoint="endpoint">
+        <sm:component>
+          <bean class="org.apache.servicemix.components.quartz.QuartzComponent">
+            <property name="triggers">
+              <map>
+                <entry>
+                  <key>
+                    <bean class="org.quartz.SimpleTrigger">
+                      <property name="repeatInterval" value="2000" />
+                      <property name="repeatCount" value="20" />
+                    </bean>
+                  </key>
+                  <bean class="org.quartz.JobDetail">
+                    <property name="name" value="My Example Job" />
+                    <property name="group" value="ServiceMix" />
+                  </bean>
+                </entry>
+              </map>
+            </property>
+          </bean>
+        </sm:component>
+      </sm:activationSpec>
+
+    </sm:activationSpecs>
+  </sm:container>
+
+  <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory"
+    depends-on="broker">
+    <property name="brokerURL" value="tcp://localhost:${activemq.port2}" />
+  </bean>
+
+  <amq:broker id="broker" persistent="false">
+
+    <amq:transportConnectors>
+      <amq:transportConnector uri="tcp://localhost:${activemq.port2}" />
+    </amq:transportConnectors>
+
+  </amq:broker>
+
+
+</beans>
