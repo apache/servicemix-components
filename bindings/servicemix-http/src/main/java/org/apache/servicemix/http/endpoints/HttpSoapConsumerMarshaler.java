@@ -137,6 +137,12 @@ public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
     public void sendError(MessageExchange exchange, Exception error, HttpServletRequest request, HttpServletResponse response) throws Exception {
         addResponseHeaders(exchange, request, response);
+        // the content type is specific to this marshaler, depending of the used SOAP version
+        if (soapVersion.equals("1.1")) {
+            response.setContentType("text/xml");
+        } else {
+            response.setContentType("application/soap+xml");
+        }
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
@@ -159,9 +165,12 @@ public class HttpSoapConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
     public void sendFault(MessageExchange exchange, Fault fault, HttpServletRequest request, HttpServletResponse response) throws Exception {
         addResponseHeaders(exchange, request, response);
-        // the content type is specific to this marshaler
-        // TODO the following content type is only valid for SOAP 1.2, SOAP 1.1 should use text/xml
-        response.setContentType("application/soap+xml");
+        // the content type is specific to this marshaler, depending of the used SOAP version
+        if (soapVersion.equals("1.1")) {
+            response.setContentType("text/xml");
+        } else {
+            response.setContentType("application/soap+xml");
+        }
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         Message in = (Message) request.getAttribute(Message.class.getName());
         Message msg = binding.createMessage(in);
