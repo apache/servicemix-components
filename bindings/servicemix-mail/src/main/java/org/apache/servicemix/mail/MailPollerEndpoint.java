@@ -16,6 +16,26 @@
  */
 package org.apache.servicemix.mail;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import javax.jbi.JBIException;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.ParseException;
+import javax.mail.search.FlagTerm;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
@@ -23,18 +43,6 @@ import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
 import org.apache.servicemix.mail.utils.MailUtils;
-
-import javax.jbi.JBIException;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.mail.*;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.ParseException;
-import javax.mail.search.FlagTerm;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * This is the polling endpoint for the mail component.
@@ -262,6 +270,11 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
 
                     // now check if delivery succeeded or went wrong
                     if (io.getStatus() == ExchangeStatus.ERROR) {
+                        // to ensure reprocessing of the mail we set it to UNSEEN even if we
+                        // did not mark it seen before (seems there are some mail systems out there
+                        // which do set somehow automatically)
+                        mailMsg.setFlag(Flags.Flag.SEEN, false);
+
                         Exception e = io.getError();
                         if (e == null) {
                             e = new JBIException("Unexpected error occured...");
