@@ -1,5 +1,12 @@
+# Tooling (Maven, Eclipse, IDEA) metadata
 target
 .project
 .classpath
 .settings
 *.i??
+# Files created outside target/ folder by builds
+activemq-data
+ServiceMixFlow.dot
+ServiceMixComponents.dot
+derby.log
+bindings/servicemix-cxf-bc/data
