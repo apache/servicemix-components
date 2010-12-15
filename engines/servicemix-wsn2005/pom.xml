@@ -162,7 +162,14 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
+
+        <!-- documentation -->
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+            <classifier>sources</classifier>
+        </dependency>
     </dependencies>
 
     <build>

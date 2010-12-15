@@ -227,6 +227,14 @@
             <artifactId>jencks</artifactId>
             <scope>test</scope>
         </dependency>
+
+
+        <!-- documentation -->
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+            <classifier>sources</classifier>
+        </dependency>
     </dependencies>
 
     <build>

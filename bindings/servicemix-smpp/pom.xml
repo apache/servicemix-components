@@ -138,7 +138,15 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
+
+
+        <!-- documentation -->
+        <dependency>
+            <groupId>org.apache.servicemix</groupId>
+            <artifactId>servicemix-common</artifactId>
+            <classifier>sources</classifier>
+        </dependency>
     </dependencies>
 
     <build>
