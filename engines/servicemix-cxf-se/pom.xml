@@ -201,7 +201,6 @@
             </exclusions>
         </dependency>
 
-
         <!-- documentation -->
         <dependency>
             <groupId>org.apache.servicemix</groupId>

@@ -80,8 +80,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 /**
  * @author gnodet
- * @org.apache.xbean.XBean element="endpoint" description="an endpoint using
- *                         CXF's JAX-WS frontend"
+ * @org.apache.xbean.XBean element="endpoint" description="an endpoint using CXF's JAX-WS frontend"
  */
 public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvider {
 
@@ -139,8 +138,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * object should use the JAX-WS annotations.
      * 
      * @param pojo a JAX-WS annotated object
-     * @org.apache.xbean.Property description="a bean configuring the JAX-WS
-     *                            annotated implementation for the endpoint"
+     * @org.apache.xbean.Property description="a bean configuring the JAX-WS annotated implementation for the endpoint"
      */
     public void setPojo(Object pojo) {
         this.pojo = pojo;
@@ -191,8 +189,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * endpoint.
      * 
      * @param interceptors a list of <code>Interceptor</code> objects
-     * @org.apache.xbean.Property description="a list of beans configuring
-     *                            interceptors that process incoming requests"
+     * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming requests"
      */
     public void setInInterceptors(List<Interceptor> interceptors) {
         in.addAll(interceptors);
@@ -203,8 +200,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * endpoint.
      * 
      * @param interceptors a list of <code>Interceptor</code> objects
-     * @org.apache.xbean.Property description="a list of beans configuring
-     *                            interceptors that process incoming faults"
+     * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming faults"
      */
     public void setInFaultInterceptors(List<Interceptor> interceptors) {
         inFault.addAll(interceptors);
@@ -215,8 +211,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * endpoint.
      * 
      * @param interceptors a list of <code>Interceptor</code> objects
-     * @org.apache.xbean.Property description="a list of beans configuring
-     *                            interceptors that process response messages"
+     * @org.apache.xbean.Property description="a list of beans configuring interceptors that process response messages"
      */
     public void setOutInterceptors(List<Interceptor> interceptors) {
         out.addAll(interceptors);
@@ -227,14 +222,17 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * endpoint.
      * 
      * @param interceptors a list of <code>Interceptor</code> objects
-     * @org.apache.xbean.Property description="a list of beans configuring
-     *                            interceptors that process fault messages being
-     *                            returned to the consumer"
+     * @org.apache.xbean.Property description="a list of beans configuring interceptors that process fault messages being returned to the consumer"
      */
     public void setOutFaultInterceptors(List<Interceptor> interceptors) {
         outFault.addAll(interceptors);
     }
 
+    /**
+     * Specifies a map of properties
+     *
+     * @org.apache.xbean.Property description="Specifies a map of properties"
+     */
     public Map getProperties() {
         return properties;
     }
@@ -598,9 +596,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * Specifies if the endpoint can process messages with binary data.
      * 
      * @param mtomEnabled a <code>boolean</code>
-     * @org.apache.xbean.Property description="Specifies if the service can
-     *                            consume MTOM formatted binary data. The
-     *                            default is <code>false</code>."
+     * @org.apache.xbean.Property description="Specifies if the service can consume MTOM formatted binary data. The default is <code>false</code>."
      */
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
@@ -615,11 +611,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * wrapper used for SOAP messages. Ignore the value of useSOAPEnvelope if
      * useJBIWrapper is true
      * 
-     * @org.apache.xbean.Property description="Specifies if the endpoint expects
-     *                            to receive the JBI wrapper in the message
-     *                            received from the NMR. The default is
-     *                            <code>true</code>. Ignore the value of
-     *                            useSOAPEnvelope if useJBIWrapper is true"
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The default is <code>true</code>. Ignore the value of useSOAPEnvelope if useJBIWrapper is true"
      */
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
@@ -633,11 +625,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * Specifies if the endpoint expects soap messages when useJBIWrapper is
      * false, if useJBIWrapper is true then ignore useSOAPEnvelope
      * 
-     * @org.apache.xbean.Property description="Specifies if the endpoint expects
-     *                            soap messages when useJBIWrapper is false, if
-     *                            useJBIWrapper is true then ignore
-     *                            useSOAPEnvelope. The default is
-     *                            <code>true</code>.
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects soap messages when useJBIWrapper is false, if useJBIWrapper is true then ignore useSOAPEnvelope. The default is <code>true</code>.
      */
     public void setUseSOAPEnvelope(boolean useSOAPEnvelope) {
         this.useSOAPEnvelope = useSOAPEnvelope;
@@ -648,12 +636,10 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     }
 
     /**
-     * Specifies if the endpoint use aegis databinding to marshell/unmarshell
+     * Specifies if the endpoint use aegis databinding to marshall/unmarshall
      * message
      * 
-     * @org.apache.xbean.Property description="Specifies if the endpoint use
-     *                            aegis databinding to marshell/unmarshell
-     *                            message. The default is <code>false</code>.
+     * @org.apache.xbean.Property description="Specifies if the endpoint use aegis databinding to marshall/unmarshall message. The default is <code>false</code>.
      */
     public void setUseAegis(boolean useAegis) {
         this.useAegis = useAegis;
@@ -666,9 +652,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     /**
      * Specifies the servicemodel service name generated from the pojo
      * 
-     * @org.apache.xbean.Property description="Specifies the servicemodel 
-     *                                         service name generated from the pojo. 
-     *                                         The default is <code>null</code>.
+     * @org.apache.xbean.Property description="Specifies the servicemodel service name generated from the pojo. The default is <code>null</code>.
      */
     public void setPojoService(QName pojoService) {
         this.pojoService = pojoService;
@@ -681,9 +665,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     /**
      * Specifies the servicemodel endpoint name generated from the pojo
      * 
-     * @org.apache.xbean.Property description="Specifies the servicemodel 
-     *                                         endpoint name generated from the pojo. 
-     *                                         The default is <code>null</code>.
+     * @org.apache.xbean.Property description="Specifies the servicemodel endpoint name generated from the pojo. The default is <code>null</code>.
      */
     public void setPojoEndpoint(QName pojoEndpoint) {
         this.pojoEndpoint = pojoEndpoint;
@@ -693,6 +675,11 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
         return pojoEndpoint;
     }
 
+    /**
+     * Specifies the servicemodel interface name generated from the pojo
+     *
+     * @org.apache.xbean.Property description="Specifies the servicemodel interface name generated from the pojo. The default is <code>null</code>.
+     */
     protected void setPojoInterfaceName(QName pojoInterfaceName) {
         this.pojoInterfaceName = pojoInterfaceName;
     }
@@ -706,9 +693,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * Specifies if the endpoint use xmlbeans databinding to marshell/unmarshell
      * message
      * 
-     * @org.apache.xbean.Property description="Specifies if the endpoint use
-     *                            xmlbeans databinding to marshell/unmarshell
-     *                            message. The default is <code>false</code>.
+     * @org.apache.xbean.Property description="Specifies if the endpoint use xmlbeans databinding to marshell/unmarshell message. The default is <code>false</code>.
      */
     public void setUseXmlBeans(boolean useXmlBeans) {
         this.useXmlBeans = useXmlBeans;

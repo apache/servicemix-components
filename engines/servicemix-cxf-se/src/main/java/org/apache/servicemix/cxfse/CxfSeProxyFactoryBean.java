@@ -196,18 +196,32 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         return type;
     }
 
+    /**
+     * Specifies the webservice POJO type
+     */
     public void setType(Class type) {
         this.type = type;
     }
 
+    /**
+     * The name of the endpoint.
+     *
+     * @org.apache.xbean.Property description="The name of the endpoint."
+     * */
     public String getEndpoint() {
         return endpoint;
     }
+
 
     public void setEndpoint(String endpointName) {
         this.endpoint = endpointName;
     }
 
+    /**
+     * Specifies the servicemodel interface name
+     *
+     * @org.apache.xbean.Property description="Specifies the servicemodel interface name"
+     * */
     public QName getInterfaceName() {
         return interfaceName;
     }
@@ -216,6 +230,11 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         this.interfaceName = interfaceName;
     }
 
+    /**
+     * Specifies the servicemodel service name
+     *
+     * @org.apache.xbean.Property description="Specifies the servicemodel service name"
+     * */
     public QName getService() {
         return service;
     }
@@ -225,8 +244,10 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     }
 
     /**
-     * @return the context
-     */
+     * Allows injecting the ComponentContext
+     *
+     * @org.apache.xbean.Property description="Allows injecting the ComponentContext"
+     * */
     public ComponentContext getContext() {
         return context;
     }
@@ -239,24 +260,22 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         this.context = context;
     }
 
-    /**
-     * @return the container
-     */
     public Container getContainer() {
         return container;
     }
 
     /**
-     * @param container
-     *            the container to set
+     * Allows injecting a JBI Container instance (e.g. for testing purposes).
      */
     public void setContainer(Container container) {
         this.container = container;
     }
 
     /**
-     * @return the factory
-     */
+     * Allows injecting a ClientFactory
+     *
+     * @org.apache.xbean.Property description="Allows injecting a ClientFactory"
+     * */
     public ClientFactory getFactory() {
         return factory;
     }
@@ -269,29 +288,26 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         this.factory = factory;
     }
 
-    /**
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name
-     *            the name to set
+     * Specifies the JNDI name for looking up the ClientFactory. Defaults to <code>java:comp/env/jbi/ClientFactory</code>.
+     *
+     * @param name the name to set
      */
     public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * @return the propagateSecuritySubject
-     */
     public boolean isPropagateSecuritySubject() {
         return propagateSecuritySubject;
     }
 
     /**
+     * When set to <code>true</code>, the security subject is propagated along to the proxied endpoint.  Defaults to <code>false</code>.
+     *
      * @param propagateSecuritySubject
      *            the propagateSecuritySubject to set
      */
@@ -317,8 +333,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
      * JBI wrapper used for SOAP messages. Ignore the value of useSOAPEnvelope 
      * if useJBIWrapper is true
      *
-     * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The  default is <code>true</code>.
-     * 			Ignore the value of useSOAPEnvelope if useJBIWrapper is true"
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects to receive the JBI wrapper in the message received from the NMR. The  default is <code>true</code>. Ignore the value of useSOAPEnvelope if useJBIWrapper is true"
      * */
     public void setUseJBIWrapper(boolean useJBIWrapper) {
         this.useJBIWrapper = useJBIWrapper;
@@ -332,8 +347,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
      * Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
      * if useJBIWrapper is true then ignore useSOAPEnvelope
      *
-     * @org.apache.xbean.Property description="Specifies if the endpoint expects soap messages when useJBIWrapper is false, 
-     * 				if useJBIWrapper is true then ignore useSOAPEnvelope. The  default is <code>true</code>.
+     * @org.apache.xbean.Property description="Specifies if the endpoint expects soap messages when useJBIWrapper is false, if useJBIWrapper is true then ignore useSOAPEnvelope. The  default is <code>true</code>.
      * */
 	public void setUseSOAPEnvelope(boolean useSOAPEnvelope) {
 		this.useSOAPEnvelope = useSOAPEnvelope;
@@ -343,6 +357,12 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
 		return useSOAPEnvelope;
 	}
 
+    /**
+     * Specifies if the endpoint can process messages with binary data.
+     *
+     * @param mtomEnabled a <code>boolean</code>
+     * @org.apache.xbean.Property description="Specifies if the service can consume MTOM formatted binary data. The default is <code>false</code>."
+     */
     public void setMtomEnabled(boolean mtomEnabled) {
         this.mtomEnabled = mtomEnabled;
     }
@@ -351,6 +371,11 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         return mtomEnabled;
     }
 
+    /**
+     * Allows injecting a custom component registry for looking up the proxied endpoint
+     *
+     * @org.apache.xbean.Property description="Allows injecting a custom component registry for looking up the proxying endpoint."
+     * */
     public void setComponentRegistry(Object componentRegistry) {
         this.componentRegistry = componentRegistry;
     }
