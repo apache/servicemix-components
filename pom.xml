@@ -981,8 +981,19 @@
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
+                            <directory>data</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
                             <directory>rootDir</directory>
                             <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>**/*.dot</include>
+                                <include>**/*.log</include>
+                            </includes>
                         </fileset>
                     </filesets>
                 </configuration>
