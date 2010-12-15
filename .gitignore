@@ -4,6 +4,7 @@ target
 .classpath
 .settings
 *.i??
+.idea
 # Files created outside target/ folder by builds
 activemq-data
 ServiceMixFlow.dot
