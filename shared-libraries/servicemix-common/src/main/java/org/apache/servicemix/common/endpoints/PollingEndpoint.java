@@ -138,6 +138,11 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
         return scheduler;
     }
 
+    /**
+     * Set a custom Scheduler implementation if you need more fine-grained control over the polling schedule.
+     *
+     * @param scheduler
+     */
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
     }

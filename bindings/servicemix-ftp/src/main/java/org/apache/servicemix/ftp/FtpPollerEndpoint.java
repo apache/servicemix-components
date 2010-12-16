@@ -88,6 +88,13 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         super(serviceUnit, service, endpoint);
     }
 
+    /**
+     * Bean defining the class implementing the JBI DefaultComponent. This bean
+     * must be an implementation of the
+     * <code>org.apache.servicemix.common.DefaultComponent</code> class.
+     *
+     * @param component the <code>component</code> implementation to use
+     */
     public FtpPollerEndpoint(DefaultComponent component, ServiceEndpoint endpoint) {
         super(component, endpoint);
     }
@@ -221,7 +228,10 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     /**
-     * @param clientPool the clientPool to set
+     * Set a custom FTPClientPool.  If this property has not been set, the FTP client pool will be created based on the information
+     * provided in the URI.
+     *
+     * @param clientPool the <code>clientPool</code> implementation to use
      */
     public void setClientPool(FTPClientPool clientPool) {
         this.clientPool = clientPool;
@@ -235,7 +245,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     /**
-     * @param uri the uri to set
+     * Configures the endpoint from a URI.
      */
     public void setUri(URI uri) {
         this.uri = uri;
@@ -246,19 +256,21 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     /**
-     * Sets the optional filter to choose which files to process
+     * Sets the filter to select which files have to be processed.  When not set, all files will be picked up by the poller.
      */
     public void setFilter(FileFilter filter) {
         this.filter = filter;
     }
 
-    /**
-     * Returns whether or not we should delete the file when its processed
-     */
     public boolean isDeleteFile() {
         return deleteFile;
     }
 
+    /**
+     * Delete the file after it has been succesfully processed?  Defaults to <code>true</code>
+     *
+     * @param deleteFile
+     */
     public void setDeleteFile(boolean deleteFile) {
         this.deleteFile = deleteFile;
     }
@@ -267,6 +279,12 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         return recursive;
     }
 
+    /**
+     * Specifies whether subdirectories should be polled.  Defaults to <code>true</code>
+     *
+     * @param recursive is a boolean specifying whether subdirectories should be polled.  Default value is true.
+     * .
+     */
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
     }
@@ -275,6 +293,12 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         return marshaler;
     }
 
+    /**
+     * Set a custom FileMarshaler implementation to control how the file contents is being translated into a JBI message.
+     * The default implementation reads XML contents from the file.
+     *
+     * @param marshaler the <code>marshaler</code> implementation to use
+     */
     public void setMarshaler(FileMarshaler marshaler) {
         this.marshaler = marshaler;
     }
@@ -283,10 +307,22 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         return targetOperation;
     }
 
+    /**
+     * Set the operation to be invoked on the target service.
+     *
+     * @param targetOperation a QName specifiying the name of the target operation
+     */
     public void setTargetOperation(QName targetOperation) {
         this.targetOperation = targetOperation;
     }
 
+    /**
+     * When set to <code>true</code>, the poller will do an explicit <code>cwd</code> into the directory to be polled.
+     * Default to <code>false</code>.  Recursive polling will not be possible if this feature is enabled.
+     *
+     * @param changeWorkingDirectory is a boolean specifying if the endpoint can change the working directory
+     * .
+     */
     public void setChangeWorkingDirectory(boolean changeWorkingDirectory) {
         this.changeWorkingDirectory = changeWorkingDirectory;
     }
@@ -295,6 +331,12 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         return stateless;
     }
 
+    /**
+     * When set to <code>false</code>
+     *
+     * @param stateless is a boolean specifying whether the polled file should be sent asynchronous or synchronous to the nmr.  Default value is true.
+     * .
+     */
     public void setStateless(boolean stateless) {
         this.stateless = stateless;
     }
@@ -331,11 +373,8 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     /**
-     * Bean defining the class implementing the file locking strategy. This bean
-     * must be an implementation of the
-     * <code>org.apache.servicemix.locks.LockManager</code> interface. By
-     * default, this will be set to an instances of
-     * <code>org.apache.servicemix.common.locks.impl.SimpleLockManager</code>.
+     * Set a custom LockManager implementation for keeping track of which files are already being processed.
+     * The default implementation is a simple, in-memory lock management system.
      * 
      * @param lockManager the <code>LockManager</code> implementation to use
      */
@@ -483,6 +522,8 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         }
         send(exchange);
     }
+
+
 
     public String getLocationURI() {
         return uri.toString();

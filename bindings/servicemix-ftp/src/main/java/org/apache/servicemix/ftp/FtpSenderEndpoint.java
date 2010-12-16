@@ -80,6 +80,12 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         return checkDuplicates;
     }
 
+    /**
+     * Specifies whether duplicates should be checked.  Defaults to <code>true</code>.
+     *
+     * @param checkDuplicates is a boolean specifying whether duplicate should be checked.  Default value is true.
+     * .
+     */
     public void setCheckDuplicates(boolean checkDuplicates) {
         this.checkDuplicates = checkDuplicates;
     }
@@ -139,6 +145,12 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         return clientPool;
     }
 
+    /**
+     * Set a custom FTPClientPool.  If this property has not been set, the FTP client pool will be created based on the information
+     * provided in the URI.
+     *
+     * @param clientPool the <code>clientPool</code> implementation to use
+     */
     public void setClientPool(FTPClientPool clientPool) {
         this.clientPool = clientPool;
     }
@@ -147,6 +159,12 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         return marshaler;
     }
 
+    /**
+     * Set a custom FileMarshaler implementation to control how the file contents is being translated into a JBI message.
+     * The default implementation reads XML contents from the file.
+     *
+     * @param marshaler the <code>marshaler</code> implementation to use
+     */
     public void setMarshaler(FileMarshaler marshaler) {
         this.marshaler = marshaler;
     }
@@ -168,6 +186,12 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
         return overwrite;
     }
 
+    /**
+     * Specifies if a file with the same name already exists on the FTP server, the file should be overwritten.
+     * Defaults to <code>false</code>.
+     *
+     * @param overwrite  if a file with the same name already exists on the FTP server, the file should be overwritten.
+     */
     public void setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
     }

@@ -69,6 +69,11 @@ public class FTPClientPool extends SocketClientPoolSupport {
         return username;
     }
 
+    /**
+     * Set the login to use to access the FTP server.
+     *
+     * @param username
+     */
     public void setUsername(String username) {
         this.username = username;
     }
@@ -77,6 +82,11 @@ public class FTPClientPool extends SocketClientPoolSupport {
         return password;
     }
 
+    /**
+     * Set the password for logging into the FTP server.
+     *
+     * @param password to set.
+     */
     public void setPassword(String password) {
         this.password = password;
     }
@@ -85,6 +95,11 @@ public class FTPClientPool extends SocketClientPoolSupport {
         return binaryMode;
     }
 
+     /**
+     * Use binary mode transfers.  Defaults to <code>true</code>.
+     *
+     * @param binaryMode is a boolean setting the type of data transfer to binary.  Default value is true.
+     */
     public void setBinaryMode(boolean binaryMode) {
         this.binaryMode = binaryMode;
     }
@@ -97,7 +112,9 @@ public class FTPClientPool extends SocketClientPoolSupport {
     }
 
     /**
-     * @param passiveMode the passiveMode to set
+     * Use passive mode FTP transfers.  Defaults to <code>false</code>
+     *
+     * @param passiveMode is a boolean setting the type into passive mode.
      */
     public void setPassiveMode(boolean passiveMode) {
         this.passiveMode = passiveMode;
@@ -107,6 +124,11 @@ public class FTPClientPool extends SocketClientPoolSupport {
         return config;
     }
 
+    /**
+     * Configure a custom FTPClientConfig instance to allow more fine-grained control over the FTP connections in the pool.
+     *
+     * @param config the <code>config</code> implementation to use.
+     */
     public void setConfig(FTPClientConfig config) {
         this.config = config;
     }
@@ -119,6 +141,8 @@ public class FTPClientPool extends SocketClientPoolSupport {
     }
 
     /**
+     * Configure the encoding used in the FTP control connections.  Defaults to <code>ISO-8859-1</code>
+     *
      * @param controlEncoding the controlEncoding to set
      */
     public void setControlEncoding(String controlEncoding) {
@@ -132,8 +156,12 @@ public class FTPClientPool extends SocketClientPoolSupport {
         return dataTimeout;
     }
 
+
     /**
-     * @param dataTimeout the dataTimeout to set
+     * Specifies a timeout used on the FTP data connection.  Defaults to <code>120000</code>
+     *
+     * @param dataTimeout after which the connection should be closed.
+     * .
      */
     public void setDataTimeout(int dataTimeout) {
         this.dataTimeout = dataTimeout;
