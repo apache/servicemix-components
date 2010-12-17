@@ -72,7 +72,7 @@ public class ValidationEndpoint extends ProviderEndpoint implements
 
     public static final String TAG_FATAL_END = "</fatalError>";
 
-    private String handlingErrorMethod = "FAULT_JBI";
+    private String handlingErrorMethod = FAULT_JBI;
 
     private Schema schema;
 
@@ -349,6 +349,17 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         return handlingErrorMethod;
     }
 
+    /**
+     * Configure how validation errors should be handled.  Default value is <code>FAULT_JBI</code>.
+     * <dl>
+     * <dt><code>FAULT_JBI</code></dt>
+     * <dd>A jbi exception is thrown on validation errors (depending on used MEP)</dd>
+     * <dt><code>FAULT_FLOW</code></dt>
+     * <dd>The validation result will be sent in out / fault message (depending on used MEP)</dd>
+     * </dl>
+     *
+     * @param handlingErrorMethod
+     */
     public void setHandlingErrorMethod(String handlingErrorMethod) {
         this.handlingErrorMethod = handlingErrorMethod;
     }
@@ -357,6 +368,11 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         return schema;
     }
 
+    /**
+     * Set the validation schema instance.
+     *
+     * @param schema
+     */
     public void setSchema(Schema schema) {
         this.schema = schema;
     }
@@ -365,6 +381,11 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         return schemaLanguage;
     }
 
+    /**
+     * Set the validation schema language.  Defaults to <code>http://www.w3.org/2001/XMLSchema</code>
+     *
+     * @param schemaLanguage
+     */
     public void setSchemaLanguage(String schemaLanguage) {
         this.schemaLanguage = schemaLanguage;
     }
@@ -373,6 +394,11 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         return schemaSource;
     }
 
+    /**
+     * Set the validation schema as an XML Source.
+     *
+     * @param schemaSource
+     */
     public void setSchemaSource(Source schemaSource) {
         this.schemaSource = schemaSource;
     }
@@ -381,6 +407,11 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         return schemaResource;
     }
 
+    /**
+     * Set the validation schema as a Spring Resource.
+     *
+     * @param schemaResource
+     */
     public void setSchemaResource(Resource schemaResource) {
         this.schemaResource = schemaResource;
     }
@@ -388,7 +419,12 @@ public class ValidationEndpoint extends ProviderEndpoint implements
     public Resource getNoNamespaceSchemaResource() {
         return noNamespaceSchemaResource;
     }
-    
+
+    /**
+     * Set the validation schema to be used when no namespace is specified.
+     *
+     * @param schemaResource
+     */
     public void setNoNamespaceSchemaResource(Resource schemaResource) {
         this.noNamespaceSchemaResource = schemaResource;
     }
@@ -397,6 +433,11 @@ public class ValidationEndpoint extends ProviderEndpoint implements
         return errorHandlerFactory;
     }
 
+    /**
+     * Set a custom error handler to deal with validation errors.  Defaults to a <code>CountingErrorHandlerFactory</code>.
+     *
+     * @param errorHandlerFactory
+     */
     public void setErrorHandlerFactory(
             MessageAwareErrorHandlerFactory errorHandlerFactory) {
         this.errorHandlerFactory = errorHandlerFactory;
