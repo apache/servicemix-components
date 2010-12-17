@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>binding-components</artifactId>
-        <version>2010.02</version>
+        <version>2010.02-SNAPSHOT</version>
     </parent>
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-cxf-bc</artifactId>
-    <version>2010.02</version>
+    <version>2010.02-SNAPSHOT</version>
     <packaging>jbi-component</packaging>
 
     <name>Apache ServiceMix :: Components :: CXF Binding Component</name>
@@ -39,14 +39,14 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2010.02</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2010.02</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2010.02</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/trunk</url>
     </scm>
 
     <properties>
         <cxf.version>2.2.11</cxf.version>
-        <servicemix-cxf-se.version>2010.02</servicemix-cxf-se.version>
+        <servicemix-cxf-se.version>2010.02-SNAPSHOT</servicemix-cxf-se.version>
 
         <surefire.fork.mode>pertest</surefire.fork.mode>
 
