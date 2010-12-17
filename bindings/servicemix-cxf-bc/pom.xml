@@ -46,7 +46,6 @@
 
     <properties>
         <cxf.version>2.2.11</cxf.version>
-        <servicemix-cxf-se.version>2010.02</servicemix-cxf-se.version>
 
         <surefire.fork.mode>pertest</surefire.fork.mode>
 
@@ -313,7 +312,7 @@
         <dependency>
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-cxf-se</artifactId>
-            <version>${servicemix-cxf-se.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
