@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>shared-libraries</artifactId>
-        <version>2010.02</version>
+        <version>2011.01-SNAPSHOT</version>
     </parent>
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-common</artifactId>
-    <version>2010.02</version>
+    <version>2011.01-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Apache ServiceMix :: Components :: Shared Libraries :: Common</name>
