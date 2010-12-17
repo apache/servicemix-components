@@ -96,6 +96,11 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         return address;
     }
 
+    /**
+     * Set the remote internet address to connect to.
+     *
+     * @param address
+     */
     public void setAddress(InetAddress address) {
         this.address = address;
     }
@@ -104,6 +109,11 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         return host;
     }
 
+    /**
+     * Set the remote host name to connect to.
+     *
+     * @param host
+     */
     public void setHost(String host) {
         this.host = host;
     }
@@ -112,6 +122,11 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         return localAddress;
     }
 
+    /**
+     * Set the local IP address to be used when establishing the connection.
+     *
+     * @param localAddress
+     */
     public void setLocalAddress(InetAddress localAddress) {
         this.localAddress = localAddress;
     }
@@ -120,6 +135,11 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         return localPort;
     }
 
+    /**
+     * Set the local TCP/IP port to be used when establishing the connection.
+     *
+     * @param localPort
+     */
     public void setLocalPort(int localPort) {
         this.localPort = localPort;
     }
@@ -128,6 +148,11 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         return port;
     }
 
+    /**
+     * Set the remote port number to connect to.
+     *
+     * @param port
+     */
     public void setPort(int port) {
         this.port = port;
     }
@@ -136,6 +161,11 @@ public abstract class SocketClientPoolSupport implements InitializingBean, Dispo
         return pool;
     }
 
+    /**
+     * Set a custom ObjectPool instance to use for the connection pooling.
+     *
+     * @param pool
+     */
     public void setPool(ObjectPool pool) {
         if (pool != null) {
             pool.setFactory(this);
