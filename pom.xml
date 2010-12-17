@@ -39,9 +39,9 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/components-pom/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/components-pom/trunk</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/components-pom/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/trunk</url>
     </scm>
     
     <modules>
