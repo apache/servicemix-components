@@ -28,7 +28,6 @@ import org.apache.servicemix.cxfbc.CxfBcConsumer.JbiPostInvokerInterceptor;
 public class AsyncCxfBcConsumerInterceptor extends AbstractPhaseInterceptor {
    
 	private long currentThreadId;
-	private long before;
 	private boolean firstInvocation = true;
 	
 	public AsyncCxfBcConsumerInterceptor() {
@@ -40,7 +39,6 @@ public class AsyncCxfBcConsumerInterceptor extends AbstractPhaseInterceptor {
 		if (firstInvocation) {
 			firstInvocation = false;
 			currentThreadId = Thread.currentThread().getId();
-			before = System.currentTimeMillis();
 		} else {
 			if (Thread.currentThread().getId() != currentThreadId) {
 				//ensure only one thread is used for the cxf bc consumer

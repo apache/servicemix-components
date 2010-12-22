@@ -45,8 +45,8 @@
     </scm>
 
     <properties>
-        <cxf.version>2.2.11</cxf.version>
-
+        <cxf.version>2.3.1</cxf.version>
+        <cxf.jetty.version>7.2.1.v20101111</cxf.jetty.version>
         <surefire.fork.mode>pertest</surefire.fork.mode>
 
         <servicemix.osgi.import>
@@ -172,16 +172,25 @@
             <artifactId>woodstox-core-asl</artifactId>
         </dependency>        
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty</artifactId>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${cxf.jetty.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${cxf.jetty.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-sslengine</artifactId>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${cxf.jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

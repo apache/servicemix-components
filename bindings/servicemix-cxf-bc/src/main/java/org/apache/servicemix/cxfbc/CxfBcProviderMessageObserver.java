@@ -41,6 +41,7 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
+import org.apache.cxf.binding.soap.interceptor.StartBodyInterceptor;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.interceptor.AttachmentInInterceptor;
@@ -51,6 +52,7 @@ import org.apache.cxf.message.Attachment;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.ExchangeImpl;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.phase.PhaseManager;
 import org.apache.cxf.service.model.BindingOperationInfo;
@@ -64,6 +66,7 @@ import org.apache.cxf.ws.addressing.soap.MAPCodec;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.cxfbc.interceptors.JbiInWsdl1Interceptor;
 import org.apache.servicemix.cxfbc.interceptors.SchemaValidationInInterceptor;
+
 import org.xml.sax.SAXException;
 
 import com.sun.xml.bind.v2.runtime.reflect.ListIterator;
@@ -100,11 +103,12 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
     public void onMessage(Message message) {
         try {
             // create Interceptor chain
-
+           
             PhaseManager pm = providerEndpoint.getBus().getExtension(
                     PhaseManager.class);
-            List<Interceptor> inList = new ArrayList<Interceptor>();
+            List<Interceptor<? extends Message>> inList = new ArrayList<Interceptor<? extends Message>>();
             inList.add(new ReadHeadersInterceptor(this.providerEndpoint.getBus()));
+            inList.add(new StartBodyInterceptor());
             inList.add(new MustUnderstandInterceptor());
             inList.add(new StaxInInterceptor());
             inList.add(new JbiInWsdl1Interceptor(this.providerEndpoint.isUseJBIWrapper(),
@@ -173,7 +177,7 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             }
           
             messageExchange = soapMessage.getExchange().get(MessageExchange.class);
-            if (isPartialResponse(message)) {
+            if (MessageUtils.isPartialResponse(soapMessage)) {
                 //partial response for origianl channel when use decoupled endpoint
                 return;
             }
@@ -303,12 +307,4 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
         return Names.WSA_RELATIONSHIP_REPLY.equals(relatesTo.getRelationshipType());
     }
     
-    private boolean isPartialResponse(Message in) {
-        if (in.get(Message.RESPONSE_CODE) != null) {
-            return in.get(Message.RESPONSE_CODE).equals(HttpURLConnection.HTTP_ACCEPTED);
-        } else {
-            return false;
-        }
-    }
-
 }

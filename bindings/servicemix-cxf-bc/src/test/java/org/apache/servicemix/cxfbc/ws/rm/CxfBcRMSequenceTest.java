@@ -796,33 +796,35 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + two requests (second request does not include acknowledgement for first response as
         // in the meantime the client has terminated the sequence
 
-        String[] expectedActions = new String[3];
+        String[] expectedActions = new String[4];
         expectedActions[0] = RMConstants.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
+        expectedActions[2] = RMConstants.getSequenceAcknowledgmentAction();
         mf.verifyActions(expectedActions, true);
-        mf.verifyMessageNumbers(new String[] {null, "1", "2"}, true);
-        mf.verifyLastMessage(new boolean[3], true);
-        mf.verifyAcknowledgements(new boolean[] {false, false, false}, true);
+        mf.verifyMessageNumbers(new String[] {null, "1", null, "2"}, true);
+        mf.verifyLastMessage(new boolean[4], true);
+        mf.verifyAcknowledgements(new boolean[] {false, false, true, false}, true);
 
         // Expected inbound:
         // createSequenceResponse
         // + 1 response with acknowledgement
         // + 1 fault without acknowledgement
 
-        mf.verifyMessages(3, false);
+        mf.verifyMessages(4, false);
         expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        GREETME_RESPONSE_ACTION, null};
+                                        GREETME_RESPONSE_ACTION,
+                                        null,
+                                        null};
         mf.verifyActions(expectedActions, false);
-        mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
-        mf.verifyAcknowledgements(new boolean[] {false, true, false} , false);
-
-        // the third inbound message has a SequenceFault header
-
-        mf.verifySequenceFault(RMConstants.getUnknownSequenceFaultCode(), false, 2);
+        mf.verifyMessageNumbers(new String[] {null, "1", null, null}, false);
+        mf.verifyAcknowledgements(new boolean[] {false, true, false, false} , false);
+        // the last inbound message has a SequenceFault header
+        mf.verifySequenceFault(RMConstants.getUnknownSequenceFaultCode(), false, 3);
 
     }
+
 
 
     public void testOnewayMessageLoss() throws Exception {
@@ -1204,8 +1206,8 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         init("org/apache/servicemix/cxfbc/ws/rm/message-loss-server.xml", true);
 
         // avoid client side message loss
-        List<Interceptor> outInterceptors = greeterBus.getOutInterceptors();
-        for (Interceptor i : outInterceptors) {
+        List<Interceptor<? extends Message>> outInterceptors = greeterBus.getOutInterceptors();
+        for (Interceptor<? extends Message> i : outInterceptors) {
             if (i.getClass().equals(MessageLossSimulator.class)) {
                 outInterceptors.remove(i);
                 break;
@@ -1399,8 +1401,8 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         mr.awaitMessages(nExpectedOut, nExpectedIn, timeout);
     }
 
-    private void removeRMInterceptors(List<Interceptor> interceptors) {
-        for (Iterator<Interceptor> it = interceptors.iterator(); it.hasNext();) {
+    private void removeRMInterceptors(List<Interceptor<? extends Message>> interceptors) {
+        for (Iterator<Interceptor<? extends Message>> it = interceptors.iterator(); it.hasNext();) {
             Interceptor i = it.next();
             if (i instanceof RMSoapInterceptor
                 || i instanceof RMOutInterceptor

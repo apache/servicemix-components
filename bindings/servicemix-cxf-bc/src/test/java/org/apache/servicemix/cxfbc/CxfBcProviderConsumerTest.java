@@ -19,6 +19,7 @@ package org.apache.servicemix.cxfbc;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.soap.SOAPBinding;
 import org.apache.cxf.calculator.CalculatorImpl;
 import org.apache.cxf.calculator.CalculatorPortType;
@@ -27,6 +28,8 @@ import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.EndpointImpl;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBcProviderConsumerTest extends CxfBcSpringTestSupport {
@@ -57,6 +60,7 @@ public class CxfBcProviderConsumerTest extends CxfBcSpringTestSupport {
         ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getOutFaultInterceptors().add(new LoggingOutInterceptor());
         ClientProxy.getClient(port).getOutInterceptors().add(new LoggingInInterceptor());
+        
         int ret = port.add(1, 2);
         assertEquals(ret, 3);
         try {

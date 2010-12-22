@@ -117,7 +117,7 @@ import org.apache.servicemix.cxfbc.interceptors.SchemaValidationOutInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.SetStatusInterceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
-import org.mortbay.jetty.Handler;
+import org.eclipse.jetty.server.Handler;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -129,13 +129,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class CxfBcConsumer extends ConsumerEndpoint implements
         CxfBcEndpointWithInterceptor {
 
-    List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
+    List<Interceptor<? extends Message>> in = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
-    List<Interceptor> out = new CopyOnWriteArrayList<Interceptor>();
+    List<Interceptor<? extends Message>> out = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
-    List<Interceptor> outFault = new CopyOnWriteArrayList<Interceptor>();
+    List<Interceptor<? extends Message>> outFault = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
-    List<Interceptor> inFault = new CopyOnWriteArrayList<Interceptor>();
+    List<Interceptor<? extends Message>> inFault = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
     private Resource wsdl;
 
@@ -212,7 +212,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         *
         * @return a list of <code>Interceptor</code> objects
         * */
-    public List<Interceptor> getOutFaultInterceptors() {
+    public List<Interceptor<? extends Message>> getOutFaultInterceptors() {
         return outFault;
     }
 
@@ -222,7 +222,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         *
         * @return a list of <code>Interceptor</code> objects
         * */
-    public List<Interceptor> getInFaultInterceptors() {
+    public List<Interceptor<? extends Message>> getInFaultInterceptors() {
         return inFault;
     }
 
@@ -232,7 +232,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         *
         * @return a list of <code>Interceptor</code> objects
         * */
-    public List<Interceptor> getInInterceptors() {
+    public List<Interceptor<? extends Message>> getInInterceptors() {
         return in;
     }
 
@@ -242,7 +242,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         *
         * @return a list of <code>Interceptor</code> objects
         * */
-    public List<Interceptor> getOutInterceptors() {
+    public List<Interceptor<? extends Message>> getOutInterceptors() {
         return out;
     }
 
@@ -253,7 +253,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         * @param interceptors   a list of <code>Interceptor</code> objects
         * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming responses"
         * */
-    public void setInInterceptors(List<Interceptor> interceptors) {
+    public void setInInterceptors(List<Interceptor<? extends Message>> interceptors) {
         in.addAll(interceptors);
     }
 
@@ -264,7 +264,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         * @param interceptors   a list of <code>Interceptor</code> objects
         * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming faults"
         * */
-    public void setInFaultInterceptors(List<Interceptor> interceptors) {
+    public void setInFaultInterceptors(List<Interceptor<? extends Message>> interceptors) {
         inFault.addAll(interceptors);
     }
 
@@ -275,7 +275,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         * @param interceptors   a list of <code>Interceptor</code> objects
         * @org.apache.xbean.Property description="a list of beans configuring interceptors that process requests"
         * */
-    public void setOutInterceptors(List<Interceptor> interceptors) {
+    public void setOutInterceptors(List<Interceptor<? extends Message>> interceptors) {
         out.addAll(interceptors);
     }
 
@@ -286,7 +286,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         * @param interceptors   a list of <code>Interceptor</code> objects
         * @org.apache.xbean.Property description="a list of beans configuring interceptors that process fault messages being returned to the consumer"
         * */
-    public void setOutFaultInterceptors(List<Interceptor> interceptors) {
+    public void setOutFaultInterceptors(List<Interceptor<? extends Message>> interceptors) {
         outFault.addAll(interceptors);
     }
 
@@ -510,10 +510,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getOutInterceptors().add(
                     new MtomCheckInterceptor(isMtomEnabled()));
             cxfService.getOutInterceptors().add(new StaxOutInterceptor());
-            cxfService.getOutInterceptors().add(
+            /*cxfService.getOutInterceptors().add(
                     new SoapPreProtocolOutInterceptor());
             cxfService.getOutInterceptors().add(
-                    new SoapOutInterceptor(getBus()));
+                    new SoapOutInterceptor(getBus()));*/
             cxfService.getOutFaultInterceptors().add(
                     new SoapOutInterceptor(getBus()));
 
@@ -864,24 +864,24 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                                     .get(ContinuationProvider.class.getName());
                             Continuation continuation = continuationProvider
                                     .getContinuation();
-                            if (!continuation.isPending()) {
+                            if (continuation.isNew()) {
                                 CxfBcConsumer.this.messages.put(exchange
                                         .getExchangeId(), message);
                                 context.getDeliveryChannel().send(exchange);
                                 if (!isSTFlow) {
                                     continuation.suspend(timeout * 1000);
                                 }
-                            } else {
-                                // retry or timeout
-                                if (!continuation.isResumed()) {
+                            } else if (!continuation.isResumed()) {
+                                if (!continuation.isPending()) {
                                     messages.remove(exchange.getExchangeId());
                                     // exchange timeout
                                     throw new Exception("Exchange timed out: "
                                             + exchange.getExchangeId());
+                                } else {
+                                    //retry
+                                    throw new org.apache.cxf.continuations.SuspendedInvocationException();
                                 }
-
-                            }
-
+                            } 
                         }
                     }
                 }

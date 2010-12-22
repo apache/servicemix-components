@@ -19,23 +19,24 @@ package org.apache.servicemix.cxfbc;
 import java.util.List;
 
 import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.message.Message;
 
 public interface CxfBcEndpointWithInterceptor extends CxfBcEndpointType {
 
-    List<Interceptor> getOutFaultInterceptors();
+    List<Interceptor<? extends Message>> getOutFaultInterceptors();
 
-    List<Interceptor> getInFaultInterceptors();
+    List<Interceptor<? extends Message>> getInFaultInterceptors();
 
-    List<Interceptor> getInInterceptors();
+    List<Interceptor<? extends Message>> getInInterceptors();
 
-    List<Interceptor> getOutInterceptors();
+    List<Interceptor<? extends Message>> getOutInterceptors();
 
-    void setInInterceptors(List<Interceptor> interceptors);
+    void setInInterceptors(List<Interceptor<? extends Message>> interceptors);
 
-    void setInFaultInterceptors(List<Interceptor> interceptors);
+    void setInFaultInterceptors(List<Interceptor<? extends Message>> interceptors);
 
-    void setOutInterceptors(List<Interceptor> interceptors);
+    void setOutInterceptors(List<Interceptor<? extends Message>> interceptors);
 
-    void setOutFaultInterceptors(List<Interceptor> interceptors);
+    void setOutFaultInterceptors(List<Interceptor<? extends Message>> interceptors);
 
 }

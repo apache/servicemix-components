@@ -31,12 +31,14 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.endpoint.ServerRegistry;
 import org.apache.cxf.transport.http_jetty.JettyHTTPDestination;
-import org.mortbay.jetty.HttpConnection;
-import org.mortbay.jetty.HttpMethods;
-import org.mortbay.jetty.MimeTypes;
-import org.mortbay.jetty.handler.AbstractHandler;
-import org.mortbay.util.ByteArrayISO8859Writer;
-import org.mortbay.util.StringUtil;
+import org.eclipse.jetty.http.HttpMethods;
+import org.eclipse.jetty.http.MimeTypes;
+import org.eclipse.jetty.server.HttpConnection;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.util.ByteArrayISO8859Writer;
+import org.eclipse.jetty.util.StringUtil;
+
 
 public class ListServiceHandler extends AbstractHandler {
 
@@ -103,6 +105,12 @@ public class ListServiceHandler extends AbstractHandler {
         OutputStream out = response.getOutputStream();
         writer.writeTo(out);
         out.close();
+    }
+
+    public void handle(String target, Request baseRequest, HttpServletRequest request,
+                       HttpServletResponse response) throws IOException, ServletException {
+        handle(target, request, response, 0);
+                
     }
 
 }
