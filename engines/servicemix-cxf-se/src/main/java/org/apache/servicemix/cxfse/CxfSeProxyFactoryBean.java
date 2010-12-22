@@ -30,6 +30,7 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
@@ -142,7 +143,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         return proxy;
     }
 
-    private void removeInterceptor(List<Interceptor> interceptors, String whichInterceptor) {
+    private void removeInterceptor(List<Interceptor<? extends Message>> interceptors, String whichInterceptor) {
 		for (Interceptor interceptor : interceptors) {
 			if (interceptor.getClass().getName().endsWith(whichInterceptor)) {
 				interceptors.remove(interceptor);

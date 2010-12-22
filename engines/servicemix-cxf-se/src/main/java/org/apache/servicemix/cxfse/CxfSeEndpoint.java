@@ -96,13 +96,13 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
 
     private Server server;
 
-    private List<Interceptor> in = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor<? extends Message>> in = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
-    private List<Interceptor> out = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor<? extends Message>> out = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
-    private List<Interceptor> outFault = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor<? extends Message>> outFault = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
-    private List<Interceptor> inFault = new CopyOnWriteArrayList<Interceptor>();
+    private List<Interceptor<? extends Message>> inFault = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
     private Map properties;
 
@@ -150,7 +150,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * 
      * @return a list of <code>Interceptor</code> objects
      */
-    public List<Interceptor> getOutFaultInterceptors() {
+    public List<Interceptor<? extends Message>> getOutFaultInterceptors() {
         return outFault;
     }
 
@@ -160,7 +160,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * 
      * @return a list of <code>Interceptor</code> objects
      */
-    public List<Interceptor> getInFaultInterceptors() {
+    public List<Interceptor<? extends Message>> getInFaultInterceptors() {
         return inFault;
     }
 
@@ -170,7 +170,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * 
      * @return a list of <code>Interceptor</code> objects
      */
-    public List<Interceptor> getInInterceptors() {
+    public List<Interceptor<? extends Message>> getInInterceptors() {
         return in;
     }
 
@@ -180,7 +180,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * 
      * @return a list of <code>Interceptor</code> objects
      */
-    public List<Interceptor> getOutInterceptors() {
+    public List<Interceptor<? extends Message>> getOutInterceptors() {
         return out;
     }
 
@@ -191,7 +191,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * @param interceptors a list of <code>Interceptor</code> objects
      * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming requests"
      */
-    public void setInInterceptors(List<Interceptor> interceptors) {
+    public void setInInterceptors(List<Interceptor<? extends Message>> interceptors) {
         in.addAll(interceptors);
     }
 
@@ -202,7 +202,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * @param interceptors a list of <code>Interceptor</code> objects
      * @org.apache.xbean.Property description="a list of beans configuring interceptors that process incoming faults"
      */
-    public void setInFaultInterceptors(List<Interceptor> interceptors) {
+    public void setInFaultInterceptors(List<Interceptor<? extends Message>> interceptors) {
         inFault.addAll(interceptors);
     }
 
@@ -213,7 +213,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * @param interceptors a list of <code>Interceptor</code> objects
      * @org.apache.xbean.Property description="a list of beans configuring interceptors that process response messages"
      */
-    public void setOutInterceptors(List<Interceptor> interceptors) {
+    public void setOutInterceptors(List<Interceptor<? extends Message>> interceptors) {
         out.addAll(interceptors);
     }
 
@@ -224,7 +224,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
      * @param interceptors a list of <code>Interceptor</code> objects
      * @org.apache.xbean.Property description="a list of beans configuring interceptors that process fault messages being returned to the consumer"
      */
-    public void setOutFaultInterceptors(List<Interceptor> interceptors) {
+    public void setOutFaultInterceptors(List<Interceptor<? extends Message>> interceptors) {
         outFault.addAll(interceptors);
     }
 
@@ -390,7 +390,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
 
     }
 
-    private void removeInterceptor(List<Interceptor> interceptors, String whichInterceptor) {
+    private void removeInterceptor(List<Interceptor<? extends Message>> interceptors, String whichInterceptor) {
         for (Interceptor interceptor : interceptors) {
             if (interceptor.getClass().getName().endsWith(whichInterceptor)) {
                 interceptors.remove(interceptor);
