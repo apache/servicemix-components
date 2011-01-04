@@ -92,7 +92,7 @@
 
 	<wsdl:service name="PersonService">
     	<wsdl:port binding="tns:PersonSOAPBinding" name="soap">
-           <soap:address location="http://localhost:8192/PersonService/" />
+           <soap:address location="http://localhost:${port1}/PersonService/" />
        </wsdl:port>
    </wsdl:service>
 

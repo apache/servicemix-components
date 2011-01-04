@@ -42,6 +42,8 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class WsdlRoundtripTest extends SpringTestSupport {
     private static transient Log log = LogFactory.getLog(WsdlRoundtripTest.class);
 
+    String port1 = System.getProperty("http.port1");
+    
     protected AbstractXmlApplicationContext createBeanFactory() {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "org/apache/servicemix/http/wsdlroundtrip.xml" }, false);
         context.setValidating(false);
@@ -50,7 +52,7 @@ public class WsdlRoundtripTest extends SpringTestSupport {
     }
 
     public void test() throws Exception {
-        GetMethod get = new GetMethod("http://localhost:8192/Service/?wsdl");
+        GetMethod get = new GetMethod("http://localhost:"+port1+"/Service/?wsdl");
         int state = new HttpClient().executeMethod(get);
         assertEquals(HttpServletResponse.SC_OK, state);
         Document doc = (Document) new SourceTransformer().toDOMNode(new StringSource(get.getResponseBodyAsString()));
@@ -59,7 +61,7 @@ public class WsdlRoundtripTest extends SpringTestSupport {
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();
         Definition def;
-        def = reader.readWSDL("http://localhost:8192/Service/?wsdl", doc);
+        def = reader.readWSDL("http://localhost:"+port1+"/Service/?wsdl", doc);
 
         StringWriter writer = new StringWriter();
         factory.newWSDLWriter().writeWSDL(def, writer);

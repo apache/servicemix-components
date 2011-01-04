@@ -42,6 +42,8 @@ import org.apache.servicemix.tck.ReceiverComponent;
 public class HttpURITest extends TestCase {
     private static Log logger = LogFactory.getLog(HttpURITest.class);
 
+    String port1 = System.getProperty("http.port1");
+    
     private JBIContainer jbi;
 
     protected void setUp() throws Exception {
@@ -62,7 +64,7 @@ public class HttpURITest extends TestCase {
         ep.setRole(MessageExchange.Role.CONSUMER);
         ep.setService(ReceiverComponent.SERVICE);
         ep.setEndpoint(ReceiverComponent.ENDPOINT);
-        ep.setLocationURI("http://localhost:8192/");
+        ep.setLocationURI("http://localhost:"+port1+"/");
         ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
         http.setEndpoints(new HttpEndpoint[] {ep});
         jbi.activateComponent(http, "servicemix-http");
@@ -71,7 +73,7 @@ public class HttpURITest extends TestCase {
         jbi.activateComponent(receiver, "receiver");
 
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        DocumentFragment epr = URIResolver.createWSAEPR("http://localhost:8192/?http.soap=true");
+        DocumentFragment epr = URIResolver.createWSAEPR("http://localhost:"+port1+"/?http.soap=true");
         ServiceEndpoint se = client.getContext().resolveEndpointReference(epr);
         assertNotNull(se);
 

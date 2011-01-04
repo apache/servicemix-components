@@ -29,7 +29,7 @@
     <http:endpoint service="test:MySoapService"
                    endpoint="endpoint"
                    role="consumer"
-                   locationURI="http://localhost:8192/SoapService/"
+                   locationURI="http://localhost:${port1}/SoapService/"
                    soap="true" 
                    wsdlResource="classpath:SoapService.wsdl"/>
 
@@ -37,7 +37,7 @@
     <http:endpoint service="test:MyConsumerService"
                    endpoint="myConsumer"
                    role="consumer" 
-                   locationURI="http://localhost:8192/Service/"
+                   locationURI="http://localhost:${port1}/Service/"
                    defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
     <!-- END SNIPPET: consumer -->
 
@@ -45,7 +45,7 @@
     <http:endpoint service="test:MyProviderService"
                    endpoint="myProvider"
                    role="provider" 
-                   locationURI="http://localhost:8192/Service/"
+                   locationURI="http://localhost:${port1}/Service/"
                    wsdlResource="classpath:provider.wsdl" />
     <!-- END SNIPPET: provider -->
   				   

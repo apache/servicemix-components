@@ -32,7 +32,7 @@
 								service="test:Hello"
 								endpoint="testService" 
 								role="consumer"
-								locationURI="http://localhost:8192/Service"
+								locationURI="http://localhost:${port1}/Service"
 								wsdlResource="classpath:org/apache/servicemix/http/test.wsdl"
 								defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
 								soapVersion="1.1" 

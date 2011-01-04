@@ -41,6 +41,8 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class HttpAddressingTest extends SpringTestSupport {
 
     private static transient Log log = LogFactory.getLog(HttpAddressingTest.class);
+    
+    String port1 = System.getProperty("http.port1");
 
     public void testOk() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -69,7 +71,7 @@ public class HttpAddressingTest extends SpringTestSupport {
     }
 
     public void testOkFromUrl() throws Exception {
-        URLConnection connection = new URL("http://localhost:8192/Service/").openConnection();
+        URLConnection connection = new URL("http://localhost:"+port1+"/Service/").openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         OutputStream os = connection.getOutputStream();

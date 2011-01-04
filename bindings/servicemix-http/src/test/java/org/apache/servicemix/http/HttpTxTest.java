@@ -39,6 +39,9 @@ import org.jencks.GeronimoPlatformTransactionManager;
 
 public class HttpTxTest extends TestCase {
 
+    String activemq = System.getProperty("activemq.port");
+    String port1 = System.getProperty("http.port1");
+    
     private ExchangeCompletedListener listener;
     private JBIContainer jbi;
     private TransactionManager tm;
@@ -48,7 +51,7 @@ public class HttpTxTest extends TestCase {
         broker = new BrokerService();
         broker.setUseJmx(false);
         broker.setPersistent(false);
-        broker.addConnector("tcp://localhost:61616");
+        broker.addConnector("tcp://localhost:"+activemq);
         broker.start();
 
         tm = new GeronimoPlatformTransactionManager();
@@ -81,7 +84,7 @@ public class HttpTxTest extends TestCase {
         HttpEndpoint ep0 = new HttpEndpoint();
         ep0.setService(new QName("urn:test", "s0"));
         ep0.setEndpoint("ep0");
-        ep0.setLocationURI("http://localhost:8192/ep1/");
+        ep0.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep0.setRoleAsString("provider");
         ep0.setSoap(true);
         
@@ -89,7 +92,7 @@ public class HttpTxTest extends TestCase {
         ep1.setService(new QName("urn:test", "s1"));
         ep1.setEndpoint("ep1");
         ep1.setTargetService(new QName("urn:test", "echo"));
-        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep1.setRoleAsString("consumer");
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep1.setSoap(true);
@@ -119,7 +122,7 @@ public class HttpTxTest extends TestCase {
         HttpEndpoint ep0 = new HttpEndpoint();
         ep0.setService(new QName("urn:test", "s0"));
         ep0.setEndpoint("ep0");
-        ep0.setLocationURI("http://localhost:8192/ep1/");
+        ep0.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep0.setRoleAsString("provider");
         ep0.setSoap(true);
         
@@ -127,7 +130,7 @@ public class HttpTxTest extends TestCase {
         ep1.setService(new QName("urn:test", "s1"));
         ep1.setEndpoint("ep1");
         ep1.setTargetService(new QName("urn:test", "echo"));
-        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep1.setRoleAsString("consumer");
         ep1.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         ep1.setSoap(true);

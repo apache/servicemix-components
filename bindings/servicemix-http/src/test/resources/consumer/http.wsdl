@@ -39,14 +39,14 @@
 
     <service name='ConsumerInOnly'>
         <port name='TestEndpoint' binding='tns:ConsumerSoapBinding'>
-            <soap:address location="http://localhost:8192/InOnly"/>
+            <soap:address location="http://localhost:${port1}/InOnly"/>
             <jbi:endpoint role="consumer" defaultMep='in-only'/>
         </port>
     </service>
 
     <service name='ConsumerInOut'>
         <port name='TestEndpoint' binding='tns:ConsumerHttpBinding'>
-            <http:address location="http://localhost:8192/InOut"/>
+            <http:address location="http://localhost:${port1}/InOut"/>
             <jbi:endpoint role="consumer" defaultMep='in-out'/>
         </port>
     </service>

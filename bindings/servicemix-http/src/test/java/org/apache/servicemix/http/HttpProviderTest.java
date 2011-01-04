@@ -46,6 +46,7 @@ public class HttpProviderTest extends TestCase {
     private static transient Log log = LogFactory.getLog(HttpProviderTest.class);
 
     protected JBIContainer container;
+    Integer port1 = Integer.parseInt(System.getProperty("http.port1"));
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -74,7 +75,7 @@ public class HttpProviderTest extends TestCase {
         container.activateComponent(asReceiver);
 
         // Add the http receiver
-        HttpConnector connector = new HttpConnector("localhost", 8192);
+        HttpConnector connector = new HttpConnector("localhost", port1);
         connector.setDefaultInOut(false);
         ActivationSpec asConnector = new ActivationSpec("connector", connector);
         asConnector.setDestinationService(new QName("test", "receiver"));
@@ -113,8 +114,8 @@ public class HttpProviderTest extends TestCase {
     }
 
     /**
-     * The http.wsdl specifies the location URI as localhost:8192. Set a NormalizedMessage property to override this
-     * value. Therefore don't start the HttpConnector on 8192, rather on another port to prove this functionality works.
+     * The http.wsdl specifies the location URI as localhost:"+port1+". Set a NormalizedMessage property to override this
+     * value. Therefore don't start the HttpConnector on "+port1+", rather on another port to prove this functionality works.
      * 
      * @param msg
      * @param streaming
@@ -186,7 +187,7 @@ public class HttpProviderTest extends TestCase {
         container.activateComponent(asReceiver);
 
         // Add the http receiver
-        HttpConnector connector = new HttpConnector("localhost", 8192);
+        HttpConnector connector = new HttpConnector("localhost", port1);
         connector.setDefaultInOut(true);
         ActivationSpec asConnector = new ActivationSpec("connector", connector);
         asConnector.setDestinationService(new QName("test", "echo"));

@@ -44,6 +44,9 @@ import org.apache.servicemix.jbi.nmr.flow.seda.SedaFlow;
  */
 public class HttpProviderExpirationTest extends TestCase {
 
+    String activemq = System.getProperty("activemq.port");
+    String port1 = System.getProperty("http.port1");
+    
     private JBIContainer jbi;
     private BrokerService broker;
 
@@ -51,7 +54,7 @@ public class HttpProviderExpirationTest extends TestCase {
         broker = new BrokerService();
         broker.setUseJmx(false);
         broker.setPersistent(false);
-        broker.addConnector("tcp://localhost:61616");
+        broker.addConnector("tcp://localhost:"+activemq);
         broker.start();
 
 
@@ -79,14 +82,14 @@ public class HttpProviderExpirationTest extends TestCase {
         HttpProviderEndpoint provider = new HttpProviderEndpoint();
         provider.setService(new QName("urn:test", "provider"));
         provider.setEndpoint("provider");
-        provider.setLocationURI("http://localhost:8192/expiration/");
+        provider.setLocationURI("http://localhost:"+port1+"/expiration/");
         provider.setProviderExpirationTime(100000);
 
         HttpConsumerEndpoint consumer = new HttpConsumerEndpoint();
         consumer.setService(new QName("urn:test", "consumer"));
         consumer.setEndpoint("consumer");
         consumer.setTargetService(new QName("urn:test", "echo"));
-        consumer.setLocationURI("http://localhost:8192/expiration/");
+        consumer.setLocationURI("http://localhost:"+port1+"/expiration/");
         consumer.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         consumer.setMarshaler(new DefaultHttpConsumerMarshaler() {
 
@@ -122,14 +125,14 @@ public class HttpProviderExpirationTest extends TestCase {
         HttpProviderEndpoint provider = new HttpProviderEndpoint();
         provider.setService(new QName("urn:test", "provider"));
         provider.setEndpoint("provider");
-        provider.setLocationURI("http://localhost:8192/expiration/");
+        provider.setLocationURI("http://localhost:"+port1+"/expiration/");
         provider.setProviderExpirationTime(10);
 
         HttpConsumerEndpoint consumer = new HttpConsumerEndpoint();
         consumer.setService(new QName("urn:test", "consumer"));
         consumer.setEndpoint("consumer");
         consumer.setTargetService(new QName("urn:test", "echo"));
-        consumer.setLocationURI("http://localhost:8192/expiration/");
+        consumer.setLocationURI("http://localhost:"+port1+"/expiration/");
         consumer.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         consumer.setMarshaler(new DefaultHttpConsumerMarshaler() {
 
@@ -167,14 +170,14 @@ public class HttpProviderExpirationTest extends TestCase {
         HttpProviderEndpoint provider = new HttpProviderEndpoint();
         provider.setService(new QName("urn:test", "provider"));
         provider.setEndpoint("provider");
-        provider.setLocationURI("http://localhost:8192/expiration/");
+        provider.setLocationURI("http://localhost:"+port1+"/expiration/");
         provider.setProviderExpirationTime(300000);
 
         HttpConsumerEndpoint consumer = new HttpConsumerEndpoint();
         consumer.setService(new QName("urn:test", "consumer"));
         consumer.setEndpoint("consumer");
         consumer.setTargetService(new QName("urn:test", "echo"));
-        consumer.setLocationURI("http://localhost:8192/expiration/");
+        consumer.setLocationURI("http://localhost:"+port1+"/expiration/");
         consumer.setDefaultMep(URI.create("http://www.w3.org/2004/08/wsdl/in-out"));
         consumer.setMarshaler(new DefaultHttpConsumerMarshaler() {
 

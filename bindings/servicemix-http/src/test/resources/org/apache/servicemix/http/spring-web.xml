@@ -35,7 +35,7 @@
         	  <http:endpoint service="test:Hello"
         	                 endpoint="testService"
         	                 role="consumer" 
-        	                 locationURI="http://localhost:8193/Service/"
+        	                 locationURI="http://localhost:${port2}/Service/"
                              defaultMep="http://www.w3.org/2004/08/wsdl/in-out"
                              wsdlResource="classpath:org/apache/servicemix/http/test.wsdl"
                              soap="true" />

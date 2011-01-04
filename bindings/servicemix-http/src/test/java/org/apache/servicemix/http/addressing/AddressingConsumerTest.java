@@ -30,7 +30,8 @@ import org.springframework.util.xml.DomUtils;
 public class AddressingConsumerTest extends TestCase {
 
     private static transient Log log = LogFactory.getLog(AddressingConsumerTest.class);
-
+    
+    String port1 = System.getProperty("http.port1");
     protected JBIContainer container;
 
     protected void setUp() throws Exception {
@@ -56,7 +57,7 @@ public class AddressingConsumerTest extends TestCase {
         ep1.setService(new QName("uri:HelloWorld", "HelloService"));
         ep1.setEndpoint("HelloPortSoap11");
         ep1.setTargetService(new QName("urn:test", "echo"));
-        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep1.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC-soap12.wsdl"));
         ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep1.setUseJbiWrapper(useJbiWrapper);
@@ -65,7 +66,7 @@ public class AddressingConsumerTest extends TestCase {
         ep2.setService(new QName("uri:HelloWorld", "HelloService"));
         ep2.setEndpoint("HelloPortSoap12");
         ep2.setTargetService(new QName("urn:test", "echo"));
-        ep2.setLocationURI("http://localhost:8192/ep2/");
+        ep2.setLocationURI("http://localhost:"+port1+"/ep2/");
         ep2.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC-soap12.wsdl"));
         ep2.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep2.setUseJbiWrapper(useJbiWrapper);
@@ -92,7 +93,7 @@ public class AddressingConsumerTest extends TestCase {
         initEchoEndpoint();
         container.start();
 
-        URLConnection connection = new URL("http://localhost:8192/ep2/").openConnection();
+        URLConnection connection = new URL("http://localhost:"+port1+"/ep2/").openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
         OutputStream os = connection.getOutputStream();

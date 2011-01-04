@@ -36,6 +36,10 @@ import org.mortbay.thread.QueuedThreadPool;
 public class ServerManagerTest extends TestCase {
     private static transient Log log = LogFactory.getLog(ServerManagerTest.class);
 
+    String port1 = System.getProperty("http.port1");
+    String port2 = System.getProperty("http.port2");
+    String port3 = System.getProperty("http.port3");
+    
     protected JettyContextManager server;
     protected HttpConfiguration configuration;
 
@@ -56,51 +60,51 @@ public class ServerManagerTest extends TestCase {
         server.start();
 
         // Test first context
-        checkFail("http://localhost:8192/Service1/echo", null);
-        Object ctx1 = server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
-        request("http://localhost:8192/Service1/echo", null);
+        checkFail("http://localhost:"+port1+"/Service1/echo", null);
+        Object ctx1 = server.createContext("http://localhost:"+port1+"/Service1", new TestHttpProcessor());
+        request("http://localhost:"+port1+"/Service1/echo", null);
         server.remove(ctx1);
-        checkFail("http://localhost:8192/Service1/echo", null);
+        checkFail("http://localhost:"+port1+"/Service1/echo", null);
 
         // Test second context on the same host/port
-        checkFail("http://localhost:8192/Service2/echo", null);
-        Object ctx2 = server.createContext("http://localhost:8192/Service2", new TestHttpProcessor());
-        request("http://localhost:8192/Service2/echo", null);
+        checkFail("http://localhost:"+port1+"/Service2/echo", null);
+        Object ctx2 = server.createContext("http://localhost:"+port1+"/Service2", new TestHttpProcessor());
+        request("http://localhost:"+port1+"/Service2/echo", null);
         server.remove(ctx2);
-        checkFail("http://localhost:8192/Service2/echo", null);
+        checkFail("http://localhost:"+port1+"/Service2/echo", null);
 
         // Test third context on another port
-        checkFail("http://localhost:8193/echo", null);
-        Object ctx3 = server.createContext("http://localhost:8193", new TestHttpProcessor());
-        request("http://localhost:8193/echo", null);
+        checkFail("http://localhost:"+port2+"/echo", null);
+        Object ctx3 = server.createContext("http://localhost:"+port2, new TestHttpProcessor());
+        request("http://localhost:"+port2+"/echo", null);
         server.remove(ctx3);
-        checkFail("http://localhost:8193/echo", null);
+        checkFail("http://localhost:"+port2+"/echo", null);
     }
 
     public void testOverlappingPath() throws Exception {
         server.init();
         server.start();
 
-        server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
+        server.createContext("http://localhost:"+port1+"/Service1/test1", new TestHttpProcessor());
 
-        server.createContext("http://localhost:8192/Service1/test1ex", new TestHttpProcessor());
+        server.createContext("http://localhost:"+port1+"/Service1/test1ex", new TestHttpProcessor());
 
         try {
-            server.createContext("http://localhost:8192/Service1/test1", new TestHttpProcessor());
+            server.createContext("http://localhost:"+port1+"/Service1/test1", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");
         } catch (Exception e) {
             // ok
         }
 
         try {
-            server.createContext("http://localhost:8192/Service1/test1/test", new TestHttpProcessor());
+            server.createContext("http://localhost:"+port1+"/Service1/test1/test", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");
         } catch (Exception e) {
             // ok
         }
 
         try {
-            server.createContext("http://localhost:8192/Service1", new TestHttpProcessor());
+            server.createContext("http://localhost:"+port1+"/Service1", new TestHttpProcessor());
             fail("Contexts are overlapping, an exception should have been thrown");
         } catch (Exception e) {
             // ok
@@ -112,7 +116,7 @@ public class ServerManagerTest extends TestCase {
         server.init();
         server.start();
 
-        Object contextObj = server.createContext("http://localhost:8192/Service1/test", new TestAltHttpProcessor());
+        Object contextObj = server.createContext("http://localhost:"+port1+"/Service1/test", new TestAltHttpProcessor());
    
         assertNotNull("Context should not be null", contextObj);
         assertTrue("Context should be started", ((ContextHandler)contextObj).isStarted());
@@ -124,7 +128,7 @@ public class ServerManagerTest extends TestCase {
         server.start();
  
         try {
-            server.createContext("https://localhost:8143/Service/test", new TestHttpProcessor());
+            server.createContext("https://localhost:"+port3+"/Service/test", new TestHttpProcessor());
             fail("Context for https URL with no SSL Params should not be created");
         } catch (IllegalArgumentException iae) {
             // test passes
@@ -137,7 +141,7 @@ public class ServerManagerTest extends TestCase {
         server.start();
  
         try {
-            server.createContext("file://localhost:8192/Service/test", new TestHttpProcessor());
+            server.createContext("file://localhost:"+port1+"/Service/test", new TestHttpProcessor());
             fail("Context for invalid protocol should not be created.");
         } catch (UnsupportedOperationException uoe) {
             // test passes

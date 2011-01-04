@@ -62,35 +62,15 @@ import org.springframework.core.io.UrlResource;
 
 public class HttpWsdlTest extends TestCase {
     private static transient Log log = LogFactory.getLog(HttpWsdlTest.class);
-    private static int usedPortNumber = 8192;
+      
+    private Integer port4 = Integer.parseInt(System.getProperty("http.port4"));
+    private Integer port5 = Integer.parseInt(System.getProperty("http.port5"));
+    private Integer port6 = Integer.parseInt(System.getProperty("http.port6"));
+    private Integer port7 = Integer.parseInt(System.getProperty("http.port7"));
+    private Integer port8 = Integer.parseInt(System.getProperty("http.port8"));
+    
 
     protected JBIContainer container;
-
-    /**
-     * determines a free port number
-     * @return a free port number
-     */
-    private static int getFreePortNumber() {
-
-        int portNumber = usedPortNumber + 1;
-        boolean inUse = true;
-
-        while (inUse) {
-            try {
-                ServerSocket serverSocket = new ServerSocket();
-                SocketAddress endpoint = new InetSocketAddress(portNumber);
-                serverSocket.bind(endpoint);
-                serverSocket.close();
-                inUse = false;
-                usedPortNumber = portNumber;
-            } catch (IOException e) {
-                inUse = true;
-            }
-        }
-
-        return portNumber;
-
-    }
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -208,24 +188,24 @@ public class HttpWsdlTest extends TestCase {
     }
 
     public void testWithNonStandaloneWsdlDoc() throws Exception {
-        testWSDL(createDefinition(false), getFreePortNumber());
+        testWSDL(createDefinition(false), port4);
     }
 
     public void testWithNonStandaloneWsdlRpc() throws Exception {
-        testWSDL(createDefinition(true), getFreePortNumber());
+        testWSDL(createDefinition(true), port5);
     }
 
     public void testWithExistingBinding() throws Exception {
         String uri = getClass().getResource("bound-wsdl.wsdl").toString();
         Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL(uri);
-        testWSDL(def, getFreePortNumber());
+        testWSDL(def, port6);
     }
 
     public void testExternalNonStandaloneWsdl() throws Exception {
 
         //startup-jetty as mirror for 
         //http://www.ws-i.org/SampleApplications/SupplyChainManagement/2002-08/Retailer.wsdl
-        int remoteHttpServerPort = getFreePortNumber();
+        int remoteHttpServerPort = port7;
         Server remoteServer = new Server(remoteHttpServerPort);
         Handler handler = new AbstractHandler() {
 
@@ -252,8 +232,7 @@ public class HttpWsdlTest extends TestCase {
         remoteServer.start();
         
         try {
-            int localHttpServerPort = getFreePortNumber();  
-
+            int localHttpServerPort = port8;
             // HTTP Component
             HttpEndpoint ep = new HttpEndpoint();
             ep.setService(new QName("http://servicemix.apache.org/wsn/jaxws", "PullPointService"));

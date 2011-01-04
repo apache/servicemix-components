@@ -54,6 +54,9 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
 
 public class ProviderEndpointTest extends TestCase {
 
+    Integer port1 = Integer.parseInt(System.getProperty("http.port1"));
+    Integer port2 = Integer.parseInt(System.getProperty("http.port2"));
+    
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
     protected Server proxy;
@@ -88,12 +91,12 @@ public class ProviderEndpointTest extends TestCase {
         ep0.setEndpoint("consumer");
         ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
         ep0.setTargetEndpoint("service");
-        ep0.setLocationURI("http://localhost:8192/person/");
+        ep0.setLocationURI("http://localhost:"+port1+"/person/");
 
         HttpProviderEndpoint ep1 = new HttpProviderEndpoint();
         ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
         ep1.setEndpoint("provider");
-        ep1.setLocationURI("http://localhost:8192/person/");
+        ep1.setLocationURI("http://localhost:"+port1+"/person/");
 
         http.setEndpoints(new HttpEndpointType[] {ep0, ep1 });
         container.activateComponent(http, "http");
@@ -133,7 +136,7 @@ public class ProviderEndpointTest extends TestCase {
         ep0.setEndpoint("consumer");
         ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
         ep0.setTargetEndpoint("service");
-        ep0.setLocationURI("http://localhost:8192/PersonService/");
+        ep0.setLocationURI("http://localhost:"+port1+"/PersonService/");
         ep0.setMarshaler(new DefaultHttpConsumerMarshaler() {
             public MessageExchange createExchange(HttpServletRequest request, ComponentContext context) throws Exception {
                 soapAction.set(request.getHeader("SOAPAction"));
@@ -224,7 +227,7 @@ public class ProviderEndpointTest extends TestCase {
             public void run() {
                 ServerSocket ss = null;
                 try {
-                    ss = new ServerSocket(8192);
+                    ss = new ServerSocket(port1);
                     Socket s = ss.accept();
                     Thread.sleep(50);
                     s.close();
@@ -266,7 +269,7 @@ public class ProviderEndpointTest extends TestCase {
         ep0.setEndpoint("consumer");
         ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
         ep0.setTargetEndpoint("service");
-        ep0.setLocationURI("http://localhost:8192/ps/");
+        ep0.setLocationURI("http://localhost:"+port1+"/ps/");
 
         HttpSoapProviderEndpoint ep1 = new HttpSoapProviderEndpoint();
         ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
@@ -312,14 +315,14 @@ public class ProviderEndpointTest extends TestCase {
         ep0.setEndpoint("consumer");
         ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
         ep0.setTargetEndpoint("service");
-        ep0.setLocationURI("http://localhost:8192/person/");
+        ep0.setLocationURI("http://localhost:"+port1+"/person/");
 
         HttpProviderEndpoint ep1 = new HttpProviderEndpoint();
         ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
         ep1.setEndpoint("provider");
-        ep1.setLocationURI("http://localhost:8192/person/");
+        ep1.setLocationURI("http://localhost:"+port1+"/person/");
         ep1.setProxyHost("localhost");
-        ep1.setProxyPort(8193);
+        ep1.setProxyPort(port2);
 
         http.setEndpoints(new HttpEndpointType[] {ep0, ep1 });
         container.activateComponent(http, "http");
@@ -328,7 +331,7 @@ public class ProviderEndpointTest extends TestCase {
         proxy = new Server();
         SelectChannelConnector connector = new SelectChannelConnector();
         connector.setHost("localhost");
-        connector.setPort(8193);
+        connector.setPort(port2);
         proxy.addConnector(connector);
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(AsyncProxyServlet.class, "/");
@@ -367,12 +370,12 @@ public class ProviderEndpointTest extends TestCase {
         ep0.setEndpoint("consumer");
         ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
         ep0.setTargetEndpoint("service");
-        ep0.setLocationURI("http://localhost:8192/person/");
+        ep0.setLocationURI("http://localhost:"+port1+"/person/");
 
         HttpProviderEndpoint ep1 = new HttpProviderEndpoint();
         ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));
         ep1.setEndpoint("provider");
-        ep1.setLocationURI("http://localhost:8192/person/");
+        ep1.setLocationURI("http://localhost:"+port1+"/person/");
         ep1.setGzipRequest(true);
         ep1.setExpectGzippedResponse(true);
 
@@ -413,7 +416,7 @@ public class ProviderEndpointTest extends TestCase {
         ep0.setEndpoint("consumer");
         ep0.setTargetService(new QName("http://servicemix.apache.org/samples/wsdl-first", "EchoService"));
         ep0.setTargetEndpoint("service");
-        ep0.setLocationURI("http://localhost:8192/PersonService/");
+        ep0.setLocationURI("http://localhost:"+port1+"/PersonService/");
 
         HttpSoapProviderEndpoint ep1 = new HttpSoapProviderEndpoint();
         ep1.setService(new QName("http://servicemix.apache.org/samples/wsdl-first", "PersonService"));

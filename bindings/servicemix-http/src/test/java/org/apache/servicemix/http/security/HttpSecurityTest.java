@@ -40,6 +40,8 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpSecurityTest extends SpringTestSupport {
     private static transient Log log =  LogFactory.getLog(HttpSecurityTest.class);
+    
+    String port1 = System.getProperty("http.port1");
 
     static {
         String path = System.getProperty("java.security.auth.login.config");
@@ -89,7 +91,7 @@ public class HttpSecurityTest extends SpringTestSupport {
             new AuthScope(AuthScope.ANY),
             new UsernamePasswordCredentials(username, password));
         
-        PostMethod method = new PostMethod("http://localhost:8192/Service/");
+        PostMethod method = new PostMethod("http://localhost:"+port1+"/Service/");
         try {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
@@ -108,7 +110,7 @@ public class HttpSecurityTest extends SpringTestSupport {
         FileUtil.copyInputStream(getClass().getResourceAsStream("request.xml"), out);
         String request = out.toString();
         HttpClient client = new HttpClient();
-        PostMethod method = new PostMethod("http://localhost:8192/WSSec/");
+        PostMethod method = new PostMethod("http://localhost:"+port1+"/WSSec/");
         try {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity(request));
@@ -129,7 +131,7 @@ public class HttpSecurityTest extends SpringTestSupport {
         FileUtil.copyInputStream(getClass().getResourceAsStream("request-bc.xml"), out);
         String request = out.toString();
         HttpClient client = new HttpClient();
-        PostMethod method = new PostMethod("http://localhost:8192/WSSec/");
+        PostMethod method = new PostMethod("http://localhost:"+port1+"/WSSec/");
         try {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity(request));
@@ -153,7 +155,7 @@ public class HttpSecurityTest extends SpringTestSupport {
         FileUtil.copyInputStream(getClass().getResourceAsStream("request-uu.xml"), out);
         String request = out.toString();
         HttpClient client = new HttpClient();
-        PostMethod method = new PostMethod("http://localhost:8192/WSSec/");
+        PostMethod method = new PostMethod("http://localhost:"+port1+"/WSSec/");
         try {
             method.setDoAuthentication(true);
             method.setRequestEntity(new StringRequestEntity(request));

@@ -238,6 +238,22 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.keystore</exclude>
+                </excludes>
+            </testResource>    
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                  <include>**/*.keystore</include>   
+                </includes>
+            </testResource>    
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.servicemix.tooling</groupId>
@@ -272,10 +288,38 @@
                         <exclude>**/HttpTxTest.*</exclude>
                         <exclude>**/HttpSecurityTest.*</exclude>
                     </excludes>
+                    <argLine>-Dhttp.port1=${port1} -Dhttp.port2=${port2} -Dhttp.port3=${port3} -Dhttp.port4=${port4} -Dhttp.port5=${port5} -Dhttp.port6=${port6} -Dhttp.port7=${port7} -Dhttp.port8=${port8} -Dhttp.port9=${port9}  -Dactivemq.port=${activemq}</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>activemq</portName>
+                                <portName>port1</portName>
+                                <portName>port2</portName>
+                                <portName>port3</portName>
+                                <portName>port4</portName>
+                                <portName>port5</portName>
+                                <portName>port6</portName>
+                                <portName>port7</portName>
+                                <portName>port8</portName>
+                                <portName>port9</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>
         

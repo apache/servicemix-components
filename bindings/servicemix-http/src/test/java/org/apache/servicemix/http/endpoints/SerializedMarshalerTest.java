@@ -44,6 +44,8 @@ import org.springframework.remoting.support.RemoteInvocationResult;
 
 public class SerializedMarshalerTest extends TestCase {
 
+    String port1 = System.getProperty("http.port1");
+    
     protected JBIContainer container;
     protected ComponentContext context;
 
@@ -68,7 +70,7 @@ public class SerializedMarshalerTest extends TestCase {
         HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
         ep.setService(new QName("urn:HttpConsumer", "HttpConsumer"));
         ep.setEndpoint("HttpConsumer");
-        ep.setLocationURI("http://localhost:8192/service/");
+        ep.setLocationURI("http://localhost:"+port1+"/service/");
         ep.setTargetService(new QName("urn:HttpInvoker", "Endpoint"));
 
         // Configure the SerializedMarshaler and specifiy it on the endpoint
@@ -114,7 +116,7 @@ public class SerializedMarshalerTest extends TestCase {
         // Set up the Spring bean to call into the URL specified for the consumer endpoint
         HttpInvokerProxyFactoryBean pfb = new HttpInvokerProxyFactoryBean();
         pfb.setServiceInterface(Person.class);
-        pfb.setServiceUrl("http://localhost:8192/service/");
+        pfb.setServiceUrl("http://localhost:"+port1+"/service/");
         pfb.setHttpInvokerRequestExecutor(new SimpleHttpInvokerRequestExecutor());
         pfb.afterPropertiesSet();
 

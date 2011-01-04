@@ -44,6 +44,8 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class HttpSpringTest extends SpringTestSupport {
 
     private static transient Log logger = LogFactory.getLog(HttpSpringTest.class);
+    
+    String port9 = System.getProperty("http.port9");
 
     protected void setUp() throws Exception {
         String str = "Basic " + EncodingUtil.getAsciiString(
@@ -95,7 +97,7 @@ public class HttpSpringTest extends SpringTestSupport {
 
     public void testMimeWithHttpClient() throws Exception {
         File f = new File(getClass().getResource("servicemix.jpg").getFile());
-        PostMethod filePost = new PostMethod("http://localhost:18192/Service/");
+        PostMethod filePost = new PostMethod("http://localhost:"+port9+"/Service/");
         Part[] parts = {new StringPart("request", "<dummy/>"), new FilePart(f.getName(), f)};
         RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

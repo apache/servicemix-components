@@ -35,19 +35,19 @@
             	  <http:endpoint service="test:MyConsumerService"
             	    endpoint="myConsumer"
             	    role="consumer" 
-            	    locationURI="http://localhost:18192/Service/"
+            	    locationURI="http://localhost:${port9}/Service/"
             	    defaultMep="http://www.w3.org/2004/08/wsdl/in-out" />
             	  
             	  <http:endpoint service="test:MyProviderService"
             	    endpoint="myProvider"
             	    role="provider" 
-            	    locationURI="http://localhost:18192/Service/" />
+            	    locationURI="http://localhost:${port9}/Service/" />
             	  
                   <!-- START SNIPPET: ssl -->
             	  <http:endpoint service="testSsl:MyConsumerService"
             	    endpoint="myConsumer"
             	    role="consumer" 
-            	    locationURI="https://localhost:8193/Service/"
+            	    locationURI="https://localhost:${port2}/Service/"
             	    defaultMep="http://www.w3.org/2004/08/wsdl/in-out">
             	    <http:ssl>
             	      <http:sslParameters keyStore="classpath:org/apache/servicemix/http/server.keystore"
@@ -58,7 +58,7 @@
             	  <http:endpoint service="testSsl:MyProviderService"
             	    endpoint="myProvider"
             	    role="provider" 
-            	    locationURI="https://localhost:8193/Service/">
+            	    locationURI="https://localhost:${port2}/Service/">
             	    <http:ssl>
             	      <http:sslParameters keyStore="classpath:org/apache/servicemix/http/server.keystore"
             	        keyStorePassword="password"

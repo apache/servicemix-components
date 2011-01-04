@@ -15,6 +15,8 @@ import junit.framework.TestCase;
 
 public class DefaultHttpProviderMarshalerTest extends TestCase {
 
+        String port1 = System.getProperty("http.port1");
+        
 	private DefaultHttpProviderMarshaler defHttpProviderMarshaler;
 	
 	protected void setUp() throws Exception {
@@ -132,7 +134,7 @@ public class DefaultHttpProviderMarshalerTest extends TestCase {
 	public void testCreateRequestWithHeaders() throws Exception {
 		MockExchangeFactory mef = new MockExchangeFactory();
         MessageExchange me = mef.createInOnlyExchange();
-        me.setProperty("uri", "http://localhost:8192/Service1/someOperation");
+        me.setProperty("uri", "http://localhost:"+port1+"/Service1/someOperation");
         NormalizedMessage msg = me.createMessage();
         msg.setContent(new StringSource("<input>input message</input>"));
         SmxHttpExchange httpExchange = new SmxHttpExchange();

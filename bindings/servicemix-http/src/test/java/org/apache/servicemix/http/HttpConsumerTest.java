@@ -47,7 +47,9 @@ public class HttpConsumerTest extends TestCase {
     private static Log logger = LogFactory.getLog(HttpConsumerTest.class);
 
     protected JBIContainer container;
-
+    
+    String port1 = System.getProperty("http.port1");
+    
     protected void setUp() throws Exception {
         container = new JBIContainer();
         container.setUseMBeanServer(false);
@@ -77,7 +79,7 @@ public class HttpConsumerTest extends TestCase {
         // Add the http invoker
         HttpInvoker invoker = new HttpInvoker();
         invoker.setDefaultInOut(false);
-        invoker.setUrl("http://localhost:8192/InOnly/");
+        invoker.setUrl("http://localhost:"+port1+"/InOnly/");
         invoker.setMarshaler(new HttpSoapClientMarshaler(true));
         ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
         asInvoker.setService(new QName("urn:test", "invoker"));
@@ -126,7 +128,7 @@ public class HttpConsumerTest extends TestCase {
         // Add the http invoker
         HttpInvoker invoker = new HttpInvoker();
         invoker.setDefaultInOut(true);
-        invoker.setUrl("http://localhost:8192/InOut/");
+        invoker.setUrl("http://localhost:"+port1+"/InOut/");
         ActivationSpec asInvoker = new ActivationSpec("invoker", invoker);
         asInvoker.setService(new QName("urn:test", "invoker"));
         container.activateComponent(asInvoker);
@@ -143,7 +145,7 @@ public class HttpConsumerTest extends TestCase {
         component.getServiceUnitManager().start("consumer");
 
         // Retrieve WSDL
-        Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL("http://localhost:8192/InOut/?wsdl");
+        Definition def = WSDLFactory.newInstance().newWSDLReader().readWSDL("http://localhost:"+port1+"/InOut/?wsdl");
         assertNotNull(def);
 
         // Call it

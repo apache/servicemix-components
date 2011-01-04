@@ -80,6 +80,9 @@ import org.mortbay.jetty.HttpHeaders;
 public class ConsumerEndpointTest extends TestCase {
     private static transient Log log = LogFactory.getLog(ConsumerEndpointTest.class);
 
+    String port1 = System.getProperty("http.port1");
+    String port2 = System.getProperty("http.port2");
+    
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
 
@@ -127,7 +130,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "recv"));
-        ep.setLocationURI("http://localhost:8192/ep1/");
+        ep.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
         http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
@@ -138,7 +141,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         container.start();
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
@@ -160,7 +163,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "echo"));
-        ep.setLocationURI("http://localhost:8192/ep1/");
+        ep.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep.setDefaultMep(MessageExchangeSupport.IN_OUT);
         ep.setTimeout(1000);
         http.setEndpoints(new HttpEndpointType[] {ep});
@@ -185,7 +188,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         container.start();
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
@@ -207,7 +210,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "echo"));
-        ep.setLocationURI("http://localhost:8192/ep1/");
+        ep.setLocationURI("http://localhost:"+port1+"/ep1/");
         http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
 
@@ -218,7 +221,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         container.start();
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
@@ -241,7 +244,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep1.setService(new QName("uri:HelloWorld", "HelloService"));
         ep1.setEndpoint("HelloPortSoap11");
         ep1.setTargetService(new QName("urn:test", "echo"));
-        ep1.setLocationURI("http://localhost:8192/ep1/");
+        ep1.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep1.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC.wsdl"));
         ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep1.setUseJbiWrapper(useJbiWrapper);
@@ -249,7 +252,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep2.setService(new QName("uri:HelloWorld", "HelloService"));
         ep2.setEndpoint("HelloPortSoap12");
         ep2.setTargetService(new QName("urn:test", "echo"));
-        ep2.setLocationURI("http://localhost:8192/ep2/");
+        ep2.setLocationURI("http://localhost:"+port1+"/ep2/");
         ep2.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC.wsdl"));
         ep2.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep2.setUseJbiWrapper(useJbiWrapper);
@@ -261,7 +264,7 @@ public class ConsumerEndpointTest extends TestCase {
     public void testHttpSoap11FaultOnEnvelope() throws Exception {
         initSoapEndpoints(true);
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
@@ -284,7 +287,7 @@ public class ConsumerEndpointTest extends TestCase {
     public void testHttpSoap12FaultOnEnvelope() throws Exception {
         initSoapEndpoints(true);
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep2/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep2/");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
@@ -312,7 +315,7 @@ public class ConsumerEndpointTest extends TestCase {
     public void testHttpSoap11UnkownOp() throws Exception {
         initSoapEndpoints(true);
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.setRequestEntity(new StringRequestEntity(
                         "<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>"
                                         + "<s:Body><hello>world</hello></s:Body>" + "</s:Envelope>"));
@@ -338,7 +341,7 @@ public class ConsumerEndpointTest extends TestCase {
      * public void testHttpSoapAttachments() throws Exception { initSoapEndpoints(true);
      * 
      * HttpComponent http = new HttpComponent(); HttpEndpoint ep0 = new HttpEndpoint(); ep0.setService(new
-     * QName("urn:test", "s0")); ep0.setEndpoint("ep0"); ep0.setLocationURI("http://localhost:8192/ep1/");
+     * QName("urn:test", "s0")); ep0.setEndpoint("ep0"); ep0.setLocationURI("http://localhost:"+port1+"/ep1/");
      * ep0.setRoleAsString("provider"); ep0.setSoapVersion("1.1"); ep0.setSoap(true); http.setEndpoints(new
      * HttpEndpoint[] { ep0 }); container.activateComponent(http, "http2");
      * 
@@ -373,7 +376,7 @@ public class ConsumerEndpointTest extends TestCase {
                         + "<jbi:part><HelloResponse xmlns='uri:HelloWorld' /></jbi:part>" + "</jbi:message>");
         container.activateComponent(echo, "echo");
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.setRequestEntity(new StringRequestEntity(
                         "<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>"
                                         + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
@@ -420,7 +423,7 @@ public class ConsumerEndpointTest extends TestCase {
         mock.setEndpoint("endpoint");
         container.activateComponent(mock, "mock");
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep2/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep2/");
         post.setRequestEntity(
                         new StringRequestEntity("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'>"
                                 + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
@@ -465,7 +468,7 @@ public class ConsumerEndpointTest extends TestCase {
         mock.setEndpoint("endpoint");
         container.activateComponent(mock, "mock");
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep2/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep2/");
         post.setRequestEntity(
                         new StringRequestEntity("<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope'>"
                                 + "<s:Header><HelloHeader xmlns='uri:HelloWorld'/></s:Header>"
@@ -493,7 +496,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "echo"));
-        ep.setLocationURI("http://localhost:8192/ep1/");
+        ep.setLocationURI("http://localhost:"+port1+"/ep1/");
         http.setEndpoints(new HttpEndpointType[] {ep });
         container.activateComponent(http, "http");
 
@@ -504,7 +507,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         container.start();
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
         post.addRequestHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         post.addRequestHeader(HttpHeaders.ACCEPT_ENCODING, "gzip");
 
@@ -559,7 +562,7 @@ public class ConsumerEndpointTest extends TestCase {
         mock.setEndpoint("endpoint");
         container.activateComponent(mock, "mock");
 
-        PostMethod post = new PostMethod("http://localhost:8192/ep2/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep2/");
 
         post.addRequestHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         post.addRequestHeader(HttpHeaders.ACCEPT_ENCODING, "gzip");
@@ -615,7 +618,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "echo"));
-        ep.setLocationURI("http://localhost:8192/ep1/");
+        ep.setLocationURI("http://localhost:"+port1+"/ep1/");
         ep.setTimeout(endpointTimeout);
         http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
@@ -652,7 +655,7 @@ public class ConsumerEndpointTest extends TestCase {
                     for (int i = 0; i < nbRequests; i++) {
                     	PostMethod post = null;
                         try {
-                            post = new PostMethod("http://localhost:8192/ep1/");
+                            post = new PostMethod("http://localhost:"+port1+"/ep1/");
                             post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
                             client.executeMethod(post);
                             if (post.getStatusCode() != 200) {
@@ -702,7 +705,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep1.setService(new QName("uri:HelloWorld", "HelloService"));
         ep1.setEndpoint("HelloPortSoap11");
         ep1.setTargetService(new QName("http://test", "MyConsumerService"));
-        ep1.setLocationURI("http://localhost:8193/ep1/");
+        ep1.setLocationURI("http://localhost:"+port2+"/ep1/");
         ep1.setValidateWsdl(true);
         http.setEndpoints(new HttpEndpointType[] {ep1});
         container.activateComponent(http, "http");
@@ -710,7 +713,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();
-        Definition def = reader.readWSDL("http://localhost:8193/ep1/?wsdl");
+        Definition def = reader.readWSDL("http://localhost:"+port2+"/ep1/?wsdl");
         StringWriter writer = new StringWriter();
         factory.newWSDLWriter().writeWSDL(def, writer);
         log.info(writer.toString());
