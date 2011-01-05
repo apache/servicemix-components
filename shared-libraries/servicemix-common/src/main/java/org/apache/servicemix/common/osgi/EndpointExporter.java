@@ -119,7 +119,9 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
             };
             Dictionary props = new Properties();
             ServiceRegistration reg = bundleContext.registerService(EndpointWrapper.class.getName(), wrapper, props);
-            endpointRegistrations.add(reg);
+            if (reg != null) {
+                endpointRegistrations.add(reg);
+            }
         }
         if (assemblyRegistration == null) {
             LOG.info("Waiting for all endpoints to be deployed before registering service assembly");
@@ -128,6 +130,15 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
 
     protected synchronized void checkAndRegisterSA(Endpoint ep) {
         if (assemblyRegistration != null) {
+            return;
+        }
+        if (ep != null && (ep.getServiceUnit() == null 
+            || !ep.getServiceUnit().getComponent().getRegistry().isRegistered(ep.getServiceUnit()))) {
+            LOG.info("something wrong during register endpoint " + ep.getKey());
+            //get chance to unregister all endpoints with this EndpointExporter
+            for (Endpoint e : deployed) {
+                e.getServiceUnit().getComponent().getRegistry().unregisterServiceUnit(e.getServiceUnit());
+            }
             return;
         }
         if (ep != null) {

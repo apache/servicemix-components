@@ -55,9 +55,13 @@ public class EndpointTracker {
             if (LOGGER.isDebugEnabled()) {
     	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
             }
-            OsgiServiceUnit su = new OsgiServiceUnit(component, endpoint, wrapper.getClassLoader());
-            component.getRegistry().registerServiceUnit(su);
-            wrapper.setDeployed();
+            try {
+                OsgiServiceUnit su = new OsgiServiceUnit(component, endpoint, wrapper.getClassLoader());
+                component.getRegistry().registerServiceUnit(su);
+            } finally {
+                //get chance to do some clean up
+                wrapper.setDeployed();
+            }
         }
     }
 
