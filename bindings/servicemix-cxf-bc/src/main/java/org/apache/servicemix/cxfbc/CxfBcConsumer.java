@@ -395,6 +395,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     @Override
     public void stop() throws Exception {
         this.started = false;
+        getBus().getExtension(WSDLManager.class).removeDefinition(definition);
         super.stop();
     }
 
