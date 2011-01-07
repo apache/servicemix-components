@@ -34,8 +34,6 @@
     <name>Apache ServiceMix :: Components :: WS-Notification Service Engine</name>
 
     <properties>
-        <cxf.version>2.3.1</cxf.version>
-
         <servicemix.osgi.import>
             !org.apache.servicemix.wsn*,
             !META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.wsn,

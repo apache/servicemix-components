@@ -45,7 +45,6 @@
     </scm>
 
     <properties>
-        <cxf.version>2.3.1</cxf.version>
         <cxf.jetty.version>7.2.1.v20101111</cxf.jetty.version>
         <surefire.fork.mode>pertest</surefire.fork.mode>
 
