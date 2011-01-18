@@ -33,7 +33,7 @@
     <name>Apache ServiceMix :: Components :: Camel Service Engine</name>
 
     <properties>
-        <camel.version>2.5.0</camel.version>
+        <camel.version>2.6-SNAPSHOT</camel.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.camel*,

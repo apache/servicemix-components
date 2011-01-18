@@ -98,7 +98,7 @@
         <activemq.version>5.4.2</activemq.version>
 
         <!-- CXF -->
-        <cxf.version>2.3.1</cxf.version>
+        <cxf.version>2.3.2-SNAPSHOT</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
@@ -110,7 +110,7 @@
         <geronimo-javamail.version>1.5</geronimo-javamail.version>
         <geronimo-jms.version>1.1.1</geronimo-jms.version>
         <geronimo-jta.version>1.1.1</geronimo-jta.version>
-        <geronimo-servlet.version>1.1.2</geronimo-servlet.version>
+        <geronimo-servlet.version>1.0</geronimo-servlet.version>
         <geronimo-stax-api.version>1.0.1</geronimo-stax-api.version>
         <geronimo-ws-metadata.version>1.1.2</geronimo-ws-metadata.version>
 
@@ -424,7 +424,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-servlet_2.5_spec</artifactId>
+                <artifactId>geronimo-servlet_3.0_spec</artifactId>
                 <version>${geronimo-servlet.version}</version>
             </dependency>
             <dependency>
