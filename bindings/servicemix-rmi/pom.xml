@@ -29,7 +29,6 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-rmi</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>ServiceMix :: RMI</name>
     <description>
         A RMI binding component allowing to work with RMI to communicate with other java components.

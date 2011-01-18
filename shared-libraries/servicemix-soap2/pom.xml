@@ -31,8 +31,10 @@
     <artifactId>servicemix-soap2</artifactId>
     <version>2011.01-SNAPSHOT</version>
     <packaging>jar</packaging>
-
     <name>Apache ServiceMix :: Components :: Shared Libraries :: SOAP Stack v2</name>
+    <description>
+        Apache ServiceMix SOAP Stack v2
+    </description>
 
     <properties>
         <servicemix.osgi.import>

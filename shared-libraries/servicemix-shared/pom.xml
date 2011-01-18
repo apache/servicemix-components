@@ -31,8 +31,8 @@
     <artifactId>servicemix-shared</artifactId>
     <version>2011.01-SNAPSHOT</version>
     <packaging>jbi-shared-library</packaging>
-
     <name>Apache ServiceMix :: Components :: Shared Library</name>
+    <description>Apache ServiceMix Shared Library</description>
 
     <dependencies>
         <dependency>

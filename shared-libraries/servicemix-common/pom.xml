@@ -31,8 +31,10 @@
     <artifactId>servicemix-common</artifactId>
     <version>2011.01-SNAPSHOT</version>
     <packaging>jar</packaging>
-
     <name>Apache ServiceMix :: Components :: Shared Libraries :: Common</name>
+    <description>
+        Common classes used by Apache ServiceMix, Components and utilities.
+    </description>
 
     <properties>
         <servicemix.osgi.import>

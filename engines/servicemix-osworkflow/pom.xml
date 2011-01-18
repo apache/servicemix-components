@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-osworkflow</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: OSWorkflow Service Engine</name>
+    <description>
+        The ServiceMix OSWorkflow component provides workflow functionality to the ESB. You can specify one or more workflows and it's processing will start when a valid message is received.
+    </description>
 
     <properties>
         <osworkflow.version>2.7.0</osworkflow.version>

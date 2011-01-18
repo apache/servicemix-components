@@ -30,8 +30,8 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-ldap</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: LDAP Binding Component</name>
+    <description>LDAP Binding Component for Apache ServiceMix</description>
 
     <properties>
         <servicemix.osgi.import>

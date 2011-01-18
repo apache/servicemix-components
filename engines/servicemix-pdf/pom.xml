@@ -29,9 +29,7 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-pdf</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>ServiceMix :: PDF</name>
-
     <description>
         A service engine manipulating PDF documents: composing PDF documents using incoming messages and PDF templates, reading data in a PDF document, writing
         data into a PDF document.

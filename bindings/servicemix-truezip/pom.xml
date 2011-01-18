@@ -30,8 +30,8 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-truezip</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: TrueZIP Binding Component</name>
+    <description>TrueZip Binding Component for Apache ServiceMix for reading from and writing to zip archives</description>
 
     <repositories>
         <!-- truezip is kept here -->

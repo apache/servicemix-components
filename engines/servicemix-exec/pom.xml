@@ -29,8 +29,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-exec</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: Exec Service Engine</name>
+    <description>
+        The ServiceMix Exec component executes specified external processes and returns the result of that execution.
+    </description>
 
     <properties>
         <servicemix.osgi.import>

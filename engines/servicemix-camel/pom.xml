@@ -29,8 +29,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-camel</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: Camel Service Engine</name>
+    <description>
+        The servicemix-camel component provides support for using Apache Camel to provide a full set of Enterprise Integration Patterns and flexible routing and transformation in both Java code or Spring XML to route services on the Normalized Message Router.
+    </description>
 
     <properties>
         <camel.version>2.6-SNAPSHOT</camel.version>

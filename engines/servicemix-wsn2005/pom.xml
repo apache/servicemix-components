@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-wsn2005</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: WS-Notification Service Engine</name>
+    <description>
+        The servicemix-wsn2005 is a standard JBI Service Engine which implements the WS-Notification specification from Oasis.
+    </description>
 
     <properties>
         <servicemix.osgi.import>

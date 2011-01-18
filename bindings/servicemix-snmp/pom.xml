@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-snmp</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: SNMP Binding Component</name>
+    <description>
+        Provides support for receiving SNMP events or traps via the enterprise service bus by using the SNMP4J library.
+    </description>
 
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-snmp/trunk</connection>

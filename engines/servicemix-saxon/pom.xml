@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-saxon</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: Saxon Service Engine</name>
+    <description>
+        The ServiceMix Saxon component is a standard JBI Service Engine for XSLT / XQuery. This component is based on Saxon and supports XSLT 2.0 and XPath 2.0, and XQuery 1.0.
+    </description>
 
     <repositories>
         <repository>

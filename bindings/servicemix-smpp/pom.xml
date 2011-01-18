@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-smpp</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: SMPP Binding Component</name>
+    <description>
+        Provides support for receiving and sending SMS using the SMPP protocol via the enterprise service bus. It uses the jSMPP library.
+    </description>
 
     <properties>
         <jsmpp.version>2.0</jsmpp.version>

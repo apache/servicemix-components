@@ -31,8 +31,10 @@
     <artifactId>servicemix-file</artifactId>
     <version>2011.01-SNAPSHOT</version>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: File Binding Component</name>
+    <description>
+        Provides JBI integration to the file system. It can be used to read and write files via URI or to periodically poll directories for new files.
+    </description>
 
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-file/trunk</connection>

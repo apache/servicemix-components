@@ -31,8 +31,10 @@
     <artifactId>servicemix-cxf-bc</artifactId>
     <version>2011.01-SNAPSHOT</version>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: CXF Binding Component</name>
+    <description>
+         JBI compliant HTTP/SOAP or JMS/SOAP binding component which use Apache CXF internally
+    </description>
 
     <prerequisites>
         <maven>2.2.1</maven>

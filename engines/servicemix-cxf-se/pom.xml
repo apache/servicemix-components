@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-cxf-se</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: CXF Service Engine</name>
+    <description>
+        ServiceMix CXF SE component is a JBI Service Engine exposing (annotated) POJO as services on the JBI Bus. It uses Apache CXF internally to perform service invocations and xml marshaling.
+    </description>
 
     <properties>
         <servicemix.osgi.import>

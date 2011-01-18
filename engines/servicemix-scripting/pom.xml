@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-scripting</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: JSR-223 Scripting Service Engine</name>
+    <description>
+        The ServiceMix Scripting component provides support for processing scripts using JSR-223.
+    </description>
 
     <repositories>
         <!-- required for scripting engine jars -->

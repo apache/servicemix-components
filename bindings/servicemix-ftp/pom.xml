@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-ftp</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: FTP Binding Component</name>
+    <description>
+        Provides JBI integration to FTP servers. It can be used to read and write files via FTP or to periodically poll FTP directories for new files.
+    </description>
 
     <properties>
         <backport-util-concurrent.version>3.1</backport-util-concurrent.version>

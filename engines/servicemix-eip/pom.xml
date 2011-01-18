@@ -30,8 +30,10 @@
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-eip</artifactId>
     <packaging>jbi-component</packaging>
-
     <name>Apache ServiceMix :: Components :: EIP Service Engine</name>
+    <description>
+        The ServiceMix EIP component is a routing container where different routing patterns can be deployed as service unit.
+    </description>
 
     <properties>
         <tranql-connector.version>1.2</tranql-connector.version>
