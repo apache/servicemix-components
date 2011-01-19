@@ -20,13 +20,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import javax.servlet.*;
+import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -108,7 +107,7 @@ public class HttpBridgeServletTest extends TestCase {
             return null;
         }
 
-        public Enumeration<Object> getAttributeNames() {
+        public Enumeration<String> getAttributeNames() {
             return null;
         }
 
@@ -126,6 +125,10 @@ public class HttpBridgeServletTest extends TestCase {
 
         public Enumeration<String> getInitParameterNames() {
             return null;
+        }
+
+        public boolean setInitParameter(String s, String s1) {
+            return false;
         }
 
         public int getMajorVersion() {
@@ -172,6 +175,106 @@ public class HttpBridgeServletTest extends TestCase {
             return null;
         }
 
+        public ServletRegistration.Dynamic addServlet(String s, String s1) throws IllegalArgumentException, IllegalStateException {
+            return null;
+        }
+
+        public ServletRegistration.Dynamic addServlet(String s, Servlet servlet) throws IllegalArgumentException, IllegalStateException {
+            return null;
+        }
+
+        public ServletRegistration.Dynamic addServlet(String s, Class<? extends Servlet> aClass) throws IllegalArgumentException, IllegalStateException {
+            return null;
+        }
+
+        public <T extends Servlet> T createServlet(Class<T> tClass) throws ServletException {
+            return null;
+        }
+
+        public ServletRegistration getServletRegistration(String s) {
+            return null;
+        }
+
+        public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+            return null;
+        }
+
+        public FilterRegistration.Dynamic addFilter(String s, String s1) throws IllegalArgumentException, IllegalStateException {
+            return null;
+        }
+
+        public FilterRegistration.Dynamic addFilter(String s, Filter filter) throws IllegalArgumentException, IllegalStateException {
+            return null;
+        }
+
+        public FilterRegistration.Dynamic addFilter(String s, Class<? extends Filter> aClass) throws IllegalArgumentException, IllegalStateException {
+            return null;
+        }
+
+        public <T extends Filter> T createFilter(Class<T> tClass) throws ServletException {
+            return null;
+        }
+
+        public FilterRegistration getFilterRegistration(String s) {
+            return null;
+        }
+
+        public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+            return null;
+        }
+
+        public void addListener(Class<? extends EventListener> aClass) {
+
+        }
+
+        public void addListener(String s) {
+
+        }
+
+        public <T extends EventListener> void addListener(T t) {
+
+        }
+
+        public <T extends EventListener> T createListener(Class<T> tClass) throws ServletException {
+            return null;
+        }
+
+        public void declareRoles(String... strings) {
+
+        }
+
+        public SessionCookieConfig getSessionCookieConfig() {
+            return null;
+        }
+
+        public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
+
+        }
+
+        public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+            return null;
+        }
+
+        public int getEffectiveMajorVersion() throws UnsupportedOperationException {
+            return 0;
+        }
+
+        public int getEffectiveMinorVersion() throws UnsupportedOperationException {
+            return 0;
+        }
+
+        public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+            return null;
+        }
+
+        public ClassLoader getClassLoader() {
+            return null;
+        }
+
+        public JspConfigDescriptor getJspConfigDescriptor() {
+            return null;
+        }
+
         public void log(String message, Throwable throwable) {
         }
 
@@ -188,7 +291,7 @@ public class HttpBridgeServletTest extends TestCase {
             return null;
         }
 
-        public Enumeration<Servlet> getServletNames() {
+        public Enumeration<String> getServletNames() {
             return null;
         }
 
