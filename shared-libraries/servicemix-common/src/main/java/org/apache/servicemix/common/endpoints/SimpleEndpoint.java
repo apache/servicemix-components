@@ -87,7 +87,7 @@ public abstract class SimpleEndpoint extends AbstractEndpoint {
     
     protected void fail(MessageExchange me, Exception error) throws MessagingException {
         if (LOG.isWarnEnabled()) {
-            LOG.warn("SimpleEndpoint.fail called: ");
+            LOG.warn("SimpleEndpoint.fail called: ", error);
         }
 
         me.setError(error);
