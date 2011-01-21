@@ -257,6 +257,8 @@ public class HttpComponent extends DefaultComponent {
             params.setMaxTotalConnections(configuration.getMaxTotalConnections());
             connectionManager.setParams(params);
             client = new HttpClient(connectionManager);
+            client.getParams().setAuthenticationPreemptive(configuration.isPreemptiveAuthentication());
+
         }
         // Create connectionPool
         if (connectionPool == null) {

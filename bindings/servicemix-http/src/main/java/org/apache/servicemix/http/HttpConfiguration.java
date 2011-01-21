@@ -151,6 +151,12 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private boolean wantHeadersFromHttpIntoExchange;
 
     /**
+   * This field is used to decide if the http provider processor http client should use preemptive authentication
+   * which avoids in case of true the double sending of requests.
+   */
+    private boolean preemptiveAuthentication;
+
+    /**
      * @return Returns the rootDir.
      * @org.apache.xbean.Property hidden="true"
      */
@@ -663,6 +669,23 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         this.wantHeadersFromHttpIntoExchange = wantHeadersFromHttpIntoExchange;
     }
 
+    /**
+     *
+     * @return true if preemptive auth is used in the http client
+     */
+    public boolean isPreemptiveAuthentication() {
+        return preemptiveAuthentication;
+    }
+
+    /**
+     *
+     * @param preemptiveAuthentication the value which strategy should be used
+     */
+    public void setPreemptiveAuthentication(boolean preemptiveAuthentication) {
+        this.preemptiveAuthentication = preemptiveAuthentication;
+        save();
+    }
+
     public void save() {
         setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         setProperty(componentName + ".jettyClientThreadPoolSize", Integer.toString(jettyClientThreadPoolSize));
@@ -684,6 +707,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         setProperty(componentName + ".proxyPort", Integer.toString(proxyPort));
         setProperty(componentName + ".wantHeadersFromHttpIntoExchange", Boolean
             .toString(wantHeadersFromHttpIntoExchange));
+        setProperty(componentName + ".preemptiveAuthentication", Boolean.toString(preemptiveAuthentication));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -739,10 +763,8 @@ public class HttpConfiguration implements HttpConfigurationMBean {
                 .getProperty(componentName + ".jettyClientThreadPoolSize"));
         }
         if (properties.getProperty(componentName + ".jettyClientPerProvider") != null) {
-            jettyClientPerProvider = Boolean.valueOf(
-                                                     properties.getProperty(componentName
-                                                                            + ".jettyClientPerProvider"))
-                .booleanValue();
+            jettyClientPerProvider = Boolean.valueOf(properties.getProperty(componentName + ".jettyClientPerProvider"))
+              .booleanValue();
         }
         if (properties.getProperty(componentName + ".jettyConnectorClassName") != null) {
             jettyConnectorClassName = properties.getProperty(componentName + ".jettyConnectorClassName");
@@ -799,6 +821,10 @@ public class HttpConfiguration implements HttpConfigurationMBean {
                 .valueOf(properties.getProperty(componentName + ".wantHeadersFromHttpIntoExchange"))
                 .booleanValue();
         }
+        if (properties.getProperty(componentName + ".preemptiveAuthentication") != null) {
+            preemptiveAuthentication = Boolean.valueOf(properties.getProperty(componentName + ".preemptiveAuthentication")).booleanValue();
+        }
+
         return true;
     }
 
