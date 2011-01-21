@@ -20,10 +20,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NTCredentials;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.servicemix.expression.Expression;
 
@@ -124,11 +121,17 @@ public class BasicAuthCredentials {
      * @param client the client on which to set the authentication information
      * @param exchange the message exchange to be used for evaluating the expression
      * @param message the normalized message to be used for evaluating the expression
+     * @param hostConfig optional but if set the AuthScope is bind to that host and port from that hostConfig
      * @throws MessagingException if the correct value for username/password cannot be determined when using an expression
      */
-    public void applyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message)
+    public void applyCredentials(HttpClient client, MessageExchange exchange, NormalizedMessage message, HostConfiguration hostConfig)
         throws MessagingException {
-        AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
+        AuthScope scope = null;
+        if (hostConfig != null) {
+            scope = new AuthScope(hostConfig.getHost(), hostConfig.getPort());
+        } else {
+            scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
+        }
         Credentials credentials;
         if (domain != null && host != null) {
             credentials = new NTCredentials((String)this.username.evaluate(exchange, message), 

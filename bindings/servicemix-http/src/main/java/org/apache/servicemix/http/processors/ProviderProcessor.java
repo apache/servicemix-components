@@ -153,8 +153,13 @@ public class ProviderProcessor extends AbstractProcessor implements SoapExchange
             int retries = getConfiguration().isStreamingEnabled() ? 0 : getConfiguration().getRetryCount();
             method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(retries, true));
             // Set authentication
+            HostConfiguration hostConfig = getHostConfiguration(locationURI, exchange, nm);
             if (endpoint.getBasicAuthentication() != null) {
-                endpoint.getBasicAuthentication().applyCredentials(getClient(), exchange, nm);
+                if (getConfiguration().isUseHostPortForAuthScope()) {
+                    endpoint.getBasicAuthentication().applyCredentials(getClient(), exchange, nm, hostConfig);
+                } else {
+                    endpoint.getBasicAuthentication().applyCredentials(getClient(), exchange, nm, null);
+                }
             }
             // Execute the HTTP method
             int response = getClient().executeMethod(getHostConfiguration(locationURI, exchange, nm), method);

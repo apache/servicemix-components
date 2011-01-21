@@ -156,6 +156,8 @@ public class HttpConfiguration implements HttpConfigurationMBean {
    */
     private boolean preemptiveAuthentication;
 
+    private boolean useHostPortForAuthScope;
+
     /**
      * @return Returns the rootDir.
      * @org.apache.xbean.Property hidden="true"
@@ -678,11 +680,33 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     }
 
     /**
-     *
+     * Specifies of the httpclient uses preemptive authentication which can save performance. The default is false.
+     * If enabled it always send credentials also if it is not needed. 
      * @param preemptiveAuthentication the value which strategy should be used
+     *
+     * @org.apache.xbean.Property description="Specifies of the httpclient uses preemptive authentication which can save performance. The default is false"
      */
     public void setPreemptiveAuthentication(boolean preemptiveAuthentication) {
         this.preemptiveAuthentication = preemptiveAuthentication;
+        save();
+    }
+
+    /**
+     *
+     * @return true if AuthScope of httpclient depeneds on host and port
+     */
+    public boolean isUseHostPortForAuthScope() {
+        return useHostPortForAuthScope;
+    }
+
+    /**
+     *
+     * @param useHostPortForAuthScope If true the AuthScope of the httpclient is bind to a special host and port from the url. The default is false
+     *
+     * @org.apache.xbean.Property description="If true the AuthScope of the httpclient is bind to a special host and port from the url. The default is false"
+     */
+    public void setUseHostPortForAuthScope(boolean useHostPortForAuthScope) {
+        this.useHostPortForAuthScope = useHostPortForAuthScope;
         save();
     }
 
@@ -708,6 +732,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         setProperty(componentName + ".wantHeadersFromHttpIntoExchange", Boolean
             .toString(wantHeadersFromHttpIntoExchange));
         setProperty(componentName + ".preemptiveAuthentication", Boolean.toString(preemptiveAuthentication));
+        setProperty(componentName + ".useHostPortForAuthScope", Boolean.toString(useHostPortForAuthScope));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -825,6 +850,9 @@ public class HttpConfiguration implements HttpConfigurationMBean {
             preemptiveAuthentication = Boolean.valueOf(properties.getProperty(componentName + ".preemptiveAuthentication")).booleanValue();
         }
 
+        if (properties.getProperty(componentName + ".useHostPortForAuthScope") != null) {
+            useHostPortForAuthScope = Boolean.valueOf(properties.getProperty(componentName + ".useHostPortForAuthScope")).booleanValue();
+        }
         return true;
     }
 
