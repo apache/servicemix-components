@@ -61,6 +61,7 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected boolean synchronous;
     protected boolean wantContentTypeHeaderFromExchangeIntoHttpRequest;
     protected int timeout;
+    protected boolean responseContentTypeCheck;
 
     public HttpEndpoint() {
     }
@@ -91,6 +92,32 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
         this.wantContentTypeHeaderFromExchangeIntoHttpRequest = wantContentTypeHeaderFromExchangeIntoHttpRequest;
     }
 
+    /**
+     *
+     * @return <code>true</code> it the http provider checks the content type agains the keyword xml
+     */
+    public boolean isResponseContentTypeCheck() {
+        return responseContentTypeCheck;
+    }
+
+    /**
+     * Specifies if the http provider checks the response content type for the
+     * keyword xml. If it is true the provider will throw an exception if the content type
+     * does not contain the word xml. This should avoid that non valid xml is received by the
+     * provider endpoint and set as normalize message. Because the target expect to get an
+     * valid xml.
+     *
+     * @param responseContentTypeCheck
+     * @org.apache.xbean.Property description="Specifies if the http provider checks the response content type for the
+     *                            keyword xml. If it is true the provider will throw an exception if the content type
+     *                            does not contain the word xml. This should avoid that non valid xml is received by the
+     *                            provider endpoint and set as normalize message. Because the target expect to get an
+     *                            valid xml"
+     */
+    public void setResponseContentTypeCheck(boolean responseContentTypeCheck) {
+        this.responseContentTypeCheck = responseContentTypeCheck;
+    }
+  
     /**
      * @return the synchronous
      */

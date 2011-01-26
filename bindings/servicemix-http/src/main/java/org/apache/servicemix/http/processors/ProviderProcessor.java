@@ -163,10 +163,15 @@ public class ProviderProcessor extends AbstractProcessor implements SoapExchange
             }
             // Execute the HTTP method
             int response = getClient().executeMethod(getHostConfiguration(locationURI, exchange, nm), method);
+            Header contentType = method.getResponseHeader(HEADER_CONTENT_TYPE);
+            // if true check if xml is contained (it is actually not enough) and if not it will throw an exception
+            // with the complete response is logged.
+            if (endpoint.isResponseContentTypeCheck() && !contentType.toExternalForm().contains("xml")) {
+                throw new Exception(method.getResponseBodyAsString());
+            }
             if (response != HttpStatus.SC_OK && response != HttpStatus.SC_ACCEPTED) {
                 if (!(exchange instanceof InOnly)) {
                     SoapReader reader = soapHelper.getSoapMarshaler().createReader();
-                    Header contentType = method.getResponseHeader(HEADER_CONTENT_TYPE);
                     soapMessage = reader.read(method.getResponseBodyAsStream(), 
                                               contentType != null ? contentType.getValue() : null);
                     context.setFaultMessage(soapMessage);
