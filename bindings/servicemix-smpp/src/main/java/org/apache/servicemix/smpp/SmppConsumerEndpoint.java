@@ -47,7 +47,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     // default SMPP port
     private static final int SMPP_DEFAULT_PORT = 2775;
     // default system type
-    private static final String SYSTEM_TYPE = "cp";
+    private static final String DEFAULT_SYSTEM_TYPE = "cp";
 
     // SMPP session and listener
     private SMPPSession session;
@@ -57,6 +57,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
     private int port;
     private String systemId;
     private String password;
+    private String systemType=DEFAULT_SYSTEM_TYPE;
     private int enquireLinkTimer = 50000;
     private int transactionTimer = 100000;
 
@@ -188,7 +189,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
         // connect and bind to the SMPP server
         try {
             session.connectAndBind(this.host, this.port, new BindParameter(BindType.BIND_RX, this.systemId,
-                    this.password, SYSTEM_TYPE,
+                    this.password, this.systemType,
                     TypeOfNumber.UNKNOWN,
                     NumberingPlanIndicator.UNKNOWN,
                     null));
@@ -275,6 +276,20 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public String getSystemType() {
+        return systemType;
+    }
+
+    /**
+     * <p />
+     * This attribute specifies the system type that will be used for connecting to the server. <p />
+     * <i/> The default value is <b>cp</b>
+     * @param systemType 
+     */
+    public void setSystemType(String systemType) {
+        this.systemType = systemType;
     }
 
     public SmppMarshalerSupport getMarshaler() {
