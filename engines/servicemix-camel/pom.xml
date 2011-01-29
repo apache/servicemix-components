@@ -35,7 +35,7 @@
     </description>
 
     <properties>
-        <camel.version>2.6-SNAPSHOT</camel.version>
+        <camel.version>2.6.0</camel.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.camel*,
