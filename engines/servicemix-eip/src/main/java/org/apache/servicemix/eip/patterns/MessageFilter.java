@@ -62,7 +62,7 @@ public class MessageFilter extends EIPEndpoint {
      * a fault or error is reported, and the exchange will be kept in the
      * store for recovery. 
      */
-    private boolean reportErrors = true;
+    private boolean reportErrors;
     
     /**
      * @return Returns the target.
@@ -167,34 +167,33 @@ public class MessageFilter extends EIPEndpoint {
      * @see org.apache.servicemix.eip.EIPEndpoint#processAsync(javax.jbi.messaging.MessageExchange)
      */
     protected void processAsync(MessageExchange exchange) throws Exception {
-        if (exchange.getStatus() == ExchangeStatus.DONE) {
-            MessageExchange me = (MessageExchange) store.load(exchange.getExchangeId());
-            done(me);
-        } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
-            MessageExchange me = (MessageExchange) store.load(exchange.getExchangeId());
-            if (reportErrors) {
-                fail(me, exchange.getError());
-            } else {
-                done(me);
-            }
-        } else if (!(exchange instanceof InOnly) && !(exchange instanceof RobustInOnly)) {
-            fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
-        } else if (exchange.getFault() != null) {
-            MessageExchange me = (MessageExchange) store.load(exchange.getExchangeId());
-            if (reportErrors) {
-                MessageUtil.transferToFault(MessageUtil.copyFault(exchange), me);
-                send(me);
-            }
-            done(exchange);
+        // If we need to report errors, the behavior is really different,
+        // as we need to keep the incoming exchange in the store until
+        // all acks have been received
+        if (reportErrors) {
+            // TODO: implement this
+            throw new UnsupportedOperationException("Not implemented");
+        // We are in a simple fire-and-forget behaviour.
+        // This implementation is really efficient as we do not use
+        // the store at all.
         } else {
-            NormalizedMessage in = MessageUtil.copyIn(exchange);
-            MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
-            target.configureTarget(me, getContext());
-            MessageUtil.transferToIn(in, me);
-            if (filter.matches(me)) {
-                store.store(me.getExchangeId(), exchange);
-                send(me);
+            if (exchange.getStatus() == ExchangeStatus.DONE) {
+                return;
+            } else if (exchange.getStatus() == ExchangeStatus.ERROR) {
+                return;
+            } else if (!(exchange instanceof InOnly)
+                       && !(exchange instanceof RobustInOnly)) {
+                fail(exchange, new UnsupportedOperationException("Use an InOnly or RobustInOnly MEP"));
+            } else if (exchange.getFault() != null) {
+                done(exchange);
             } else {
+                NormalizedMessage in = MessageUtil.copyIn(exchange);
+                MessageExchange me = getExchangeFactory().createExchange(exchange.getPattern());
+                target.configureTarget(me, getContext());
+                MessageUtil.transferToIn(in, me);
+                if (filter.matches(me)) {
+                    send(me);
+                }
                 done(exchange);
             }
         }
