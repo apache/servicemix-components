@@ -943,6 +943,7 @@
                         <DynamicImport-Package>${servicemix.osgi.dynamic.import}</DynamicImport-Package>
                         <Private-Package>${servicemix.osgi.private}</Private-Package>
                         <Require-Bundle>${servicemix.osgi.bundles}</Require-Bundle>
+                        <Karaf-Info>ServiceMix Components;${project.artifactId}=${project.version}</Karaf-Info>
                     </instructions>
                     <supportedProjectTypes>
                         <supportedProjectType>jar</supportedProjectType>
