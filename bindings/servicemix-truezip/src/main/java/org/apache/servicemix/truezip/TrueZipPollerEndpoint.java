@@ -210,7 +210,7 @@ public class TrueZipPollerEndpoint extends PollingEndpoint implements TrueZipEnd
 							lock.unlock();
                         } catch (Exception ex) {
                             // can't release the lock
-                            logger.error(ex);
+                            logger.error("Unable to release lock on " + uri,  ex);
                         } 
                         lockManager.removeLock(uri);
                     }
