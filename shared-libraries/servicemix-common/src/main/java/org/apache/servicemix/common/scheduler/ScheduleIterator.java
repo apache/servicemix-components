@@ -19,15 +19,17 @@ package org.apache.servicemix.common.scheduler;
 import java.util.Date;
 
 /**
+ * <p>
  * Iterator for scheduling.
- * 
- * @author george
- * 
+ * </p>
  */
 public interface ScheduleIterator {
+
     /**
+     * <p>
      * Next execution date of associated task. Implementations should return
      * null to cancel running task.
+     * </p>
      * 
      * @return next date of Execution
      */

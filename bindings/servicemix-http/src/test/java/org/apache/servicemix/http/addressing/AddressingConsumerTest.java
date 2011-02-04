@@ -9,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import javax.xml.namespace.QName;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import junit.framework.TestCase;
@@ -22,14 +24,11 @@ import org.apache.servicemix.soap.ws.addressing.WsAddressingPolicy;
 import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.components.util.EchoComponent;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.xml.DomUtils;
 
 public class AddressingConsumerTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(AddressingConsumerTest.class);
+    private final Logger logger = LoggerFactory.getLogger(AddressingConsumerTest.class);
     
     String port1 = System.getProperty("http.port1");
     protected JBIContainer container;
@@ -104,7 +103,7 @@ public class AddressingConsumerTest extends TestCase {
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(is, baos);
-        log.info(baos.toString());
+        logger.info(baos.toString());
     }
 
 }

@@ -34,12 +34,12 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jms.AbstractJmsProcessor;
 import org.apache.servicemix.jms.JmsEndpoint;
 import org.apache.servicemix.soap.Context;
 import org.jencks.SingletonEndpointFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -47,7 +47,7 @@ import org.jencks.SingletonEndpointFactory;
  */
 public class JcaConsumerProcessor extends AbstractJmsProcessor implements MessageListener {
 
-    private static final Log LOG = LogFactory.getLog(JcaConsumerProcessor.class);
+    private final Logger logger = LoggerFactory.getLogger(JcaConsumerProcessor.class);
 
     protected Map pendingMessages = new ConcurrentHashMap();
     protected ResourceAdapter resourceAdapter;
@@ -96,9 +96,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
 
     public void onMessage(final Message message) {
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Received jms message " + message);
-            }
+            logger.debug("Received jms message " + message);
             Context context = createContext();
             MessageExchange exchange = toNMS(message, context);
             if (!(exchange instanceof InOnly)) {
@@ -114,7 +112,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                 channel.send(exchange);
             }
         } catch (Throwable e) {
-            LOG.error("Error while handling jms message", e);
+            logger.error("Error while handling jms message", e);
         }
     }
 
@@ -133,7 +131,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                     tm.setRollbackOnly();
                     return;
                 } else if (exchange instanceof InOnly) {
-                    LOG.info("Exchange in error: " + exchange, exchange.getError());
+                    logger.info("Exchange in error: " + exchange, exchange.getError());
                     return;
                 } else {
                     connection = connectionFactory.createConnection();

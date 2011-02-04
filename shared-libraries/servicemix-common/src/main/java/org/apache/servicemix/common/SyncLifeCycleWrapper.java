@@ -26,7 +26,9 @@ import javax.management.ObjectName;
 import org.apache.servicemix.MessageExchangeListener;
 
 /**
- * Wrap an AsyncBaseLifeCycle into a lifecycle implementing MessageExchangeListener
+ * <p>
+ * Wrap an AsyncBaseLifeCycle into a lifecycle implementing MessageExchangeListener.
+ * </p>
  */
 public class SyncLifeCycleWrapper implements ComponentLifeCycle, MessageExchangeListener {
 

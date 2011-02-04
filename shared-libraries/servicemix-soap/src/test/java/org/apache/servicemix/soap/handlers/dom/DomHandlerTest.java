@@ -16,15 +16,14 @@
  */
 package org.apache.servicemix.soap.handlers.dom;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import junit.framework.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DomHandlerTest extends TestCase {
 
 	private DomHandler domHandler;
-	private static transient Log log = LogFactory.getLog(DomHandlerTest.class);
+	private final Logger logger = LoggerFactory.getLogger(DomHandlerTest.class);
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -45,7 +44,7 @@ public class DomHandlerTest extends TestCase {
 			fail("setRequired to true should throw an UnsupportedOperationException");
 		} catch (UnsupportedOperationException uoe) {
 			// test passes
-			log.info("setRequired method threw the expected exception.");
+			logger.info("setRequired method threw the expected exception.");
 		}
 	}
 

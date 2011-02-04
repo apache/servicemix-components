@@ -30,10 +30,9 @@ import org.apache.camel.impl.converter.AsyncProcessorTypeConverter;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategyAware;
 import org.apache.camel.spi.Registry;
-import org.apache.camel.util.AsyncProcessorHelper;
 import org.apache.camel.util.URISupport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -81,7 +80,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
 
     protected class JbiProducer extends DefaultProducer implements AsyncProcessor {
 
-        private final Log log = LogFactory.getLog(JbiProducer.class);
+        private final Logger logger = LoggerFactory.getLogger(JbiProducer.class);
 
         private CamelConsumerEndpoint consumer;
 
@@ -99,9 +98,9 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
         @Override
         public void stop() throws Exception {
             if (isStopped()) {
-                log.debug("Camel producer for " + super.getEndpoint() + " has already been stopped");
+                logger.debug("Camel producer for " + super.getEndpoint() + " has already been stopped");
             } else {
-                log.debug("Stopping Camel producer for " + super.getEndpoint());
+                logger.debug("Stopping Camel producer for " + super.getEndpoint());
                 jbiComponent.getCamelJbiComponent().removeEndpoint(consumer);
                 super.stop();
             }

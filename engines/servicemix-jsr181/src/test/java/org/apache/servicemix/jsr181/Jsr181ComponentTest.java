@@ -26,18 +26,18 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import test.EchoService;
 
 public class Jsr181ComponentTest extends TestCase {
 
-    private static Log logger =  LogFactory.getLog(Jsr181ComponentTest.class);
+    private final Logger logger =  LoggerFactory.getLogger(Jsr181ComponentTest.class);
     
     protected JBIContainer container;
     

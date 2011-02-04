@@ -21,17 +21,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.apache.servicemix.common.scheduler.Scheduler;
-import org.apache.servicemix.common.scheduler.ScheduleIterator;
-import org.apache.servicemix.common.scheduler.SchedulerTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SchedulerTest extends TestCase {
 
-    private static transient Log logger =  LogFactory.getLog(SchedulerTest.class);
+    private final Logger logger = LoggerFactory.getLogger(SchedulerTest.class);
 
     // Tests Scheduling a task
     public void testSchedule() throws Exception {

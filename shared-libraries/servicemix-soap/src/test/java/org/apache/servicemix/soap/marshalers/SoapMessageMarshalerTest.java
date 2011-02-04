@@ -36,13 +36,13 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.BytesSource;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.util.DOMUtil;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.xpath.CachedXPathAPI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -56,7 +56,7 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class SoapMessageMarshalerTest extends TestCase {
 
-	private static final Log log = LogFactory.getLog(SoapMessageMarshalerTest.class);
+	private final Logger logger = LoggerFactory.getLogger(SoapMessageMarshalerTest.class);
 	
 	private SourceTransformer sourceTransformer = new SourceTransformer();
 	
@@ -78,7 +78,7 @@ public class SoapMessageMarshalerTest extends TestCase {
 		msg.setSource(new StreamSource(getClass().getResourceAsStream("soap.xml")));
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		marshaler.createWriter(msg).write(baos);
-		log.info(baos.toString());
+		logger.info(baos.toString());
 		
 		SoapMessage msg2 = marshaler.createReader().read(new ByteArrayInputStream(baos.toByteArray()));
 		assertNotNull(msg2);
@@ -98,7 +98,7 @@ public class SoapMessageMarshalerTest extends TestCase {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		SoapWriter writer = marshaler.createWriter(msg);
 		writer.write(baos);
-		log.info(baos.toString());
+		logger.info(baos.toString());
 		
 		SoapMessage msg2 = marshaler.createReader().read(new ByteArrayInputStream(baos.toByteArray()), writer.getContentType());
 		assertNotNull(msg2);
@@ -181,7 +181,7 @@ public class SoapMessageMarshalerTest extends TestCase {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		SoapWriter writer = marshaler.createWriter(msg);
 		writer.write(baos);
-		log.info(baos.toString());
+		logger.info(baos.toString());
 		
 		SoapMessage msg2 = marshaler.createReader().read(new ByteArrayInputStream(baos.toByteArray()), writer.getContentType());
 		assertNotNull(msg2);
@@ -213,7 +213,7 @@ public class SoapMessageMarshalerTest extends TestCase {
         message.saveChanges();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         message.writeTo(baos);
-        log.info(baos.toString());
+        logger.info(baos.toString());
         
         SoapMarshaler marshaler = new SoapMarshaler(true);
         SoapMessage msg = marshaler.createReader().read(new ByteArrayInputStream(baos.toByteArray()), multipart.getContentType());
@@ -221,7 +221,7 @@ public class SoapMessageMarshalerTest extends TestCase {
         SoapWriter writer = marshaler.createWriter(msg);
         baos = new ByteArrayOutputStream();
         writer.write(baos);
-        log.info(baos.toString());
+        logger.info(baos.toString());
     }
 
     private void checkHeadersForServiceName(Iterator headers) throws Exception {

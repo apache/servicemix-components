@@ -25,18 +25,19 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class ValidationComponentTest extends SpringTestSupport {
-    private static transient Log log = LogFactory.getLog(ValidationComponentTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ValidationComponentTest.class);
 
     private static final String VALID_FILE = "target/test-classes/requestValid.xml";
     private static final String INVALID_FILE = "target/test-classes/requestInvalid.xml";
@@ -59,7 +60,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
     
@@ -76,7 +77,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         if (me.getFault() == null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
     
@@ -98,7 +99,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
     
@@ -116,7 +117,7 @@ public class ValidationComponentTest extends SpringTestSupport {
             client.done(me);
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
     }
     
     public void testValidationOKFlowCaptures() throws Exception {
@@ -137,7 +138,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
     
@@ -154,7 +155,7 @@ public class ValidationComponentTest extends SpringTestSupport {
         if (me.getFault() == null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
     
@@ -172,7 +173,7 @@ public class ValidationComponentTest extends SpringTestSupport {
             FileUtil.copyInputStream(fds.getInputStream(), baos);
             result = baos.toString();
         } catch (IOException ex) {
-            log.error("Error loading file " + file, ex);
+            logger.error("Error loading file " + file, ex);
         }
         
         return result;

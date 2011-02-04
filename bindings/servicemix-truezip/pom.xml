@@ -72,10 +72,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>        
-        <dependency>
             <groupId>de.schlichtherle.io</groupId>
             <artifactId>truezip</artifactId>
             <version>${truezip.version}</version>

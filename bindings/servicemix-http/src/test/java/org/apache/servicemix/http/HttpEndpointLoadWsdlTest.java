@@ -20,9 +20,8 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.LogFactory;
-import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.DefaultServiceUnit;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 public class HttpEndpointLoadWsdlTest extends TestCase {
@@ -60,7 +59,7 @@ public class HttpEndpointLoadWsdlTest extends TestCase {
         }
         // make the protected method public so I can call it.
         public void loadWsdl() {
-            logger = LogFactory.getLog(getClass());
+            logger = LoggerFactory.getLogger(getClass());
             super.loadWsdl();
         }
         // this needs to work:

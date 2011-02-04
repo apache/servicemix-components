@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.mail.utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.security.CustomSSLSocketFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
 import javax.jbi.messaging.MessagingException;
@@ -49,7 +49,8 @@ import java.util.Properties;
  * @author lhein
  */
 public final class MailUtils {
-    private static final Log log = LogFactory.getLog(MailUtils.class);
+
+    private final static Logger logger = LoggerFactory.getLogger(MailUtils.class);
     
     public static final String KEY_BODY_TEXT = "text";
     public static final String KEY_BODY_HTML = "html";
@@ -288,9 +289,9 @@ public final class MailUtils {
                 }
             }
             try {
-                log.debug("Setting property: " + header.getName() + " = " + MimeUtility.decodeText(header.getValue()));    
+                logger.debug("Setting property: " + header.getName() + " = " + MimeUtility.decodeText(header.getValue()));
             } catch (UnsupportedEncodingException e) {
-                log.debug("Setting property: " + header.getName() + " = " + header.getValue());
+                logger.debug("Setting property: " + header.getName() + " = " + header.getValue());
             }
         }
 
@@ -363,7 +364,7 @@ public final class MailUtils {
                     Multipart mup = (Multipart)part.getContent();
                     extractAttachmentsFromMultipart(mup, nmsg);
                 } catch (UnsupportedEncodingException e) {
-                    log.error("Unable to decode the mail because charset is not supported.", e);
+                    logger.error("Unable to decode the mail because charset is not supported.", e);
                 }
             } else {
                 if (i < 1) {
@@ -456,21 +457,21 @@ public final class MailUtils {
                             }
                         }
                     } catch (UnsupportedEncodingException e) {
-                        log.error("Unable to decode the mail because charset is not supported.", e);
+                        logger.error("Unable to decode the mail because charset is not supported.", e);
                     }
                 } else if (part.isMimeType(MailContentType.TEXT_PLAIN.getMimeType())) {
                     try {
                         content.put(KEY_BODY_TEXT, (String)part.getContent());
                     } catch (UnsupportedEncodingException e) {
                         content.put(KEY_BODY_TEXT, AbstractMailMarshaler.DUMMY_CONTENT);
-                        log.error("Unable to decode the mail because charset is not supported.", e);
+                        logger.error("Unable to decode the mail because charset is not supported.", e);
                     }
                 } else if (part.isMimeType(MailContentType.TEXT_HTML.getMimeType()) ||
                            part.isMimeType(MailContentType.TEXT_XML.getMimeType()) ) {
                     try {
                         content.put(KEY_BODY_HTML, (String)part.getContent());
                     } catch (UnsupportedEncodingException e) {
-                        log.error("Unable to decode the mail because charset is not supported.", e);
+                        logger.error("Unable to decode the mail because charset is not supported.", e);
                     }
                 } else {
                     // can't parse that...skipping
@@ -501,7 +502,7 @@ public final class MailUtils {
         javax.mail.MessagingException, IOException {
         Object subContent = mbp.getContent();
 
-        log.debug("Parsing: " + subContent.getClass().getName());
+        logger.debug("Parsing: " + subContent.getClass().getName());
 
         if (subContent instanceof InputStream) {
             String cid = mbp.getContentID();
@@ -509,7 +510,7 @@ public final class MailUtils {
                 cid = cid.replaceAll("<", "").replaceAll(">", "").toLowerCase();
             }
 
-            log.debug("Adding special attachment: "
+            logger.debug("Adding special attachment: "
                       + (mbp.getFileName() != null ? mbp.getFileName() : cid));
 
             // read the stream into a byte array
@@ -573,7 +574,7 @@ public final class MailUtils {
                     html = parts.get(KEY_BODY_HTML);
                 }
             } catch (Exception e) {
-                log.error("Error extracting body from message " + mailMsg, e);
+                logger.error("Error extracting body from message " + mailMsg, e);
             }
         }
         
@@ -605,9 +606,9 @@ public final class MailUtils {
             Multipart mp = (Multipart)content;
             try {
                 MailUtils.extractAttachmentsFromMultipart(mp, nmsg);
-                log.debug("Attachments found: " + nmsg.getAttachmentNames().size());
+                logger.debug("Attachments found: " + nmsg.getAttachmentNames().size());
             } catch (Exception e) {
-                log.error("Error extracting attachments from message " + mailMsg, e);
+                logger.error("Error extracting attachments from message " + mailMsg, e);
             }
         }
     }

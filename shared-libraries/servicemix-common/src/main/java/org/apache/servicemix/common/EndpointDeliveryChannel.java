@@ -30,10 +30,12 @@ import javax.transaction.InvalidTransactionException;
 import javax.transaction.SystemException;
 
 /**
+ * <p>
  * This class is a wrapper around an existing DeliveryChannel
  * that will be given to service engine endpoints so that
  * they are able to send messages and to interact with the
  * JBI container.
+ * </p>
  * 
  * @author gnodet
  */

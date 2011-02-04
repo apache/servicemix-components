@@ -38,6 +38,8 @@ import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.xbean.classloader.JarFileClassLoader;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.apache.xbean.spring.context.SpringXmlPreprocessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.w3c.dom.Document;
@@ -46,13 +48,17 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
- * An advanced xml preprocessor that will create a default classloader for the SU if none
+ * <p>
+ * An advanced xml preprocessor that will create a default class loader for the SU if none
  * is configured.
+ * </p>
  * 
  * @author gnodet
  * @author jbonofre
  */
 public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
+
+    private final Logger logger = LoggerFactory.getLogger(ClassLoaderXmlPreprocessor.class);
 
     public static final String CLASSPATH_XML = "classpath.xml";
     public static final String LIB_DIR = "/lib";
@@ -76,9 +82,11 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
     public void preprocess(SpringApplicationContext applicationContext, XmlBeanDefinitionReader reader, Document document) {
         // determine the classLoader
         ClassLoader classLoader;
+        logger.debug("Get the classpath elements from xbean descriptor.");
         NodeList classpathElements = document.getDocumentElement().getElementsByTagName("classpath");
         if (classpathElements.getLength() == 0) {
             // Check if a classpath.xml file exists in the root of the SU
+            logger.debug("Check if a classpath.xml file exists in the SU root.");
             List<URL> classpathUrls = getResources(CLASSPATH_XML);
             if (classpathUrls.size() == 1) {
                 DocumentBuilder builder = null;
@@ -207,6 +215,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
      * @return the jar location URLs.
      */
     protected List<URL> getJarResources(String location) {
+        logger.debug("Get jar resources from " + location);
         List<URL> urls = new LinkedList<URL>();
         // get the !/ separator index
         int separatorIndex = location.indexOf("!/");
@@ -249,7 +258,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
     /**
      * <p>
      * Get the URLs for a file: protocol based location. This methods supports
-     * regexp to add severnal entries.
+     * regexp to add several entries.
      * </p>
      * 
      * <pre>
@@ -261,6 +270,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
      * @return
      */
     protected List<URL> getFileResources(String location) {
+        logger.debug("Get file resources from " + location);
         List<URL> urls = new LinkedList<URL>();
         int starIndex = location.indexOf("*");
         if (starIndex == -1) {

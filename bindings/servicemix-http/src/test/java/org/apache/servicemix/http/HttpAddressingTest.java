@@ -27,10 +27,10 @@ import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.util.FileUtil;
@@ -40,7 +40,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpAddressingTest extends SpringTestSupport {
 
-    private static transient Log log = LogFactory.getLog(HttpAddressingTest.class);
+    private final Logger logger = LoggerFactory.getLogger(HttpAddressingTest.class);
     
     String port1 = System.getProperty("http.port1");
 
@@ -64,7 +64,7 @@ public class HttpAddressingTest extends SpringTestSupport {
         } else {
             Node node = new SourceTransformer().toDOMNode(me.getOutMessage());
             client.done(me);
-            log.info(new SourceTransformer().toString(node));
+            logger.info(new SourceTransformer().toString(node));
             assertEquals("myid", textValueOfXPath(node, "//*[local-name()='RelatesTo']"));
             assertNotNull(textValueOfXPath(node, "//*[local-name()='MessageID']"));
         }
@@ -82,7 +82,7 @@ public class HttpAddressingTest extends SpringTestSupport {
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(is, baos);
-        log.info(baos.toString());
+        logger.info(baos.toString());
     }
 
     public void testBad() throws Exception {

@@ -26,8 +26,10 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
 /**
+ * <p>
  * Based on http://svn.apache.org/repos/asf/geronimo/trunk/modules/management/
  *              src/java/org/apache/geronimo/management/geronimo/KeystoreInstance.java
+ * </p>
  *
  * @version $Rev: $ $Date: $
  */

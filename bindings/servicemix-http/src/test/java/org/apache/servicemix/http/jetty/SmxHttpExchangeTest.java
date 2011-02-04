@@ -21,13 +21,14 @@ import java.io.Reader;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mortbay.io.ByteArrayBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SmxHttpExchangeTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(SmxHttpExchangeTest.class);
+    private final Logger logger = LoggerFactory.getLogger(SmxHttpExchangeTest.class);
+
     private static final String STRRESPONSECONTENT = "valid response content";
     private SmxHttpExchange httpExchange;
 
@@ -50,7 +51,7 @@ public class SmxHttpExchangeTest extends TestCase {
             httpExchange.getResponseStatus();
             fail("getResponseStatus() should fail with IllegalStateException");
         } catch (IllegalStateException ise) {
-            log.info("testGetResponseStatusException() got the expected exception");
+            logger.info("testGetResponseStatusException() got the expected exception");
         }
     }
 
@@ -64,7 +65,7 @@ public class SmxHttpExchangeTest extends TestCase {
             httpExchange.getResponseFields();
             fail("getResponseFields() should fail with IllegalStateException");
         } catch (IllegalStateException ise) {
-            log.info("testGetResponseFieldsException() got the expected exception");
+            logger.info("testGetResponseFieldsException() got the expected exception");
         }
     }
 

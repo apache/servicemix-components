@@ -32,6 +32,8 @@ import javax.wsdl.Port;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Document;
 
@@ -47,12 +49,10 @@ import org.apache.servicemix.soap.wsdl.validator.WSIBPValidator;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.tck.mock.MockComponentContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class WsAddressingTest extends TestCase {
 
-    private static final Log LOG = LogFactory.getLog(WsAddressingTest.class);
+    private final Logger logger = LoggerFactory.getLogger(WsAddressingTest.class);
 
     public void testWsAddressing() throws Exception {
         Binding<?> binding = getBinding("simple.wsdl");
@@ -89,7 +89,7 @@ public class WsAddressingTest extends TestCase {
         WSIBPValidator validator = new WSIBPValidator(def);
         if (!validator.isValid()) {
             for (String err : validator.getErrors()) {
-                LOG.info(err);
+                logger.info(err);
             }
         }
         Service svc = (Service) def.getServices().values().iterator().next();

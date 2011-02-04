@@ -22,8 +22,10 @@ import javax.transaction.Status;
 import org.apache.servicemix.MessageExchangeListener;
 
 /**
+ * <p>
  * Base class for life cycle management of components.
- * This lifecycle uses Push delivery by implementing MessageExchangeListerner interface
+ * This lifecycle uses Push delivery by implementing MessageExchangeListerner interface.
+ * </p>
  * 
  * @author Guillaume Nodet
  * @version $Revision$

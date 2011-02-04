@@ -19,16 +19,15 @@ package org.apache.servicemix.bean;
 import java.net.URI;
 
 import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @version $Revision: $
  */
 public class UriTest extends TestCase {
 
-    private static final Log LOG = LogFactory.getLog(UriTest.class);
+    private final Logger logger = LoggerFactory.getLogger(UriTest.class);
     
     public void testSimpleURI() throws Exception {
         URI uri = new URI("bean:cheese");
@@ -62,21 +61,21 @@ public class UriTest extends TestCase {
     }
 
     protected void dump(URI uri) {
-        LOG.info("URI: " + uri);
-        LOG.info("getAuthority(): " + uri.getAuthority());
-        LOG.info("getFragment(): " + uri.getFragment());
-        LOG.info("getHost(): " + uri.getHost());
-        LOG.info("getPath(): " + uri.getPath());
-        LOG.info("getPort(): " + uri.getPort());
-        LOG.info("getQuery(): " + uri.getQuery());
-        LOG.info("getRawAuthority(): " + uri.getRawAuthority());
-        LOG.info("getRawFragment(): " + uri.getRawFragment());
-        LOG.info("getRawPath(): " + uri.getRawPath());
-        LOG.info("getRawQuery(): " + uri.getRawQuery());
-        LOG.info("getRawSchemeSpecificPart(): " + uri.getRawSchemeSpecificPart());
-        LOG.info("getRawUserInfo(): " + uri.getRawUserInfo());
-        LOG.info("getScheme(): " + uri.getScheme());
-        LOG.info("getSchemeSpecificPart(): " + uri.getSchemeSpecificPart());
-        LOG.info("getUserInfo(): " + uri.getUserInfo());
+        logger.info("URI: " + uri);
+        logger.info("getAuthority(): " + uri.getAuthority());
+        logger.info("getFragment(): " + uri.getFragment());
+        logger.info("getHost(): " + uri.getHost());
+        logger.info("getPath(): " + uri.getPath());
+        logger.info("getPort(): " + uri.getPort());
+        logger.info("getQuery(): " + uri.getQuery());
+        logger.info("getRawAuthority(): " + uri.getRawAuthority());
+        logger.info("getRawFragment(): " + uri.getRawFragment());
+        logger.info("getRawPath(): " + uri.getRawPath());
+        logger.info("getRawQuery(): " + uri.getRawQuery());
+        logger.info("getRawSchemeSpecificPart(): " + uri.getRawSchemeSpecificPart());
+        logger.info("getRawUserInfo(): " + uri.getRawUserInfo());
+        logger.info("getScheme(): " + uri.getScheme());
+        logger.info("getSchemeSpecificPart(): " + uri.getSchemeSpecificPart());
+        logger.info("getUserInfo(): " + uri.getUserInfo());
     }
 }

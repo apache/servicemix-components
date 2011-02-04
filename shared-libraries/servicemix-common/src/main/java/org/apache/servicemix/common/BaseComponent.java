@@ -16,9 +16,9 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.Executor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 
@@ -32,7 +32,9 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
 /**
+ * <p>
  * Base class for a component.
+ * </p>
  * 
  * @author Guillaume Nodet
  * @version $Revision$
@@ -41,7 +43,7 @@ import javax.xml.namespace.QName;
 @Deprecated
 public abstract class BaseComponent implements ServiceMixComponent {
 
-	protected final transient Log logger = LogFactory.getLog(getClass());
+    protected final transient Logger logger = LoggerFactory.getLogger(BaseComponent.class);
     
     protected BaseLifeCycle lifeCycle;
     protected Registry registry;
@@ -71,23 +73,17 @@ public abstract class BaseComponent implements ServiceMixComponent {
      * @see javax.jbi.component.Component#getServiceDescription(javax.jbi.servicedesc.ServiceEndpoint)
      */
     public Document getServiceDescription(ServiceEndpoint endpoint) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Querying service description for " + endpoint);
-        }
+        logger.debug("Querying service description for " + endpoint);
         String key = EndpointSupport.getKey(endpoint);
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             Document doc = ep.getDescription();
             if (doc == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("No description found for " + key);
-                }
+                logger.debug("No description found for " + key);
             }
             return doc;
         } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No endpoint found for " + key);
-            }
+            logger.debug("No endpoint found for " + key);
             return null;
         }
     }
@@ -100,17 +96,13 @@ public abstract class BaseComponent implements ServiceMixComponent {
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             if (ep.getRole() != Role.PROVIDER) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Endpoint " + key + " is a consumer. Refusing exchange with consumer.");
-                }
+                logger.debug("Endpoint " + key + " is a consumer. Refusing exchange with consumer.");
                 return false;
             } else {
                 return ep.isExchangeOkay(exchange);
             }
         } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No endpoint found for " + key + ". Refusing exchange with consumer.");
-            }
+            logger.debug("No endpoint found for " + key + ". Refusing exchange with consumer.");
             return false;
         }
     }
@@ -171,7 +163,7 @@ public abstract class BaseComponent implements ServiceMixComponent {
     /**
      * @return Returns the logger.
      */
-    public Log getLogger() {
+    public Logger getLogger() {
         return logger;
     }
 

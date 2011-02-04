@@ -27,10 +27,10 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
@@ -45,7 +45,7 @@ import org.springframework.jms.core.MessageCreator;
 
 public class JmsStandardConsumerEndpointTest extends AbstractJmsTestSupport {
 
-    private static Log logger =  LogFactory.getLog(JmsStandardConsumerEndpointTest.class);
+    private final Logger logger =  LoggerFactory.getLogger(JmsStandardConsumerEndpointTest.class);
 
     /**
      * Test property name.

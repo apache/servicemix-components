@@ -29,7 +29,9 @@ import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.common.util.DOMUtil;
 
 /**
- * A default implementation of a resolved endpoint
+ * <p>
+ * A default implementation of a resolved endpoint.
+ * </p>
  */
 public class ResolvedEndpoint implements ServiceEndpoint {
 

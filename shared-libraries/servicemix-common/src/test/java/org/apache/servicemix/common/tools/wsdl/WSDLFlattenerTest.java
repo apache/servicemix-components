@@ -29,16 +29,15 @@ import javax.wsdl.xml.WSDLWriter;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class WSDLFlattenerTest extends TestCase {
 
-    private static transient Log logger =  LogFactory.getLog(WSDLFlattenerTest.class);
+    private final Logger logger = LoggerFactory.getLogger(WSDLFlattenerTest.class);
 
     public void test() throws Exception {
         URL resource = getClass().getClassLoader().getResource("wsn/wsn.wsdl");
@@ -97,7 +96,7 @@ public class WSDLFlattenerTest extends TestCase {
         String loc = "b-2.xsd";
         URI rel = SchemaCollection.resolve(base, loc);
         assertEquals("jar:file:/C:/java/servicemix/servicemix-assembly/target/incubator-servicemix-3.0-SNAPSHOT/bin/incubator-servicemix-3.0-SNAPSHOT/bin/../lib/optional/servicemix-wsn2005-3.0-SNAPSHOT.jar!/org/apache/servicemix/wsn/b-2.xsd", rel.toString());
-        logger.info(rel);
+        logger.info(rel.toString());
     }
     
 }

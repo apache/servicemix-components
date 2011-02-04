@@ -18,9 +18,9 @@ package org.apache.servicemix.bean.beans;
 
 import javax.jbi.messaging.MessageExchange;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.bean.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A simple POJO which uses an annotation to indicate which method should be driven by a message exchange
@@ -29,7 +29,7 @@ import org.apache.servicemix.bean.Operation;
  */
 public class AnnotatedBean {
 
-    private static final Log LOG = LogFactory.getLog(AnnotatedBean.class);
+    private final Logger logger = LoggerFactory.getLogger(AnnotatedBean.class);
 
     private MessageExchange myExchangeMethod;
 
@@ -37,7 +37,7 @@ public class AnnotatedBean {
     public void myExchangeMethod(MessageExchange messageExchange) {
         this.myExchangeMethod = messageExchange;
 
-        LOG.info("myExchangeMethod() received exchange: " + messageExchange);
+        logger.info("myExchangeMethod() received exchange: " + messageExchange);
     }
     
     public MessageExchange getMyExchangeMethod() {

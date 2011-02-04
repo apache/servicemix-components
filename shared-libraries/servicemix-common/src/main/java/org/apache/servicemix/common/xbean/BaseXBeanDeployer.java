@@ -24,8 +24,10 @@ import org.apache.servicemix.common.ServiceMixComponent;
 import javax.jbi.management.DeploymentException;
 
 /**
+ * <p>
  * A useful XBean deployer which check that the endpoints inherit one of
  * the given allowed endpoint classes.
+ * </p>
  * 
  * @author gnodet
  */

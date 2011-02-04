@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.mail.marshaler;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.mail.utils.MailContentType;
 import org.apache.servicemix.mail.utils.MailUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -47,7 +47,8 @@ import java.util.Iterator;
  * @author lhein
  */
 public class DefaultMailMarshaler extends AbstractMailMarshaler {
-    private static final Log log = LogFactory.getLog(DefaultMailMarshaler.class);
+
+    private final Logger logger = LoggerFactory.getLogger(DefaultMailMarshaler.class);
 
     /*
      * (non-Javadoc)
@@ -69,7 +70,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             }
         } catch (Exception e) {
             nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, AbstractMailMarshaler.DUMMY_CONTENT);
-            log.error("Unable to extract the mail content: " + MailUtils.extractBodyFromMail(mailMsg), e);
+            logger.error("Unable to extract the mail content: " + MailUtils.extractBodyFromMail(mailMsg), e);
         }        
         
         // extract the attachments
@@ -351,7 +352,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     dh.writeTo(bos);
                     bos.close();
                     
-                    log.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
+                    logger.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
                     
                     // add the file to the temporary resources list
                     addTemporaryResource(exchange.getExchangeId(), f);                    

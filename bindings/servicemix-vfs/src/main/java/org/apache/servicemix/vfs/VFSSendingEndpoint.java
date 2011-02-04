@@ -23,14 +23,14 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileContent;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An endpoint which receives messages from the NMR and writes the message to 
@@ -41,7 +41,8 @@ import org.apache.servicemix.components.util.FileMarshaler;
  * @author lhein
  */
 public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointType {
-    private static final Log logger = LogFactory.getLog(VFSSendingEndpoint.class);
+
+    private final Logger logger = LoggerFactory.getLogger(VFSSendingEndpoint.class);
 
     private FileObject file;
     private FileMarshaler marshaler = new DefaultFileMarshaler();

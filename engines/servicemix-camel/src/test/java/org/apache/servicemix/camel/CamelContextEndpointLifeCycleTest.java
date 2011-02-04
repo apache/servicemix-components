@@ -23,17 +23,18 @@ import java.util.Collection;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.ServiceSupport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test cases to ensure that {@link org.apache.servicemix.camel.CamelContextEndpoint} correctly
  * manages the lifecycle of the underlying {@link org.apache.camel.CamelContext}
  */
 public class CamelContextEndpointLifeCycleTest extends NonJbiCamelEndpointsIntegrationTest {
-    private static final transient Log LOG = LogFactory.getLog(CamelContextEndpointLifeCycleTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(CamelContextEndpointLifeCycleTest.class);
 
     public void testComponentInstallation() throws Exception {
         String serviceUnitConfiguration = suName + "-src/camel-context.xml";
@@ -69,7 +70,7 @@ public class CamelContextEndpointLifeCycleTest extends NonJbiCamelEndpointsInteg
             component.getServiceUnitManager().shutDown(suName);
             component.getServiceUnitManager().undeploy(suName, path.getAbsolutePath());
         } catch (Exception e) {
-            LOG.error("Caught: " + e, e);
+            logger.error("Caught: " + e, e);
             throw e;
         }
     }

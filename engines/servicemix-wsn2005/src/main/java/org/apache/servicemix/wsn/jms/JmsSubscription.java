@@ -34,12 +34,12 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.wsn.AbstractSubscription;
 import org.oasis_open.docs.wsn.b_2.InvalidTopicExpressionFaultType;
 import org.oasis_open.docs.wsn.b_2.PauseFailedFaultType;
@@ -65,7 +65,7 @@ import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
 
 public abstract class JmsSubscription extends AbstractSubscription implements MessageListener {
 
-    private static Log log = LogFactory.getLog(JmsSubscription.class);
+    private final Logger logger = LoggerFactory.getLogger(JmsSubscription.class);
 
     private Connection connection;
 
@@ -194,7 +194,7 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
                 }
             }
         } catch (Exception e) {
-            log.warn("Error notifying consumer", e);
+            logger.warn("Error notifying consumer", e);
         }
     }
 
@@ -210,7 +210,7 @@ public abstract class JmsSubscription extends AbstractSubscription implements Me
                 Boolean ret = (Boolean) exp.evaluate(content, XPathConstants.BOOLEAN);
                 return ret.booleanValue();
             } catch (XPathExpressionException e) {
-                log.warn("Could not filter notification", e);
+                logger.warn("Could not filter notification", e);
             }
             return false;
         }

@@ -17,24 +17,25 @@
 package org.apache.servicemix.common.osgi;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jbi.management.DeploymentException;
 
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.DefaultServiceUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * <p>
  * This class is used by components bundles to track endpoints that they know about.
  * Endpoints are wrapped into {@link EndpointWrapper} interfaces to be able to access
  * the underlying object easily and bypass spring-DM proxies.
+ * </p>
  */
 public class EndpointTracker {
 
-    private static final Log LOGGER = LogFactory.getLog(EndpointTracker.class);
+    private final Logger logger = LoggerFactory.getLogger(EndpointTracker.class);
 
     protected DefaultComponent component;
 
@@ -47,14 +48,10 @@ public class EndpointTracker {
     }
 
     public void register(EndpointWrapper wrapper, Map properties) throws Exception {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("[" + component.getComponentName() + "] Endpoint registered with properties: " + properties);
-        }
+        logger.debug("[" + component.getComponentName() + "] Endpoint registered with properties: " + properties);
         Endpoint endpoint = wrapper.getEndpoint();
         if (component.isKnownEndpoint(endpoint)) {
-            if (LOGGER.isDebugEnabled()) {
-    	        LOGGER.debug("[" + component.getComponentName() + "] Endpoint recognized");
-            }
+            logger.debug("[" + component.getComponentName() + "] Endpoint recognized");
             try {
                 OsgiServiceUnit su = new OsgiServiceUnit(component, endpoint, wrapper.getClassLoader());
                 component.getRegistry().registerServiceUnit(su);

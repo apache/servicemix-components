@@ -27,13 +27,13 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractHttpProviderMarshaler implements HttpProviderMarshaler {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final Set<String> DEFAULT_HEADER_BLACKLIST =
             new HashSet<String>(
@@ -71,20 +71,20 @@ public abstract class AbstractHttpProviderMarshaler implements HttpProviderMarsh
 
     protected OutputStream getRequestEncodingStream(String encoding, OutputStream dataStream) throws IOException {
         if (encoding != null && encoding.toLowerCase().indexOf("gzip") >= 0) {
-            log.debug("Using gzip request encoding in provider marshaller.");
+            logger.debug("Using gzip request encoding in provider marshaller.");
             return new GZIPOutputStream(new BufferedOutputStream(dataStream));
         } else {
-            log.debug("Using default request encoding in provider marshaller.");
+            logger.debug("Using default request encoding in provider marshaller.");
             return new BufferedOutputStream(dataStream);
         }
     }
 
     protected InputStream getResponseEncodingStream(String encoding, InputStream dataStream) throws IOException {
         if (encoding != null && encoding.toLowerCase().indexOf("gzip") >= 0) {
-            log.debug("Using gzip response encoding in provider marshaller.");
+            logger.debug("Using gzip response encoding in provider marshaller.");
             return new GZIPInputStream(new BufferedInputStream(dataStream));
         } else {
-            log.debug("Using default response encoding in provider marshaller.");
+            logger.debug("Using default response encoding in provider marshaller.");
             return new BufferedInputStream(dataStream);
         }
     }

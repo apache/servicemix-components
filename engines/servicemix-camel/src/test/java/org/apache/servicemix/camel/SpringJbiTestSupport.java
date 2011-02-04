@@ -21,17 +21,17 @@ import java.net.URI;
 import java.net.URL;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.util.FileUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Enhances {@link JbiTestSupport} to enable SU deployment as well
  */
 public abstract class SpringJbiTestSupport extends JbiTestSupport {
     
-    private static final Log LOG = LogFactory.getLog(SpringJbiTestSupport.class);
+    private final Logger logger = LoggerFactory.getLogger(SpringJbiTestSupport.class);
     
     private File tempRootDir;
     
@@ -60,7 +60,7 @@ public abstract class SpringJbiTestSupport extends JbiTestSupport {
         if (!tempTemp.mkdirs()) {
             fail("Unable to create temporary working root directory [" + tempTemp.getAbsolutePath() + "]");
         }
-        LOG.info("Using temporary root directory [" + tempRootDir.getAbsolutePath() + "]");
+        logger.info("Using temporary root directory [" + tempRootDir.getAbsolutePath() + "]");
         jbiContainer.setRootDir(tempRootDir.getAbsolutePath());
 
         jbiContainer.setEmbedded(true);

@@ -74,7 +74,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * Return the URI identifying this external endpoint. This must be overriden so that endpoint resolution can work correctly.
+     * <p>
+     * Gets the URI identifying this external endpoint. This must be overriden so that endpoint resolution can work correctly.
+     * </p>
      * 
      * @return the URI identifying this external endpoint
      */
@@ -83,6 +85,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
+     * Gets the target endpoint of the consumer one.
+     * </p>
+     *
      * @return the targetEndpoint
      */
     public String getTargetEndpoint() {
@@ -90,7 +96,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
      * Sets the endpoint name of the target endpoint.
+     * </p>
      * 
      * @param targetEndpoint a string specifiying the name of the target endpoint
      * @org.apache.xbean.Property description="the name of the endpoint to which requests are sent"
@@ -100,6 +108,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
+     * Gets the target interface qualified name of the endpoint.
+     * </p>
+     *
      * @return the targetInterface
      */
     public QName getTargetInterface() {
@@ -107,7 +119,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
      * Sets the name of the target interface.
+     * </p>
      * 
      * @param targetInterface a QName specifiying the name of the target interface
      * @org.apache.xbean.Property description="the QName of the interface to which requests are sent"
@@ -117,6 +131,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
+     * Gets the service qualified name of the endpoint.
+     * </p>
+     *
      * @return the targetService
      */
     public QName getTargetService() {
@@ -124,7 +142,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
      * Sets the name of the target service.
+     * </p>
      * 
      * @param targetService a QName specifiying the name of the target interface
      * @org.apache.xbean.Property description="the QName of the service to which requests are sent"
@@ -134,6 +154,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
+     * Gets the target operation name of the consumer endpoint.
+     * </p>
+     *
      * @return the targetOperation
      */
     public QName getTargetOperation() {
@@ -141,7 +165,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
      * Sets the name of the target operation.
+     * </p>
      * 
      * @param targetOperation a QName specifiying the name of the target operation
      * @org.apache.xbean.Property description="the QName of the operation to which requests are sent"
@@ -151,6 +177,10 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
+     * Gets the target URI of the consumer endpoint.
+     * </p>
+     *
      * @return the targetUri
      */
     public String getTargetUri() {
@@ -158,7 +188,9 @@ public abstract class ConsumerEndpoint extends SimpleEndpoint {
     }
 
     /**
-     * Set the target service/endpoint/interface using a URI.
+     * <p>
+     * Sets the target service/endpoint/interface using a URI.
+     * </p>
      *
      * @param targetUri the targetUri to set
      */

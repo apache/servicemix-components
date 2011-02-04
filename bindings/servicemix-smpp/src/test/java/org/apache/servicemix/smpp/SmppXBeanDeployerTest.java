@@ -1,12 +1,12 @@
 package org.apache.servicemix.smpp;
 
 import junit.framework.TestCase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -22,7 +22,7 @@ import java.net.URL;
  */
 public class SmppXBeanDeployerTest extends TestCase {
 
-    private final static transient Log LOG = LogFactory.getLog(SmppXBeanDeployerTest.class);
+    private final Logger logger = LoggerFactory.getLogger(SmppXBeanDeployerTest.class);
 
     private static final String SOURCE = "0123456789";
     private static final String DESTINATION = "9876543210";
@@ -97,7 +97,7 @@ public class SmppXBeanDeployerTest extends TestCase {
             // the failure is "normal" as there is no SMPP server mock for now
             // TODO add a SMPP server mock
             // fail("Received ERROR status: " + me.getError());
-            LOG.warn("Received ERROR status");
+            logger.warn("Received ERROR status");
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }

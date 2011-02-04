@@ -35,10 +35,10 @@ import javax.xml.transform.TransformerException;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A marshaler that handles Java serialized content from the InputStream of the HttpServletRequest object and to the
@@ -59,7 +59,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
  */
 public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
 
-    private static Log log = LogFactory.getLog(SerializedMarshaler.class);
+    private final Logger logger = LoggerFactory.getLogger(SerializedMarshaler.class);
 
     public MessageExchange createExchange(HttpServletRequest request, ComponentContext context) throws Exception {
         MessageExchange me = context.getDeliveryChannel().createExchangeFactory().createExchange(getDefaultMep());
@@ -109,9 +109,7 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
         xstream.toXML(obj, w);
         String request = w.toString();
 
-        if (log.isDebugEnabled()) {
-            log.debug("Remote invocation request: " + request);
-        }
+        logger.debug("Remote invocation request: " + request);
 
         return new StringSource(request);
     }
@@ -144,9 +142,7 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
         XStream xstream = new XStream(new DomDriver());
         String result = transform.toString(content);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Remote invocation result: " + result);
-        }
+        logger.debug("Remote invocation result: " + result);
 
         Object obj = xstream.fromXML(result);
         ObjectOutputStream oos = new ObjectOutputStream(os);

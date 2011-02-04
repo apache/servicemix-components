@@ -25,8 +25,10 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 
 /**
+ * <p>
  * A simple BeanFactory containing a set of predefined beans which can be used
  * as a parent for another BeanFactory.
+ * </p>
  *  
  * @author gnodet
  */

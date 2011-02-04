@@ -16,8 +16,8 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jbi.JBIException;
 import javax.jbi.component.Bootstrap;
@@ -26,11 +26,13 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 /**
+ * <p>
  * Base class for components bootstrap.
  * Due to classloading mechanism in JBI, Shared Libraries are
  * not available at bootstrap time, so this class should be
  * copied in your own component and modified directly, instead
  * of inheriting it.
+ * </p>
  * 
  * @author Guillaume Nodet
  * @version $Revision$
@@ -40,7 +42,7 @@ import javax.management.ObjectName;
 @Deprecated
 public class BaseBootstrap implements Bootstrap {
 
-    protected final transient Log logger = LogFactory.getLog(getClass());
+    protected final transient Logger logger = LoggerFactory.getLogger(BaseBootstrap.class);
     
     protected InstallationContext context;
     protected ObjectName mbeanName;
@@ -65,14 +67,10 @@ public class BaseBootstrap implements Bootstrap {
      */
     public void init(InstallationContext installContext) throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Initializing bootstrap");
-            }
+            logger.debug("Initializing bootstrap");
             this.context = installContext;
             doInit();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Bootstrap initialized");
-            }
+            logger.debug("Bootstrap initialized");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -100,13 +98,9 @@ public class BaseBootstrap implements Bootstrap {
      */
     public void cleanUp() throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Cleaning up bootstrap");
-            }
+            logger.debug("Cleaning up bootstrap");
             doCleanUp();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Bootstrap cleaned up");
-            }
+            logger.debug("Bootstrap cleaned up");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -131,13 +125,9 @@ public class BaseBootstrap implements Bootstrap {
      */
     public void onInstall() throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Bootstrap onInstall");
-            }
+            logger.debug("Bootstrap onInstall");
             doOnInstall();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Bootstrap onInstall done");
-            }
+            logger.debug("Bootstrap onInstall done");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -153,13 +143,9 @@ public class BaseBootstrap implements Bootstrap {
      */
     public void onUninstall() throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Bootstrap onUninstall");
-            }
+            logger.debug("Bootstrap onUninstall");
             doOnUninstall();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Bootstrap onUninstall done");
-            }
+            logger.debug("Bootstrap onUninstall done");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {

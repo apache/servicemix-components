@@ -6,18 +6,19 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.patterns.MessageFilter;
 import org.apache.servicemix.eip.support.SwitchPredicate;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 
 // Test for SwitchPredicate methods.  Switch can be turned on/off with a
 // property file, a property on the message exchange, or a system property.
 public class MessageFilterSwitchPredicateTest extends AbstractEIPTest {
     
-	private static Log log = LogFactory.getLog(MessageFilterSwitchPredicateTest.class);
+	private final Logger logger = LoggerFactory.getLogger(MessageFilterSwitchPredicateTest.class);
+
 	protected MessageFilter messageFilter;
 	protected SwitchPredicate predicate;
     
@@ -53,9 +54,9 @@ public class MessageFilterSwitchPredicateTest extends AbstractEIPTest {
         // Message exchange turned off - message should NOT reach the target.
         me.getInMessage().setContent(createSource("<orderIn><widget>5</widget></orderIn>"));
         me.getInMessage().setProperty("on", Boolean.FALSE);
-        log.info("Before client.sendSync me.getProperty(\"on\") is: " + me.getProperty("on"));
+        logger.info("Before client.sendSync me.getProperty(\"on\") is: " + me.getProperty("on"));
         client.sendSync(me);
-        log.info("After client.sendSync me.getProperty(\"on\" is: " + me.getProperty("on"));
+        logger.info("After client.sendSync me.getProperty(\"on\" is: " + me.getProperty("on"));
         assertEquals("Message exchange status should be DONE", ExchangeStatus.DONE, me.getStatus());
         
         rec.getMessageList().assertMessagesReceived(0);
@@ -74,9 +75,9 @@ public class MessageFilterSwitchPredicateTest extends AbstractEIPTest {
         
         me.getInMessage().setContent(createSource("<orderIn><widget>5</widget></orderIn>"));
         me.getInMessage().setProperty("on", Boolean.TRUE);
-        log.info("Before client.sendSync me.getProperty(\"on\") is: " + me.getProperty("on"));
+        logger.info("Before client.sendSync me.getProperty(\"on\") is: " + me.getProperty("on"));
         client.sendSync(me);
-        log.info("After client.sendSync me.getProperty(\"on\" is: " + me.getProperty("on"));
+        logger.info("After client.sendSync me.getProperty(\"on\" is: " + me.getProperty("on"));
         assertEquals("Message exchange status should be DONE", ExchangeStatus.DONE, me.getStatus());
         
         rec.getMessageList().assertMessagesReceived(1);

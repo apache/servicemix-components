@@ -28,13 +28,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.wsn.ComponentContextAware;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
 import org.apache.servicemix.wsn.jms.JmsSubscription;
@@ -53,7 +53,7 @@ import org.oasis_open.docs.wsn.bw_2.UnrecognizedPolicyRequestFault;
 
 public class JbiSubscription extends JmsSubscription implements ComponentContextAware {
 
-    private static Log log = LogFactory.getLog(JbiSubscription.class);
+    private final Logger logger = LoggerFactory.getLogger(JbiSubscription.class);
 
     private ComponentContext context;
 
@@ -136,7 +136,7 @@ public class JbiSubscription extends JmsSubscription implements ComponentContext
             msg.setContent(new DOMSource(content));
             context.getDeliveryChannel().send(inonly);
         } catch (JBIException e) {
-            log.warn("Could not deliver notification", e);
+            logger.warn("Could not deliver notification", e);
         }
     }
 

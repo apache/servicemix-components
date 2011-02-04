@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.eip.support.resequence;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Queue;
 import java.util.Timer;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Resequences elements based on a given {@link SequenceElementComparator}.
@@ -63,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ResequencerEngine<E> implements TimeoutHandler {
 
-    private static final Log LOG = LogFactory.getLog(ResequencerEngine.class);
+    private final Logger logger = LoggerFactory.getLogger(ResequencerEngine.class);
     
     private long timeout;
     
@@ -162,7 +162,7 @@ public class ResequencerEngine<E> implements TimeoutHandler {
                 // work done in deliver()
             }
         } catch (RuntimeException e) {
-            LOG.error("error during delivery", e);
+            logger.error("error during delivery", e);
         }
     }
 

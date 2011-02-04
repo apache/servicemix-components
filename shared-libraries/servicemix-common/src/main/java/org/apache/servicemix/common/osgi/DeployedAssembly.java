@@ -19,13 +19,14 @@ package org.apache.servicemix.common.osgi;
 import java.util.Map;
 
 /**
+ * <p>
  * This interface should be used by service assemblies deployed using another packaging
  * than the JBI packaging to be able to leverage the JBI life cycle.
  *
  * This file is a copy of the file from the ServiceMix 4 NMR project and can be removed
  * once this project has been released.  The package is not exported from this OSGi bundle
  * and it should be imported from the NMR project.
- *
+ * </p>
  */
 public interface DeployedAssembly {
 

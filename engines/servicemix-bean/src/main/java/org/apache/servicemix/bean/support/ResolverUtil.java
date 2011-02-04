@@ -16,9 +16,8 @@
  */
 package org.apache.servicemix.bean.support;
 
-/*
- * Copyright 2005-2006 Tim Fennell
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,9 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>ResolverUtil is used to locate classes that are available in the/a class path and meet
@@ -69,7 +65,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ResolverUtil<T> {
 
-    private static final transient Log LOG = LogFactory.getLog(ResolverUtil.class);
+    private final transient Logger logger = LoggerFactory.getLogger(ResolverUtil.class);
 
     /**
      * A simple interface that specifies how to test classes to determine if they
@@ -215,7 +211,7 @@ public class ResolverUtil<T> {
         try {
             urls = loader.getResources(packageName);
         } catch (IOException ioe) {
-            LOG.warn("Could not read package: " + packageName, ioe);
+            logger.warn("Could not read package: " + packageName, ioe);
             return;
         }
         while (urls.hasMoreElements()) {
@@ -230,7 +226,7 @@ public class ResolverUtil<T> {
                 if (urlPath.indexOf('!') > 0) {
                     urlPath = urlPath.substring(0, urlPath.indexOf('!'));
                 }
-                LOG.info("Scanning for classes in [" + urlPath + "] matching criteria: " + test);
+                logger.info("Scanning for classes in [" + urlPath + "] matching criteria: " + test);
                 File file = new File(urlPath);
                 if (file.isDirectory()) {
                     loadImplementationsInDirectory(test, packageName, file);
@@ -238,7 +234,7 @@ public class ResolverUtil<T> {
                     loadImplementationsInJar(test, packageName, file);
                 }
             } catch (IOException ioe) {
-                LOG.warn("could not read entries", ioe);
+                logger.warn("could not read entries", ioe);
             }
         }
     }
@@ -291,7 +287,7 @@ public class ResolverUtil<T> {
                 }
             }
         } catch (IOException ioe) {
-            LOG.error("Could not search jar file '" + jarfile + "' for classes matching criteria: "
+            logger.error("Could not search jar file '" + jarfile + "' for classes matching criteria: "
                       + test + "due to an IOException: " + ioe.getMessage());
         }
     }
@@ -307,14 +303,14 @@ public class ResolverUtil<T> {
         try {
             String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
             ClassLoader loader = getClassLoader();
-            LOG.trace("Checking to see if class " + externalName + " matches criteria ["  + test + "]");
+            logger.trace("Checking to see if class " + externalName + " matches criteria ["  + test + "]");
 
             Class type = loader.loadClass(externalName);
             if (test.matches(type)) {
                 matches.add((Class<T>) type);
             }
         } catch (Throwable t) {
-            LOG.warn("Could not examine class '" + fqn + "' due to a "
+            logger.warn("Could not examine class '" + fqn + "' due to a "
                      + t.getClass().getName() + " with message: " + t.getMessage());
         }
     }

@@ -43,8 +43,6 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.jaxp.W3CDOMStreamWriter;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
@@ -52,6 +50,8 @@ import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import com.ibm.wsdl.Constants;
@@ -65,7 +65,7 @@ import com.ibm.wsdl.Constants;
  */
 public class SoapHelper {
 
-    private static final Log logger = LogFactory.getLog(SoapHelper.class);
+    private final Logger logger = LoggerFactory.getLogger(SoapHelper.class);
 
     private SoapEndpoint endpoint;
     private List policies;
@@ -370,9 +370,7 @@ public class SoapHelper {
                             definitions.put(key, definition);
                         } catch (WSDLException e) {
                             logger.info("Could not read wsdl from endpoint descriptor: " + e.getMessage());
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Could not read wsdl from endpoint descriptor", e);
-                            }
+                            logger.debug("Could not read wsdl from endpoint descriptor", e);
                         }
                     }
                 }

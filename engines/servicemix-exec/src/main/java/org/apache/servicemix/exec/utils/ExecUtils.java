@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.exec.marshaler.ExecRequest;
 import org.apache.servicemix.exec.marshaler.ExecResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class to execute system command.
@@ -33,7 +33,7 @@ import org.apache.servicemix.exec.marshaler.ExecResponse;
  */
 public class ExecUtils {
 
-	private static final transient Log LOG = LogFactory.getLog(ExecUtils.class);
+	private final static Logger logger = LoggerFactory.getLogger(ExecUtils.class);
 
 	/**
 	 * <p>
@@ -54,38 +54,38 @@ public class ExecUtils {
 		    exec = exec + " " + argument;
 		}
 		
-		LOG.info("Execute command " + exec);
+		logger.info("Execute command " + exec);
 		String[] shellCommand = null;
-		LOG.debug("Define the shell.");
-		LOG.debug("Get the OS name property.");
+		logger.debug("Define the shell.");
+		logger.debug("Get the OS name property.");
 		String osName = System.getProperty("os.name");
 		if (osName.startsWith("Windows")) {
-			LOG.debug("Microsoft Windows platform detected.");
+			logger.debug("Microsoft Windows platform detected.");
 			String comSpec = System.getProperty("ComSpec");
 			if (comSpec != null) {
-				LOG.debug("The ComSpec MS Windows environment variable is defined, using it: " + comSpec + " /C " + exec);
+				logger.debug("The ComSpec MS Windows environment variable is defined, using it: " + comSpec + " /C " + exec);
 				shellCommand = new String[] { comSpec, "/C", exec };
 			} else {
-				LOG.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
+				logger.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
 				if (osName.startsWith("Windows 3")
 						|| osName.startsWith("Windows 95")
 						|| osName.startsWith("Windows 98")
 						|| osName.startsWith("Windows ME")) {
-					LOG.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C " + exec);
+					logger.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C " + exec);
 					shellCommand = new String[] { "command.com", "/C", exec };
 				} else {
-					LOG.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C " + exec);
+					logger.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C " + exec);
 					shellCommand = new String[] { "cmd.exe", "/C", exec };
 				}
 			}
 		} else {
-			LOG.debug("Unix platform detected.");
+			logger.debug("Unix platform detected.");
 			String shell = System.getProperty("SHELL");
 			if (shell != null) {
-				LOG.debug("The SHELL Unix environment variable is defined, using it: " + shell + " -c " + exec);
+				logger.debug("The SHELL Unix environment variable is defined, using it: " + shell + " -c " + exec);
 				shellCommand = new String[] { shell, "-c", exec };
 			} else {
-				LOG.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c " + exec);
+				logger.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c " + exec);
 				shellCommand = new String[] { "/bin/sh", "-c", exec };
 			}
 		}
@@ -115,13 +115,13 @@ public class ExecUtils {
 			
 			if (exitValue != 0) {
 				// an error occured
-				LOG.error("Command " + exec + " execution failed with return code " + exitValue + " : " + execResponse.getErrorData().toString());
+				logger.error("Command " + exec + " execution failed with return code " + exitValue + " : " + execResponse.getErrorData().toString());
 			} else {
 				// command was successful
-				LOG.debug("Command " + exec + " execution completed: " + execResponse.getOutputData().toString());
+				logger.debug("Command " + exec + " execution completed: " + execResponse.getOutputData().toString());
 			}
 		} catch (Exception exception) {
-			LOG.error("Command " + exec + " execution failed.", exception);
+			logger.error("Command " + exec + " execution failed.", exception);
 			throw new ExecException("Command " + exec + " execution failed.", exception);
 		}
 
@@ -139,9 +139,7 @@ public class ExecUtils {
  */
 class StreamGobbler extends Thread {
 
-	// log facility
-	private final static transient Log LOG = LogFactory
-			.getLog(StreamGobbler.class);
+	private final Logger logger = LoggerFactory.getLogger(StreamGobbler.class);
 
 	InputStream in;
 	StringBuffer response;
@@ -166,8 +164,7 @@ class StreamGobbler extends Thread {
 				response.append('\n');
 			}
 		} catch (IOException ioException) {
-			LOG.warn("System command stream gobbler error : "
-					+ ioException.getMessage());
+			logger.warn("System command stream gobbler error : " + ioException.getMessage());
 		}
 	}
 

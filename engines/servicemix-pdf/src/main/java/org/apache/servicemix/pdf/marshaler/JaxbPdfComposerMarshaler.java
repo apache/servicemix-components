@@ -20,8 +20,8 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class JaxbPdfComposerMarshaler implements PdfComposerMarshalerSupport {
     
-    private final static transient Log LOG = LogFactory.getLog(JaxbPdfComposerMarshaler.class);
+    private final Logger logger = LoggerFactory.getLogger(JaxbPdfComposerMarshaler.class);
     
     /*
      * (non-Javadoc)
@@ -41,15 +41,15 @@ public class JaxbPdfComposerMarshaler implements PdfComposerMarshalerSupport {
     public PdfComposerRequest unmarshal(NormalizedMessage in) throws Exception {
         
         // create a JAXB context for the PdfComposerRequest
-        LOG.debug("Create a JAXB context with PdfComposerRequest class.");
+        logger.debug("Create a JAXB context with PdfComposerRequest class.");
         JAXBContext jaxbContext = JAXBContext.newInstance(PdfComposerRequest.class);
         
         // create the JAXB unmarshaller
-        LOG.debug("Create the JAXB unmarshaller.");
+        logger.debug("Create the JAXB unmarshaller.");
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         
         // unmarshal in the "in" message content
-        LOG.debug("Unmarshal the \"in\" message content.");
+        logger.debug("Unmarshal the \"in\" message content.");
         return (PdfComposerRequest) unmarshaller.unmarshal(in.getContent());
     }
 

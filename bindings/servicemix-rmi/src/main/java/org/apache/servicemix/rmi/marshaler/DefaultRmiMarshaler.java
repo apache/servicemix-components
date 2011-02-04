@@ -23,11 +23,12 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.databinding.DataBinding;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.rmi.RmiExchange;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -38,7 +39,7 @@ import org.apache.servicemix.rmi.RmiExchange;
  */
 public class DefaultRmiMarshaler implements RmiMarshalerSupport {
     
-    private final static transient Log LOG = LogFactory.getLog(DefaultRmiMarshaler.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultRmiMarshaler.class);
     
     private DataBinding dataBinding;
     
@@ -79,7 +80,7 @@ public class DefaultRmiMarshaler implements RmiMarshalerSupport {
      */
     public void rmiExchangeToNmr(NormalizedMessage in, RmiExchange rmiExchange) throws MessagingException {
         // marshal the RMI exchange into the "in" normalized message using JAXB
-        LOG.debug("Marshal a RMI exchange into the in normalized message using JAXB.");
+        logger.debug("Marshal a RMI exchange into the in normalized message using JAXB.");
         
         // TODO only for testing purpose
         in.setContent(new StringSource("<TEST></TEST>")); 

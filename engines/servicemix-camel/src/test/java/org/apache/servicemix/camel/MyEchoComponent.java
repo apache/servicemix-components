@@ -21,13 +21,13 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyEchoComponent extends EchoComponent {
 
-    private static final Log LOG = LogFactory.getLog(MyEchoComponent.class);
+    private final Logger logger = LoggerFactory.getLogger(MyEchoComponent.class);
 
     public MyEchoComponent() {
     }
@@ -42,7 +42,7 @@ public class MyEchoComponent extends EchoComponent {
         if (exchange.getOperation() != null) {
             out.setProperty("operation", exchange.getOperation());
         }
-        LOG.info("Echoed back message: " + out);
+        logger.info("Echoed back message: " + out);
         return true;
     }
 

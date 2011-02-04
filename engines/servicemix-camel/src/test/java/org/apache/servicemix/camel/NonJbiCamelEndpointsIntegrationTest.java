@@ -28,19 +28,19 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @version $Revision: 1.1 $
  */
 public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
     
-    private static final transient Log LOG = LogFactory.getLog(NonJbiCamelEndpointsIntegrationTest.class);
+    private final static Logger logger = LoggerFactory.getLogger(NonJbiCamelEndpointsIntegrationTest.class);
 
     protected String suName = "su1";
 
@@ -60,7 +60,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
 
         try {
             for (int i = 0; i < 2; i++) {
-                LOG.info("Loop counter: " + i);
+                logger.info("Loop counter: " + i);
 
                 // Deploy and start su
                 component.getServiceUnitManager().deploy(suName,
@@ -93,13 +93,11 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                     client.send(exchange);
                     fail("Should have failed to send to a no longer deployed component");
                 } catch (Throwable e) {
-                    LOG.debug(
-                            "Caught expected exception as the component is undeployed: "
-                                    + e, e);
+                    logger.debug("Caught expected exception as the component is undeployed: " + e, e);
                 }
             }
         } catch (Exception e) {
-            LOG.error("Caught: " + e, e);
+            logger.error("Caught: " + e, e);
             throw e;
         }
     }
@@ -122,7 +120,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
             fail("Unable to create temporary working root directory ["
                     + tempTemp.getAbsolutePath() + "]");
         }
-        LOG.info("Using temporary root directory ["
+        logger.info("Using temporary root directory ["
                 + tempRootDir.getAbsolutePath() + "]");
 
         container.setEmbedded(true);
@@ -167,7 +165,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
     }
 
     public static boolean deleteDir(File dir) {
-        LOG.info("Deleting directory : " + dir.getAbsolutePath());
+        logger.info("Deleting directory : " + dir.getAbsolutePath());
         if (dir.isDirectory()) {
             String[] children = dir.list();
             for (int i = 0; i < children.length; i++) {

@@ -1,13 +1,13 @@
 package org.apache.servicemix.smpp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 import javax.jbi.messaging.ExchangeStatus;
@@ -19,8 +19,7 @@ import javax.xml.namespace.QName;
  */
 public class SpringComponentTest extends SpringTestSupport {
 
-    // logging facility
-    private final static transient Log LOG = LogFactory.getLog(SpringComponentTest.class);
+    private final Logger logger = LoggerFactory.getLogger(SpringComponentTest.class);
 
     private final static String MESSAGE = "<message>" + "<source>0123456789</source>"
             + "<destination>9876543210</destination>"
@@ -37,7 +36,7 @@ public class SpringComponentTest extends SpringTestSupport {
             // the failure is "normal" as there is no SMPP server mock for now
             // TODO add a SMPP server mock
             // fail("Received ERROR status: " + me.getError());
-            LOG.warn("Received ERROR status");
+            logger.warn("Received ERROR status");
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }

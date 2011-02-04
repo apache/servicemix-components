@@ -21,11 +21,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.soap.api.Interceptor;
 import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A PhaseInterceptorChain orders Interceptors according 
@@ -35,7 +35,7 @@ import org.apache.servicemix.soap.api.Message;
  */
 public class PhaseInterceptorChain implements InterceptorChain {
 
-    private static final Log LOG = LogFactory.getLog(PhaseInterceptorChain.class);
+    private final Logger logger = LoggerFactory.getLogger(PhaseInterceptorChain.class);
     
     private final List<Interceptor> interceptors = new ArrayList<Interceptor>();
     
@@ -56,9 +56,7 @@ public class PhaseInterceptorChain implements InterceptorChain {
     }
 
     public void add(Interceptor i) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Adding interceptor " + i.getId());
-        }
+        logger.debug("Adding interceptor " + i.getId());
         insertInterceptor(i);
     }
 
@@ -79,21 +77,21 @@ public class PhaseInterceptorChain implements InterceptorChain {
         try {
             while (iterator.hasNext()) {
                 Interceptor currentInterceptor = iterator.next();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Invoking handleMessage on interceptor " + currentInterceptor.getId());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Invoking handleMessage on interceptor " + currentInterceptor.getId());
                 }
                 currentInterceptor.handleMessage(message);
             }
         } catch (RuntimeException ex) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Interceptor has thrown exception, unwinding now", ex);
+            if (logger.isInfoEnabled()) {
+                logger.info("Interceptor has thrown exception, unwinding now", ex);
             }
             message.setContent(Exception.class, ex);
             // Unwind
             while (iterator.hasPrevious()) {
                 Interceptor currentInterceptor = iterator.previous();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Invoking handleFault on interceptor " + currentInterceptor.getId());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Invoking handleFault on interceptor " + currentInterceptor.getId());
                 }
                 currentInterceptor.handleFault(message);
             }

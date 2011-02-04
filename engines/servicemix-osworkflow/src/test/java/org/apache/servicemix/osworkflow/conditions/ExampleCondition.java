@@ -21,15 +21,12 @@ import java.util.Map;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.workflow.Condition;
 import com.opensymphony.workflow.WorkflowException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExampleCondition implements Condition {
 
-    private static Log logger = LogFactory.getLog(ExampleCondition.class);
+    private final Logger logger = LoggerFactory.getLogger(ExampleCondition.class);
 
     /*
      * (non-Javadoc)

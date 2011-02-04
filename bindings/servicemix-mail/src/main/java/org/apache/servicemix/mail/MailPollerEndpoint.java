@@ -36,13 +36,13 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 import javax.mail.search.FlagTerm;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
 import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
 import org.apache.servicemix.mail.utils.MailUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the polling endpoint for the mail component.
@@ -51,7 +51,8 @@ import org.apache.servicemix.mail.utils.MailUtils;
  * @author lhein
  */
 public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointType {
-    private static final transient Log LOG = LogFactory.getLog(MailPollerEndpoint.class);
+
+    private final Logger logger = LoggerFactory.getLogger(MailPollerEndpoint.class);
 
     private AbstractMailMarshaler marshaler = new DefaultMailMarshaler();
 
@@ -166,10 +167,10 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
      * @see org.apache.servicemix.components.util.PollingComponentSupport#poll()
      */
     public void poll() throws Exception {
-        LOG.debug("Polling mailfolder " + config.getFolderName() + " at host " + config.getHost() + "...");
+        logger.debug("Polling mailfolder " + config.getFolderName() + " at host " + config.getHost() + "...");
 
         if (maxFetchSize == 0) {
-            LOG.debug("The configuration is set to poll no new messages at all...skipping.");
+            logger.debug("The configuration is set to poll no new messages at all...skipping.");
             return;
         }
 
@@ -313,7 +314,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                     cleanUpSeenMessages();
                 }
             } catch (Exception ignored) {
-                logger.debug(ignored);
+                logger.debug("", ignored);
             }
         }
     }
@@ -483,7 +484,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         try {
             this.config = MailUtils.configure(this.connection);
         } catch (ParseException ex) {
-            LOG.error("The configured connection uri is invalid", ex);
+            logger.error("The configured connection uri is invalid", ex);
         }
     }
 

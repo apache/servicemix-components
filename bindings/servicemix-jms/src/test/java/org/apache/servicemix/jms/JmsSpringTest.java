@@ -21,19 +21,19 @@ import javax.jbi.messaging.InOut;
 import javax.naming.Context;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.apache.xbean.spring.jndi.SpringInitialContextFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class JmsSpringTest extends SpringTestSupport {
 
-    private static Log logger =  LogFactory.getLog(JmsSpringTest.class);
+    private final Logger logger =  LoggerFactory.getLogger(JmsSpringTest.class);
 
     public void test() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);

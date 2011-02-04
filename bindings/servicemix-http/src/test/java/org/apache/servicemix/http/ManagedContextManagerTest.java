@@ -20,13 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ManagedContextManagerTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(ManagedContextManagerTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ManagedContextManagerTest.class);
     private ManagedContextManager server;
     private HttpConfiguration config;
 
@@ -81,7 +80,7 @@ public class ManagedContextManagerTest extends TestCase {
         }
 
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-            log.info(request);
+            log.info(request.toString());
         }
 
     }

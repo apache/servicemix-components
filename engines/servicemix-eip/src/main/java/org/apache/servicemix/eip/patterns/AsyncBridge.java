@@ -27,8 +27,6 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.eip.support.ExchangeTarget;
@@ -36,6 +34,8 @@ import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The async bridge pattern is used to bridge an In-Out exchange with two In-Only
@@ -58,7 +58,7 @@ public class AsyncBridge extends EIPEndpoint {
 
     public static final String CORRID = "org.apache.servicemix.eip.asyncbridge.corrid";
 
-    private static final Log LOG = LogFactory.getLog(AsyncBridge.class);
+    private final Logger logger = LoggerFactory.getLogger(AsyncBridge.class);
 
     private Expression requestCorrId = new Expression() {
         public Object evaluate(MessageExchange exchange, NormalizedMessage message) throws MessagingException {
@@ -320,7 +320,7 @@ public class AsyncBridge extends EIPEndpoint {
                 fail(t0, new TimeoutException());
             }
         } catch (Exception e) {
-            LOG.debug("Exception caught when handling timeout", e);
+            logger.debug("Exception caught when handling timeout", e);
         }
     }
     

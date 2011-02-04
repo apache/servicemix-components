@@ -19,7 +19,9 @@ package org.apache.servicemix.common.scheduler;
 import java.util.TimerTask;
 
 /**
+ * <p>
  * A task run by a {@link Scheduler}.
+ * </p>
  * 
  * @author George Gastaldi (gastaldi)
  */
@@ -43,7 +45,9 @@ public abstract class SchedulerTask implements Runnable {
     public abstract void run();
 
     /**
+     * <p>
      * Cancels task.
+     * </p>
      * 
      * @return true if task already scheduled
      */

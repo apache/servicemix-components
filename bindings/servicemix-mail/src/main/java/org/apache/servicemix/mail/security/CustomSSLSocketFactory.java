@@ -16,8 +16,8 @@
  */
 package org.apache.servicemix.mail.security;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
@@ -45,8 +45,9 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
      */
     public static final String PROPERTY_SEPARATOR = ";";
 
-    private static final String PREFIX = "Customized trust manager ";    
-    private static final Log LOG = LogFactory.getLog(CustomSSLSocketFactory.class);
+    private static final String PREFIX = "Customized trust manager ";
+
+    private final Logger logger = LoggerFactory.getLogger(CustomSSLSocketFactory.class);
 
     private SSLSocketFactory factory;
 
@@ -67,7 +68,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
             }
             factory = sslcontext.getSocketFactory();
         } catch (Exception ex) {
-            LOG.error("Failed to create the dummy ssl socket factory.", ex);
+            logger.error("Failed to create the dummy ssl socket factory.", ex);
         }
     }
 
@@ -95,14 +96,14 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
         		if (tm instanceof TrustManager) {
         			managers.add((TrustManager)tm);
         		} else {
-        			LOG.error(PREFIX + name + " is not implementing TrustManager. Skipping...");
+        			logger.error(PREFIX + name + " is not implementing TrustManager. Skipping...");
         		}
         	} catch (IllegalAccessException iaex) {
-        		LOG.error(PREFIX + name + " is not accessable. Skipping...", iaex);
+        		logger.error(PREFIX + name + " is not accessable. Skipping...", iaex);
         	} catch (InstantiationException iex) {
-        		LOG.error(PREFIX + name + " could not be instantiated. Skipping...", iex);
+        		logger.error(PREFIX + name + " could not be instantiated. Skipping...", iex);
         	} catch (ClassNotFoundException cnfex) {
-        		LOG.error(PREFIX + name + " was not found. Skipping...", cnfex);
+        		logger.error(PREFIX + name + " was not found. Skipping...", cnfex);
         	}
         }
 

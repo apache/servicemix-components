@@ -21,12 +21,12 @@ import java.net.URL;
 import java.security.Principal;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.jaxp.W3CDOMStreamWriter;
 import org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService;
@@ -46,7 +46,7 @@ import org.springframework.core.io.ClassPathResource;
 
 public class WSSecurityHandlerTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(WSSecurityHandlerTest.class);
+    private final static Logger logger = LoggerFactory.getLogger(WSSecurityHandlerTest.class);
 
     static {
         String path = System.getProperty("java.security.auth.login.config");
@@ -57,7 +57,7 @@ public class WSSecurityHandlerTest extends TestCase {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
-        log.info("Path to login config: " + path);
+        logger.info("Path to login config: " + path);
     }
 
     public void testUserNameToken() throws Exception {
@@ -117,7 +117,7 @@ public class WSSecurityHandlerTest extends TestCase {
         handler.onSend(ctx);
         
         Document doc = ctx.getInMessage().getDocument();
-        log.info(DOMUtil.asXML(doc));
+        logger.info(DOMUtil.asXML(doc));
         
         handler.setReceiveAction(WSHandlerConstants.SIGNATURE);
         handler.onReceive(ctx);
@@ -157,11 +157,11 @@ public class WSSecurityHandlerTest extends TestCase {
         handler.setUsername("myalias");
         crypto.setKeyPassword("myAliasPassword");
         handler.setReceiveAction(WSHandlerConstants.SIGNATURE);
-        log.info("testSignatureServer BEFORE onReceive");
+        logger.info("testSignatureServer BEFORE onReceive");
         Document doc = ctx.getInMessage().getDocument();
-        log.info(DOMUtil.asXML(doc));
+        logger.info(DOMUtil.asXML(doc));
         handler.onReceive(ctx);
-        log.info("testSignatureServer AFTER onReceive");
+        logger.info("testSignatureServer AFTER onReceive");
         List l = (List) ctx.getProperty(WSHandlerConstants.RECV_RESULTS);
         assertNotNull(l);
         assertEquals(1, l.size());

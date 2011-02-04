@@ -46,9 +46,6 @@ public abstract class ProviderEndpoint extends SimpleEndpoint {
         super(component.getServiceUnit(), endpoint.getServiceName(), endpoint.getEndpointName());
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.servicemix.common.Endpoint#getRole()
-     */
     public Role getRole() {
         return Role.PROVIDER;
     }
@@ -71,11 +68,13 @@ public abstract class ProviderEndpoint extends SimpleEndpoint {
     }
 
     /**
+     * <p>
      * A default implementation of the message processor which checks the status of the exchange
      * and if its valid will dispatch to either {@link #processInOnly(MessageExchange,NormalizedMessage)} for
      * an {@link InOnly} or {@link RobustInOnly} message exchange otherwise the
      * {@link #processInOut(MessageExchange,NormalizedMessage,NormalizedMessage)}
-     * method will be invoked
+     * method will be invoked.
+     * </p>
      *
      * @param exchange the message exchange
      * @throws Exception

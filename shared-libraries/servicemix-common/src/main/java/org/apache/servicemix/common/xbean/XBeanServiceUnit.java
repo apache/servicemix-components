@@ -18,7 +18,6 @@ package org.apache.servicemix.common.xbean;
 
 import javax.jbi.JBIException;
 
-import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.DefaultServiceUnit;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 

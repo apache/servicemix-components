@@ -29,15 +29,12 @@ import com.opensymphony.workflow.Workflow;
 import com.opensymphony.workflow.WorkflowException;
 import com.opensymphony.workflow.basic.BasicWorkflow;
 import com.opensymphony.workflow.config.DefaultConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-/**
- * @author lhe
- */
 public class OSWorkflow implements Runnable {
-    
+
+    private final Logger logger = LoggerFactory.getLogger(OSWorkflow.class);
 
     public static final String KEY_EXCHANGE = "exchange";
 
@@ -48,8 +45,6 @@ public class OSWorkflow implements Runnable {
     public static final String KEY_CALLER = "caller";
 
     public static final String KEY_ASYNC_PROCESSING = "asynchronous";
-
-    private static Log log = LogFactory.getLog(OSWorkflow.class);
     
     private Workflow osWorkflowInstance;
 
@@ -129,12 +124,12 @@ public class OSWorkflow implements Runnable {
         // call the endpoint method for init actions
         this.endpoint.preWorkflow();
 
-        if (log.isDebugEnabled()) {
-            log.debug("Starting workflow...");
-            log.debug("Name:       " + this.osWorkflowName);
-            log.debug("Action:     " + this.action);
-            log.debug("Caller:     " + this.caller);
-            log.debug("Map:        " + this.map);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Starting workflow...");
+            logger.debug("Name:       " + this.osWorkflowName);
+            logger.debug("Action:     " + this.action);
+            logger.debug("Caller:     " + this.caller);
+            logger.debug("Map:        " + this.map);
         }
 
         // loop as long as there are more actions to do and the workflow is not
@@ -145,7 +140,7 @@ public class OSWorkflow implements Runnable {
                 try {
                     this.workflowId = createWorkflow();
                 } catch (Exception ex) {
-                    log.error("Error creating the workflow", ex);
+                    logger.error("Error creating the workflow", ex);
                     aborted = true;
                     break;
                 }
@@ -157,34 +152,34 @@ public class OSWorkflow implements Runnable {
             // check if there are more actions available
             if (availableActions.length == 0) {
                 // no, no more actions available - workflow finished
-                log.debug("No more actions. Workflow is finished...");
+                logger.debug("No more actions. Workflow is finished...");
                 this.finished = true;
             } else {
                 // get first available action to execute
                 int nextAction = availableActions[0];
 
-                log.debug("call action " + nextAction);
+                logger.debug("call action " + nextAction);
                 try {
                     // call the action
                     this.osWorkflowInstance.doAction(this.workflowId,nextAction, this.map);
                 } catch (InvalidInputException iiex) {
-                    log.error(iiex);
+                    logger.error(iiex.getMessage());
                     aborted = true;
                 } catch (WorkflowException wfex) {
-                    log.error(wfex);
+                    logger.error(wfex.getMessage());
                     aborted = true;
                 }
             }
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Stopping workflow...");
-            log.debug("Name:       " + this.osWorkflowName);
-            log.debug("Action:     " + this.action);
-            log.debug("Caller:     " + this.caller);
-            log.debug("Map:        " + this.map);
-            log.debug("WorkflowId: " + this.workflowId);
-            log.debug("End state:  " + (finished ? "Finished" : "Aborted"));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Stopping workflow...");
+            logger.debug("Name:       " + this.osWorkflowName);
+            logger.debug("Action:     " + this.action);
+            logger.debug("Caller:     " + this.caller);
+            logger.debug("Map:        " + this.map);
+            logger.debug("WorkflowId: " + this.workflowId);
+            logger.debug("End state:  " + (finished ? "Finished" : "Aborted"));
         }
 
         // call the endpoint method for cleanup actions or message exchange

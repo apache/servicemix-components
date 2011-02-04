@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.drools
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.drools.model.Exchange;
 import org.apache.servicemix.drools.fibonacci.Fibonacci;
 import org.apache.servicemix.drools.fibonacci.Request;

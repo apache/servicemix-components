@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.common.endpoints;
 
-import org.apache.commons.logging.Log;
 import org.apache.servicemix.common.ServiceUnit;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.EndpointSupport;
 
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 
 import javax.jbi.management.DeploymentException;
@@ -38,7 +38,7 @@ public abstract class AbstractEndpoint implements Endpoint {
     protected Document description;
     protected Definition definition;
     protected ServiceUnit serviceUnit;
-    protected Log logger;
+    protected Logger logger;
     private String key;
 
     public AbstractEndpoint() {
@@ -52,6 +52,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
+     * Get the endpoint implementation.
+     * </p>
+     *
      * @return Returns the endpoint.
      */
     public String getEndpoint() {
@@ -59,7 +63,9 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
      * The name of the endpoint.
+     * </p>
      *
      * @param endpoint a string specifiying the name of the endpoint
      * @org.apache.xbean.Property
@@ -70,6 +76,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
+     * Get the service qualified name of the endpoint.
+     * </p>
+     *
      * @return Returns the service.
      */
     public QName getService() {
@@ -77,7 +87,9 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
      * The qualified name of the service the endpoint exposes.
+     * </p>
      *
      * @param service a QName specifiying the name of the service
      * @org.apache.xbean.Property
@@ -88,11 +100,19 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
+     * Get the endpoint role.
+     * </p>
+     *
      * @return Returns the role.
      */
     public abstract Role getRole();
 
     /**
+     * <p>
+     * Get the endpoint description.
+     * </p>
+     *
      * @return Returns the description.
      */
     public Document getDescription() {
@@ -100,8 +120,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
      * Associates an XML document with the endpoint. The XML document describes the endpoint and is typically found in the service
      * unit packaging.
+     * </p>
      *
      * @param description a <code>Document</code> describing the endpoint
      * @org.apache.xbean.Property description="an XML document describing the endpoint" hidden="true"
@@ -111,6 +133,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
+     * Get the qualified name of the endpoint interface.
+     * </p>
+     *
      * @return Returns the interfaceName.
      */
     public QName getInterfaceName() {
@@ -118,7 +144,9 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
      * The qualified name of the interface exposed by the endpoint.
+     * </p>
      *
      * @param interfaceName a QName specifiying the name of the interface
      * @org.apache.xbean.Property
@@ -128,6 +156,10 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
+     * Get the service unit associated to the endpoint.
+     * </p>
+     *
      * @return Returns the serviceUnit.
      */
     public ServiceUnit getServiceUnit() {
@@ -135,7 +167,9 @@ public abstract class AbstractEndpoint implements Endpoint {
     }
 
     /**
+     * <p>
      * Associates an endpoint with a service unit. The service unit is used by the container to manage the endpoint's lifecycle.
+     * </p>
      *
      * @param serviceUnit a <code>ServiceUnit</code> to which the endpoint will be associated
      * @org.apache.xbean.Property description="the service unit responsible for the endpoint" hidden="true

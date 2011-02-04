@@ -62,14 +62,14 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     }
 
     public void onMessage(final Message message) {
-        if (log.isDebugEnabled()) {
-            log.debug("Received jms message " + message);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Received jms message " + message);
         }
         endpoint.getServiceUnit().getComponent().getExecutor(MessageExchange.Role.PROVIDER).execute(new Runnable() {
             public void run() {
                 InOut exchange = null;
-                if (log.isDebugEnabled()) {
-                    log.debug("Handling jms message " + message);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Handling jms message " + message);
                 }
                 String correlationID = null;
                 try {
@@ -79,7 +79,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                         throw new IllegalStateException();
                     }
                 } catch (Exception e) {
-                    log.error("Could not find exchange " + (correlationID == null ? "" : correlationID), e);
+                    logger.error("Could not find exchange " + (correlationID == null ? "" : correlationID), e);
                     return;
                 }
                 try {
@@ -95,13 +95,13 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                         ((InOut) exchange).setOutMessage(msg);
                     }
                 } catch (Exception e) {
-                    log.error("Error while handling jms message", e);
+                    logger.error("Error while handling jms message", e);
                     exchange.setError(e);
                 }
                 try {
                     channel.send(exchange);
                 } catch (MessagingException e) {
-                    log.error("Error while handling jms message", e);
+                    logger.error("Error while handling jms message", e);
                 }
             }
         });

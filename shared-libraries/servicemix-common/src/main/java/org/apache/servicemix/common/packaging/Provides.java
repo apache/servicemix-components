@@ -19,8 +19,10 @@ package org.apache.servicemix.common.packaging;
 import javax.xml.namespace.QName;
 
 /**
+ * <p>
  * Provides a value object for gathering information on a provides element from
- * a ServiceUnitAnalyzer
+ * a ServiceUnitAnalyzer.
+ * </p>
  * 
  * @author Philip Dodds
  * @version $Revision: 426415 $

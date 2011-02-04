@@ -24,11 +24,11 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.util.URIResolver;
@@ -38,7 +38,7 @@ import org.apache.servicemix.tck.ReceiverComponent;
 
 public class JmsURITest extends AbstractJmsTestSupport {
 
-    private static Log logger =  LogFactory.getLog(JmsURITest.class);
+    private final Logger logger = LoggerFactory.getLogger(JmsURITest.class);
 
     public void testResolveEndpoint() throws Exception {
         JmsComponent jms = new JmsComponent();

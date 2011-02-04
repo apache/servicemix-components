@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.smpp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jbi.helper.MessageUtil;
 import org.apache.servicemix.smpp.marshaler.DefaultSmppMarshaler;
@@ -31,6 +29,8 @@ import org.jsmpp.session.BindParameter;
 import org.jsmpp.session.SMPPSession;
 import org.jsmpp.util.AbsoluteTimeFormatter;
 import org.jsmpp.util.TimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
@@ -51,8 +51,7 @@ import java.util.Date;
  */
 public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpointType {
 
-    // logging facility
-    private final static transient Log log = LogFactory.getLog(SmppProviderEndpoint.class);
+    private final Logger logger = LoggerFactory.getLogger(SmppProviderEndpoint.class);
 
     // SMPP default port number
     private final static int SMPP_DEFAULT_PORT = 2775;
@@ -107,7 +106,7 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
 
         // check for valid port number
         if (this.port <= 0) {
-            log.warn("Invalid SMPP port specified. Use the default one : " + SMPP_DEFAULT_PORT);
+            logger.warn("Invalid SMPP port specified. Use the default one : " + SMPP_DEFAULT_PORT);
             this.port = SMPP_DEFAULT_PORT;
         }
         // check for valid host
@@ -150,7 +149,7 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
                     NumberingPlanIndicator.UNKNOWN,
                     null));
         } catch (IOException ioException) {
-            log.error("Error connecting to the SMPP server", ioException);
+            logger.error("Error connecting to the SMPP server", ioException);
             return;
         }
     }
@@ -216,7 +215,7 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
         MessageRequest sm = marshaler.fromNMS(exchange, in);
 
         try {
-            log.debug("Submiting request: " + sm);
+            logger.debug("Submiting request: " + sm);
             String messageId = session
                     .submitShortMessage("CMT", TypeOfNumber.valueOf(sm.getSourceAddrTon()),
                             NumberingPlanIndicator.valueOf(sm.getSourceAddrNpi()),
@@ -228,21 +227,21 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
                                     Alphabet.ALPHA_DEFAULT), (byte) 0, sm
                                     .getShortMessage());
 
-            log.debug("Message sent with ID " + messageId);
+            logger.debug("Message sent with ID " + messageId);
         } catch (PDUException pduException) {
-            log.error("Invalid PDU parameter", pduException);
+            logger.error("Invalid PDU parameter", pduException);
             fail(exchange, new Exception("Invalid PDU parameter", pduException));
         } catch (ResponseTimeoutException responseTimeoutException) {
-            log.error("Response timeout");
+            logger.error("Response timeout");
             fail(exchange, new Exception("Response timeout", responseTimeoutException));
         } catch (InvalidResponseException invalidResponseException) {
-            log.error("Invalid response");
+            logger.error("Invalid response");
             fail(exchange, new Exception("Invalid response", invalidResponseException));
         } catch (NegativeResponseException negativeResponseException) {
-            log.error("Negative response");
+            logger.error("Negative response");
             fail(exchange, new Exception("Negative response", negativeResponseException));
         } catch (IOException ioException) {
-            log.error("IO error during message send");
+            logger.error("IO error during message send");
             fail(exchange, new Exception("IO error during message send", ioException));
         }
     }

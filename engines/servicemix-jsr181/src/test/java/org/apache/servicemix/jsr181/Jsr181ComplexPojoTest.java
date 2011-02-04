@@ -32,14 +32,14 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -53,7 +53,7 @@ import org.apache.xpath.CachedXPathAPI;
 
 public class Jsr181ComplexPojoTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(Jsr181ComplexPojoTest.class);
+    private final Logger logger = LoggerFactory.getLogger(Jsr181ComplexPojoTest.class);
     
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
@@ -120,7 +120,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         me.getInMessage().setContent(new StringSource(
                 "<oneWay xmlns='http://jsr181.servicemix.apache.org'><in0>world</in0></oneWay>"));
         client.sendSync(me);
-        log.info(new SourceTransformer().contentToString(me.getOutMessage()));
+        logger.info(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
         
         // Wait all acks being processed
@@ -150,7 +150,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         me.getInMessage().setContent(new StringSource(
                 "<twoWay xmlns='http://jsr181.servicemix.apache.org'><in0>world �</in0></twoWay>"));
         client.sendSync(me);
-        log.info(new SourceTransformer().contentToString(me.getOutMessage()));
+        logger.info(new SourceTransformer().contentToString(me.getOutMessage()));
         client.done(me);
         
         // Wait all acks being processed
@@ -182,7 +182,7 @@ public class Jsr181ComplexPojoTest extends TestCase {
         assertEquals(ExchangeStatus.ACTIVE, me.getStatus());
         assertNotNull(me.getFault());
         Node n = transformer.toDOMNode(me.getFault());
-        log.info(transformer.toString(n));
+        logger.info(transformer.toString(n));
         assertNotNull(textValueOfXPath(n, "/stack"));
         client.done(me);
         

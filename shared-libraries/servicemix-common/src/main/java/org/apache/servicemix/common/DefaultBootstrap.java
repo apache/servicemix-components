@@ -23,12 +23,14 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 /**
+ * <p>
  * Default Bootstrap class.
  * 
  * This is a default implementation of the Bootstrap,  it is used by the 
  * Maven JBI plugin to provide a standard implementation of a Bootstrap
  * when a component does not provide one, so even it is tagged as deprecated,
  * it should not be removed.
+ * </p>
  * 
  * @deprecated Due to JBI classloader mechanism, component should not
  *    use this class directly, but copy it, or rely on the maven-jbi-plugin

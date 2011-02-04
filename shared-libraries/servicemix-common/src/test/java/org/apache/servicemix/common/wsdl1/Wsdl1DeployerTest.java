@@ -26,8 +26,6 @@ import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.xml.WSDLReader;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.ServiceMixComponent;
 import org.apache.servicemix.common.endpoints.AbstractEndpoint;
 
@@ -38,8 +36,6 @@ import org.apache.servicemix.common.Container;
 import junit.framework.TestCase;
 
 public class Wsdl1DeployerTest extends TestCase {
-
-    private static transient Log logger =  LogFactory.getLog(Wsdl1DeployerTest.class);
         
     // Test to Deploy Service Unit
     public void testDeploy() throws Exception {

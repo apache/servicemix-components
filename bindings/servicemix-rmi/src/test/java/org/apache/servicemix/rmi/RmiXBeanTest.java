@@ -21,8 +21,6 @@ import java.rmi.registry.LocateRegistry;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.springframework.core.io.ClassPathResource;
 
@@ -34,9 +32,6 @@ import org.springframework.core.io.ClassPathResource;
  * @author jbonofre
  */
 public class RmiXBeanTest extends TestCase {
-    
-    // logging facility
-    private final static transient Log LOG = LogFactory.getLog(RmiXBeanTest.class);
     
     protected JBIContainer container;
     protected RmiComponent component;

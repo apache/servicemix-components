@@ -31,8 +31,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.http.ContextManager;
 import org.apache.servicemix.http.HttpBridgeServlet;
 import org.apache.servicemix.http.HttpConfiguration;
@@ -67,11 +65,13 @@ import org.mortbay.thread.ThreadPool;
 import org.mortbay.util.ByteArrayISO8859Writer;
 import org.mortbay.util.LazyList;
 import org.mortbay.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 public class JettyContextManager implements ContextManager {
 
-    private static final Log LOGGER = LogFactory.getLog(JettyContextManager.class);
+    private final Logger logger = LoggerFactory.getLogger(JettyContextManager.class);
 
     private Map<String, Server> servers;
     private HttpConfiguration configuration;
@@ -268,11 +268,9 @@ public class JettyContextManager implements ContextManager {
             try {
                 connector = (Connector) Class.forName(connectorClassName).newInstance();
             } catch (Exception e) {
-                LOGGER.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to "
+                logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to "
                                 + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Reason: " + e.getMessage(), e);
-                }
+                logger.debug("Reason: " + e.getMessage(), e);
                 connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME)
                                 .newInstance();
             }
@@ -466,9 +464,7 @@ public class JettyContextManager implements ContextManager {
     protected class ThreadPoolWrapper extends AbstractLifeCycle implements ThreadPool {
 
         public boolean dispatch(Runnable job) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Dispatching job: " + job);
-            }
+            logger.debug("Dispatching job: " + job);
             return threadPool.dispatch(job);
         }
 

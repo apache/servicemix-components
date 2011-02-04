@@ -16,16 +16,11 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.servicemix.common.xbean.XBeanServiceUnit;
-
 import org.w3c.dom.Document;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.MessageExchange.Role;
-import javax.wsdl.Definition;
 import javax.xml.namespace.QName;
 
 public interface Endpoint {

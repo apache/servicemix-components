@@ -16,16 +16,10 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.net.URI;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.GZIPInputStream;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -40,8 +34,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.apache.servicemix.jbi.jaxp.XMLStreamHelper;
 import org.apache.servicemix.common.JbiConstants;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import org.mortbay.jetty.HttpHeaders;
 
 /**

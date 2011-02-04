@@ -25,9 +25,6 @@ import java.net.URI;
 
 public class JbiEndpoint implements ExtensibilityElement, Serializable {
 
-    /**
-     * Generated serial version UID
-     */
     private static final long serialVersionUID = -3118867357618475968L;
     
     protected Boolean required;
@@ -36,59 +33,43 @@ public class JbiEndpoint implements ExtensibilityElement, Serializable {
     protected Role role;
     protected URI defaultMep;
     protected QName defaultOperation;
-    
-    /**
-     * @return Returns the elementType.
-     */
+
     public QName getElementType() {
         return elementType;
     }
-    /**
-     * @param elementType The elementType to set.
-     */
+
     public void setElementType(QName elementType) {
         this.elementType = elementType;
     }
-    /**
-     * @return Returns the required.
-     */
+
     public Boolean getRequired() {
         return required;
     }
-    /**
-     * @param required The required to set.
-     */
+
     public void setRequired(Boolean required) {
         this.required = required;
     }
+
     public Role getRole() {
         return role;
     }
+
     public void setRole(Role role) {
         this.role = role;
     }
-    /**
-     * @return Returns the defaultMep.
-     */
+
     public URI getDefaultMep() {
         return defaultMep;
     }
-    /**
-     * @param defaultMep The defaultMep to set.
-     */
+
     public void setDefaultMep(URI defaultMep) {
         this.defaultMep = defaultMep;
     }
-    
-    /**
-     * @return Returns the defaultOperation.
-     */
+
     public QName getDefaultOperation() {
         return defaultOperation;
     }
-    /**
-     * @param defaultOperation The defaultOperation to set.
-     */
+
     public void setDefaultOperation(QName defaultOperation) {
         this.defaultOperation = defaultOperation;
     }

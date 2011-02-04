@@ -16,12 +16,12 @@
  */
 package org.apache.servicemix.smpp.marshaler;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.jsmpp.bean.*;
 import org.jsmpp.bean.OptionalParameter.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -41,7 +41,8 @@ import java.util.List;
  */
 public class DefaultSmppMarshaler implements SmppMarshalerSupport {
 
-    private static final transient Log log = LogFactory.getLog(DefaultSmppMarshaler.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultSmppMarshaler.class);
+
     private final static String TAG_MESSAGE = "message";
     private final static String TAG_SOURCE = "source";
     private final static String TAG_DESTINATION = "destination";
@@ -133,50 +134,50 @@ public class DefaultSmppMarshaler implements SmppMarshalerSupport {
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_SOURCE)) != null) {
                 sm.setSourceAddr(getFirstNodeValue(node));
-                log.debug(TAG_SOURCE + ": " + sm.getSourceAddr());
+                logger.debug(TAG_SOURCE + ": " + sm.getSourceAddr());
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_DESTINATION)) != null) {
                 sm.setDestAddress(getFirstNodeValue(node));
-                log.debug(TAG_DESTINATION + ": " + sm.getDestAddress());
+                logger.debug(TAG_DESTINATION + ": " + sm.getDestAddress());
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_TEXT)) != null) {
                 sm.setShortMessage(getFirstNodeValue(node).getBytes());
-                log.debug(TAG_TEXT + ": " + new String(sm.getShortMessage()));
+                logger.debug(TAG_TEXT + ": " + new String(sm.getShortMessage()));
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_TON)) != null) {
                 ton = getFirstNodeValue(node);
                 sm.setDestAddrTon(TypeOfNumber.valueOf(ton).value());
                 sm.setSourceAddrTon(TypeOfNumber.valueOf(ton).value());
-                log.debug(TAG_TON + ": " + ton);
+                logger.debug(TAG_TON + ": " + ton);
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_NPI)) != null) {
                 npi = getFirstNodeValue(node);
                 sm.setDestAddrNpi(NumberingPlanIndicator.valueOf(npi).value());
                 sm.setSourceAddrNpi(NumberingPlanIndicator.valueOf(npi).value());
-                log.debug(TAG_NPI + ": " + npi);
+                logger.debug(TAG_NPI + ": " + npi);
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_REGISTERED_DELIVERY)) != null) {
                 String registeredDelivery = getFirstNodeValue(node);
                 sm.setRegisteredDelivery(SMSCDeliveryReceipt.valueOf(registeredDelivery).value());
-                log.debug(TAG_REGISTERED_DELIVERY + ": " + registeredDelivery);
+                logger.debug(TAG_REGISTERED_DELIVERY + ": " + registeredDelivery);
             } else {
                 sm.setRegisteredDelivery(SMSCDeliveryReceipt.DEFAULT.value());
-                log.debug(TAG_REGISTERED_DELIVERY + ": DEFAULT");
+                logger.debug(TAG_REGISTERED_DELIVERY + ": DEFAULT");
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_SCHEDULE_DELIVERY_TIME)) != null) {
                 sm.setScheduleDeliveryTime(getFirstNodeValue(node));
-                log.debug(TAG_SCHEDULE_DELIVERY_TIME + ": " + sm.getScheduleDeliveryTime());
+                logger.debug(TAG_SCHEDULE_DELIVERY_TIME + ": " + sm.getScheduleDeliveryTime());
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_VALIDITY_PERIOD)) != null) {
                 sm.setValidityPeriod(getFirstNodeValue(node));
-                log.debug(TAG_VALIDITY_PERIOD + ": " + sm.getValidityPeriod());
+                logger.debug(TAG_VALIDITY_PERIOD + ": " + sm.getValidityPeriod());
             }
         } catch (Exception exception) {
             throw new TransformerException(exception);
@@ -216,38 +217,38 @@ public class DefaultSmppMarshaler implements SmppMarshalerSupport {
         }
 
         if (mr.getSourceAddr() == null || mr.getSourceAddr().trim().length() < 1) {
-            log.error("The MessageRequest source address is not defined");
+            logger.error("The MessageRequest source address is not defined");
             throw new MessagingException("The MessageRequest source address is not defined");
         }
 
         if (mr.getDestAddress() == null || mr.getDestAddress().trim().length() < 1) {
-            log.error("The MessageRequest destination address is not defined");
+            logger.error("The MessageRequest destination address is not defined");
             throw new MessagingException("The MessageRequest destination address is not defined");
         }
 
         try {
             NumberingPlanIndicator.valueOf(mr.getDestAddrNpi());
         } catch (IllegalArgumentException illegalArgumentException) {
-            log.error("The MessageRequest destination numbering plan indicator is not valid");
+            logger.error("The MessageRequest destination numbering plan indicator is not valid");
             throw new MessagingException("The MessageRequest destination numbering plan indicator is not valid");
         }
 
         try {
             TypeOfNumber.valueOf(mr.getDestAddrTon());
         } catch (IllegalArgumentException illegalArgumentException) {
-            log.error("The MessageRequest destination type of number is not valid");
+            logger.error("The MessageRequest destination type of number is not valid");
             throw new MessagingException("The MessageRequest destination type of number is not valid");
         }
 
         try {
             determineSMSCDeliveryReceipt(mr.getRegisteredDelivery());
         } catch (IllegalArgumentException illegalArgumentException) {
-            log.error("The MessageRequest registered delivery is not valid");
+            logger.error("The MessageRequest registered delivery is not valid");
             throw new MessagingException("The MessageRequest registered delivery is not valid");
         }
 
         if (mr.getShortMessage() == null || mr.getShortMessage().length == 0) {
-            log.warn("Received message without text content. Ignore the message");
+            logger.warn("Received message without text content. Ignore the message");
             return;
         }
 

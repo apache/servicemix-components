@@ -19,7 +19,9 @@ package org.apache.servicemix.common;
 import javax.jbi.management.DeploymentException;
 
 /**
+ * <p>
  * A deployer is responsible for handling one type of artifact deployment.
+ * </p>
  * 
  * @author Guillaume Nodet
  * @version $Revision$

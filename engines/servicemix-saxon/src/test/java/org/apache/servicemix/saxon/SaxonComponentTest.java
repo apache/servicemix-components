@@ -24,10 +24,10 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -37,7 +37,8 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class SaxonComponentTest extends SpringTestSupport {
-    private static transient Log log = LogFactory.getLog(SaxonComponentTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(SaxonComponentTest.class);
 
     public void testXslt() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -54,7 +55,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("2005", textValueOfXPath(el, "/transformed/bookstore/book[1]/year"));
         client.done(me);
@@ -75,7 +76,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("2005", textValueOfXPath(el, "/transformed/bookstore/book[1]/year"));
         client.done(me);
@@ -98,7 +99,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("2005", textValueOfXPath(el, "/transformed/book/year"));
         client.done(me);
@@ -122,7 +123,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("2005", textValueOfXPath(el, "/transformed/book/year"));
         client.done(me);
@@ -144,7 +145,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals("cheeseyCheese", textValueOfXPath(el, "//param"));
@@ -167,7 +168,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         client.done(me);
     }
 
@@ -186,7 +187,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         client.done(me);
     }
 
@@ -205,7 +206,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
         client.done(me);
@@ -226,7 +227,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
         client.done(me);
@@ -248,7 +249,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals(new QName("http://saxon.sf.net/xquery-results", "sequence"), DOMUtil.getQName(el));
@@ -275,7 +276,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
@@ -296,7 +297,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals("skcotSyub", el.getLocalName());
@@ -317,7 +318,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals("buyStocks", el.getLocalName());
@@ -338,7 +339,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals("buyStocks", el.getLocalName());
@@ -359,7 +360,7 @@ public class SaxonComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(transformer.toString(me.getOutMessage().getContent()));
+        logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
         client.done(me);
         assertEquals("buyStocks", el.getLocalName());

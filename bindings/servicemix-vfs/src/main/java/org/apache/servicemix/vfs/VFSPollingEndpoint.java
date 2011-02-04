@@ -33,8 +33,6 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileContent;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSelector;
@@ -48,6 +46,8 @@ import org.apache.servicemix.common.locks.impl.SimpleLockManager;
 import org.apache.servicemix.components.util.DefaultFileMarshaler;
 import org.apache.servicemix.components.util.FileMarshaler;
 import org.apache.servicemix.executors.ExecutorAwareRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A polling endpoint that looks for a file or files in a virtual file system 
@@ -63,7 +63,8 @@ import org.apache.servicemix.executors.ExecutorAwareRunnable;
  * @author lhein
  */
 public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointType {
-    private static final Log logger = LogFactory.getLog(VFSPollingEndpoint.class);
+
+    private final Logger logger = LoggerFactory.getLogger(VFSPollingEndpoint.class);
     
     private FileMarshaler marshaler = new DefaultFileMarshaler();
     private FileObject file;
@@ -216,7 +217,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                 lock.unlock();
             } catch (Exception ex) {
                 // can't release the lock
-                logger.error(ex);
+                logger.error("", ex);
             }
         }
     }

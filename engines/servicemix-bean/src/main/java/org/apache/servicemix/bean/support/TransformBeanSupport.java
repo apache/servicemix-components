@@ -32,6 +32,8 @@ import org.apache.servicemix.jbi.transformer.CopyTransformer;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.StoreFactory;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A useful base class for a transform component.
@@ -39,6 +41,8 @@ import org.apache.servicemix.store.memory.MemoryStoreFactory;
  * @version $Revision$
  */
 public abstract class TransformBeanSupport extends BeanSupport implements MessageExchangeListener {
+
+    private final Logger logger = LoggerFactory.getLogger(TransformBeanSupport.class);
     
     private String correlation;
     
@@ -199,9 +203,7 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
                 fail(exchange, e);
             } catch (Exception e2) {
                 logger.warn("Unable to handle error: " + e2, e2);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Original error: " + e, e);
-                }
+                logger.debug("Original error: " + e, e);
             }
         }
     }
@@ -247,9 +249,7 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
                         + " but has no Out nor Fault message");
             }
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Original error: " + e, e);
-            }
+            logger.debug("Original error: " + e, e);
         }
     }
 

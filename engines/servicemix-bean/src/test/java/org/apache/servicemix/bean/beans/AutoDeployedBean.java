@@ -18,9 +18,9 @@ package org.apache.servicemix.bean.beans;
 
 import javax.jbi.messaging.MessageExchange;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.bean.Endpoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A simple POJO which uses annotations to expose it on a JBI bus
@@ -30,13 +30,13 @@ import org.apache.servicemix.bean.Endpoint;
 @Endpoint(name = "cheese", targetNamespace = "urn:test", serviceName = "service")
 public class AutoDeployedBean {
 
-    private static final Log LOG = LogFactory.getLog(AutoDeployedBean.class);
+    private final Logger logger = LoggerFactory.getLogger(AutoDeployedBean.class);
 
     public void foo(MessageExchange messageExchange) {
-        LOG.info("foo() called with exchange: " + messageExchange);
+        logger.info("foo() called with exchange: " + messageExchange);
     }
 
     public void bar(MessageExchange messageExchange) {
-        LOG.info("bar() called with exchange: " + messageExchange);
+        logger.info("bar() called with exchange: " + messageExchange);
     }
 }

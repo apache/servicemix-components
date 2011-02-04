@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -49,8 +51,6 @@ import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -69,7 +69,8 @@ import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class HttpSoapTest extends TestCase {
-    private static transient Log logger = LogFactory.getLog(HttpSoapTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(HttpSoapTest.class);
 
     protected JBIContainer container;
     

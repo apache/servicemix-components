@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @version $Revision$
- */
 public class URISupport {
 
     public static class CompositeData {
@@ -133,14 +130,25 @@ public class URISupport {
     }
 
     /**
-     * Removes any URI query from the given uri
+     * <p>
+     * Removes any URI query from the given URI.
+     * </p>
+     *
+     * @param uri the given URI.
+     * @return a clean URI with removed any URI query.
      */
     public static URI removeQuery(URI uri) throws URISyntaxException {
         return createURIWithQuery(uri, null);
     }
 
     /**
-     * Creates a URI with the given query
+     * <p>
+     * Creates a URI with the given query.
+     * </p>
+     *
+     * @param uri the given URI.
+     * @param query the query URI to add.
+     * @return a populated URI including query URI.
      */
     public static URI createURIWithQuery(URI uri, String query) throws URISyntaxException {
         return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath(), query, uri.getFragment());
@@ -158,13 +166,6 @@ public class URISupport {
         return rc;
     }
 
-    /**
-     * @param uri
-     * @param rc
-     * @param ssp
-     * @param p
-     * @throws URISyntaxException
-     */
     private static void parseComposite(URI uri, CompositeData rc, String ssp) throws URISyntaxException {
         String componentString;
         String params;
@@ -211,10 +212,6 @@ public class URISupport {
         }
     }
 
-    /**
-     * @param componentString
-     * @return
-     */
     private static String[] splitComponents(String str) {
         List<String> l = new ArrayList<String>();
 
@@ -289,9 +286,13 @@ public class URISupport {
     }
 
     /**
-     * Creates a URI from the original URI and the remaining paramaters
+     * <p>
+     * Creates a URI from the original URI and the remaining paramaters.
+     * </p>
      *
-     * @throws URISyntaxException
+     * @param originalURI the original URI to populate.
+     * @param params the params map to add in the URI.
+     * @return the populated URI.
      */
     public static URI createRemainingURI(URI originalURI, Map params) throws URISyntaxException {
         String s = createQueryString(params);

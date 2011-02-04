@@ -25,17 +25,21 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 /**
+ * <p>
  * Based on http://svn.apache.org/repos/asf/geronimo/trunk/modules/management/
  *                      src/java/org/apache/geronimo/management/geronimo/KeystoreManager.java
- *
+ * </p>
  */
 public interface KeystoreManager {
 
     KeystoreInstance getKeystore(String name);
 
     /**
+     * <p>
      * Gets a SSLContext using one Keystore to access the private key
      * and another to provide the list of trusted certificate authorities.
+     * </p>
+     *
      * @param provider
      * @param protocol The SSL protocol to use
      * @param algorithm The SSL algorithm to use
@@ -58,8 +62,11 @@ public interface KeystoreManager {
                                 String algorithm, String keyStore,
                                 String keyAlias, String trustStore) throws GeneralSecurityException;
     /**
+     * <p>
      * Gets a ServerSocketFactory using one Keystore to access the private key
      * and another to provide the list of trusted certificate authorities.
+     * </p>
+     *
      * @param provider
      * @param protocol The SSL protocol to use
      * @param algorithm The SSL algorithm to use
@@ -83,8 +90,11 @@ public interface KeystoreManager {
                                                   String keyAlias, String trustStore) throws GeneralSecurityException;
 
     /**
+     * <p>
      * Gets a SocketFactory using one Keystore to access the private key
      * and another to provide the list of trusted certificate authorities.
+     * </p>
+     *
      * @param provider The SSL provider to use, or null for the default
      * @param protocol The SSL protocol to use
      * @param algorithm The SSL algorithm to use

@@ -29,8 +29,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.http.HttpConnector;
@@ -40,10 +38,12 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpProviderTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(HttpProviderTest.class);
+    private final Logger logger = LoggerFactory.getLogger(HttpProviderTest.class);
 
     protected JBIContainer container;
     Integer port1 = Integer.parseInt(System.getProperty("http.port1"));
@@ -221,8 +221,8 @@ public class HttpProviderTest extends TestCase {
         SourceTransformer sourceTransformer = new SourceTransformer();
         String reply = sourceTransformer.toString(inout.getOutMessage().getContent());
         String inputMesage = sourceTransformer.toString(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-        log.info("Msg Sent [" + inputMesage + "]");
-        log.info("Msg Recieved [" + reply + "]");
+        logger.info("Msg Sent [" + inputMesage + "]");
+        logger.info("Msg Recieved [" + reply + "]");
 
         assertEquals(inputMesage.length(), reply.length());
         assertEquals(inputMesage, reply);
@@ -231,7 +231,7 @@ public class HttpProviderTest extends TestCase {
         component.getServiceUnitManager().shutDown("provider");
         component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
 
-        log.info("Executed in " + (t1 - t0) + "ms");
+        logger.info("Executed in " + (t1 - t0) + "ms");
 
         return reply;
     }
@@ -278,7 +278,7 @@ public class HttpProviderTest extends TestCase {
         for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, true);
-            log.info("Streaming: " + dt);
+            logger.info("Streaming: " + dt);
             tearDown();
             setUp();
         }

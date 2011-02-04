@@ -53,9 +53,7 @@ public class AbstractXBeanDeployer extends AbstractDeployer {
      */
     public boolean canDeploy(String serviceUnitName, String serviceUnitRootPath) {
         File xbean = new File(serviceUnitRootPath, getXBeanFile() + ".xml");
-        if (logger.isDebugEnabled()) {
-            logger.debug("Looking for " + xbean + ": " + xbean.exists());
-        }
+        logger.debug("Looking for " + xbean + ": " + xbean.exists());
         return xbean.exists();
     }
 
@@ -101,12 +99,12 @@ public class AbstractXBeanDeployer extends AbstractDeployer {
             validate(su);
             return su;
         } catch (Throwable e) {
-            logger.error(e);
+            logger.error(e.getMessage());
             if (applicationContext != null) {
                 try {
                     applicationContext.destroy();
                 } catch (Exception ne) {
-                    logger.error(ne);
+                    logger.error(ne.getMessage());
                 }
             }
             // There is a chance the thread context classloader has been changed by the xbean kernel,

@@ -27,7 +27,9 @@ import javax.resource.spi.work.WorkListener;
 import javax.resource.spi.work.WorkManager;
 
 /**
+ * <p>
  * A simple WorkManager implementation on top of java.util.concurrent thread pool.
+ * </p>
  * 
  * @deprecated Components should use the executor on the ServiceMixComponent
  *      for thread pools

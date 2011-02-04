@@ -43,12 +43,11 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 
 /**
@@ -56,6 +55,7 @@ import org.springframework.core.io.Resource;
  * @author lhein
  */
 public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndpointType {
+
     public static final String KEY_CHANNEL = "deliveryChannel";
     public static final String KEY_COMPONENT_NAMESPACE = "componentNamespace";
     public static final String KEY_CONTEXT = "componentContext";
@@ -72,7 +72,7 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
     public static final String KEY_USER_BINDINGS = "bindings";
     public static final String LANGUAGE_AUTODETECT = "autodetect";
 
-    private static Log logger = LogFactory.getLog(ScriptingEndpoint.class);
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(ScriptingEndpoint.class);
 
     private Map<String, Object> bindings;
     private boolean disableOutput;

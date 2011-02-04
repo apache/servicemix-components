@@ -41,6 +41,8 @@ import javax.wsdl.BindingOperation;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.soap.SOAPOperation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
@@ -52,8 +54,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
@@ -78,7 +78,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.mortbay.jetty.HttpHeaders;
 
 public class ConsumerEndpointTest extends TestCase {
-    private static transient Log log = LogFactory.getLog(ConsumerEndpointTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ConsumerEndpointTest.class);
 
     String port1 = System.getProperty("http.port1");
     String port2 = System.getProperty("http.port2");
@@ -145,7 +146,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         assertEquals("", res);
         if (post.getStatusCode() != 202) {
             throw new InvalidStatusResponseException(post.getStatusCode());
@@ -192,7 +193,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         
         if (post.getStatusCode() != 500 || !res.contains("HTTP request has timed out for exchange")) {
             throw new InvalidStatusResponseException(post.getStatusCode());
@@ -225,9 +226,9 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Node node = transformer.toDOMNode(new StringSource(res));
-        log.info(transformer.toString(node));
+        logger.info(transformer.toString(node));
         assertEquals("world", textValueOfXPath(node, "/hello/text()"));
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
@@ -268,7 +269,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap11.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -291,7 +292,7 @@ public class ConsumerEndpointTest extends TestCase {
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -321,7 +322,7 @@ public class ConsumerEndpointTest extends TestCase {
                                         + "<s:Body><hello>world</hello></s:Body>" + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap11.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -384,7 +385,7 @@ public class ConsumerEndpointTest extends TestCase {
                                         + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap11.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -407,7 +408,7 @@ public class ConsumerEndpointTest extends TestCase {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
-                    log.info(transformer.toString(elem));
+                    ConsumerEndpointTest.this.logger.info(transformer.toString(elem));
                 } catch (Exception e) {
                     throw new MessagingException(e);
                 }
@@ -431,7 +432,7 @@ public class ConsumerEndpointTest extends TestCase {
                                 + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -454,7 +455,7 @@ public class ConsumerEndpointTest extends TestCase {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
-                    log.info(transformer.toString(elem));
+                    ConsumerEndpointTest.this.logger.info(transformer.toString(elem));
                 } catch (Exception e) {
                     throw new MessagingException(e);
                 }
@@ -476,7 +477,7 @@ public class ConsumerEndpointTest extends TestCase {
                                 + "</s:Envelope>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
-        log.info(res);
+        logger.info(res);
         Element elem = transformer.toDOMElement(new StringSource(res));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -524,9 +525,9 @@ public class ConsumerEndpointTest extends TestCase {
         BufferedReader br = new BufferedReader(new InputStreamReader(gis));
 
         String result = br.readLine();
-        log.info(result);
+        logger.info(result);
         Node node = transformer.toDOMNode(new StringSource(result));
-        log.info(transformer.toString(node));
+        logger.info(transformer.toString(node));
         assertEquals("world", textValueOfXPath(node, "/hello/text()"));
         if (post.getStatusCode() != 200) {
             throw new InvalidStatusResponseException(post.getStatusCode());
@@ -546,7 +547,7 @@ public class ConsumerEndpointTest extends TestCase {
                 Element elem;
                 try {
                     elem = transformer.toDOMElement(in.getContent());
-                    log.info(transformer.toString(elem));
+                    ConsumerEndpointTest.this.logger.info(transformer.toString(elem));
                 } catch (Exception e) {
                     throw new MessagingException(e);
                 }
@@ -584,7 +585,7 @@ public class ConsumerEndpointTest extends TestCase {
         BufferedReader br = new BufferedReader(new InputStreamReader(gis));
 
         String result = br.readLine();
-        log.info(result);
+        logger.info(result);
         Element elem = transformer.toDOMElement(new StringSource(result));
         assertEquals(Soap12.getInstance().getEnvelope(), DomUtil.getQName(elem));
         elem = DomUtil.getFirstChildElement(elem);
@@ -662,7 +663,7 @@ public class ConsumerEndpointTest extends TestCase {
                                 throw new InvalidStatusResponseException(post.getStatusCode());
                             }
                             Node node = transformer.toDOMNode(new StreamSource(post.getResponseBodyAsStream()));
-                            log.info(transformer.toString(node));
+                            logger.info(transformer.toString(node));
                             assertEquals("world", textValueOfXPath(node, "/hello/text()"));
                         } catch (Throwable t) {
                             throwables.add(t);
@@ -716,7 +717,7 @@ public class ConsumerEndpointTest extends TestCase {
         Definition def = reader.readWSDL("http://localhost:"+port2+"/ep1/?wsdl");
         StringWriter writer = new StringWriter();
         factory.newWSDLWriter().writeWSDL(def, writer);
-        log.info(writer.toString());
+        logger.info(writer.toString());
         Binding b = (Binding) def.getBindings().values().iterator().next();
         BindingOperation bop = (BindingOperation) b.getBindingOperations().iterator().next();
         assertEquals(1, bop.getExtensibilityElements().size());

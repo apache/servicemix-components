@@ -20,18 +20,18 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class Jsr181SpringProxyTest extends SpringTestSupport {
 
-    private static Log logger =  LogFactory.getLog(Jsr181ComponentTest.class);
+    private final Logger logger =  LoggerFactory.getLogger(Jsr181ComponentTest.class);
 
     public void test() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);

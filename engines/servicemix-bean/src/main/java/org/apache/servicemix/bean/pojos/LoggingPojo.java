@@ -26,37 +26,37 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import org.apache.servicemix.bean.support.BeanSupport;
 import org.apache.servicemix.jbi.listener.MessageExchangeListener;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.common.util.MessageUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A simple tracing component which can be placed inside a pipeline
  * to trace the message exchange though the component.
- * If an InOut exchange is received by this component, it will log the
+ * If an InOut exchange is received by this component, it will logger the
  * input message and copy it to the output message.
  *
  * @version $Revision: 648504 $
  */
 public class LoggingPojo extends BeanSupport implements MessageExchangeListener {
 
-    private Log log = LogFactory.getLog(LoggingPojo.class);
+    private Logger logger = LoggerFactory.getLogger(LoggingPojo.class);
 
     private final SourceTransformer sourceTransformer = new SourceTransformer();
 
     private int maxMsgDisplaySize = 1500;
 
-    public Log getLog() {
-        return log;
+    public Logger getLog() {
+        return logger;
     }
 
-    public void setLog(Log log) {
-        this.log = log;
+    public void setLog(Logger log) {
+        this.logger = log;
     }
 
     public int getMaxMsgDisplaySize() {
@@ -111,7 +111,7 @@ public class LoggingPojo extends BeanSupport implements MessageExchangeListener 
                 sb.append("  ]").append('\n');
             }
             display(exchange, "in", sb);
-            log.info("Exchange received " + sb.toString());
+            logger.info("Exchange received " + sb.toString());
             if (exchange instanceof InOut) {
                 MessageUtil.transferInToOut(exchange, exchange);
                 send(exchange);

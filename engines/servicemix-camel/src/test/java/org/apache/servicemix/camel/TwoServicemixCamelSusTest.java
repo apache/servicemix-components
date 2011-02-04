@@ -21,12 +21,12 @@ import java.net.URI;
 import java.net.URL;
 
 import org.apache.camel.CamelContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TwoServicemixCamelSusTest extends NonJbiCamelEndpointsIntegrationTest {
     
-    private static final transient Log LOG = LogFactory.getLog(TwoServicemixCamelSusTest.class);
+    private final Logger logger = LoggerFactory.getLogger(TwoServicemixCamelSusTest.class);
 
     private void deploySu(CamelJbiComponent component, String suName) throws Exception {
         String serviceUnitConfiguration = suName + "-src/camel-context.xml";

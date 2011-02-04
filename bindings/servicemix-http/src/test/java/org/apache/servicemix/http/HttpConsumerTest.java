@@ -31,8 +31,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.http.HttpInvoker;
 import org.apache.servicemix.components.http.HttpSoapClientMarshaler;
@@ -42,9 +40,12 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpConsumerTest extends TestCase {
-    private static Log logger = LogFactory.getLog(HttpConsumerTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(HttpConsumerTest.class);
 
     protected JBIContainer container;
     

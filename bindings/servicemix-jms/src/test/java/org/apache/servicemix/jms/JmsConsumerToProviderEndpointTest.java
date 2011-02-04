@@ -57,7 +57,7 @@ public class JmsConsumerToProviderEndpointTest extends AbstractJmsTestSupport {
     }
 
     public void testStaxSourceHandling() throws Exception {
-        //switch to info log level to ensure use of StaxSource
+        //switch to info logger level to ensure use of StaxSource
         Level old = switchLogLevel(Level.INFO);
         
         //send a mesage to the 'from' queue
@@ -74,7 +74,7 @@ public class JmsConsumerToProviderEndpointTest extends AbstractJmsTestSupport {
         assertTrue(result instanceof TextMessage);
         assertEquals(MESSAGE, ((TextMessage) result).getText());
         
-        //and switch back to whatever log leve we started with
+        //and switch back to whatever logger leve we started with
         switchLogLevel(old);
     }
     

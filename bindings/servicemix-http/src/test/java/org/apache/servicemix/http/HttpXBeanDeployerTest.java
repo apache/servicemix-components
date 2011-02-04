@@ -31,12 +31,12 @@ import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
@@ -46,7 +46,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public class HttpXBeanDeployerTest extends TestCase {
 
-    private static Log logger = LogFactory.getLog(HttpXBeanDeployerTest.class);
+    private final Logger logger = LoggerFactory.getLogger(HttpXBeanDeployerTest.class);
 
     protected JBIContainer container;
 

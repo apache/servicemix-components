@@ -17,8 +17,8 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
 import org.apache.servicemix.executors.Executor;
+import org.slf4j.Logger;
 
 import javax.jbi.component.Component;
 import javax.jbi.component.ComponentContext;
@@ -27,7 +27,9 @@ import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
 /**
- * Represents an extended JBI Component implementation which exposes some extra features
+ * <p>
+ * Represents an extended JBI Component implementation which exposes some extra features.
+ * </p>
  *
  * @version $Revision$
  */
@@ -36,7 +38,7 @@ public interface ServiceMixComponent extends Component {
     /**
      * @return Returns the logger.
      */
-    public Log getLogger();
+    public Logger getLogger();
 
     /**
      * @return Returns the registry.

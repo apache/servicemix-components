@@ -16,17 +16,19 @@
  */
 package org.apache.servicemix.common.osgi;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.impl.ExecutorConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * <p>
  * Represents the configuration for the components that can be created from
- * information in the OSGi ConfigAdmin
+ * information in the OSGi ConfigAdmin.
+ * </p>
  */
 public class Configuration {
 
-    private static final Log LOG = LogFactory.getLog(Configuration.class);
+    private final Logger logger = LoggerFactory.getLogger(Configuration.class);
     private static final Configuration INSTANCE = new Configuration();
 
     private final ExecutorConfig executorConfig = new ExecutorConfig();
@@ -36,7 +38,7 @@ public class Configuration {
      */
     private Configuration() {
         super();
-        LOG.debug("Configuring JBI components using OSGi ConfigAdmin");
+        logger.debug("Configuring JBI components using OSGi ConfigAdmin");
     }
 
     /**
@@ -51,7 +53,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setCorePoolSize(int)
      */
     public void setCorePoolSize(int size) {
-        LOG.debug("Setting core thread pool size: " + size);
+        logger.debug("Setting core thread pool size: " + size);
         executorConfig.setCorePoolSize(size);
     }
 
@@ -60,7 +62,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setMaximumPoolSize(int)
      */
     public void setMaximumPoolSize(int size) {
-        LOG.debug("Setting maximum thread pool size: " + size);
+        logger.debug("Setting maximum thread pool size: " + size);
         executorConfig.setMaximumPoolSize(size);
     }
 
@@ -69,7 +71,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setQueueSize(int)
      */
     public void setQueueSize(int size) {
-        LOG.debug("Setting executor queue size: " + size);
+        logger.debug("Setting executor queue size: " + size);
         executorConfig.setQueueSize(size);        
     }
 
@@ -78,7 +80,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setAllowCoreThreadsTimeout(boolean)  
      */
     public void setAllowCoreThreadTimeout(boolean timeout) {
-        LOG.debug("Setting core thread timeout allow: " + timeout);
+        logger.debug("Setting core thread timeout allow: " + timeout);
         executorConfig.setAllowCoreThreadsTimeout(timeout);
     }
 
@@ -87,7 +89,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setKeepAliveTime(long) 
      */
     public void setKeepAliveTime(int time) {
-        LOG.debug("Setting thread keep-alive time: " + time);
+        logger.debug("Setting thread keep-alive time: " + time);
         executorConfig.setKeepAliveTime(time);
     }
 

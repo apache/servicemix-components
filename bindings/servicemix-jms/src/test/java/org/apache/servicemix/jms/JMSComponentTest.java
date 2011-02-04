@@ -34,8 +34,6 @@ import javax.mail.util.ByteArrayDataSource;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.jms.JmsReceiverComponent;
 import org.apache.servicemix.components.jms.JmsServiceComponent;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -44,11 +42,13 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.MessageCreator;
 
 public class JMSComponentTest extends AbstractJmsTestSupport {
 
-    private static Log logger = LogFactory.getLog(JMSComponentTest.class);
+    private final Logger logger = LoggerFactory.getLogger(JMSComponentTest.class);
 
     public void testProviderInOnly() throws Exception {
         // JMS Component

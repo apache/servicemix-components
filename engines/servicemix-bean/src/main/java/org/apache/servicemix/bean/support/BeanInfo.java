@@ -28,8 +28,6 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.bean.Content;
 import org.apache.servicemix.bean.Operation;
 import org.apache.servicemix.bean.Property;
@@ -40,6 +38,8 @@ import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.jbi.helper.MessageHelper;
 import org.apache.servicemix.jbi.jaxp.DefaultNamespaceContext;
 import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the metadata about a bean type created via a combination of
@@ -49,7 +49,7 @@ import org.apache.servicemix.jbi.marshaler.PojoMarshaler;
  */
 public class BeanInfo {
 
-    private static final Log LOG = LogFactory.getLog(BeanInfo.class);
+    private final Logger logger = LoggerFactory.getLogger(BeanInfo.class);
 
     private Class type;
     private MethodInvocationStrategy strategy;
@@ -110,10 +110,7 @@ public class BeanInfo {
             Expression expression = createParameterUnmarshalExpression(clazz, method, 
                     parameterType, parameterAnnotations[i]);
             if (expression == null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("No expression available for method: "
-                            + method.toString() + " parameter: " + i + " so ignoring method");
-                }
+                logger.debug("No expression available for method: " + method.toString() + " parameter: " + i + " so ignoring method");
                 return;
             }
             parameterExpressions[i] = expression;

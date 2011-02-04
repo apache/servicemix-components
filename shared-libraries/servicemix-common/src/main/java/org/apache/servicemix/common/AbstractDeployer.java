@@ -16,7 +16,7 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
@@ -30,7 +30,7 @@ import javax.jbi.management.DeploymentException;
  */
 public abstract class AbstractDeployer implements Deployer {
 
-    protected final transient Log logger;
+    protected final transient Logger logger;
     
     protected ServiceMixComponent component;
     

@@ -18,8 +18,6 @@ package org.apache.servicemix.jsr181.xfire;
 
 import javax.jbi.component.ComponentContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.xfire.handler.LocateBindingHandler;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.soap.SoapTransport;
@@ -28,6 +26,8 @@ import org.codehaus.xfire.transport.AbstractTransport;
 import org.codehaus.xfire.transport.Channel;
 import org.codehaus.xfire.transport.DefaultEndpoint;
 import org.codehaus.xfire.wsdl11.WSDL11Transport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple jbi transport, similar to local transport,
@@ -38,7 +38,7 @@ public class JbiTransport extends AbstractTransport implements WSDL11Transport, 
 
     public static final String JBI_BINDING = "http://java.sun.com/xml/ns/jbi/binding/service+engine";
     
-    private static final Log LOG = LogFactory.getLog(JbiTransport.class);
+    private final Logger logger = LoggerFactory.getLogger(JbiTransport.class);
     
     private static final String URI_PREFIX = "urn:xfire:transport:jbi:";
 
@@ -59,7 +59,7 @@ public class JbiTransport extends AbstractTransport implements WSDL11Transport, 
     }
 
     protected Channel createNewChannel(String uri) {
-        LOG.debug("Creating new channel for uri: " + uri);
+        logger.debug("Creating new channel for uri: " + uri);
         JbiChannel c = new JbiChannel(uri, this);
         c.setEndpoint(new DefaultEndpoint());
         return c;

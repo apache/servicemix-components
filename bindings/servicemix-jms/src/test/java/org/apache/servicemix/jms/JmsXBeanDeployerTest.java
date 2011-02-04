@@ -31,10 +31,10 @@ import javax.wsdl.Service;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -42,7 +42,7 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public class JmsXBeanDeployerTest extends AbstractJmsTestSupport {
 
-    private static Log logger =  LogFactory.getLog(JmsXBeanDeployerTest.class);
+    private final Logger logger =  LoggerFactory.getLogger(JmsXBeanDeployerTest.class);
 
     public void test() throws Exception {
         // JMS Component

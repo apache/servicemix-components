@@ -25,12 +25,11 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
-import org.apache.servicemix.eip.support.AbstractAggregator;
 import org.apache.servicemix.eip.support.ExchangeTarget;
 import org.apache.servicemix.common.util.MessageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The StaticRecipientList component will forward an input In-Only or Robust-In-Only
@@ -45,7 +44,7 @@ import org.apache.servicemix.common.util.MessageUtil;
  */
 public class StaticRecipientList extends EIPEndpoint {
 
-    private static final Log LOG = LogFactory.getLog(StaticRecipientList.class);
+    private final Logger logger = LoggerFactory.getLogger(StaticRecipientList.class);
     
     public static final String RECIPIENT_LIST_COUNT = "org.apache.servicemix.eip.recipientList.count";
     public static final String RECIPIENT_LIST_INDEX = "org.apache.servicemix.eip.recipientList.index";
@@ -213,7 +212,7 @@ public class StaticRecipientList extends EIPEndpoint {
                 try {
                     lock.unlock();
                 } catch (Exception ex) {
-                    LOG.info("Caught exception while attempting to release lock", ex);
+                    logger.info("Caught exception while attempting to release lock", ex);
                 }
                 if (removeLock) {
                     lockManager.removeLock(corrId);

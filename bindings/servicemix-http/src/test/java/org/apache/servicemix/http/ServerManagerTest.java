@@ -26,15 +26,16 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.thread.QueuedThreadPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerManagerTest extends TestCase {
-    private static transient Log log = LogFactory.getLog(ServerManagerTest.class);
+
+    private final static Logger logger = LoggerFactory.getLogger(ServerManagerTest.class);
 
     String port1 = System.getProperty("http.port1");
     String port2 = System.getProperty("http.port2");
@@ -197,7 +198,7 @@ public class ServerManagerTest extends TestCase {
         }
 
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-            log.info(request);
+            logger.info(request.toString());
         }
 
     }
@@ -212,7 +213,7 @@ public class ServerManagerTest extends TestCase {
         }
 
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-            log.info(request);
+            logger.info(request.toString());
         }
     }
 }

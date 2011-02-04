@@ -23,11 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.Subject;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.security.UserRealm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A JAAS based implementation of a realm for jetty 6.
@@ -36,7 +36,7 @@ import org.mortbay.jetty.security.UserRealm;
  */
 public class JaasUserRealm implements UserRealm {
 
-    private static final Log LOG = LogFactory.getLog(JaasUserRealm.class);
+    private final Logger logger = LoggerFactory.getLogger(JaasUserRealm.class);
 
     private String name = getClass().getName();
     private String domain = "servicemix-domain";
@@ -111,12 +111,12 @@ public class JaasUserRealm implements UserRealm {
 
                 return userPrincipal;
             } else {
-                LOG.debug("Login Failed - null userID");
+                logger.debug("Login Failed - null userID");
                 return null;
             }
 
         } catch (GeneralSecurityException e) {
-            LOG.debug("Login Failed", e);
+            logger.debug("Login Failed", e);
             return null;
         }
     }

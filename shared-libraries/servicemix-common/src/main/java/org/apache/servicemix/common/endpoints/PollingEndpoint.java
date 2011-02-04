@@ -31,8 +31,10 @@ import org.apache.servicemix.common.scheduler.SchedulerTask;
 import org.apache.servicemix.executors.Executor;
 
 /**
+ * <p>
  * An implementation inheritance class for an endpoint which polls some resource
  * at periodic intervals to decide if there is an event to process.
+ * </p>
  *
  * @version $Revision: 464478 $
  */
@@ -62,7 +64,9 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * Polls the underlying resource to see if some event is required
+     * <p>
+     * Polls the underlying resource to see if some event is required.
+     * </p>
      *
      * @throws JBIException
      */
@@ -77,9 +81,11 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
 
 
     /**
+     * <p>
      * Sets the amount of time in milliseconds that the endpoint should wait before making the first poll.
+     * </p>
      *
-     * @param        delay   a long specifying the number of milliseconds to wait
+     * @param delay a long specifying the number of milliseconds to wait.
      */
     public void setDelay(long delay) {
         this.delay = delay;
@@ -91,12 +97,13 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
 
 
     /**
+     * <p>
      * Sets the date on which the first poll will be executed. If a delay is 
      * also set using <code>setDelay</code>, the delay interval will be added 
      * after the date specified.
+     * </p>
      *
-     * @param        firstTime       a <code>Date</code> specifying when to make the 
-     *                               first polling attempt
+     * @param firstTime a <code>Date</code> specifying when to make the first polling attempt.
      */
     public void setFirstTime(Date firstTime) {
         this.firstTime = firstTime;
@@ -107,7 +114,9 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     }
 
     /**
+     * <p>
      * Sets whether more than one poll can be active at a time (true means yes). Default value is <code>false</code>.
+     * </p>
      * 
      * @param concurrentPolling The concurrentPolling to set.
      */
@@ -121,9 +130,11 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
 
     
     /**
+     * <p>
      * Sets the number of milliseconds between polling attempts.
+     * </p>
      *
-     * @param        period  a long specifying the gap between polling attempts
+     * @param period a long specifying the gap between polling attempts.
      */
     public void setPeriod(long period) {
         this.period = period;
@@ -139,9 +150,11 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
     }
 
     /**
-     * Set a custom Scheduler implementation if you need more fine-grained control over the polling schedule.
+     * <p>
+     * Sets a custom scheduler implementation if you need more fine-grained control over the polling schedule.
+     * </p>
      *
-     * @param scheduler
+     * @param scheduler the customer scheduler.
      */
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;

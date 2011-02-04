@@ -33,13 +33,13 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.dom.DOMSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.model.Binding;
@@ -58,7 +58,8 @@ import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
 
 public class HelloWorldSoapTest extends TestCase {
-    private static transient Log log = LogFactory.getLog(HelloWorldSoapTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(HelloWorldSoapTest.class);
 
 //    static {
 //        String conf = System.getProperty("log4j.configuration");
@@ -93,7 +94,7 @@ public class HelloWorldSoapTest extends TestCase {
         Document doc = DomUtil.parse(nm.getContent());
         baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
-        log.info(baos.toString());
+        logger.info(baos.toString());
         if (useDom) {
             nm.setContent(new DOMSource(doc));
         } else {
@@ -156,7 +157,7 @@ public class HelloWorldSoapTest extends TestCase {
         msgOut.setContent(NormalizedMessage.class, nm);
         msgOut.put(SoapVersion.class, msg.get(SoapVersion.class));
         phaseOut.doIntercept(msgOut);
-        log.info(baos.toString());
+        logger.info(baos.toString());
 
         Document node = DomUtil.parse(new ByteArrayInputStream(baos.toByteArray()));
 
@@ -211,7 +212,7 @@ public class HelloWorldSoapTest extends TestCase {
         Document doc = DomUtil.parse(nm.getContent());
         baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
-        log.info(baos.toString());
+        logger.info(baos.toString());
         nm.setContent(new DOMSource(doc));
         
         // check jbi message element
@@ -252,7 +253,7 @@ public class HelloWorldSoapTest extends TestCase {
         msgOut.setContent(NormalizedMessage.class, nm);
         msgOut.put(SoapVersion.class, msg.get(SoapVersion.class));
         phaseOut.doIntercept(msgOut);
-        log.info(baos.toString());
+        logger.info(baos.toString());
         
         Document node = DomUtil.parse(new ByteArrayInputStream(baos.toByteArray()));
         Element envelope = DomUtil.getFirstChildElement(node);
@@ -290,7 +291,7 @@ public class HelloWorldSoapTest extends TestCase {
         Document doc = DomUtil.parse(nm.getContent());
         baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(nm.getContent(), new StreamResult(baos));
-        log.info(baos.toString());
+        logger.info(baos.toString());
         
         Element root = DomUtil.getFirstChildElement(doc);
         assertNotNull(root);
@@ -317,7 +318,7 @@ public class HelloWorldSoapTest extends TestCase {
             phaseOutFault.doIntercept(msgOut);
         }
 
-        log.info(baos.toString());
+        logger.info(baos.toString());
         Document node = DomUtil.parse(new ByteArrayInputStream(baos.toByteArray()));
         
         Element envelope = DomUtil.getFirstChildElement(node);
@@ -352,7 +353,7 @@ public class HelloWorldSoapTest extends TestCase {
 
         baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(nm.getContent(), new StreamResult(baos));
-        log.info(baos.toString());
+        logger.info(baos.toString());
 
         Element root = DomUtil.getFirstChildElement(doc);
         assertNotNull(msg);
@@ -423,7 +424,7 @@ public class HelloWorldSoapTest extends TestCase {
         msgOut.setContent(NormalizedMessage.class, nm);
         msgOut.put(SoapVersion.class, msg.get(SoapVersion.class));
         phaseOut.doIntercept(msgOut);
-        log.info(baos.toString());
+        logger.info(baos.toString());
         
         Document node = DomUtil.parse(new ByteArrayInputStream(baos.toByteArray()));
         Element envelope = DomUtil.getFirstChildElement(node);
@@ -473,7 +474,7 @@ public class HelloWorldSoapTest extends TestCase {
 
         baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(nm.getContent(), new StreamResult(baos));
-        log.info(baos.toString());
+        logger.info(baos.toString());
         
         // check jbi message element
         Element root = DomUtil.getFirstChildElement(doc);
@@ -504,7 +505,7 @@ public class HelloWorldSoapTest extends TestCase {
         msgOut.setContent(NormalizedMessage.class, nm);
         msgOut.put(SoapVersion.class, msg.get(SoapVersion.class));
         phaseOut.doIntercept(msgOut);
-        log.info(baos.toString());
+        logger.info(baos.toString());
         
         Document node = DomUtil.parse(new ByteArrayInputStream(baos.toByteArray()));
         Element envelope = DomUtil.getFirstChildElement(node);
@@ -531,7 +532,7 @@ public class HelloWorldSoapTest extends TestCase {
         WSIBPValidator validator = new WSIBPValidator(def);
         if (!validator.isValid()) {
             for (String err : validator.getErrors()) {
-                log.info(err);
+                logger.info(err);
             }
         }
         Service svc = (Service) def.getServices().values().iterator().next();

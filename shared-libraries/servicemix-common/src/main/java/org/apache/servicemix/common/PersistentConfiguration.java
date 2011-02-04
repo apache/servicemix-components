@@ -23,14 +23,16 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
+ * <p>
  * Base class for component configuration.
  * Due to classloading mechanism in JBI, Shared Libraries are
  * not available at bootstrap time, so this class should be
  * copied in your own component and modified directly, instead
  * of inheriting it.  This only apply if the bootstrap uses the
  * configuration.
+ * </p>
  * 
- * @author Guillaume Nodet
+ * @author gnodet
  * @since 3.0
  */
 @Deprecated

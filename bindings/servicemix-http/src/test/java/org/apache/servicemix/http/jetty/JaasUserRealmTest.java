@@ -23,13 +23,14 @@ import javax.security.auth.Subject;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.security.AuthenticationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JaasUserRealmTest extends TestCase {
 
-    private static transient Log log = LogFactory.getLog(JaasUserRealmTest.class);
+    private final static Logger logger = LoggerFactory.getLogger(JaasUserRealmTest.class);
+
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
     private JaasUserRealm jaasUserRealm;
@@ -108,7 +109,7 @@ public class JaasUserRealmTest extends TestCase {
             if (credentials == null) {
                 throw new GeneralSecurityException("authenticate() failed due to null credentials");
             }
-            log.info("authenticate() called");
+            logger.info("authenticate() called");
         }
     }
 }  

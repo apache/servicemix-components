@@ -24,13 +24,13 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -40,7 +40,8 @@ import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
 
 public class HttpURITest extends TestCase {
-    private static Log logger = LogFactory.getLog(HttpURITest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(HttpURITest.class);
 
     String port1 = System.getProperty("http.port1");
     

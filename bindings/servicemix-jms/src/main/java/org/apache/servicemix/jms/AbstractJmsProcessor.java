@@ -34,8 +34,6 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.soap.Context;
@@ -45,16 +43,18 @@ import org.apache.servicemix.soap.SoapExchangeProcessor;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.store.Store;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractJmsProcessor implements SoapExchangeProcessor {
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String STYLE_QUEUE = "queue";
     public static final String STYLE_TOPIC = "topic";
     
     public static final String CONTENT_TYPE = "MimeContentType";
 
-    protected final transient Log log = LogFactory.getLog(getClass());
-    
     protected JmsEndpoint endpoint;
     protected Connection connection;
     protected SoapHelper soapHelper;
@@ -172,7 +172,7 @@ public abstract class AbstractJmsProcessor implements SoapExchangeProcessor {
             try {
                 stop();
             } catch (Exception inner) {
-                // TODO: log
+                // TODO: logger
             }
             throw e;
         }

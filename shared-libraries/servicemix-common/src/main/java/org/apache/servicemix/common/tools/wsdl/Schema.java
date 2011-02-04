@@ -23,7 +23,9 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 /**
+ * <p>
  * Contains informations related to a schema.
+ * </p>
  *  
  * @author gnodet
  */
@@ -35,7 +37,10 @@ public class Schema {
     private List<URI> sourceUris;
     
     /**
-     * Add a reference to an imported namespace.
+     * <p>
+     * Adds a reference to an imported namespace.
+     * </p>
+     *
      * @param namespace the namespace to reference
      */
     public void addImport(String namespace) {
@@ -46,6 +51,10 @@ public class Schema {
     }
     
     /**
+     * <p>
+     * Gets the imported namespaces list.
+     * </p>
+     *
      * @return Returns the imports.
      */
     public List<String> getImports() {
@@ -53,6 +62,10 @@ public class Schema {
     }
 
     /**
+     * <p>
+     * Sets the imported namespaces list.
+     * </p>
+     *
      * @param imports The imports to set.
      */
     public void setImports(List<String> imports) {
@@ -60,6 +73,10 @@ public class Schema {
     }
 
     /**
+     * <p>
+     * Gets the root element.
+     * </p>
+     *
      * @return Returns the root.
      */
     public Element getRoot() {
@@ -67,6 +84,10 @@ public class Schema {
     }
 
     /**
+     * <p>
+     * Sets the root element.
+     * </p>
+     *
      * @param root The root to set.
      */
     public void setRoot(Element root) {
@@ -74,6 +95,10 @@ public class Schema {
     }
 
     /**
+     * <p>
+     * Gets the default namespace.
+     * </p>
+     *
      * @return Returns the namespace.
      */
     public String getNamespace() {
@@ -81,6 +106,10 @@ public class Schema {
     }
 
     /**
+     * <p>
+     * Sets the default namespace.
+     * </p>
+     *
      * @param namespace The namespace to set.
      */
     public void setNamespace(String namespace) {
@@ -88,13 +117,21 @@ public class Schema {
     }
 
     /**
-     * @return Returns the sourceUri.
+     * <p>
+     * Gets the source URIs list.
+     * </p>
+     *
+     * @return Returns the source URIs list.
      */
     public List<URI> getSourceUris() {
         return sourceUris;
     }
 
     /**
+     * <p>
+     * Add a new URI in the source URIs list.
+     * </p>
+     *
      * @param sourceUri The sourceUri to set.
      */
     public void addSourceUri(URI sourceUri) {

@@ -29,9 +29,6 @@ import org.w3c.dom.Text;
 
 public class URIResolver {
 
-    /**
-     * The uri to resolve
-     */
     private String uri;
 
     public URIResolver() {
@@ -78,16 +75,10 @@ public class URIResolver {
         return null;
     }
 
-    /**
-     * @return the uri
-     */
     public String getUri() {
         return uri;
     }
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(String uri) {
         this.uri = uri;
     }
@@ -111,11 +102,13 @@ public class URIResolver {
     }
 
     /**
-     * Configure a JBI exchange with the given URI as the target
+     * <p>
+     * Configures a JBI exchange with the given URI as the target.
+     * </p>
      *
-     * @param exchange the exchange to configure
-     * @param context a component context used to resolve endpoints
-     * @param uri the target uri
+     * @param exchange the exchange to configure.
+     * @param context a component context used to resolve endpoints.
+     * @param uri the target URI.
      */
     public static void configureExchange(MessageExchange exchange, ComponentContext context, String uri) {
         if (exchange == null) {

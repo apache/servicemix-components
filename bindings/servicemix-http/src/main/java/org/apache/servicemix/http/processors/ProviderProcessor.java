@@ -48,8 +48,6 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.HttpComponent;
@@ -60,6 +58,8 @@ import org.apache.servicemix.soap.SoapExchangeProcessor;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -69,7 +69,7 @@ import org.apache.servicemix.soap.marshalers.SoapWriter;
  */
 public class ProviderProcessor extends AbstractProcessor implements SoapExchangeProcessor {
 
-    private static Log log = LogFactory.getLog(ProviderProcessor.class);
+    private final Logger logger = LoggerFactory.getLogger(ProviderProcessor.class);
 
     protected SoapHelper soapHelper;
     protected DeliveryChannel channel;
@@ -118,7 +118,7 @@ public class ProviderProcessor extends AbstractProcessor implements SoapExchange
         Object newDestinationURI = nm.getProperty(JbiConstants.HTTP_DESTINATION_URI);
         if (newDestinationURI != null) {
             locationURI = (String) newDestinationURI;
-            log.debug("Location URI overridden: " + locationURI);
+            logger.debug("Location URI overridden: " + locationURI);
         }
 
         PostMethod method = new PostMethod(getRelUri(locationURI));

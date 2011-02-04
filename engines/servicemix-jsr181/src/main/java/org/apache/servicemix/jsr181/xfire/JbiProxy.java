@@ -38,12 +38,12 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.WebFault;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import com.ibm.wsdl.Constants;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.xfire.XFire;
 import org.codehaus.xfire.annotations.AnnotationServiceFactory;
 import org.codehaus.xfire.client.Client;
@@ -58,7 +58,7 @@ import org.jdom.Element;
 
 public class JbiProxy {
     
-    private static final Log LOG = LogFactory.getLog(JbiProxyFactoryBean.class);
+    private final static Logger logger = LoggerFactory.getLogger(JbiProxyFactoryBean.class);
 
     protected XFire xfire;
     protected ComponentContext context;
@@ -236,12 +236,12 @@ public class JbiProxy {
         }
         protected Exception translateException(Method method, Exception t) {
             if (!(t instanceof XFireFault)) {
-                LOG.debug("Exception is not an XFireFault");
+                logger.debug("Exception is not an XFireFault");
                 return t;
             }
             XFireFault xfireFault = (XFireFault) t;
             if (!xfireFault.hasDetails()) {
-                LOG.debug("XFireFault has no details");
+                logger.debug("XFireFault has no details");
                 return t;
             }
             // Get first child element of <detail/>
@@ -254,17 +254,17 @@ public class JbiProxy {
                 }
             }
             if (detail == null) {
-                LOG.debug("XFireFault has no element in <detail/>");
+                logger.debug("XFireFault has no element in <detail/>");
                 return t;
             }
             QName qname = new QName(detail.getNamespaceURI(),
                                     detail.getName());
             Class<?>[] exceptions = method.getExceptionTypes();
             for (int i = 0; i < exceptions.length; i++) {
-                LOG.debug("Checking exception: " + exceptions[i]);
+                logger.debug("Checking exception: " + exceptions[i]);
                 WebFault wf = exceptions[i].getAnnotation(WebFault.class);
                 if (wf == null) {
-                    LOG.debug("No WebFault annotation");
+                    logger.debug("No WebFault annotation");
                     continue;
                 }
                 QName exceptionName = new QName(wf.targetNamespace(), wf.name());
@@ -282,10 +282,10 @@ public class JbiProxy {
                         Constructor<?> cst = exceptions[i].getConstructor(String.class, infoClass);
                         return (Exception) cst.newInstance(xfireFault.toString(), obj.getValue());
                     } catch (Throwable e) {
-                        LOG.debug("Error: " + e);
+                        logger.debug("Error: " + e);
                     }
                 } else {
-                    LOG.debug("QName mismatch: element: " + qname + ", exception: " + exceptionName);
+                    logger.debug("QName mismatch: element: " + qname + ", exception: " + exceptionName);
                 }
             }
             return t;

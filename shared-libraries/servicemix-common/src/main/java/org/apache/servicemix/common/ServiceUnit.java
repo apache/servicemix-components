@@ -21,9 +21,11 @@ import java.util.Collection;
 import javax.jbi.management.DeploymentException;
 
 /**
+ * <p>
  * This interface defines the lifecycle and needed
  * methods to a collection of endpoints grouped into
  * a service unit.
+ * </p>
  */
 public interface ServiceUnit {
 

@@ -35,10 +35,10 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.EndpointComponentContext;
 import org.apache.servicemix.http.ContextManager;
@@ -61,7 +61,7 @@ import org.mortbay.util.ajax.ContinuationSupport;
 
 public class ConsumerProcessor extends AbstractProcessor implements SoapExchangeProcessor, HttpProcessor {
 
-    private static Log log = LogFactory.getLog(ConsumerProcessor.class);
+    private final Logger logger = LoggerFactory.getLogger(ConsumerProcessor.class);
 
     protected Object httpContext;
     protected ComponentContext context;
@@ -106,15 +106,11 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
                 if (locks.remove(exchange.getExchangeId()) == null) {
                     throw new Exception("HTTP request has timed out");
                 }
-                if (log.isDebugEnabled()) {
-                    log.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
-                }
+                logger.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
                 exchanges.put(exchange.getExchangeId(), exchange);
                 cont.resume();
                 if (!cont.isResumed()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
-                    }
+                    logger.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
                     exchanges.remove(exchange.getExchangeId());
                     throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
                 }
@@ -142,9 +138,7 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
     }
 
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving HTTP request: " + request);
-        }
+        logger.debug("Receiving HTTP request: " + request);
         if ("GET".equals(request.getMethod())) {
             processGetRequest(request, response);
             return;
@@ -176,9 +170,7 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
                 synchronized (cont) {
                     channel.send(exchange);
                     if (!isSTFlow) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
-                        }
+                        logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
                         boolean result = cont.suspend(suspentionTime);
                         exchange = exchanges.remove(exchange.getExchangeId());
                         request.removeAttribute(MessageExchange.class.getName());

@@ -24,12 +24,12 @@ import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.Destination;
 import org.apache.servicemix.jbi.container.JBIContainer;
@@ -39,7 +39,8 @@ import org.apache.servicemix.jbi.util.ByteArrayDataSource;
 import org.apache.servicemix.jbi.util.FileUtil;
 
 public class Jsr181MTOMTest extends TestCase {
-    private static transient Log log = LogFactory.getLog(Jsr181MTOMTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(Jsr181MTOMTest.class);
 
     protected JBIContainer container;
     
@@ -73,7 +74,7 @@ public class Jsr181MTOMTest extends TestCase {
         ServiceEndpoint se = container.getRegistry().getEndpointsForService(service)[0];
         Document doc = container.getRegistry().getEndpointDescriptor(se);
         String wsdl = new SourceTransformer().toString(doc);
-        log.info(wsdl);
+        logger.info(wsdl);
         
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
         Destination dest = client.createDestination("service:http://jsr181.servicemix.apache.org/EchoWithAttachment");

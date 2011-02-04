@@ -17,10 +17,10 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.xbean.XBeanServiceUnit;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 
@@ -38,14 +38,16 @@ import java.util.Iterator;
 import java.util.Collections;
 
 /**
+ * <p>
  * A useful base class for writing new JBI components which includes the {@link ComponentLifeCycle} interface methods so that
  * you can write a new component in a single class with minimal overloading.
+ * </p>
  *
  * @version $Revision$
  */
 public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixComponent {
 
-    protected final transient Log logger = LogFactory.getLog(getClass());
+    protected final transient Logger logger = LoggerFactory.getLogger(DefaultComponent.class);
 
     protected Registry registry;
     protected BaseServiceUnitManager serviceUnitManager;
@@ -54,8 +56,11 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
 
     public DefaultComponent() {
         setComponent(this);
+        logger.debug("Create the registry");
         registry = createRegistry();
+        logger.debug("Create the SU manager");
         serviceUnitManager = createServiceUnitManager();
+        logger.debug("Create the XBean SU");
         XBeanServiceUnit su = new XBeanServiceUnit();
         su.setName("#default#");
         su.setComponent(this);
@@ -90,24 +95,18 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
      * @see javax.jbi.component.Component#getServiceDescription(javax.jbi.servicedesc.ServiceEndpoint)
      */
     public Document getServiceDescription(ServiceEndpoint endpoint) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Querying service description for " + endpoint);
-        }
+        logger.debug("Querying service description for " + endpoint);
         String key = EndpointSupport.getKey(endpoint);
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             Document doc = ep.getDescription();
             if (doc == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("No description found for " + key);
-                }
+                logger.debug("No description found for " + key);
             }
             return doc;
         }
         else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No endpoint found for " + key);
-            }
+            logger.debug("No endpoint found for " + key);
             return null;
         }
     }
@@ -120,9 +119,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             if (ep.getRole() != MessageExchange.Role.PROVIDER) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Endpoint " + key + " is a consumer. Refusing exchange with consumer.");
-                }
+                logger.debug("Endpoint " + key + " is a consumer. Refusing exchange with consumer.");
                 return false;
             }
             else {
@@ -130,9 +127,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
             }
         }
         else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No endpoint found for " + key + ". Refusing exchange with consumer.");
-            }
+            logger.debug("No endpoint found for " + key + ". Refusing exchange with consumer.");
             return false;
         }
     }
@@ -237,7 +232,7 @@ public class DefaultComponent extends AsyncBaseLifeCycle implements ServiceMixCo
     /**
      * @return Returns the logger.
      */
-    public Log getLogger() {
+    public Logger getLogger() {
         return logger;
     }
 

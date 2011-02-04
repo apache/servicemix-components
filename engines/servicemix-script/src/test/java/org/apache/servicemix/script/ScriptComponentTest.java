@@ -20,17 +20,18 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class ScriptComponentTest extends SpringTestSupport {
-    private static transient Log log = LogFactory.getLog(ScriptComponentTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ScriptComponentTest.class);
 
     public void testGroovy() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -47,7 +48,7 @@ public class ScriptComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
 
@@ -66,7 +67,7 @@ public class ScriptComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
 
@@ -85,7 +86,7 @@ public class ScriptComponentTest extends SpringTestSupport {
         } else if (me.getFault() != null) {
             fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
         }
-        log.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        logger.info(new SourceTransformer().toString(me.getOutMessage().getContent()));
         client.done(me);
     }
     

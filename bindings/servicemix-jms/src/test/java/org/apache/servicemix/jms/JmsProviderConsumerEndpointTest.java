@@ -33,8 +33,6 @@ import javax.xml.transform.Source;
 
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.activemq.broker.region.RegionBroker;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -44,11 +42,13 @@ import org.apache.servicemix.jms.endpoints.DefaultProviderMarshaler;
 import org.apache.servicemix.jms.endpoints.JmsConsumerEndpoint;
 import org.apache.servicemix.jms.endpoints.JmsProviderEndpoint;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
 
 public class JmsProviderConsumerEndpointTest extends AbstractJmsTestSupport {
 
-    private static Log logger = LogFactory.getLog(JmsProviderConsumerEndpointTest.class);
+    private final Logger logger = LoggerFactory.getLogger(JmsProviderConsumerEndpointTest.class);
 
     public void testProviderConsumerInOut() throws Exception {
         ConnectionFactory connFactory = new PooledConnectionFactory(connectionFactory);

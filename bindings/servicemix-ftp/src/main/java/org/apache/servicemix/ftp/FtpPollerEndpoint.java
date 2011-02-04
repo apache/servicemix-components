@@ -588,7 +588,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                 lock.unlock();
             } catch (Exception ex) {
                 // can't release the lock
-                logger.error(ex);
+                logger.error("Can't release the lock", ex);
             } 
             lockManager.removeLock(file);
         }

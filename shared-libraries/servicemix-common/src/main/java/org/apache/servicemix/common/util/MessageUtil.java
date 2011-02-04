@@ -45,10 +45,6 @@ import org.xml.sax.SAXException;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
-/**
- * @author gnodet
- * @version $Revision: 376451 $
- */
 public final class MessageUtil {
 
     private MessageUtil() {
@@ -133,12 +129,12 @@ public final class MessageUtil {
     }
 
     /**
-     * Convert the given {@link NormalizedMessage} instance's content to a re-readable {@link Source} This allows the
+     * <p>
+     * Converts the given {@link NormalizedMessage} instance's content to a re-readable {@link Source} This allows the
      * content to be read more than once (e.g. for XPath evaluation or auditing).
+     * </p>
      *
-     * @param message
-     *            the {@link NormalizedMessage} to convert the content for
-     * @throws MessagingException
+     * @param message the {@link NormalizedMessage} to convert the content for.
      */
     public static void enableContentRereadability(NormalizedMessage message) throws MessagingException {
         if (message.getContent() instanceof StreamSource

@@ -98,7 +98,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
                 }
             }
         } catch (Exception e) {
-            log.error("", e);
+            logger.error("", e);
         } finally {
             synchronized (running) {
                 running.notify();
@@ -108,9 +108,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
 
     public void onMessage(final Message message) {
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Received jms message " + message);
-            }
+            logger.debug("Received jms message " + message);
             Context context = createContext();
             MessageExchange exchange = toNMS(message, context);
             if (!channel.sendSync(exchange)) {
@@ -139,7 +137,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
                 }
             }
         } catch (Throwable e) {
-            log.error("Error while handling jms message", e);
+            logger.error("Error while handling jms message", e);
         }
     }
 

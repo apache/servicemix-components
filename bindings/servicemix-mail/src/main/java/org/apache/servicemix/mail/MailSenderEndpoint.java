@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.mail;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.mail.marshaler.AbstractMailMarshaler;
@@ -25,6 +23,8 @@ import org.apache.servicemix.mail.marshaler.DefaultMailMarshaler;
 import org.apache.servicemix.mail.utils.IgnoreList;
 import org.apache.servicemix.mail.utils.MailConnectionConfiguration;
 import org.apache.servicemix.mail.utils.MailUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -46,7 +46,8 @@ import java.util.Properties;
  * @author lhein
  */
 public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpointType {
-    private static final transient Log LOG = LogFactory.getLog(MailSenderEndpoint.class);
+
+    private final Logger logger = LoggerFactory.getLogger(MailSenderEndpoint.class);
 
     private AbstractMailMarshaler marshaler = new DefaultMailMarshaler();
     private MailConnectionConfiguration config;
@@ -340,7 +341,7 @@ public class MailSenderEndpoint extends ProviderEndpoint implements MailEndpoint
         try {
             this.config = MailUtils.configure(this.connection);
         } catch (ParseException ex) {
-            LOG.error("The configured connection uri is invalid", ex);
+            logger.error("The configured connection uri is invalid", ex);
         }
     }
 

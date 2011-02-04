@@ -35,7 +35,7 @@
     <description>This pom provides the common bits for all ServiceMix components, as well as providing a reactor build for those components.</description>
 
     <prerequisites>
-        <maven>2.0.6</maven>
+        <maven>2.2.1</maven>
     </prerequisites>
 
     <scm>
@@ -128,7 +128,6 @@
         <commons-httpclient.version>3.1</commons-httpclient.version>
         <commons-io.version>1.4</commons-io.version>
         <commons-jexl.version>2.0.1</commons-jexl.version>
-        <commons-logging.version>1.1.1</commons-logging.version>
         <commons-management.version>1.0</commons-management.version>
         <commons-net.version>1.4.1</commons-net.version>
         <commons-pool.version>1.5.4</commons-pool.version>
@@ -255,27 +254,6 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>${commons-logging.version}</version>
-                <optional>true</optional>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>avalon-framework</groupId>
-                        <artifactId>avalon-framework</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>logkit</groupId>
-                        <artifactId>logkit</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
@@ -596,6 +574,11 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl104-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>

@@ -27,12 +27,12 @@ import javax.wsdl.extensions.soap.SOAPOperation;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -40,7 +40,8 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class WsdlRoundtripTest extends SpringTestSupport {
-    private static transient Log log = LogFactory.getLog(WsdlRoundtripTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(WsdlRoundtripTest.class);
 
     String port1 = System.getProperty("http.port1");
     
@@ -65,7 +66,7 @@ public class WsdlRoundtripTest extends SpringTestSupport {
 
         StringWriter writer = new StringWriter();
         factory.newWSDLWriter().writeWSDL(def, writer);
-        log.info(writer.toString());
+        logger.info(writer.toString());
         Binding b = (Binding) def.getBindings().values().iterator().next();
         BindingOperation bop = (BindingOperation) b.getBindingOperations().iterator().next();
         assertEquals(1, bop.getExtensibilityElements().size());

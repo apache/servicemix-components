@@ -28,30 +28,30 @@ import javax.jbi.messaging.MessageExchange;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractHttpConsumerMarshaler implements HttpConsumerMarshaler {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected InputStream getRequestEncodingStream(String contentEncoding, InputStream dataStream) throws IOException {
         if (contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") >= 0) {
-            log.debug("Using GZIP request content encoding.");
+            logger.debug("Using GZIP request content encoding.");
             return new GZIPInputStream(new BufferedInputStream(dataStream));
         } else {
-            log.debug("Using default request content encoding.");
+            logger.debug("Using default request content encoding.");
             return new BufferedInputStream(dataStream);
         }
     }
 
     protected OutputStream getResponseEncodingStream(String acceptEncoding, OutputStream dataStream) throws IOException {
         if (acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") >= 0) {
-            log.debug("Using GZIP response content encoding.");
+            logger.debug("Using GZIP response content encoding.");
             return new GZIPOutputStream(new BufferedOutputStream(dataStream));
         } else {
-            log.debug("Using default response content encoding.");
+            logger.debug("Using default response content encoding.");
             return new BufferedOutputStream(dataStream);
         }
     }

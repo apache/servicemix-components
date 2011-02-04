@@ -22,11 +22,11 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFunctionResolver;
 import javax.xml.namespace.NamespaceContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.expression.JAXPBooleanXPathExpression;
 import org.apache.servicemix.expression.MessageVariableResolver;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A predicate that verify if the xpath expression evaluated on
@@ -38,7 +38,7 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
  */
 public class XPathPredicate extends JAXPBooleanXPathExpression implements Predicate {
 
-    private static final Log LOG = LogFactory.getLog(XPathPredicate.class);
+    private final Logger logger = LoggerFactory.getLogger(XPathPredicate.class);
     
     public XPathPredicate() {
     }
@@ -56,7 +56,7 @@ public class XPathPredicate extends JAXPBooleanXPathExpression implements Predic
             Boolean match = (Boolean) evaluate(exchange, in);
             return Boolean.TRUE.equals(match);
         } catch (Exception e) {
-            LOG.warn("Could not evaluate xpath expression", e);
+            logger.warn("Could not evaluate xpath expression", e);
             return false;
         }
     }

@@ -77,14 +77,14 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     }
 
     public void onMessage(final Message message) {
-        if (log.isDebugEnabled()) {
-            log.debug("Received jms message " + message);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Received jms message " + message);
         }
         endpoint.getServiceUnit().getComponent().getExecutor(MessageExchange.Role.CONSUMER).execute(new Runnable() {
             public void run() {
                 try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Handling jms message " + message);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Handling jms message " + message);
                     }
                     Context context = createContext();
                     MessageExchange exchange = toNMS(message, context);
@@ -93,7 +93,7 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
                     pendingMessages.put(exchange.getExchangeId(), context);
                     channel.send(exchange);
                 } catch (Throwable e) {
-                    log.error("Error while handling jms message", e);
+                    logger.error("Error while handling jms message", e);
                 }
             }
         });

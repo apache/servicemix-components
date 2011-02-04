@@ -28,8 +28,8 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -37,13 +37,15 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
+ * <p>
  * Collection of schemas.
+ * </p>
  *  
  * @author gnodet
  */
 public class SchemaCollection {
 
-    private static Log log = LogFactory.getLog(SchemaCollection.class);
+    private final Logger logger = LoggerFactory.getLogger(SchemaCollection.class);
     
     private Map<String, Schema> schemas;
     private URI baseUri;
@@ -53,9 +55,7 @@ public class SchemaCollection {
     }
     
     public SchemaCollection(URI baseUri) {
-        if (log.isDebugEnabled()) {
-            log.debug("Initializing schema collection with baseUri: " + baseUri);
-        }
+        logger.debug("Initializing schema collection with baseUri: " + baseUri);
         this.baseUri = baseUri;
         this.schemas = new HashMap<String, Schema>();
     }
@@ -84,9 +84,7 @@ public class SchemaCollection {
     }
     
     public void read(String location, URI baseUri) throws Exception {
-        if (log.isDebugEnabled()) {
-            log.debug("Reading schema at '" + location + "' with baseUri '" + baseUri + "'");
-        }
+        logger.debug("Reading schema at '" + location + "' with baseUri '" + baseUri + "'");
         if (baseUri == null) {
             baseUri = this.baseUri;
         }
@@ -150,10 +148,10 @@ public class SchemaCollection {
             Node parentNode = ce.getParentNode();
             Element root = schema.getRoot();
             if (root == parentNode) { 
-                log.debug("Removing child include node: " + ce);
+                logger.debug("Removing child include node: " + ce);
                 schema.getRoot().removeChild(ce);
             } else {
-                log.warn("Skipping child include node removal: " + ce);
+                logger.warn("Skipping child include node removal: " + ce);
             }
 	        if (location != null && !"".equals(location)) {
 	            read(location, baseUri);

@@ -23,8 +23,8 @@ import java.io.Serializable;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.HeaderFilterStrategy;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link org.apache.camel.spi.HeaderFilterStrategy} that filters out non-serializable values.
@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class StrictSerializationHeaderFilterStrategy implements HeaderFilterStrategy {
 
-    private static final Log LOG = LogFactory.getLog(StrictSerializationHeaderFilterStrategy.class);
+    private final Logger logger = LoggerFactory.getLogger(StrictSerializationHeaderFilterStrategy.class);
 
     public boolean applyFilterToCamelHeaders(String s, Object o, Exchange exchange) {
         return doApplyFilter(s, o);
@@ -51,8 +51,7 @@ public class StrictSerializationHeaderFilterStrategy implements HeaderFilterStra
                 oos = new ObjectOutputStream(new ByteArrayOutputStream());
                 oos.writeObject(o);
             } catch (IOException e) {
-                LOG.debug(String.format("%s implements Serializable, but serialization throws IOException: filtering key %s",
-                                        o, s));
+                logger.debug(String.format("%s implements Serializable, but serialization throws IOException: filtering key %s", o, s));
                 return true;
             } finally {
                 if (oos != null) {

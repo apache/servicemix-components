@@ -31,6 +31,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -38,17 +40,17 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
- * A collection of W3C DOM helper methods
+ * <p>
+ * A collection of W3C DOM helper methods.
+ * </p>
  *
  * @version $Revision: 564607 $
  */
 public final class DOMUtil {
 
-    private static final Log LOG = LogFactory.getLog(DOMUtil.class);
+    private final static Logger logger = LoggerFactory.getLogger(DOMUtil.class);
+
     private static DocumentBuilderFactory dbf;
     private static Queue builders = new ConcurrentLinkedQueue();
 
@@ -57,7 +59,12 @@ public final class DOMUtil {
     }
 
     /**
-     * Returns the text of the element
+     * <p>
+     * Returns the text of the element.
+     * </p>
+     *
+     * @param element the element.
+     * @return the element text value.
      */
     public static String getElementText(Element element) {
         StringBuffer buffer = new StringBuffer();
@@ -72,7 +79,12 @@ public final class DOMUtil {
     }
 
     /**
-     * Moves the content of the given element to the given element
+     * <p>
+     * Moves the content of the given element to the given element.
+     * </p>
+     *
+     * @param from the source element.
+     * @param to the destination element.
      */
     public static void moveContent(Element from, Element to) {
         // lets move the child nodes across
@@ -85,7 +97,12 @@ public final class DOMUtil {
     }
 
     /**
-     * Copy the attribues on one element to the other
+     * <p>
+     * Copy the attribues on one element to the other.
+     * </p>
+     *
+     * @param from the source element.
+     * @param to the destination element.
      */
     public static void copyAttributes(Element from, Element to) {
         // lets copy across all the remainingattributes
@@ -97,7 +114,12 @@ public final class DOMUtil {
     }
 
     /**
-     * A helper method useful for debugging and logging which will convert the given DOM node into XML text
+     * <p>
+     * A helper method useful for debugging and logging which will convert the given DOM node into XML text.
+     * </p>
+     *
+     * @param node the node.
+     * @return a raw XML string representing the node.
      */
     public static String asXML(Node node) throws TransformerException {
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -107,7 +129,12 @@ public final class DOMUtil {
     }
 
     /**
-     * A helper method useful for debugging and logging which will convert the given DOM node into XML text
+     * <p>
+     * A helper method useful for debugging and logging which will convert the given DOM node into XML text.
+     * </p>
+     *
+     * @param node the node.
+     * @return a indented XML string representing the node.
      */
     public static String asIndentedXML(Node node) throws TransformerException {
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -118,7 +145,13 @@ public final class DOMUtil {
     }
 
     /**
-     * Adds the child element with the given text
+     * <p>
+     * Adds the child element with the given text.
+     * </p>
+     *
+     * @param element the element where to add child.
+     * @param name the child elenemt name.
+     * @param textValue the child element text value.
      */
     public static void addChildElement(Element element, String name, Object textValue) {
         Document document = element.getOwnerDocument();
@@ -131,11 +164,13 @@ public final class DOMUtil {
     }
 
     /**
-     * Creates a QName instance from the given namespace context for the given qualifiedName
+     * <p>
+     * Creates a QName instance from the given namespace context for the given qualifiedName.
+     * </p>
      *
-     * @param element       the element to use as the namespace context
-     * @param qualifiedName the fully qualified name
-     * @return the QName which matches the qualifiedName
+     * @param element the element to use as the namespace context.
+     * @param qualifiedName the fully qualified name.
+     * @return the QName which matches the qualifiedName.
      */
     public static QName createQName(Element element, String qualifiedName) {
         int index = qualifiedName.indexOf(':');
@@ -154,15 +189,21 @@ public final class DOMUtil {
     }
 
     /**
-     * Recursive method to find a given attribute value
+     * <p>
+     * Recursive method to find a given attribute value.
+     * </p>
+     *
+     * @param element the element where to looking for attribute.
+     * @param attributeName the attribute name to look for.
+     * @return the value of the given attribute.
      */
     public static String recursiveGetAttributeValue(Element element, String attributeName) {
         String answer = null;
         try {
             answer = element.getAttribute(attributeName);
         } catch (Exception e) {
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("Caught exception looking up attribute: " + attributeName + " on element: " + element + ". Cause: " + e, e);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Caught exception looking up attribute: " + attributeName + " on element: " + element + ". Cause: " + e, e);
             }
         }
         if (answer == null || answer.length() == 0) {
@@ -175,9 +216,12 @@ public final class DOMUtil {
     }
 
     /**
-     * Get the first child element
-     * @param parent
-     * @return
+     * <p>
+     * Gets the first child element.
+     * </p>
+     *
+     * @param parent the parent node.
+     * @return the first child element.
      */
     public static Element getFirstChildElement(Node parent) {
         NodeList childs = parent.getChildNodes();
@@ -191,9 +235,12 @@ public final class DOMUtil {
     }
 
     /**
-     * Get the next sibling element
-     * @param el
-     * @return
+     * <p>
+     * Gets the next sibling element.
+     * </p>
+     *
+     * @param el the base element.
+     * @return the next sibling element.
      */
     public static Element getNextSiblingElement(Element el) {
         for (Node n = el.getNextSibling(); n != null; n = n.getNextSibling()) {
@@ -205,9 +252,12 @@ public final class DOMUtil {
     }
 
     /**
-     * Build a QName from the element name
-     * @param el
-     * @return
+     * <p>
+     * Builds a QName from the element name.
+     * </p>
+     *
+     * @param el the element.
+     * @return the QName for the given element.
      */
     public static QName getQName(Element el) {
         if (el == null) {
@@ -238,9 +288,11 @@ public final class DOMUtil {
     }
 
     /**
-     * Return a new document, ready to populate.
-     * @return
-     * @throws ParserConfigurationException
+     * <p>
+     * Returns a new document, ready to populate.
+     * </p>
+     *
+     * @return a ready to use Document.
      */
     public static Document newDocument() throws ParserConfigurationException {
         DocumentBuilder builder = getBuilder();

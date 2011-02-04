@@ -20,11 +20,13 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * <p>
  * Provides a interface that components can implement, if they implement this
  * interface and expose the name of the analyzer in their Maven Project Object
  * Model then the tooling can use this to analyze a Service Unit for the
  * component during packaging to generate the consumes and provides elements for
- * the service unit's jbi.xml
+ * the service unit's jbi.xml.
+ * </p>
  * 
  * @author Philip Dodds
  * @version $Revision: 426415 $
@@ -36,22 +38,28 @@ import java.util.List;
 public interface ServiceUnitAnalyzer {
 
 	/**
+     * <p>
 	 * Initializes the analyzer based on the root directory of an exploded
-	 * service unit
+	 * service unit.
+     * </p>
 	 * 
 	 * @param explodedServiceUnitRoot
 	 */
 	public void init(File explodedServiceUnitRoot);
 
 	/**
-	 * Returns a list of Consumes representing the service unit being analyzed
+     * <p>
+	 * Returns a list of Consumes representing the service unit being analyzed.
+     * </p>
 	 * 
 	 * @return A list of Consumes
 	 */
 	public List getConsumes();
 
 	/**
-	 * Returns a list of Provides representing the service unit being analyzed
+     * <p>
+	 * Returns a list of Provides representing the service unit being analyzed.
+     * </p>
 	 * 
 	 * @return A list of provides
 	 */

@@ -24,12 +24,11 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
-import javax.xml.namespace.QName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.servicemix.wsn.client.AbstractWSAClient;
@@ -42,7 +41,7 @@ import org.oasis_open.docs.wsn.bw_2.UnableToDestroyPullPointFault;
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.CreatePullPoint")
 public abstract class AbstractCreatePullPoint extends AbstractEndpoint implements CreatePullPoint {
 
-    private static Log log = LogFactory.getLog(AbstractCreatePullPoint.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractCreatePullPoint.class);
 
     private IdGenerator idGenerator;
 
@@ -77,7 +76,7 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
                       partName = "CreatePullPointRequest")
             org.oasis_open.docs.wsn.b_2.CreatePullPoint createPullPointRequest) throws UnableToCreatePullPointFault {
 
-        log.debug("CreatePullEndpoint");
+        logger.debug("CreatePullEndpoint");
         return handleCreatePullPoint(createPullPointRequest, null);
     }
 
@@ -108,7 +107,7 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
             success = true;
             return response;
         } catch (EndpointRegistrationException e) {
-            log.warn("Unable to register new endpoint", e);
+            logger.warn("Unable to register new endpoint", e);
             UnableToCreatePullPointFaultType fault = new UnableToCreatePullPointFaultType();
             throw new UnableToCreatePullPointFault("Unable to register new endpoint", fault, e);
         } finally {
@@ -117,7 +116,7 @@ public abstract class AbstractCreatePullPoint extends AbstractEndpoint implement
                 try {
                     pullPoint.destroy();
                 } catch (UnableToDestroyPullPointFault e) {
-                    log.info("Error destroying pullPoint", e);
+                    logger.info("Error destroying pullPoint", e);
                 }
             }
         }

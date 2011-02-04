@@ -25,8 +25,6 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.Source;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.EndpointSupport;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.util.MessageUtil;
@@ -37,6 +35,8 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.drools.FactHandle;
 import org.drools.WorkingMemory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A helper class for use inside a rule to forward a message to an endpoint
@@ -74,8 +74,8 @@ public class JbiHelper {
         return exchange;
     }
 
-    public Log getLogger() {
-        return LogFactory.getLog(memory.getRuleBase().getPackages()[0].getName());
+    public Logger getLogger() {
+        return LoggerFactory.getLogger(memory.getRuleBase().getPackages()[0].getName());
     }
 
     /**

@@ -32,18 +32,18 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.util.EncodingUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class HttpSpringTest extends SpringTestSupport {
 
-    private static transient Log logger = LogFactory.getLog(HttpSpringTest.class);
+    private final Logger logger = LoggerFactory.getLogger(HttpSpringTest.class);
     
     String port9 = System.getProperty("http.port9");
 
@@ -51,9 +51,7 @@ public class HttpSpringTest extends SpringTestSupport {
         String str = "Basic " + EncodingUtil.getAsciiString(
                 Base64.encodeBase64(EncodingUtil.getBytes("smx:smx", "UTF-8")));
         System.err.println(str);
-        if (logger.isDebugEnabled()) {
-            System.setProperty("javax.net.debug", "all");
-        }
+        System.setProperty("javax.net.debug", "all");
         super.setUp();
     }
 
@@ -102,7 +100,7 @@ public class HttpSpringTest extends SpringTestSupport {
         RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         entity.writeRequest(baos);
-        logger.info(baos);
+        logger.info(baos.toString());
         filePost.setRequestEntity(entity);
         HttpClient client = new HttpClient();
         int status = client.executeMethod(filePost);

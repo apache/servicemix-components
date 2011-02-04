@@ -29,10 +29,10 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 import javax.xml.transform.Source;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.eip.EIPEndpoint;
 import org.apache.servicemix.common.util.MessageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The AbstractSplitter is an abstract base class for Splitters.
@@ -49,7 +49,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
     public static final String SPLITTER_INDEX = "org.apache.servicemix.eip.splitter.index";
     public static final String SPLITTER_CORRID = "org.apache.servicemix.eip.splitter.corrid";
 
-    private static final Log LOG = LogFactory.getLog(AbstractSplitter.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractSplitter.class);
     /**
      * The address of the target endpoint
      */
@@ -292,7 +292,7 @@ public abstract class AbstractSplitter extends EIPEndpoint {
                 try {
                     lock.unlock();
                 } catch (Exception ex) {
-                    LOG.info("Caught exception while attempting to release lock", ex);
+                    logger.info("Caught exception while attempting to release lock", ex);
                 }
                 if (removeLock) {
                     lockManager.removeLock(corrId);

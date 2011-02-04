@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.camel.CamelJbiComponent;
 import org.apache.servicemix.camel.CamelSpringDeployer;
 import org.apache.servicemix.common.BaseServiceUnitManager;
@@ -35,6 +33,8 @@ import org.apache.xbean.classloader.JarFileClassLoader;
 import org.apache.xbean.spring.context.SpringApplicationContext;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -54,7 +54,8 @@ import org.springframework.osgi.util.BundleDelegatingClassLoader;
  */
 public class OsgiCamelJbiComponent extends CamelJbiComponent {
     
-    private static final Log LOG = LogFactory.getLog(OsgiCamelJbiComponent.class);
+    private final Logger logger = LoggerFactory.getLogger(OsgiCamelJbiComponent.class);
+
     private BundleContext bundleContext;
 
     private long shutdownTimeout;
@@ -111,7 +112,7 @@ public class OsgiCamelJbiComponent extends CamelJbiComponent {
                     if (bean instanceof BundleContextAware) {
                         BundleContextAware bundleContextAware = (BundleContextAware)bean;
                         if (bundleContext == null) {
-                            LOG.warn("No bundle defined yet so cannot inject into: " + bean);
+                            logger.warn("No bundle defined yet so cannot inject into: " + bean);
                         } else {
                             bundleContextAware.setBundleContext(bundleContext);
                         }

@@ -28,18 +28,12 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import javax.wsdl.xml.WSDLWriter;
 import javax.wsdl.Service;
-import javax.wsdl.WSDLException;
 
 import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 //import org.apache.servicemix.common.scheduler.Scheduler;
 
 public class JbiEndpointMarshallingTest extends TestCase {
-
-    private static transient Log logger =  LogFactory.getLog(JbiEndpointMarshallingTest.class);
     
     public static final String NS_URI_JBI = "http://servicemix.org/wsdl/jbi/";
 

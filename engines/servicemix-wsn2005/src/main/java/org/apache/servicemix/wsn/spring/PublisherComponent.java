@@ -26,10 +26,10 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.transform.Source;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -54,7 +54,7 @@ import org.oasis_open.docs.wsn.b_2.UnsubscribeResponse;
  */
 public class PublisherComponent extends ComponentSupport implements MessageExchangeListener {
 
-    private static final Log LOG = LogFactory.getLog(PublisherComponent.class);
+    private final Logger logger = LoggerFactory.getLogger(PublisherComponent.class);
 
     private NotificationBroker wsnBroker;
 
@@ -122,7 +122,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
                             + subscriptionEndpoint;
                     wsnBroker.registerPublisher(AbstractWSAClient.createWSA(wsaAddress), topic, demand);
                 } catch (Exception e) {
-                    LOG.error("Could not create wsn client", e);
+                    logger.error("Could not create wsn client", e);
                 }
             }
         } .start();
@@ -183,7 +183,7 @@ public class PublisherComponent extends ComponentSupport implements MessageExcha
                     wsnBroker.notify(topic, elem);
                     done(exchange);
                 } else {
-                    LOG.info("Ingore notification as the publisher is no subscribers");
+                    logger.info("Ingore notification as the publisher is no subscribers");
                 }
             } catch (Exception e) {
                 fail(exchange, e);

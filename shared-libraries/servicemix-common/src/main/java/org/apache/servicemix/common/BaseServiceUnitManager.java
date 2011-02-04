@@ -16,24 +16,26 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 import javax.jbi.component.ServiceUnitManager;
 import javax.jbi.management.DeploymentException;
 import javax.jbi.management.LifeCycleMBean;
 
 /**
+ * <p>
  * A simple service unit manager.
  * This service unit manager uses {@link Deployer} objects
  * to handle different type of service units.
- * 
+ * </p>
+ *
  * @author Guillaume Nodet
  * @version $Revision$
  * @since 3.0
  */
 public class BaseServiceUnitManager implements ServiceUnitManager {
 
-    protected final transient Log logger;
+    private final transient Logger logger;
     
     protected ServiceMixComponent component;
     
@@ -57,9 +59,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
      */
     public synchronized String deploy(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Deploying service unit");
-            }
+            logger.debug("Deploying service unit");
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
@@ -71,9 +71,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
                 throw failure("deploy", "Unable to find suitable deployer for Service Unit '" + serviceUnitName + "'", null);
             }
             component.getRegistry().registerServiceUnit(su);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Service unit deployed");
-            }
+            logger.debug("Service unit deployed");
             return createSuccessMessage("deploy");
         } catch (DeploymentException e) {
             throw e;
@@ -97,9 +95,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
     public synchronized void init(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Initializing service unit");
-            }
+            logger.debug("Initializing service unit");
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
@@ -120,9 +116,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.init();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Service unit initialized");
-            }
+            logger.debug("Service unit initialized");
         } catch (DeploymentException e) {
             throw e;
         } catch (Exception e) {
@@ -138,9 +132,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
     public synchronized void start(String serviceUnitName) throws DeploymentException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Starting service unit");
-            }
+            logger.debug("Starting service unit");
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
@@ -153,9 +145,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.start();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Service unit started");
-            }
+            logger.debug("Service unit started");
         } catch (DeploymentException e) {
             throw e;
         } catch (Exception e) {
@@ -171,9 +161,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
     public synchronized void stop(String serviceUnitName) throws DeploymentException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Stopping service unit");
-            }
+            logger.debug("Stopping service unit");
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
@@ -186,9 +174,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.stop();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Service unit stopped");
-            }
+            logger.debug("Service unit stopped");
         } catch (DeploymentException e) {
             throw e;
         } catch (Exception e) {
@@ -204,9 +190,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
     public synchronized void shutDown(String serviceUnitName) throws DeploymentException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Shutting down service unit");
-            }
+            logger.debug("Shutting down service unit");
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
@@ -219,9 +203,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
             }
             Thread.currentThread().setContextClassLoader(su.getConfigurationClassLoader());
             su.shutDown();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Service unit shut down");
-            }
+            logger.debug("Service unit shut down");
         } catch (DeploymentException e) {
             throw e;
         } catch (Exception e) {
@@ -237,12 +219,8 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
     public synchronized String undeploy(String serviceUnitName, String serviceUnitRootPath) throws DeploymentException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Undeploying service unit");
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Shutting down service unit");
-            }
+            logger.debug("Undeploying service unit");
+            logger.debug("Shutting down service unit");
             if (serviceUnitName == null || serviceUnitName.length() == 0) {
                 throw new IllegalArgumentException("serviceUnitName should be non null and non empty");
             }
@@ -258,9 +236,7 @@ public class BaseServiceUnitManager implements ServiceUnitManager {
                 doUndeploy(su);
             }
             component.getRegistry().unregisterServiceUnit(su);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Service unit undeployed");
-            }
+            logger.debug("Service unit undeployed");
             return createSuccessMessage("undeploy");
         } catch (DeploymentException e) {
             throw e;

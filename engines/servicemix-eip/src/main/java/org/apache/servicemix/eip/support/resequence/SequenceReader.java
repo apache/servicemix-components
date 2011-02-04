@@ -23,16 +23,13 @@ import java.util.concurrent.BlockingQueue;
 
 import javax.jbi.messaging.MessageExchange;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.Executor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Martin Krasser
- */
 public class SequenceReader implements Runnable {
 
-    private static final Log LOG = LogFactory.getLog(SequenceReader.class);
+    private final Logger logger = LoggerFactory.getLogger(SequenceReader.class);
     
     private static final MessageExchange STOP = createStopSignal();
     
@@ -54,17 +51,17 @@ public class SequenceReader implements Runnable {
                 // block until message exchange is available
                 MessageExchange me = queue.take();
                 if (me == STOP) {
-                    LOG.info("exit processing loop after cancellation");
+                    logger.info("exit processing loop after cancellation");
                     return;
                 }
                 // send sync to preserve message order
                 sender.sendSync(me);
             } catch (InterruptedException e) {
-                LOG.info("exit processing loop after interrupt");
+                logger.info("exit processing loop after interrupt");
                 return;
             } catch (Exception e) {
                 // TODO: handle sendSync errors and faults
-                LOG.error("caught and ignored exception", e);
+                logger.error("caught and ignored exception", e);
             }
         }
     }

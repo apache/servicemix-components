@@ -32,18 +32,18 @@ import javax.jms.TextMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.wsn.AbstractPullPoint;
 import org.oasis_open.docs.wsn.b_2.NotificationMessageHolderType;
 import org.oasis_open.docs.wsn.b_2.Notify;
 import org.oasis_open.docs.wsn.b_2.UnableToGetMessagesFaultType;
 import org.oasis_open.docs.wsn.bw_2.UnableToGetMessagesFault;
 import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JmsPullPoint extends AbstractPullPoint {
 
-    private static Log log = LogFactory.getLog(JmsPullPoint.class);
+    private final Logger logger = LoggerFactory.getLogger(JmsPullPoint.class);
 
     private JAXBContext jaxbContext;
 
@@ -86,18 +86,18 @@ public class JmsPullPoint extends AbstractPullPoint {
             Message message = session.createTextMessage(writer.toString());
             producer.send(message);
         } catch (JMSException e) {
-            log.warn("Error storing message", e);
+            logger.warn("Error storing message", e);
             if (session != null) {
                 try {
                     session.close();
                 } catch (JMSException inner) {
-                    log.debug("Error closing session", inner);
+                    logger.debug("Error closing session", inner);
                 } finally {
                     session = null;
                 }
             }
         } catch (JAXBException e) {
-            log.warn("Error storing message", e);
+            logger.warn("Error storing message", e);
         }
     }
 
@@ -122,12 +122,12 @@ public class JmsPullPoint extends AbstractPullPoint {
             }
             return messages;
         } catch (JMSException e) {
-            log.info("Error retrieving messages", e);
+            logger.info("Error retrieving messages", e);
             if (session != null) {
                 try {
                     session.close();
                 } catch (JMSException inner) {
-                    log.debug("Error closing session", inner);
+                    logger.debug("Error closing session", inner);
                 } finally {
                     session = null;
                 }
@@ -135,7 +135,7 @@ public class JmsPullPoint extends AbstractPullPoint {
             UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
             throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
         } catch (JAXBException e) {
-            log.info("Error retrieving messages", e);
+            logger.info("Error retrieving messages", e);
             UnableToGetMessagesFaultType fault = new UnableToGetMessagesFaultType();
             throw new UnableToGetMessagesFault("Unable to retrieve messages", fault, e);
         }

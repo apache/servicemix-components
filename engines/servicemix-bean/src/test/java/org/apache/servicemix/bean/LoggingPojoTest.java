@@ -30,12 +30,13 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.impl.SimpleLog;
 import org.apache.servicemix.bean.pojos.LoggingPojo;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.slf4j.Logger;
+import org.slf4j.Marker;
 
 public class LoggingPojoTest extends TestCase {
 
@@ -53,12 +54,7 @@ public class LoggingPojoTest extends TestCase {
         BeanEndpoint loggingEndpoint = new BeanEndpoint();
         LoggingPojo pojo = new LoggingPojo();
         pojo.setMaxMsgDisplaySize(35);
-        pojo.setLog(new SimpleLog("my-logger") {
-            @Override
-            protected void log(int type, Object message, Throwable t) {
-                messages.add(message.toString());
-            }
-        });
+        pojo.setLog(new MyLogger("my-logger"));
         loggingEndpoint.setBean(pojo);
         loggingEndpoint.setService(new QName("logging"));
         loggingEndpoint.setInterfaceName(new QName("logservice"));
@@ -127,5 +123,198 @@ public class LoggingPojoTest extends TestCase {
         assertTrue(message.contains("key = value"));
         assertTrue(message.contains("xml = <an>XML value</an>"));
         assertTrue(message.contains("attachments:"));
+    }
+
+    private class MyLogger implements Logger {
+        private String name;
+
+        public MyLogger(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void debug(String message) {
+            messages.add(message);
+        }
+        public void debug(Marker marker, String format, Object args1, Object args2) {
+            messages.add(marker.toString());
+        }
+        public void debug(Marker marker, String format, Object args) {
+            messages.add(marker.toString());
+        }
+        public void debug(Marker marker, String format, Object[] args) {
+            messages.add(marker.toString());
+        }
+        public void debug(Marker marker, String format) {
+            messages.add(marker.toString());
+        }
+        public void debug(Marker marker, String format, Throwable cause) {
+            messages.add(marker.toString());
+        }
+        public void debug(String message, Object args1, Object args2) {
+            messages.add(message);
+        }
+        public void debug(String message, Throwable cause) {
+            messages.add(message);
+        }
+        public void debug(String message, Object args) {
+            messages.add(message);
+        }
+        public void debug(String message, Object[] args) {
+            messages.add(message);
+        }
+        public void trace(Marker marker, String format, Object arg1, Object arg2) {
+            messages.add(marker.toString());
+        }
+        public void trace(Marker marker, String format) {
+            messages.add(marker.toString());
+        }
+        public void trace(String message, Object args) {
+            messages.add(message);
+        }
+        public void trace(String message, Throwable cause) {
+            messages.add(message);
+        }
+        public void trace(String message, Object[] args) {
+            messages.add(message);
+        }
+        public void trace(Marker marker, String format, Throwable cause) {
+            messages.add(marker.toString());
+        }
+        public void trace(Marker marker, String format, Object[] args) {
+            messages.add(marker.toString());
+        }
+        public void trace(Marker marker, String format, Object args) {
+            messages.add(marker.toString());
+        }
+        public void trace(String message, Object args1, Object args2) {
+            messages.add(message);
+        }
+        public void trace(String message) {
+            messages.add(message);
+        }
+        public void info(String message, Throwable cause) {
+            messages.add(message);
+        }
+        public void info(Marker marker, String format, Object[] argArray) {
+            messages.add(marker.toString());
+        }
+        public void info(Marker marker, String format, Throwable cause) {
+            messages.add(marker.toString());
+        }
+        public void info(Marker marker, String format, Object args) {
+            messages.add(marker.toString());
+        }
+        public void info(String message, Object[] args) {
+            messages.add(message);
+        }
+        public void info(String message, Object args) {
+            messages.add(message);
+        }
+        public void info(String message, Object args1, Object args2) {
+            messages.add(message);
+        }
+        public void info(Marker marker, String format, Object args1, Object args2) {
+            messages.add(marker.toString());
+        }
+        public void info(Marker marker, String format) {
+            messages.add(marker.toString());
+        }
+        public void info(String message) {
+            messages.add(message);
+        }
+        public void warn(Marker marker, String format, Throwable cause) {
+            messages.add(marker.toString());
+        }
+        public void warn(Marker marker, String format, Object[] argArray) {
+            messages.add(marker.toString());
+        }
+        public void warn(String message, Object args1, Object args2) {
+            messages.add(message);
+        }
+        public void warn(String message, Object args) {
+            messages.add(message);
+        }
+        public void warn(Marker marker, String format, Object args) {
+            messages.add(marker.toString());
+        }
+        public void warn(String message, Throwable cause) {
+            messages.add(message);
+        }
+        public void warn(String message, Object[] args) {
+            messages.add(message);
+        }
+        public void warn(Marker marker, String format, Object args1, Object args2) {
+            messages.add(marker.toString());
+        }
+        public void warn(String message) {
+            messages.add(message);
+        }
+        public void warn(Marker marker, String format) {
+            messages.add(marker.toString());
+        }
+        public void error(String message, Throwable cause) {
+            messages.add(message);
+        }
+        public void error(String message, Object[] args) {
+            messages.add(message);
+        }
+        public void error(String message, Object args) {
+            messages.add(message);
+        }
+        public void error(String message) {
+            messages.add(message);
+        }
+        public void error(String message, Object args1, Object args2) {
+            messages.add(message);
+        }
+        public void error(Marker marker, String format, Throwable cause) {
+            messages.add(marker.toString());
+        }
+        public void error(Marker marker, String format, Object[] args) {
+            messages.add(marker.toString());
+        }
+        public void error(Marker marker, String format, Object args) {
+            messages.add(marker.toString());
+        }
+        public void error(Marker marker, String format) {
+            messages.add(marker.toString());
+        }
+        public void error(Marker marker, String format, Object args1, Object args2) {
+            messages.add(marker.toString());
+        }
+        public boolean isDebugEnabled(Marker marker) {
+            return true;
+        }
+        public boolean isErrorEnabled(Marker marker) {
+            return true;
+        }
+        public boolean isInfoEnabled(Marker marker) {
+            return true;
+        }
+        public boolean isTraceEnabled(Marker marker) {
+            return true;
+        }
+        public boolean isWarnEnabled(Marker marker) {
+            return true;
+        }
+        public boolean isInfoEnabled() {
+            return true;
+        }
+        public boolean isWarnEnabled() {
+            return true;
+        }
+        public boolean isErrorEnabled() {
+            return true;
+        }
+        public boolean isDebugEnabled() {
+            return true;
+        }
+        public boolean isTraceEnabled() {
+            return true;
+        }
     }
 }

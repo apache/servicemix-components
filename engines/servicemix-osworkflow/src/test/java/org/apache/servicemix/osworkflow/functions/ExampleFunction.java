@@ -23,14 +23,14 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.dom.DOMSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.workflow.FunctionProvider;
 import com.opensymphony.workflow.WorkflowException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.osworkflow.OSWorkflow;
 import org.apache.servicemix.osworkflow.OSWorkflowEndpoint;
@@ -38,7 +38,7 @@ import org.apache.xpath.CachedXPathAPI;
 
 public class ExampleFunction implements FunctionProvider {
 
-    private static Log logger = LogFactory.getLog(ExampleFunction.class);
+    private final Logger logger = LoggerFactory.getLogger(ExampleFunction.class);
 
     /*
      * (non-Javadoc)

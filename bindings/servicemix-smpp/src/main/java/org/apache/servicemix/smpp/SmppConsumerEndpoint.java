@@ -16,8 +16,6 @@
  */
 package org.apache.servicemix.smpp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
 import org.apache.servicemix.smpp.marshaler.DefaultSmppMarshaler;
 import org.apache.servicemix.smpp.marshaler.SmppMarshalerSupport;
@@ -25,6 +23,8 @@ import org.jsmpp.bean.*;
 import org.jsmpp.session.BindParameter;
 import org.jsmpp.session.MessageReceiverListener;
 import org.jsmpp.session.SMPPSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.*;
@@ -41,8 +41,7 @@ import java.io.IOException;
  */
 public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpointType {
 
-    // logging facility
-    private final static transient Log log = LogFactory.getLog(SmppConsumerEndpoint.class);
+    private final Logger logger = LoggerFactory.getLogger(SmppConsumerEndpoint.class);
 
     // default SMPP port
     private static final int SMPP_DEFAULT_PORT = 2775;
@@ -98,7 +97,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
 
         // check for valid port number
         if (this.port <= 0) {
-            log.warn("Invalid SMPP port specified. Use the default one : " + SMPP_DEFAULT_PORT);
+            logger.warn("Invalid SMPP port specified. Use the default one : " + SMPP_DEFAULT_PORT);
             this.port = SMPP_DEFAULT_PORT;
         }
         // check for valid host
@@ -180,7 +179,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
                     marshaler.toNMS(in, deliverSm);
                     send(exchange);
                 } catch (MessagingException messagingException) {
-                    log.error("Unable to send the received SMS to the NMR", messagingException);
+                    logger.error("Unable to send the received SMS to the NMR", messagingException);
                 }
             }
 
@@ -194,7 +193,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
                     NumberingPlanIndicator.UNKNOWN,
                     null));
         } catch (IOException ioException) {
-            log.error("Error connecting to the SMPP server", ioException);
+            logger.error("Error connecting to the SMPP server", ioException);
             return;
         }
     }

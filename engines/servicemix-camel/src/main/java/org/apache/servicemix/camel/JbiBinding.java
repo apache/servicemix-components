@@ -38,14 +38,14 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.spi.HeaderFilterStrategy;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.camel.util.BasicSerializationHeaderFilterStrategy;
 import org.apache.servicemix.camel.util.HeaderFilterStrategies;
 import org.apache.servicemix.camel.util.HeaderFilterStrategyConstants;
 import org.apache.servicemix.camel.util.NoCheckSerializationHeaderFilterStrategy;
 import org.apache.servicemix.camel.util.StrictSerializationHeaderFilterStrategy;
 import org.apache.servicemix.jbi.exception.FaultException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -58,7 +58,7 @@ public class JbiBinding {
     public static final String OPERATION = "JbiOperation";
     public static final String SECURITY_SUBJECT = "JbiSecuritySubject";
     
-    private static final Log LOG = LogFactory.getLog(JbiBinding.class);
+    private final Logger logger = LoggerFactory.getLogger(JbiBinding.class);
 
     private final CamelContext context;
 
@@ -108,9 +108,7 @@ public class JbiBinding {
         try {
             ClassLoader loader = context.getApplicationContextClassLoader();
             if (loader != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Set the thread context classloader " + loader);
-                }
+                logger.debug("Set the thread context classloader " + loader);
                 Thread.currentThread().setContextClassLoader(loader);
             }
             return callable.call();
@@ -238,7 +236,7 @@ public class JbiBinding {
     public void copyFromCamelToJbi(Message message, NormalizedMessage normalizedMessage) throws MessagingException {
         if (message != null && message.getBody() != null) {
             if (message.getBody(Source.class) == null) {
-                LOG.warn("Unable to convert message body of type " + message.getBody().getClass() + " into an XML Source");
+                logger.warn("Unable to convert message body of type " + message.getBody().getClass() + " into an XML Source");
             } else {
                 normalizedMessage.setContent(message.getBody(Source.class));
             }

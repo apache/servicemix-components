@@ -34,8 +34,6 @@ import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.jbi.exception.FaultException;
 import org.apache.servicemix.jbi.exception.NoInMessageAvailableException;
@@ -49,8 +47,6 @@ import org.apache.servicemix.jbi.transformer.MessageTransformer;
  * @version $$
  */
 public abstract class BeanSupport {
-
-    protected Log logger = LogFactory.getLog(getClass());
     
     @Resource
     private ComponentContext context;

@@ -28,8 +28,6 @@ import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
 
 import org.apache.activemq.pool.PooledConnectionFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
@@ -42,6 +40,8 @@ import org.apache.servicemix.jms.endpoints.JmsSoapConsumerEndpoint;
 import org.apache.servicemix.tck.MessageList;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
 
 public class JmsConsumerEndpointTest extends AbstractJmsTestSupport {
 
-    private static Log logger =  LogFactory.getLog(JmsConsumerEndpointTest.class);
+    private final Logger logger = LoggerFactory.getLogger(JmsConsumerEndpointTest.class);
 
     /**
      * Test property name.

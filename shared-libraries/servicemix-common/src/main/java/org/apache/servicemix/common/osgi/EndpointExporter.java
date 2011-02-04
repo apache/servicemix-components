@@ -28,11 +28,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.osgi.DeployedAssembly;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.osgi.context.BundleContextAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.DisposableBean;
@@ -41,7 +40,7 @@ import org.springframework.context.ApplicationContext;
 
 public class EndpointExporter implements BundleContextAware, ApplicationContextAware, InitializingBean, DisposableBean, DeployedAssembly {
 
-    private static final Log LOG = LogFactory.getLog(EndpointExporter.class);
+    private final Logger logger = LoggerFactory.getLogger(EndpointExporter.class);
 
     private BundleContext bundleContext;
     private ApplicationContext applicationContext;
@@ -124,7 +123,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
             }
         }
         if (assemblyRegistration == null) {
-            LOG.info("Waiting for all endpoints to be deployed before registering service assembly");
+            logger.info("Waiting for all endpoints to be deployed before registering service assembly");
         }
     }
 
@@ -134,7 +133,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
         }
         if (ep != null && (ep.getServiceUnit() == null 
             || !ep.getServiceUnit().getComponent().getRegistry().isRegistered(ep.getServiceUnit()))) {
-            LOG.info("something wrong during register endpoint " + ep.getKey());
+            logger.info("something wrong during register endpoint " + ep.getKey());
             //get chance to unregister all endpoints with this EndpointExporter
             for (Endpoint e : deployed) {
                 e.getServiceUnit().getComponent().getRegistry().unregisterServiceUnit(e.getServiceUnit());
@@ -157,7 +156,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
                 // Create the timer if not already done
                 if (timer == null) {
                     timer = new Timer();
-                    LOG.info("All endpoints have been deployed but waiting for components initialization");
+                    logger.info("All endpoints have been deployed but waiting for components initialization");
                 }
                 // Retry a bit later to allow some time for the components to be initialized
                 // by the JBI container
@@ -175,7 +174,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
                     timer = null;
                 }
                 // ... and register the SA in OSGi
-                LOG.info("All endpoints have been deployed and components initialized. Registering service assembly.");
+                logger.info("All endpoints have been deployed and components initialized. Registering service assembly.");
                 assemblyRegistration = bundleContext.registerService(DeployedAssembly.class.getName(), this, new Properties());
             }
         }

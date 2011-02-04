@@ -18,11 +18,12 @@ package org.apache.servicemix.pdf.marshaler;
 
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.jdom.xpath.XPath;
 import org.w3c.dom.Node;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -33,7 +34,7 @@ import org.w3c.dom.Node;
  */
 public class XpathPdfComposerMarshaler implements PdfComposerMarshalerSupport {
     
-    private final static transient Log LOG = LogFactory.getLog(XpathPdfComposerMarshaler.class);
+    private final Logger logger = LoggerFactory.getLogger(XpathPdfComposerMarshaler.class);
     
     /*
      * (non-Javadoc)
@@ -42,18 +43,18 @@ public class XpathPdfComposerMarshaler implements PdfComposerMarshalerSupport {
     public PdfComposerRequest unmarshal(NormalizedMessage in) throws Exception {
         // TODO check performance issue by using stream
         
-        LOG.debug("Create the PDF composer request.");
+        logger.debug("Create the PDF composer request.");
         PdfComposerRequest request = new PdfComposerRequest();
 
-        LOG.debug("Transform the in NoramlizedMessage to XML node.");
+        logger.debug("Transform the in NoramlizedMessage to XML node.");
         SourceTransformer transformer = new SourceTransformer();
         Node root = transformer.toDOMNode(in);
         
-        LOG.debug("Extract template.");
+        logger.debug("Extract template.");
         XPath templateXPath = XPath.newInstance("//template");
         request.setTemplate(templateXPath.valueOf(root));
         
-        //LOG.debug("Extract rows.");
+        //logger.debug("Extract rows.");
         //XPath rowsXPath = XPath.newInstance("*/row");
         //List rows = rowsXPath.selectNodes(root);
         

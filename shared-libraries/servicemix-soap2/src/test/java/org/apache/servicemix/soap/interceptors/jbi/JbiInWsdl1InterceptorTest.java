@@ -25,26 +25,26 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.soap.api.Message;
 import org.apache.servicemix.soap.api.model.Operation;
 import org.apache.servicemix.soap.bindings.soap.impl.Wsdl1SoapMessageImpl;
 import org.apache.servicemix.soap.bindings.soap.impl.Wsdl1SoapOperationImpl;
 import org.apache.servicemix.soap.bindings.soap.impl.Wsdl1SoapPartImpl;
-import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapPart;
 import org.apache.servicemix.soap.bindings.soap.model.wsdl1.Wsdl1SoapBinding;
 import org.apache.servicemix.soap.core.MessageImpl;
 import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.soap.util.stax.StaxUtil;
 
 public class JbiInWsdl1InterceptorTest extends TestCase {
-    private static transient Log log = LogFactory.getLog(JbiInWsdl1InterceptorTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(JbiInWsdl1InterceptorTest.class);
 
     public void test() throws Exception {
         Wsdl1SoapOperationImpl wsdlOperation = new Wsdl1SoapOperationImpl();
@@ -77,7 +77,7 @@ public class JbiInWsdl1InterceptorTest extends TestCase {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
-        log.info(baos.toString());
+        logger.info(baos.toString());
     }
     
     public void testNamespace() throws Exception {
@@ -114,7 +114,7 @@ public class JbiInWsdl1InterceptorTest extends TestCase {
         DomUtil.getTransformerFactory().newTransformer().transform(new DOMSource(doc), new StreamResult(baos));
   
         assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><jbi:message xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\" xmlns:msg=\"urn:test\" name=\"message\" type=\"msg:message\" version=\"1.0\"><jbi:part><echo xmlns=\"http://www.example.org\"><request xmlns=\"\"><message>hello</message></request></echo></jbi:part></jbi:message>", baos.toString());
-        log.info(baos.toString());
+        logger.info(baos.toString());
     }
     
 }

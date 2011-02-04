@@ -23,12 +23,12 @@ import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WSIBPValidatorTest extends TestCase {
-    private static transient Log log = LogFactory.getLog(WSIBPValidatorTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(WSIBPValidatorTest.class);
 
     public void testR2303() throws Exception {
         Definition def = WSDLFactory.newInstance().newDefinition();
@@ -44,7 +44,7 @@ public class WSIBPValidatorTest extends TestCase {
         assertFalse(validator.isValid());
         
         for (String err : validator.getErrors()) {
-            log.info(err);
+            logger.info(err);
         }
     }
     

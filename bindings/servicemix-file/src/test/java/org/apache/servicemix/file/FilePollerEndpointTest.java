@@ -37,13 +37,13 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.executors.Executor;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
 import org.apache.servicemix.util.FileUtil;
 
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import org.slf4j.LoggerFactory;
 
 public class FilePollerEndpointTest extends TestCase {
 
@@ -57,7 +57,7 @@ public class FilePollerEndpointTest extends TestCase {
         exchanges.clear();
         endpoint = new FilePollerEndpoint() {
             {
-                logger = LogFactory.getLog(this.getClass());
+                logger = LoggerFactory.getLogger(this.getClass());
             }
 
             @Override

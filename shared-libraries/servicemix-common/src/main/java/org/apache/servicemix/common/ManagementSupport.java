@@ -16,8 +16,8 @@
  */
 package org.apache.servicemix.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,7 +29,7 @@ import javax.jbi.management.DeploymentException;
  */
 public class ManagementSupport {
     
-    private static final Log logger = LogFactory.getLog(ManagementSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManagementSupport.class);
 
     public static DeploymentException failure(String task, String component, String info, Throwable e) {
         Message msg = new Message();

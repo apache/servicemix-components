@@ -21,10 +21,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
+ * <p>
  * Class to handle scheduling tasks.
- * <p>
- * This class is thread-safe
- * <p>
+ * This class is thread-safe.
+ * </p>
  * 
  * @author George Gastaldi (gastaldi)
  */
@@ -33,38 +33,42 @@ public class Scheduler {
     private Timer timer;
 
     /**
+     * <p>
      * Creates a new Scheduler.
+     * </p>
      */
     public Scheduler() {
         this.timer = new Timer();
     }
 
     /**
+     * <p>
      * Creates a new Daemon Scheduler
+     * </p>
      * 
-     * @param daemon
-     *            Thread must be executed as "daemon".
+     * @param daemon Thread must be executed as "daemon".
      */
     public Scheduler(boolean daemon) {
         this.timer = new Timer(daemon);
     }
 
     /**
-     * Cancels the scheduler task
+     * <p>
+     * Cancels the scheduler task.
+     * </p>
      */
     public void cancel() {
         timer.cancel();
     }
 
     /**
-     * Schedules a task
+     * <p>
+     * Schedules a task.
+     * </p>
      * 
-     * @param task
-     *            scheduled tasl
+     * @param task scheduled task
      * @param iterator
-     *            iterator for schedulingque descreve o agendamento
-     * @throws IllegalStateException
-     *             if task scheduled or canceled
+     * @throws IllegalStateException if task scheduled or canceled.
      */
     public void schedule(SchedulerTask task, ScheduleIterator iterator) {
         Date time = iterator.nextExecution();
@@ -97,7 +101,9 @@ public class Scheduler {
     }
 
     /**
-     * Internal TimerTask instance
+     * <p>
+     * Internal TimerTask instance.
+     * </p>
      */
     class SchedulerTimerTask extends TimerTask {
         private SchedulerTask task;

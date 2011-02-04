@@ -40,14 +40,16 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.logging.Log;
 import org.apache.servicemix.executors.Executor;
 import org.apache.servicemix.executors.ExecutorFactory;
 import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
+import org.slf4j.Logger;
 
 /**
+ * <p>
  * Base class for life cycle management of components. This class may be used as
  * is.
+ * </p>
  *
  * @author Guillaume Nodet
  * @version $Revision: 399873 $
@@ -57,7 +59,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     public static final String INITIALIZED = "Initialized";
 
-    protected transient Log logger;
+    protected transient Logger logger;
 
     protected ServiceMixComponent component;
 
@@ -188,9 +190,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     public void init(ComponentContext context) throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Initializing component");
-            }
+            logger.debug("Initializing component");
             Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             this.context = context;
             this.channel = context.getDeliveryChannel();
@@ -204,9 +204,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             container = Container.detect(context);
             doInit();
             setCurrentState(INITIALIZED);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Component initialized");
-            }
+            logger.debug("Component initialized");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -256,16 +254,12 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     public void shutDown() throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Shutting down component");
-            }
+            logger.debug("Shutting down component");
             Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             doShutDown();
             setCurrentState(LifeCycleMBean.SHUTDOWN);
             this.context = null;
-            if (logger.isDebugEnabled()) {
-                logger.debug("Component shut down");
-            }
+            logger.debug("Component shut down");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -299,17 +293,13 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     public void start() throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Starting component");
-            }
+            logger.debug("Starting component");
             Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             if (this.running.compareAndSet(false, true)) {
                 doStart();
                 setCurrentState(LifeCycleMBean.STARTED);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Component started");
-            }
+            logger.debug("Component started");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -374,9 +364,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             } catch (Throwable t) {
                 if (running.get() == false) {
                     // Should have been interrupted, discard the throwable
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Polling thread will stop");
-                    }
+                    logger.debug("Polling thread will stop");
                 } else {
                     logger.error("Error polling delivery channel", t);
                 }
@@ -396,17 +384,13 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     public void stop() throws JBIException {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Stopping component");
-            }
+            logger.debug("Stopping component");
             Thread.currentThread().setContextClassLoader(component.getClass().getClassLoader());
             if (this.running.compareAndSet(true, false)) {
                 doStop();
                 setCurrentState(LifeCycleMBean.STOPPED);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Component stopped");
-            }
+            logger.debug("Component stopped");
         } catch (JBIException e) {
             throw e;
         } catch (Exception e) {
@@ -582,10 +566,8 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
     }
 
     protected void processExchange(MessageExchange exchange) throws Exception {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Received exchange: status: " + exchange.getStatus() + ", role: "
+        logger.debug("Received exchange: status: " + exchange.getStatus() + ", role: "
                     + (exchange.getRole() == Role.CONSUMER ? "consumer" : "provider"));
-        }
         if (exchange.getRole() == Role.PROVIDER) {
             boolean dynamic = false;
             ServiceEndpoint endpoint = exchange.getEndpoint();
@@ -643,9 +625,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                 // Set the id in threadlocal variable
                 correlationId.set(correlationID);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieved correlation id: " + correlationID);
-            }
+            logger.debug("Retrieved correlation id: " + correlationID);
             EndpointDeliveryChannel.setEndpoint(ep);
             handleExchange(ep, exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
             ep.process(exchange);
@@ -673,15 +653,11 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                     // to trace the process instance
                     correlationIDValue = exchange.getExchangeId();
                     exchange.setProperty(JbiConstants.CORRELATION_ID, exchange.getExchangeId());
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Created correlation id: " + correlationIDValue);
-                    }
+                    logger.debug("Created correlation id: " + correlationIDValue);
                 } else {
                     // Use correlation id retrieved from previous message exchange
                     exchange.setProperty(JbiConstants.CORRELATION_ID, correlationIDValue);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Correlation id retrieved from ThreadLocal: " + correlationIDValue);
-                    }
+                    logger.debug("Correlation id retrieved from ThreadLocal: " + correlationIDValue);
                 }
             }
             // Set the sender endpoint property

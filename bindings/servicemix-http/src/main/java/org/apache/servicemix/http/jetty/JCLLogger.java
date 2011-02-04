@@ -16,9 +16,8 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mortbay.log.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A jetty6 logger implementation on top of commons-logging
@@ -31,7 +30,7 @@ public class JCLLogger implements Logger {
     static final char DELIM_STOP = '}';
     
     private final String name;
-    private final Log log;
+    private final org.slf4j.Logger logger;
 
     public JCLLogger() {
         this("org.mortbay.jetty");
@@ -39,7 +38,7 @@ public class JCLLogger implements Logger {
 
     public JCLLogger(String name) {
         this.name = name;
-        this.log = LogFactory.getLog(name);
+        this.logger = LoggerFactory.getLogger(name);
     }
 
     public static void init() {
@@ -62,13 +61,11 @@ public class JCLLogger implements Logger {
     }
     
     public void debug(String msg, Throwable th) {
-        log.debug(msg, th);
+        logger.debug(msg, th);
     }
 
     public void debug(String msg, Object arg0, Object arg1) {
-        if (log.isDebugEnabled()) {
-            log.debug(arrayFormat(msg, new Object[] {arg0, arg1}));
-        }
+        logger.debug(arrayFormat(msg, new Object[] {arg0, arg1}));
     }
 
     public Logger getLogger(String loggerName) {
@@ -79,27 +76,23 @@ public class JCLLogger implements Logger {
     }
 
     public void info(String msg, Object arg0, Object arg1) {
-        if (log.isInfoEnabled()) {
-            log.info(arrayFormat(msg, new Object[] {arg0, arg1}));
-        }
+        logger.info(arrayFormat(msg, new Object[] {arg0, arg1}));
     }
 
     public boolean isDebugEnabled() {
-        return log.isDebugEnabled();
+        return logger.isDebugEnabled();
     }
 
     public void setDebugEnabled(boolean enabled) {
-        log.warn("setDebugEnabled not supported");
+        logger.warn("setDebugEnabled not supported");
     }
 
     public void warn(String msg, Throwable th) {
-        log.warn(msg, th);
+        logger.warn(msg, th);
     }
 
     public void warn(String msg, Object arg0, Object arg1) {
-        if (log.isWarnEnabled()) {
-            log.warn(arrayFormat(msg, new Object[] {arg0, arg1}));
-        }
+        logger.warn(arrayFormat(msg, new Object[] {arg0, arg1}));
     }
 
     public static String arrayFormat(String messagePattern, Object[] argArray) {

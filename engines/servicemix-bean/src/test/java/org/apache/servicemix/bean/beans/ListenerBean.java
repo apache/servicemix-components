@@ -23,10 +23,10 @@ import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.jbi.listener.MessageExchangeListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A simple POJO which implements the {@link MessageExchangeListener} interface
@@ -35,7 +35,7 @@ import org.apache.servicemix.jbi.listener.MessageExchangeListener;
  */
 public class ListenerBean implements MessageExchangeListener {
 
-    private static final Log LOG = LogFactory.getLog(ListenerBean.class);
+    private final Logger logger = LoggerFactory.getLogger(ListenerBean.class);
 
     @Resource
     private DeliveryChannel channel;
@@ -45,7 +45,7 @@ public class ListenerBean implements MessageExchangeListener {
 
     public void onMessageExchange(MessageExchange exchange) throws MessagingException {
         this.lastExchange = exchange;
-        LOG.info("Received exchange: " + exchange);
+        logger.info("Received exchange: " + exchange);
         if (exchange instanceof InOnly) {
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);

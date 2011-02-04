@@ -17,22 +17,24 @@
 package org.apache.servicemix.common.security;
 
 import java.security.GeneralSecurityException;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import javax.security.auth.Subject;
 
 /**
+ * <p>
  * Interface for the authentication service.
- *
+ * </p>
  */
 public interface AuthenticationService {
 
     /**
-     * Authenticate a user given its name and credentials.
+     * <p>
+     * Authenticates a user given its name and credentials.
      * Upon sucessfull completion, the subject should be populated
      * with the user known principals.
+     * </p>
      *
      * @param subject the subject to populate
      * @param domain the security domain to use

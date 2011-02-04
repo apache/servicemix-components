@@ -24,8 +24,10 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 /**
+ * <p>
  * A BeanFactoryPostProcessor which creates a BeanFactory from the given beans
  * and sets it as the parent BeanFactory.
+ * </p>
  * 
  * @author gnodet
  */

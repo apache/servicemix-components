@@ -21,13 +21,11 @@ import java.io.IOException;
 import java.util.Properties;
 import javax.jbi.messaging.MessageExchange;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
-
-
 
 /**
  * Switch (on/off) predicate based on a property that can come from
@@ -40,7 +38,7 @@ import org.springframework.core.io.Resource;
  */
 public class SwitchPredicate implements InitializingBean, Predicate {
 
-    private static Log log = LogFactory.getLog(SwitchPredicate.class);
+    private final Logger logger = LoggerFactory.getLogger(SwitchPredicate.class);
 
     // property resource optionally
     private Resource propertyResource;
@@ -63,8 +61,8 @@ public class SwitchPredicate implements InitializingBean, Predicate {
             if (propertyResource != null && propertyResource.exists()) {
                 // get property from properties file
                 propertyFile = propertyResource.getFile();
-                if (log.isDebugEnabled()) {
-                    log.debug("loading property file: " + propertyFile.getAbsolutePath());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("loading property file: " + propertyFile.getAbsolutePath());
                 }
                 props = new Properties();
                 props.load(propertyResource.getInputStream());
@@ -77,7 +75,7 @@ public class SwitchPredicate implements InitializingBean, Predicate {
                 on = Boolean.valueOf(value);
             }
         } catch (IOException e) {
-            log.error("could not load switch property file - filter is off", e);
+            logger.error("could not load switch property file - filter is off", e);
             on = Boolean.FALSE;
         }
         dirty = false;
@@ -172,7 +170,7 @@ public class SwitchPredicate implements InitializingBean, Predicate {
                     match = Boolean.valueOf(value.toString());
                 }
             } catch (Exception e) {
-                log.warn("Could not evaluate xpath expression", e);
+                logger.warn("Could not evaluate xpath expression", e);
                 match = Boolean.FALSE;
             }
         } else {

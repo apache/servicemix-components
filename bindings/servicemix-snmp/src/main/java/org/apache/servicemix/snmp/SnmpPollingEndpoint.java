@@ -22,12 +22,12 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.endpoints.PollingEndpoint;
 import org.apache.servicemix.snmp.marshaler.DefaultSnmpMarshaler;
 import org.apache.servicemix.snmp.marshaler.SnmpMarshalerSupport;
 import org.apache.servicemix.snmp.util.OIDList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -53,7 +53,8 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
  * @author lhein
  */
 public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpointType, ResponseListener {
-    private static final transient Log LOG = LogFactory.getLog(SnmpPollingEndpoint.class);
+
+    private final Logger logger = LoggerFactory.getLogger(SnmpPollingEndpoint.class);
 
     public static final String DEFAULT_COMMUNITY = "public";
     public static final int DEFAULT_SNMP_VERSION = SnmpConstants.version1;
@@ -203,7 +204,7 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
         // check for valid response
         if (event.getRequest() == null || event.getResponse() == null) {
             // ignore null requests/responses
-            LOG.debug("Received invalid snmp event. Request: " + event.getRequest() + " / Response: "
+            logger.debug("Received invalid snmp event. Request: " + event.getRequest() + " / Response: "
                       + event.getResponse());
             return;
         }
@@ -239,7 +240,7 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
             // and use send to deliver it
             getChannel().send(io);
         } catch (MessagingException ex) {
-            LOG.error("Error while trying to send the snmp event to the jbi bus", ex);
+            logger.error("Error while trying to send the snmp event to the jbi bus", ex);
         }
     }
 

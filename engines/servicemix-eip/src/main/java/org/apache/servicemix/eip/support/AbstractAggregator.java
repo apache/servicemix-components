@@ -30,8 +30,6 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.messaging.RobustInOnly;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.util.MessageUtil;
 import org.apache.servicemix.eip.EIPEndpoint;
@@ -41,6 +39,8 @@ import org.apache.servicemix.store.memory.MemoryStore;
 import org.apache.servicemix.store.memory.MemoryStoreFactory;
 import org.apache.servicemix.timers.Timer;
 import org.apache.servicemix.timers.TimerListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Aggregator can be used to wait and combine several messages.
@@ -59,7 +59,7 @@ import org.apache.servicemix.timers.TimerListener;
  */
 public abstract class AbstractAggregator extends EIPEndpoint {
 
-    private static final Log LOG = LogFactory.getLog(AbstractAggregator.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractAggregator.class);
 
     private ExchangeTarget target;
     
@@ -343,8 +343,8 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                 } else {
                     store.store(correlationId, aggregation);
                     if (timeout != null) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
                         }
                         Timer t = getTimerManager().schedule(new TimerListener() {
                             public void timerExpired(Timer timer) {
@@ -369,7 +369,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             try {
                 lock.unlock();
             } catch (Exception ex) {
-                LOG.info("Caught exception while attempting to release aggregation lock", ex);
+                logger.info("Caught exception while attempting to release aggregation lock", ex);
             }
             if (removeLock) {
                 lockManager.removeLock(correlationId);
@@ -400,9 +400,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     protected void onTimeout(String processCorrelationId, String correlationId, Timer timer) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Timeout expired for aggregate " + correlationId);
-        }
+        logger.debug("Timeout expired for aggregate " + correlationId);
         Lock lock = getLockManager().getLock(correlationId);
         lock.lock();
         try {
@@ -431,17 +429,15 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             } else if (!isAggregationClosed(correlationId)) {
                 throw new IllegalStateException("Aggregation is not closed, but can not be retrieved from the store");
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Aggregate " + correlationId + " is closed");
-                }
+                logger.debug("Aggregate " + correlationId + " is closed");
             }
         } catch (Exception e) {
-            LOG.info("Caught exception while processing timeout aggregation", e);
+            logger.info("Caught exception while processing timeout aggregation", e);
         } finally {
             try {
                 lock.unlock();
             } catch (Exception ex) {
-                LOG.info("Caught exception while attempting to release timeout aggregation lock", ex);
+                logger.info("Caught exception while attempting to release timeout aggregation lock", ex);
             } 
             lockManager.removeLock(correlationId);
         }

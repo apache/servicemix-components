@@ -18,10 +18,10 @@ package org.apache.servicemix.quartz;
 
 import javax.jbi.messaging.NormalizedMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.SpringTestSupport;
@@ -29,7 +29,8 @@ import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class QuartzSpringTest extends SpringTestSupport {
-    private static transient Log log = LogFactory.getLog(QuartzSpringTest.class);
+
+    private final Logger logger = LoggerFactory.getLogger(QuartzSpringTest.class);
 
     public void test() throws Exception {
         Receiver r1 = (Receiver) getBean("receiver1");

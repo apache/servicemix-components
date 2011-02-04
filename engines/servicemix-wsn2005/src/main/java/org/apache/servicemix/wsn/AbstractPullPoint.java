@@ -25,8 +25,6 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
 import org.oasis_open.docs.wsn.b_2.DestroyPullPoint;
 import org.oasis_open.docs.wsn.b_2.DestroyPullPointResponse;
@@ -41,11 +39,13 @@ import org.oasis_open.docs.wsn.bw_2.UnableToCreatePullPointFault;
 import org.oasis_open.docs.wsn.bw_2.UnableToDestroyPullPointFault;
 import org.oasis_open.docs.wsn.bw_2.UnableToGetMessagesFault;
 import org.oasis_open.docs.wsrf.rw_2.ResourceUnknownFault;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @WebService(endpointInterface = "org.oasis_open.docs.wsn.bw_2.PullPoint")
 public abstract class AbstractPullPoint extends AbstractEndpoint implements PullPoint, NotificationConsumer {
 
-    private static Log log = LogFactory.getLog(AbstractPullPoint.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractPullPoint.class);
 
     protected AbstractCreatePullPoint createPullPoint;
 
@@ -65,7 +65,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint implements Pull
                       partName = "Notify")
             Notify notify) {
 
-        log.debug("Notify");
+        logger.debug("Notify");
         for (NotificationMessageHolderType messageHolder : notify.getNotificationMessage()) {
             store(messageHolder);
         }
@@ -87,7 +87,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint implements Pull
                       partName = "GetMessagesRequest")
             GetMessages getMessagesRequest) throws ResourceUnknownFault, UnableToGetMessagesFault {
 
-        log.debug("GetMessages");
+        logger.debug("GetMessages");
         BigInteger max = getMessagesRequest.getMaximumNumber();
         List<NotificationMessageHolderType> messages = getMessages(max != null ? max.intValue() : 0);
         GetMessagesResponse response = new GetMessagesResponse();
@@ -111,7 +111,7 @@ public abstract class AbstractPullPoint extends AbstractEndpoint implements Pull
                       partName = "DestroyPullPointRequest")
             DestroyPullPoint destroyPullPointRequest) throws ResourceUnknownFault, UnableToDestroyPullPointFault {
 
-        log.debug("Destroy");
+        logger.debug("Destroy");
         createPullPoint.destroyPullPoint(getAddress());
         return new DestroyPullPointResponse();
     }
