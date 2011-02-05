@@ -100,7 +100,7 @@ public class HttpSpringTest extends SpringTestSupport {
         RequestEntity entity = new MultipartRequestEntity(parts, filePost.getParams());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         entity.writeRequest(baos);
-        logger.info(baos.toString());
+        logger.info("{}", baos);
         filePost.setRequestEntity(entity);
         HttpClient client = new HttpClient();
         int status = client.executeMethod(filePost);

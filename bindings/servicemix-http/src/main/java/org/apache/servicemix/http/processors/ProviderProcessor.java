@@ -118,7 +118,7 @@ public class ProviderProcessor extends AbstractProcessor implements SoapExchange
         Object newDestinationURI = nm.getProperty(JbiConstants.HTTP_DESTINATION_URI);
         if (newDestinationURI != null) {
             locationURI = (String) newDestinationURI;
-            logger.debug("Location URI overridden: " + locationURI);
+            logger.debug("Location URI overridden: {}", locationURI);
         }
 
         PostMethod method = new PostMethod(getRelUri(locationURI));

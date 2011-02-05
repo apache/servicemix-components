@@ -198,7 +198,7 @@ public class ServerManagerTest extends TestCase {
         }
 
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-            logger.info(request.toString());
+            logger.info("{}", request);
         }
 
     }
@@ -213,7 +213,7 @@ public class ServerManagerTest extends TestCase {
         }
 
         public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-            logger.info(request.toString());
+            logger.info("{}", request);
         }
     }
 }

@@ -268,9 +268,8 @@ public class JettyContextManager implements ContextManager {
             try {
                 connector = (Connector) Class.forName(connectorClassName).newInstance();
             } catch (Exception e) {
-                logger.warn("Could not create a jetty connector of class '" + connectorClassName + "'. Defaulting to "
-                                + HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
-                logger.debug("Reason: " + e.getMessage(), e);
+                logger.warn("Could not create a jetty connector of class '{}'. Defaulting to {}", connectorClassName, HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME);
+                logger.debug("Reason: {}", e.getMessage(), e);
                 connector = (Connector) Class.forName(HttpConfiguration.DEFAULT_JETTY_CONNECTOR_CLASS_NAME)
                                 .newInstance();
             }
@@ -464,7 +463,7 @@ public class JettyContextManager implements ContextManager {
     protected class ThreadPoolWrapper extends AbstractLifeCycle implements ThreadPool {
 
         public boolean dispatch(Runnable job) {
-            logger.debug("Dispatching job: " + job);
+            logger.debug("Dispatching job: {}", job);
             return threadPool.dispatch(job);
         }
 

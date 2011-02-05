@@ -462,7 +462,7 @@ public class JmsEndpoint extends SoapEndpoint implements JmsEndpointType {
         if (in == null) {
             in = getClass().getClassLoader().getResourceAsStream(uri);
             if (in == null) {
-                logger.debug("Could not find resource: " + uri);
+                logger.debug("Could not find resource: {}", uri);
             }
         }
         return in;

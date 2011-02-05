@@ -258,7 +258,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
             // Change to the directory specified by the URI path if any
             if (uri != null && uri.getPath() != null) {
                 if (!client.changeWorkingDirectory(uri.getPath())) {
-                    logger.warn("Unable to change ftp directory to '" + uri.getPath() + "'");
+                    logger.warn("Unable to change ftp directory to '{}'", uri.getPath());
                 }
             }
 
@@ -294,7 +294,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
                         throw new IOException("File " + uploadName + " could not be renamed to " + name);
                     }
                 } catch (IOException e) {
-                    logger.error("Caught exception while closing stream on error: " + e, e);
+                    logger.error("Caught exception while closing stream on error: {}", e.getMessage(), e);
                 }
             }
             returnClient(client);
@@ -327,7 +327,7 @@ public class FtpSenderEndpoint extends ProviderEndpoint implements FtpEndpointTy
             try {
                 getClientPool().returnClient(client);
             } catch (Exception e) {
-                logger.error("Failed to return client to pool: " + e, e);
+                logger.error("Failed to return client to pool: {}", e.getMessage(), e);
             }
         }
     }

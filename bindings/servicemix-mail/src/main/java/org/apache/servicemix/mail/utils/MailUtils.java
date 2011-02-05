@@ -289,9 +289,9 @@ public final class MailUtils {
                 }
             }
             try {
-                logger.debug("Setting property: " + header.getName() + " = " + MimeUtility.decodeText(header.getValue()));
+                logger.debug("Setting property: {} = {}", header.getName(), MimeUtility.decodeText(header.getValue()));
             } catch (UnsupportedEncodingException e) {
-                logger.debug("Setting property: " + header.getName() + " = " + header.getValue());
+                logger.debug("Setting property: {} = {}", header.getName(), header.getValue());
             }
         }
 
@@ -502,7 +502,7 @@ public final class MailUtils {
         javax.mail.MessagingException, IOException {
         Object subContent = mbp.getContent();
 
-        logger.debug("Parsing: " + subContent.getClass().getName());
+        logger.debug("Parsing: {}", subContent.getClass().getName());
 
         if (subContent instanceof InputStream) {
             String cid = mbp.getContentID();
@@ -510,8 +510,8 @@ public final class MailUtils {
                 cid = cid.replaceAll("<", "").replaceAll(">", "").toLowerCase();
             }
 
-            logger.debug("Adding special attachment: "
-                      + (mbp.getFileName() != null ? mbp.getFileName() : cid));
+            logger.debug("Adding special attachment: {}",
+                      (mbp.getFileName() != null ? mbp.getFileName() : cid));
 
             // read the stream into a byte array
             byte[] data = new byte[mbp.getSize()];
@@ -574,7 +574,7 @@ public final class MailUtils {
                     html = parts.get(KEY_BODY_HTML);
                 }
             } catch (Exception e) {
-                logger.error("Error extracting body from message " + mailMsg, e);
+                logger.error("Error extracting body from message {}", mailMsg, e);
             }
         }
         
@@ -606,9 +606,9 @@ public final class MailUtils {
             Multipart mp = (Multipart)content;
             try {
                 MailUtils.extractAttachmentsFromMultipart(mp, nmsg);
-                logger.debug("Attachments found: " + nmsg.getAttachmentNames().size());
+                logger.debug("Attachments found: {}", nmsg.getAttachmentNames().size());
             } catch (Exception e) {
-                logger.error("Error extracting attachments from message " + mailMsg, e);
+                logger.error("Error extracting attachments from message {}", mailMsg, e);
             }
         }
     }

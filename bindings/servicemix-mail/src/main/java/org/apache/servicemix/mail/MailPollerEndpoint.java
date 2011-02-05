@@ -128,7 +128,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
         	}
         	loadedMsg.clear();
         } catch (IOException ioex) {
-        	logger.error("Error loading seen messages for: " + id, ioex);
+        	logger.error("Error loading seen messages for: {}", id, ioex);
         }
     }
 
@@ -144,7 +144,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                 // save the list of seen messages
                 this.storage.store(id, this.seenMessages);
             } catch (IOException ioex) {
-                logger.error("Error saving list of seen messages for: " + id, ioex);
+                logger.error("Error saving list of seen messages for: {}", id, ioex);
             }
         }
 
@@ -167,7 +167,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
      * @see org.apache.servicemix.components.util.PollingComponentSupport#poll()
      */
     public void poll() throws Exception {
-        logger.debug("Polling mailfolder " + config.getFolderName() + " at host " + config.getHost() + "...");
+        logger.debug("Polling mailfolder {} at host {} ...", config.getFolderName(), config.getHost());
 
         if (maxFetchSize == 0) {
             logger.debug("The configuration is set to poll no new messages at all...skipping.");
@@ -240,7 +240,7 @@ public class MailPollerEndpoint extends PollingEndpoint implements MailEndpointT
                         }
                     } catch (Exception ex) {
                         // this folder doesn't provide UIDs for messages
-                        logger.warn(getEndpoint() + ": Unable to determine unique id of mail.", ex);
+                        logger.warn("{}: Unable to determine unique id of mail.", getEndpoint(), ex);
                     }
                 }
 

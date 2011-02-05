@@ -131,7 +131,7 @@ public class HttpWsdlTest extends TestCase {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
-        logger.info(baos.toString());
+        logger.info("{}", baos);
     }
 
     protected Definition createDefinition(boolean rpc) throws WSDLException {
@@ -181,7 +181,7 @@ public class HttpWsdlTest extends TestCase {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WSDLFactory.newInstance().newWSDLWriter().writeWSDL(def, baos);
-        logger.info(baos.toString());
+        logger.info("{}", baos);
         return def;
     }
 

@@ -106,11 +106,11 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
                 if (locks.remove(exchange.getExchangeId()) == null) {
                     throw new Exception("HTTP request has timed out");
                 }
-                logger.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
+                logger.debug("Resuming continuation for exchange: {}", exchange.getExchangeId());
                 exchanges.put(exchange.getExchangeId(), exchange);
                 cont.resume();
                 if (!cont.isResumed()) {
-                    logger.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
+                    logger.debug("Could not resume continuation for exchange: {}", exchange.getExchangeId());
                     exchanges.remove(exchange.getExchangeId());
                     throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
                 }
@@ -138,7 +138,7 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
     }
 
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        logger.debug("Receiving HTTP request: " + request);
+        logger.debug("Receiving HTTP request: {}", request);
         if ("GET".equals(request.getMethod())) {
             processGetRequest(request, response);
             return;
@@ -170,7 +170,7 @@ public class ConsumerProcessor extends AbstractProcessor implements SoapExchange
                 synchronized (cont) {
                     channel.send(exchange);
                     if (!isSTFlow) {
-                        logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
+                        logger.debug("Suspending continuation for exchange: {}", exchange.getExchangeId());
                         boolean result = cont.suspend(suspentionTime);
                         exchange = exchanges.remove(exchange.getExchangeId());
                         request.removeAttribute(MessageExchange.class.getName());

@@ -98,7 +98,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
                 }
             }
         } catch (Exception e) {
-            logger.error("", e);
+            logger.error("Error during polling.", e);
         } finally {
             synchronized (running) {
                 running.notify();
@@ -108,7 +108,7 @@ public class StandardConsumerProcessor extends AbstractJmsProcessor {
 
     public void onMessage(final Message message) {
         try {
-            logger.debug("Received jms message " + message);
+            logger.debug("Received jms message {}", message);
             Context context = createContext();
             MessageExchange exchange = toNMS(message, context);
             if (!channel.sendSync(exchange)) {

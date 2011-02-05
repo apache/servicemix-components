@@ -760,7 +760,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 throw new IllegalStateException("Could not find exchange " + message.getJMSCorrelationID());
             }
         } catch (Exception e) {
-            logger.error("Unable to load exchange related to incoming JMS message " + message, e);
+            logger.error("Unable to load exchange related to incoming JMS message {}", message, e);
         }
         try {
             if (message.getBooleanProperty(AbstractJmsMarshaler.DONE_JMS_PROPERTY)) {
@@ -785,9 +785,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 marshaler.populateMessage(message, exchange, out);
             }
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Error while populating JBI exchange " + exchange, e);
-            }
+            logger.debug("Error while populating JBI exchange {}", exchange, e);
             exchange.setError(e);
         }
         try {
@@ -800,7 +798,7 @@ public class JmsProviderEndpoint extends ProviderEndpoint implements JmsEndpoint
                 send(exchange);
             }
         } catch (Exception e) {
-            logger.error("Unable to send JBI exchange " + exchange, e);
+            logger.error("Unable to send JBI exchange {}", exchange, e);
         }
     }
 

@@ -112,7 +112,7 @@ public class HttpSoapTest extends TestCase {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(method.getResponseBodyAsStream(), baos);
-        logger.info(baos.toString());
+        logger.info("{}", baos);
     }
 
     public void testSoap() throws Exception {
@@ -243,7 +243,7 @@ public class HttpSoapTest extends TestCase {
         assertEquals(HttpServletResponse.SC_OK, state);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(method.getResponseBodyAsStream(), baos);
-        logger.info(baos.toString());
+        logger.info("{}", baos);
     }
 
     public void testSoapFault12() throws Exception {

@@ -201,7 +201,7 @@ public class HttpConsumerTest extends TestCase {
         for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, false);
-            logger.info("No Streaming: " + dt);
+            logger.info("No Streaming: {}", dt);
             tearDown();
             setUp();
         }
@@ -209,7 +209,7 @@ public class HttpConsumerTest extends TestCase {
         for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, true);
-            logger.info("Streaming: " + dt);
+            logger.info("Streaming: {}", dt);
             tearDown();
             setUp();
         }

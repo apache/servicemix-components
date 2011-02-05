@@ -103,7 +103,7 @@ public class AddressingConsumerTest extends TestCase {
         InputStream is = connection.getInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtil.copyInputStream(is, baos);
-        logger.info(baos.toString());
+        logger.info("{}", baos);
     }
 
 }

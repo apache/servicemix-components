@@ -537,9 +537,7 @@ public abstract class AbstractConsumerEndpoint extends ConsumerEndpoint {
     }
 
     protected void onMessage(Message jmsMessage, Session session) throws JMSException {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Received: " + jmsMessage);
-        }
+        logger.trace("Received: {}", jmsMessage);
 
         JmsContext context = null;
         MessageExchange exchange = null;

@@ -110,9 +110,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             if (!newFile.getParentFile().exists() && isAutoCreateDirectory()) {
                 newFile.getParentFile().mkdirs();
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Writing to file: " + newFile.getCanonicalPath());
-            }
+            logger.debug("Writing to file: {}", newFile.getCanonicalPath());
             out = new BufferedOutputStream(new FileOutputStream(newFile, append));
             marshaler.writeMessage(exchange, in, out, name);
             success = true;
@@ -121,7 +119,7 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.error("Caught exception while closing stream on error: " + e, e);
+                    logger.error("Caught exception while closing stream on error: {}", e, e);
                 }
             }
             if (success) {
@@ -134,12 +132,12 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
                         try {
                             FileUtil.copyInputStream(bis, out);
                         } catch (IOException ioex) {
-                            logger.error("Unable to append to file " + targetFile.getName(), ioex);
+                            logger.error("Unable to append to file {}", targetFile.getName(), ioex);
                         } finally {
                             try {
                                 out.close();
                             } catch (IOException e) {
-                                logger.error("Caught exception while closing stream on error: " + e, e);
+                                logger.error("Caught exception while closing stream on error: {}", e, e);
                             }
                             if (!newFile.delete()) {
                                 throw new IOException("File " + newFile.getName() + " could not be deleted...");          
@@ -155,9 +153,9 @@ public class FileSenderEndpoint extends ProviderEndpoint implements FileEndpoint
             } else {
                 // cleaning up incomplete files after things went wrong
                 if (newFile != null) {
-                    logger.error("An error occured while writing file " + newFile.getCanonicalPath() + ", deleting the invalid file");
+                    logger.error("An error occured while writing file {}, deleting the invalid file", newFile.getCanonicalPath());
                     if (!newFile.delete()) {
-                        logger.warn("Unable to delete file " + newFile.getCanonicalPath() + " after an error had occured");
+                        logger.warn("Unable to delete file {} after an error had occured", newFile.getCanonicalPath());
                     }
                 } else {
                     logger.error("An error occured while creating file or creating name of this file");

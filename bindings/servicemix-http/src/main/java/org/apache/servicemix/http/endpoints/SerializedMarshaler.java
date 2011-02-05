@@ -109,7 +109,7 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
         xstream.toXML(obj, w);
         String request = w.toString();
 
-        logger.debug("Remote invocation request: " + request);
+        logger.debug("Remote invocation request: {}", request);
 
         return new StringSource(request);
     }
@@ -142,7 +142,7 @@ public class SerializedMarshaler extends DefaultHttpConsumerMarshaler {
         XStream xstream = new XStream(new DomDriver());
         String result = transform.toString(content);
 
-        logger.debug("Remote invocation result: " + result);
+        logger.debug("Remote invocation result: {}", result);
 
         Object obj = xstream.fromXML(result);
         ObjectOutputStream oos = new ObjectOutputStream(os);

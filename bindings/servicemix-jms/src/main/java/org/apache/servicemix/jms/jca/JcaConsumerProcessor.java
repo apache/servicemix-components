@@ -96,7 +96,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
 
     public void onMessage(final Message message) {
         try {
-            logger.debug("Received jms message " + message);
+            logger.debug("Received jms message {}", message);
             Context context = createContext();
             MessageExchange exchange = toNMS(message, context);
             if (!(exchange instanceof InOnly)) {
@@ -131,7 +131,7 @@ public class JcaConsumerProcessor extends AbstractJmsProcessor implements Messag
                     tm.setRollbackOnly();
                     return;
                 } else if (exchange instanceof InOnly) {
-                    logger.info("Exchange in error: " + exchange, exchange.getError());
+                    logger.info("Exchange in error: {}", exchange, exchange.getError());
                     return;
                 } else {
                     connection = connectionFactory.createConnection();

@@ -70,7 +70,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
             }
         } catch (Exception e) {
             nmsg.setProperty(AbstractMailMarshaler.MSG_TAG_TEXT, AbstractMailMarshaler.DUMMY_CONTENT);
-            logger.error("Unable to extract the mail content: " + MailUtils.extractBodyFromMail(mailMsg), e);
+            logger.error("Unable to extract the mail content: {}", MailUtils.extractBodyFromMail(mailMsg), e);
         }        
         
         // extract the attachments
@@ -352,7 +352,7 @@ public class DefaultMailMarshaler extends AbstractMailMarshaler {
                     dh.writeTo(bos);
                     bos.close();
                     
-                    logger.debug("Saved temp file: " + f.getName() + " with length: " + f.length());
+                    logger.debug("Saved temp file: {} with length: {}", f.getName(), f.length());
                     
                     // add the file to the temporary resources list
                     addTemporaryResource(exchange.getExchangeId(), f);                    

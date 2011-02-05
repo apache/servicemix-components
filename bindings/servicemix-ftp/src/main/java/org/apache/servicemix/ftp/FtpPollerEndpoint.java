@@ -392,7 +392,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     protected void pollFileOrDirectory(String fileOrDirectory) throws Exception {
         FTPClient ftp = borrowClient();
         try {
-            logger.debug("Polling directory " + fileOrDirectory);
+            logger.debug("Polling directory {}", fileOrDirectory);
             pollFileOrDirectory(ftp, fileOrDirectory, isRecursive());
         } finally {
             returnClient(ftp);
@@ -414,14 +414,10 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                 }
                 // Only process directories if processDir is true
             } else if (processDir) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Polling directory " + file);
-                }
+                logger.debug("Polling directory {}", file);
                 pollFileOrDirectory(ftp, file, isRecursive());
             } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Skipping directory " + file);
-                }
+                logger.debug("Skipping directory {}", file);
             }
         }
     }
@@ -436,9 +432,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
     }
 
     protected void pollFile(final String file) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Scheduling file " + file + " for processing");
-        }
+        logger.debug("Scheduling file {} for processing", file);
         getExecutor().execute(new Runnable() {
             public void run() {
                 final Lock lock = lockManager.getLock(file);
@@ -453,19 +447,17 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         FTPClient ftp = null;
         try {
             ftp = borrowClient();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing file " + file);
-            }
+            logger.debug("Processing file {}", file);
             if (isFileExistingOnServer(ftp, file)) {
                 // Process the file. If processing fails, an exception should be thrown.
                 processFile(ftp, file);
                 ftp = null;
             } else {
                 //avoid processing files that have been deleted on the server
-                logger.debug("Skipping " + file + ": the file no longer exists on the server");
+                logger.debug("Skipping {}: the file no longer exists on the server", file);
             }
         } catch (Exception e) {
-            logger.error("Failed to process file: " + file + ". Reason: " + e, e);
+            logger.error("Failed to process file: {}. Reason: {}", file, e, e);
         } finally {
             if (ftp != null) {
                 returnClient(ftp);
@@ -538,7 +530,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
         }
         // check for done or error
         if (data != null) {
-            logger.debug("Releasing " + data.file);
+            logger.debug("Releasing {}", data.file);
             try {
                 // Close ftp related stuff
                 data.in.close();
@@ -613,7 +605,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
             try {
                 getClientPool().returnClient(client);
             } catch (Exception e) {
-                logger.error("Failed to return client to pool: " + e, e);
+                logger.error("Failed to return client to pool: {}", e, e);
             }
         }
     }

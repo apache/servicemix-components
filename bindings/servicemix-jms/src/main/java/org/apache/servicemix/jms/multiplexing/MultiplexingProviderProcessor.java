@@ -62,15 +62,11 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
     }
 
     public void onMessage(final Message message) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Received jms message " + message);
-        }
+        logger.debug("Received jms message {}", message);
         endpoint.getServiceUnit().getComponent().getExecutor(MessageExchange.Role.PROVIDER).execute(new Runnable() {
             public void run() {
                 InOut exchange = null;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Handling jms message " + message);
-                }
+                logger.debug("Handling jms message {}", message);
                 String correlationID = null;
                 try {
                     correlationID = message.getJMSCorrelationID();
@@ -79,7 +75,7 @@ public class MultiplexingProviderProcessor extends AbstractJmsProcessor implemen
                         throw new IllegalStateException();
                     }
                 } catch (Exception e) {
-                    logger.error("Could not find exchange " + (correlationID == null ? "" : correlationID), e);
+                    logger.error("Could not find exchange {}", (correlationID == null ? "" : correlationID), e);
                     return;
                 }
                 try {

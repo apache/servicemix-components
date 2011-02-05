@@ -102,8 +102,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         if (!this.isThrottled()) {
             pollFileOrDirectory(file);
         } else {
-            if (logger.isDebugEnabled())
-                logger.info("Poller is throttled, skipping this cycle");
+            logger.info("Poller is throttled, skipping this cycle");
         }
     }
 
@@ -303,13 +302,13 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
         if (!fileOrDirectory.isDirectory()) {
             pollFile(fileOrDirectory); // process the file
         } else if (processDir) {
-            logger.debug("Polling directory " + fileOrDirectory);
+            logger.debug("Polling directory {}", fileOrDirectory);
             File[] files = sortPolledFiles(fileOrDirectory.listFiles(getFilter()));
             for (int i = 0; i < files.length; i++) {
                 pollFileOrDirectory(files[i], isRecursive()); // self-recursion
             }
         } else {
-            logger.debug("Skipping directory " + fileOrDirectory);
+            logger.debug("Skipping directory {}", fileOrDirectory);
         }
     }
     
@@ -329,13 +328,9 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
     }
 
     protected void pollFile(final File aFile) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Scheduling file " + aFile + " for processing");
-        }
+        logger.debug("Scheduling file {} for processing", aFile);
         if (!FileUtil.isFileFullyAvailable(aFile)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("The file " + aFile + " is still being copied. Skipping...");
-            }
+            logger.debug("The file {} is still being copied. Skipping...", aFile);
             // skip the file because it is not yet fully copied over
             return;
         }
@@ -349,9 +344,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                 if (lock.tryLock()) {
                     processFileNow(aFile);
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Unable to acquire lock on " + aFile);
-                    }
+                    logger.debug("Unable to acquire lock on {}", aFile);
                 }
             }
         });
@@ -394,14 +387,12 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
 
     protected void processFileNow(File aFile) {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing file " + aFile);
-            }
+            logger.debug("Processing file {}", aFile);
             if (aFile.exists()) {
                 processFile(aFile);
             }
         } catch (Exception e) {
-            logger.error("Failed to process file: " + aFile + ". Reason: " + e, e);
+            logger.error("Failed to process file: {}", aFile, e);
             // unlock the file on processing failures, otherwise it won't be processed any more
             unlockAsyncFile(aFile);
         }
@@ -438,7 +429,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                                        "Property org.apache.servicemix.file was removed from the exchange -- unable to delete/archive the file");
             }
 
-            logger.debug("Releasing " + aFile.getAbsolutePath());
+            logger.debug("Releasing {}", aFile.getAbsolutePath());
             // first try to close the stream
             stream.close();
             try {
@@ -459,8 +450,7 @@ public class FilePollerEndpoint extends PollingEndpoint implements FileEndpointT
                         throw new JBIException(
                                                "Received an exchange with status ERROR, but no exception was set");
                     }
-                    logger.warn("Message in file " + aFile + " could not be handled successfully: "
-                                + e.getMessage(), e);
+                    logger.warn("Message in file {} could not be handled successfully.", aFile, e);
                 } else {
                     // we should never get an ACTIVE exchange -- the File poller
                     // only sends InOnly exchanges

@@ -221,8 +221,8 @@ public class HttpProviderTest extends TestCase {
         SourceTransformer sourceTransformer = new SourceTransformer();
         String reply = sourceTransformer.toString(inout.getOutMessage().getContent());
         String inputMesage = sourceTransformer.toString(new StreamSource(new ByteArrayInputStream(msg.getBytes())));
-        logger.info("Msg Sent [" + inputMesage + "]");
-        logger.info("Msg Recieved [" + reply + "]");
+        logger.info("Msg Sent [{}]", inputMesage);
+        logger.info("Msg Recieved [{}]", reply);
 
         assertEquals(inputMesage.length(), reply.length());
         assertEquals(inputMesage, reply);
@@ -231,7 +231,7 @@ public class HttpProviderTest extends TestCase {
         component.getServiceUnitManager().shutDown("provider");
         component.getServiceUnitManager().undeploy("provider", path.getAbsolutePath());
 
-        logger.info("Executed in " + (t1 - t0) + "ms");
+        logger.info("Executed in {} ms", (t1 - t0));
 
         return reply;
     }
@@ -278,7 +278,7 @@ public class HttpProviderTest extends TestCase {
         for (int i = 0; i < nbRuns; i++) {
             System.gc();
             long dt = testInOnly(str, true);
-            logger.info("Streaming: " + dt);
+            logger.info("Streaming: {}", dt);
             tearDown();
             setUp();
         }

@@ -77,15 +77,11 @@ public class MultiplexingConsumerProcessor extends AbstractJmsProcessor implemen
     }
 
     public void onMessage(final Message message) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Received jms message " + message);
-        }
+        logger.debug("Received jms message {}", message);
         endpoint.getServiceUnit().getComponent().getExecutor(MessageExchange.Role.CONSUMER).execute(new Runnable() {
             public void run() {
                 try {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Handling jms message " + message);
-                    }
+                    logger.debug("Handling jms message {}", message);
                     Context context = createContext();
                     MessageExchange exchange = toNMS(message, context);
                     // TODO: copy protocol messages

@@ -237,26 +237,20 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
       throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
     }
     synchronized (cont) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Resuming continuation for exchange: " + exchange.getExchangeId());
-      }
+      logger.debug("Resuming continuation for exchange: {}", exchange.getExchangeId());
       // In case of the SEDA flow isn't used, the exchange could be a different instance, so it should be updated.
       cont.setObject(exchange);
       // Resume continuation
       cont.resume();
       if (!cont.isResumed()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Could not resume continuation for exchange: " + exchange.getExchangeId());
-        }
+        logger.debug("Could not resume continuation for exchange: {}", exchange.getExchangeId());
         throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
       }
     }
   }
 
   public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Receiving HTTP request: " + request);
-    }
+    logger.debug("Receiving HTTP request: {}", request);
     MessageExchange exchange = null;
     try {
       // Handle WSDLs, XSDs
@@ -282,9 +276,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         cont.setObject(exchange);
         // Put the continuation in a map under the exchange id key
         locks.put(exchange.getExchangeId(), cont);
-        if (logger.isDebugEnabled()) {
-          logger.debug("Suspending continuation for exchange: " + exchange.getExchangeId());
-        }
+        logger.debug("Suspending continuation for exchange: {}", exchange.getExchangeId());
         synchronized (cont) {
           // Send the exchange and then suspend the request.
           send(exchange);

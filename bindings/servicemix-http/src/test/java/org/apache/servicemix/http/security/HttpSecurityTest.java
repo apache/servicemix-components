@@ -53,7 +53,7 @@ public class HttpSecurityTest extends SpringTestSupport {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
-        logger.info("Path to login config: " + path);
+        logger.info("Path to login config: {}", path);
     }
     
     protected void setUp() throws Exception {
