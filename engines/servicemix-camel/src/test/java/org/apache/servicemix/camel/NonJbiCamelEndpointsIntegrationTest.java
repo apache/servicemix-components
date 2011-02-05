@@ -60,7 +60,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
 
         try {
             for (int i = 0; i < 2; i++) {
-                logger.info("Loop counter: " + i);
+                logger.info("Loop counter: {}", i);
 
                 // Deploy and start su
                 component.getServiceUnitManager().deploy(suName,
@@ -93,11 +93,11 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
                     client.send(exchange);
                     fail("Should have failed to send to a no longer deployed component");
                 } catch (Throwable e) {
-                    logger.debug("Caught expected exception as the component is undeployed: " + e, e);
+                    logger.debug("Caught expected exception as the component is undeployed: {}", e, e);
                 }
             }
         } catch (Exception e) {
-            logger.error("Caught: " + e, e);
+            logger.error("Caught: {}", e, e);
             throw e;
         }
     }
@@ -120,8 +120,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
             fail("Unable to create temporary working root directory ["
                     + tempTemp.getAbsolutePath() + "]");
         }
-        logger.info("Using temporary root directory ["
-                + tempRootDir.getAbsolutePath() + "]");
+        logger.info("Using temporary root directory [{}]", tempRootDir.getAbsolutePath());
 
         container.setEmbedded(true);
         container.setCreateJmxConnector(false);
@@ -165,7 +164,7 @@ public class NonJbiCamelEndpointsIntegrationTest extends TestCase {
     }
 
     public static boolean deleteDir(File dir) {
-        logger.info("Deleting directory : " + dir.getAbsolutePath());
+        logger.info("Deleting directory : {}", dir.getAbsolutePath());
         if (dir.isDirectory()) {
             String[] children = dir.list();
             for (int i = 0; i < children.length; i++) {

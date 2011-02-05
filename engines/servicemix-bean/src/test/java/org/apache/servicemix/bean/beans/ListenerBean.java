@@ -45,7 +45,7 @@ public class ListenerBean implements MessageExchangeListener {
 
     public void onMessageExchange(MessageExchange exchange) throws MessagingException {
         this.lastExchange = exchange;
-        logger.info("Received exchange: " + exchange);
+        logger.info("Received exchange: {}", exchange);
         if (exchange instanceof InOnly) {
             exchange.setStatus(ExchangeStatus.DONE);
             channel.send(exchange);

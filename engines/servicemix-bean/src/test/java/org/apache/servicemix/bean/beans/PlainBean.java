@@ -41,30 +41,30 @@ public class PlainBean {
 
     public void foo(MessageExchange messageExchange) {
         this.foo = messageExchange;
-        logger.info("foo() called with exchange: " + messageExchange);
+        logger.info("foo() called with exchange: {}", messageExchange);
     }
 
     public void bar(MessageExchange messageExchange) {
         this.bar = messageExchange;
-        logger.info("bar() called with exchange: " + messageExchange);
+        logger.info("bar() called with exchange: {}", messageExchange);
     }
 
     public void methodWithPropertyParameter(@Property(name = "person") String name) {
         this.propertyParameter = name;
-        logger.info("methodWithPropertyParameter() called with parameter: " + name);
+        logger.info("methodWithPropertyParameter() called with parameter: {}", name);
     }
 
     public void methodWithPropertyParameterAndXPath(@Property(name = "person") String name,
             @XPath(xpath = "/hello/@address") String address) {
         this.propertyParameter = name;
         this.xpathParameter = address;
-        logger.info("methodWithPropertyParameterAndXPath() called with parameter: " + address);
+        logger.info("methodWithPropertyParameterAndXPath() called with parameter: {}", address);
     }
 
     public void methodWithPropertyParameterAndContent(@Property(name = "person") String name, @Content Object content) {
         this.propertyParameter = name;
         this.body = content;
-        logger.info("methodWithPropertyParameterAndContent() called with body: " + content);
+        logger.info("methodWithPropertyParameterAndContent() called with body: {}", content);
     }
 
 

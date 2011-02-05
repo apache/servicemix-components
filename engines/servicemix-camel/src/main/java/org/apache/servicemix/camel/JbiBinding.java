@@ -108,7 +108,7 @@ public class JbiBinding {
         try {
             ClassLoader loader = context.getApplicationContextClassLoader();
             if (loader != null) {
-                logger.debug("Set the thread context classloader " + loader);
+                logger.debug("Set the thread context classloader {}", loader);
                 Thread.currentThread().setContextClassLoader(loader);
             }
             return callable.call();
@@ -236,7 +236,7 @@ public class JbiBinding {
     public void copyFromCamelToJbi(Message message, NormalizedMessage normalizedMessage) throws MessagingException {
         if (message != null && message.getBody() != null) {
             if (message.getBody(Source.class) == null) {
-                logger.warn("Unable to convert message body of type " + message.getBody().getClass() + " into an XML Source");
+                logger.warn("Unable to convert message body of type {} into an XML Source", message.getBody().getClass());
             } else {
                 normalizedMessage.setContent(message.getBody(Source.class));
             }

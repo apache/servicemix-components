@@ -104,7 +104,7 @@ public class VFSSendingEndpoint extends ProviderEndpoint implements VFSEndpointT
                     out.close();
                 }
                 catch (IOException e) {
-                    logger.error("Caught exception while closing stream on error: " + e, e);
+                    logger.error("Caught exception while closing stream on error: {}", e.getMessage(), e);
                 }
             }
             if (tmpName != null && name != null && !name.equals(tmpName)) {

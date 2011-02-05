@@ -111,7 +111,7 @@ public class LoggingPojo extends BeanSupport implements MessageExchangeListener 
                 sb.append("  ]").append('\n');
             }
             display(exchange, "in", sb);
-            logger.info("Exchange received " + sb.toString());
+            logger.info("Exchange received {}", sb.toString());
             if (exchange instanceof InOut) {
                 MessageUtil.transferInToOut(exchange, exchange);
                 send(exchange);

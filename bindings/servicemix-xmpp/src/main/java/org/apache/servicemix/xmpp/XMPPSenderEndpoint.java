@@ -114,15 +114,15 @@ public class XMPPSenderEndpoint extends ProviderEndpoint implements XMPPEndpoint
 
         if (this.connection == null) {
             this.connection = new XMPPConnection(this.connectionConfig);
-            this.logger.debug("Connecting to server " + this.host);
+            this.logger.debug("Connecting to server {}", this.host);
             this.connection.connect();
         }
 
         if (this.login && !this.connection.isAuthenticated()) {
             if (this.user != null) {
-                this.logger.debug("Logging into Jabber as user: " + this.user + " on connection: " + this.connection);
+                this.logger.debug("Logging into Jabber as user: {} on connection: {}", this.user, this.connection);
                 if (this.password == null) {
-                    this.logger.warn("No password configured for user: " + this.user);
+                    this.logger.warn("No password configured for user: {}", this.user);
                 }
 
                 if (this.createAccount) {
@@ -135,7 +135,7 @@ public class XMPPSenderEndpoint extends ProviderEndpoint implements XMPPEndpoint
                     this.connection.login(this.user, this.password);
                 }
             } else {
-                this.logger.debug("Logging in anonymously to Jabber on connection: " + this.connection);
+                this.logger.debug("Logging in anonymously to Jabber on connection: {}", this.connection);
                 this.connection.loginAnonymously();
             }
             // now lets send a presence we are available
@@ -157,7 +157,7 @@ public class XMPPSenderEndpoint extends ProviderEndpoint implements XMPPEndpoint
     @Override
     public void stop() throws Exception {
         if (this.connection != null && this.connection.isConnected()) {
-            this.logger.debug("Disconnecting from server " + this.host);
+            this.logger.debug("Disconnecting from server {}", this.host);
             this.connection.disconnect();
             this.connection = null;
         }

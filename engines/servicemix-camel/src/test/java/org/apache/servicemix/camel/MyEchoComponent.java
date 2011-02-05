@@ -42,7 +42,7 @@ public class MyEchoComponent extends EchoComponent {
         if (exchange.getOperation() != null) {
             out.setProperty("operation", exchange.getOperation());
         }
-        logger.info("Echoed back message: " + out);
+        logger.info("Echoed back message: {}", out);
         return true;
     }
 

@@ -211,7 +211,7 @@ public class ResolverUtil<T> {
         try {
             urls = loader.getResources(packageName);
         } catch (IOException ioe) {
-            logger.warn("Could not read package: " + packageName, ioe);
+            logger.warn("Could not read package: {}", packageName, ioe);
             return;
         }
         while (urls.hasMoreElements()) {
@@ -226,7 +226,7 @@ public class ResolverUtil<T> {
                 if (urlPath.indexOf('!') > 0) {
                     urlPath = urlPath.substring(0, urlPath.indexOf('!'));
                 }
-                logger.info("Scanning for classes in [" + urlPath + "] matching criteria: " + test);
+                logger.info("Scanning for classes in [{}] matching criteria: {}", urlPath, test);
                 File file = new File(urlPath);
                 if (file.isDirectory()) {
                     loadImplementationsInDirectory(test, packageName, file);
@@ -303,15 +303,14 @@ public class ResolverUtil<T> {
         try {
             String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
             ClassLoader loader = getClassLoader();
-            logger.trace("Checking to see if class " + externalName + " matches criteria ["  + test + "]");
+            logger.trace("Checking to see if class {} matches criteria [{}]", externalName, test);
 
             Class type = loader.loadClass(externalName);
             if (test.matches(type)) {
                 matches.add((Class<T>) type);
             }
         } catch (Throwable t) {
-            logger.warn("Could not examine class '" + fqn + "' due to a "
-                     + t.getClass().getName() + " with message: " + t.getMessage());
+            logger.warn("Could not examine class '{}'", fqn, t);
         }
     }
 }

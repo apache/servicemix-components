@@ -51,7 +51,7 @@ public class StrictSerializationHeaderFilterStrategy implements HeaderFilterStra
                 oos = new ObjectOutputStream(new ByteArrayOutputStream());
                 oos.writeObject(o);
             } catch (IOException e) {
-                logger.debug(String.format("%s implements Serializable, but serialization throws IOException: filtering key %s", o, s));
+                logger.debug("{} implements Serializable, but serialization throws IOException: filtering key {}", o, s);
                 return true;
             } finally {
                 if (oos != null) {

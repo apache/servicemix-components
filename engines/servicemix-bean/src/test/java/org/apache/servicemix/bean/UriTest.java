@@ -61,21 +61,21 @@ public class UriTest extends TestCase {
     }
 
     protected void dump(URI uri) {
-        logger.info("URI: " + uri);
-        logger.info("getAuthority(): " + uri.getAuthority());
-        logger.info("getFragment(): " + uri.getFragment());
-        logger.info("getHost(): " + uri.getHost());
-        logger.info("getPath(): " + uri.getPath());
-        logger.info("getPort(): " + uri.getPort());
-        logger.info("getQuery(): " + uri.getQuery());
-        logger.info("getRawAuthority(): " + uri.getRawAuthority());
-        logger.info("getRawFragment(): " + uri.getRawFragment());
-        logger.info("getRawPath(): " + uri.getRawPath());
-        logger.info("getRawQuery(): " + uri.getRawQuery());
-        logger.info("getRawSchemeSpecificPart(): " + uri.getRawSchemeSpecificPart());
-        logger.info("getRawUserInfo(): " + uri.getRawUserInfo());
-        logger.info("getScheme(): " + uri.getScheme());
-        logger.info("getSchemeSpecificPart(): " + uri.getSchemeSpecificPart());
-        logger.info("getUserInfo(): " + uri.getUserInfo());
+        logger.info("URI: {}", uri);
+        logger.info("getAuthority(): {}", uri.getAuthority());
+        logger.info("getFragment(): {}", uri.getFragment());
+        logger.info("getHost(): {}", uri.getHost());
+        logger.info("getPath(): {}", uri.getPath());
+        logger.info("getPort(): {}", uri.getPort());
+        logger.info("getQuery(): {}", uri.getQuery());
+        logger.info("getRawAuthority(): {}", uri.getRawAuthority());
+        logger.info("getRawFragment(): {}", uri.getRawFragment());
+        logger.info("getRawPath(): {}", uri.getRawPath());
+        logger.info("getRawQuery(): {}", uri.getRawQuery());
+        logger.info("getRawSchemeSpecificPart(): {}", uri.getRawSchemeSpecificPart());
+        logger.info("getRawUserInfo(): {}", uri.getRawUserInfo());
+        logger.info("getScheme(): {}", uri.getScheme());
+        logger.info("getSchemeSpecificPart(): {}", uri.getSchemeSpecificPart());
+        logger.info("getUserInfo(): {}", uri.getUserInfo());
     }
 }

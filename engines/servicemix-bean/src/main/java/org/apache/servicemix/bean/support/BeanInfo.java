@@ -110,7 +110,7 @@ public class BeanInfo {
             Expression expression = createParameterUnmarshalExpression(clazz, method, 
                     parameterType, parameterAnnotations[i]);
             if (expression == null) {
-                logger.debug("No expression available for method: " + method.toString() + " parameter: " + i + " so ignoring method");
+                logger.debug("No expression available for method: {}  parameter: {} so ignoring method", method.toString(), i);
                 return;
             }
             parameterExpressions[i] = expression;

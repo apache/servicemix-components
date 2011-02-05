@@ -97,9 +97,7 @@ public class CamelProviderEndpoint extends ProviderEndpoint implements Synchroni
             done(exchange);
         // In message
         } else if (exchange.getMessage("in") != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Received exchange: " + exchange);
-            }
+            logger.debug("Received exchange: {}", exchange);
             final Exchange camelExchange = binding.createExchange(exchange);
             camelExchange.setFromEndpoint(camelEndpoint);
             camelExchange.addOnCompletion(this);
@@ -150,7 +148,7 @@ public class CamelProviderEndpoint extends ProviderEndpoint implements Synchroni
                 doSend(me);
             }
         } catch (MessagingException e) {
-            logger.warn("Unable to send JBI MessageExchange after successful Camel route invocation: " + me, e);
+            logger.warn("Unable to send JBI MessageExchange after successful Camel route invocation: {}", me, e);
         }
     }
 
@@ -171,7 +169,7 @@ public class CamelProviderEndpoint extends ProviderEndpoint implements Synchroni
                 fail(me, binding.extractException(exchange));
             }
         } catch (MessagingException e) {
-            logger.warn("Unable to send JBI MessageExchange after successful Camel route invocation: " + me, e);
+            logger.warn("Unable to send JBI MessageExchange after successful Camel route invocation: {}", me, e);
         } 
     }
 }

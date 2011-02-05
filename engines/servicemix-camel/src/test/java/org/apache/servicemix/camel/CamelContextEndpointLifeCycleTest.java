@@ -70,7 +70,7 @@ public class CamelContextEndpointLifeCycleTest extends NonJbiCamelEndpointsInteg
             component.getServiceUnitManager().shutDown(suName);
             component.getServiceUnitManager().undeploy(suName, path.getAbsolutePath());
         } catch (Exception e) {
-            logger.error("Caught: " + e, e);
+            logger.error("Caught: {}", e, e);
             throw e;
         }
     }

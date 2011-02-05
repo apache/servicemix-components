@@ -60,7 +60,7 @@ public abstract class SpringJbiTestSupport extends JbiTestSupport {
         if (!tempTemp.mkdirs()) {
             fail("Unable to create temporary working root directory [" + tempTemp.getAbsolutePath() + "]");
         }
-        logger.info("Using temporary root directory [" + tempRootDir.getAbsolutePath() + "]");
+        logger.info("Using temporary root directory [{}]", tempRootDir.getAbsolutePath());
         jbiContainer.setRootDir(tempRootDir.getAbsolutePath());
 
         jbiContainer.setEmbedded(true);

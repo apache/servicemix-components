@@ -37,7 +37,7 @@ public class AnnotatedBean {
     public void myExchangeMethod(MessageExchange messageExchange) {
         this.myExchangeMethod = messageExchange;
 
-        logger.info("myExchangeMethod() received exchange: " + messageExchange);
+        logger.info("myExchangeMethod() received exchange: {}", messageExchange);
     }
     
     public MessageExchange getMyExchangeMethod() {

@@ -154,7 +154,7 @@ public class SnmpTrapConsumerEndpoint extends ConsumerEndpoint implements SnmpEn
         if (pdu != null) {
             sendSnmpTrapMessage(pdu);
         } else {
-            logger.debug("Received invalid trap PDU: " + pdu);
+            logger.debug("Received invalid trap PDU: {}", pdu);
         }
     }
 

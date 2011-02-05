@@ -202,8 +202,8 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
             try {
                 fail(exchange, e);
             } catch (Exception e2) {
-                logger.warn("Unable to handle error: " + e2, e2);
-                logger.debug("Original error: " + e, e);
+                logger.warn("Unable to handle error: {}", e2, e2);
+                logger.debug("Original error: {}", e, e);
             }
         }
     }
@@ -249,7 +249,7 @@ public abstract class TransformBeanSupport extends BeanSupport implements Messag
                         + " but has no Out nor Fault message");
             }
         } catch (Exception e) {
-            logger.debug("Original error: " + e, e);
+            logger.debug("Original error: {}", e, e);
         }
     }
 

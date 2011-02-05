@@ -65,7 +65,7 @@ public class CamelConsumerEndpoint extends ConsumerEndpoint implements AsyncProc
         final ContinuationData data = continuations.remove(messageExchange.getExchangeId());
 
         if (data == null) {
-            logger.error("Unexpected MessageExchange received: " + messageExchange);
+            logger.error("Unexpected MessageExchange received: {}", messageExchange);
         } else {
             binding.runWithCamelContextClassLoader(new Callable<Object>() {
                 public Object call() throws Exception {

@@ -112,7 +112,7 @@ public class OsgiCamelJbiComponent extends CamelJbiComponent {
                     if (bean instanceof BundleContextAware) {
                         BundleContextAware bundleContextAware = (BundleContextAware)bean;
                         if (bundleContext == null) {
-                            logger.warn("No bundle defined yet so cannot inject into: " + bean);
+                            logger.warn("No bundle defined yet so cannot inject into: {}", bean);
                         } else {
                             bundleContextAware.setBundleContext(bundleContext);
                         }

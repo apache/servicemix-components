@@ -33,10 +33,10 @@ public class AutoDeployedBean {
     private final Logger logger = LoggerFactory.getLogger(AutoDeployedBean.class);
 
     public void foo(MessageExchange messageExchange) {
-        logger.info("foo() called with exchange: " + messageExchange);
+        logger.info("foo() called with exchange: {}", messageExchange);
     }
 
     public void bar(MessageExchange messageExchange) {
-        logger.info("bar() called with exchange: " + messageExchange);
+        logger.info("bar() called with exchange: {}", messageExchange);
     }
 }

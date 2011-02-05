@@ -134,50 +134,50 @@ public class DefaultSmppMarshaler implements SmppMarshalerSupport {
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_SOURCE)) != null) {
                 sm.setSourceAddr(getFirstNodeValue(node));
-                logger.debug(TAG_SOURCE + ": " + sm.getSourceAddr());
+                logger.debug("{}: {}", TAG_SOURCE, sm.getSourceAddr());
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_DESTINATION)) != null) {
                 sm.setDestAddress(getFirstNodeValue(node));
-                logger.debug(TAG_DESTINATION + ": " + sm.getDestAddress());
+                logger.debug("{}: {}", TAG_DESTINATION, sm.getDestAddress());
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_TEXT)) != null) {
                 sm.setShortMessage(getFirstNodeValue(node).getBytes());
-                logger.debug(TAG_TEXT + ": " + new String(sm.getShortMessage()));
+                logger.debug("{}: {}", TAG_TEXT, new String(sm.getShortMessage()));
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_TON)) != null) {
                 ton = getFirstNodeValue(node);
                 sm.setDestAddrTon(TypeOfNumber.valueOf(ton).value());
                 sm.setSourceAddrTon(TypeOfNumber.valueOf(ton).value());
-                logger.debug(TAG_TON + ": " + ton);
+                logger.debug("{}: {}", TAG_TON, ton);
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_NPI)) != null) {
                 npi = getFirstNodeValue(node);
                 sm.setDestAddrNpi(NumberingPlanIndicator.valueOf(npi).value());
                 sm.setSourceAddrNpi(NumberingPlanIndicator.valueOf(npi).value());
-                logger.debug(TAG_NPI + ": " + npi);
+                logger.debug("{}: {}", TAG_NPI, npi);
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_REGISTERED_DELIVERY)) != null) {
                 String registeredDelivery = getFirstNodeValue(node);
                 sm.setRegisteredDelivery(SMSCDeliveryReceipt.valueOf(registeredDelivery).value());
-                logger.debug(TAG_REGISTERED_DELIVERY + ": " + registeredDelivery);
+                logger.debug("{}: {}", TAG_REGISTERED_DELIVERY, registeredDelivery);
             } else {
                 sm.setRegisteredDelivery(SMSCDeliveryReceipt.DEFAULT.value());
-                logger.debug(TAG_REGISTERED_DELIVERY + ": DEFAULT");
+                logger.debug("{}: DEFAULT", TAG_REGISTERED_DELIVERY);
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_SCHEDULE_DELIVERY_TIME)) != null) {
                 sm.setScheduleDeliveryTime(getFirstNodeValue(node));
-                logger.debug(TAG_SCHEDULE_DELIVERY_TIME + ": " + sm.getScheduleDeliveryTime());
+                logger.debug("{}: {}", TAG_SCHEDULE_DELIVERY_TIME, sm.getScheduleDeliveryTime());
             }
 
             if ((node = getNotEmptyNodeListOrNull(document, TAG_VALIDITY_PERIOD)) != null) {
                 sm.setValidityPeriod(getFirstNodeValue(node));
-                logger.debug(TAG_VALIDITY_PERIOD + ": " + sm.getValidityPeriod());
+                logger.debug("{}: {}", TAG_VALIDITY_PERIOD, sm.getValidityPeriod());
             }
         } catch (Exception exception) {
             throw new TransformerException(exception);

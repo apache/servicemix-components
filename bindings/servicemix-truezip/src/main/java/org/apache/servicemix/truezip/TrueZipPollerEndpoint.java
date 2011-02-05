@@ -184,20 +184,18 @@ public class TrueZipPollerEndpoint extends PollingEndpoint implements TrueZipEnd
         if (!fileOrDirectory.isDirectory()) {
             pollFile(fileOrDirectory); // process the file
         } else if (processDir) {
-            logger.debug("Polling directory " + fileOrDirectory);
+            logger.debug("Polling directory {}", fileOrDirectory);
             File[] files = (File[]) fileOrDirectory.listFiles(getFilter());
             for (int i = 0; i < files.length; i++) {
                 pollFileOrDirectory(files[i], isRecursive()); // self-recursion
             }
         } else {
-            logger.debug("Skipping directory " + fileOrDirectory);
+            logger.debug("Skipping directory {}", fileOrDirectory);
         }
     }
 
     protected void pollFile(final File aFile) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Scheduling file " + aFile + " for processing");
-        }
+        logger.debug("Scheduling file {} for processing", aFile);
         getExecutor().execute(new Runnable() {
             public void run() {
                 String uri = file.toURI().relativize(aFile.toURI()).toString();
@@ -210,14 +208,12 @@ public class TrueZipPollerEndpoint extends PollingEndpoint implements TrueZipEnd
 							lock.unlock();
                         } catch (Exception ex) {
                             // can't release the lock
-                            logger.error("Unable to release lock on " + uri,  ex);
+                            logger.error("Unable to release lock on {}", uri,  ex);
                         } 
                         lockManager.removeLock(uri);
                     }
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Unable to acquire lock on " + aFile);
-                    }
+                    logger.debug("Unable to acquire lock on {}", aFile);
                     lockManager.removeLock(uri);
                 }
             }
@@ -226,9 +222,7 @@ public class TrueZipPollerEndpoint extends PollingEndpoint implements TrueZipEnd
 
     protected void processFileAndDelete(File aFile) {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing file " + aFile);
-            }
+            logger.debug("Processing file {}", aFile);
             if (aFile.exists()) {
                 processFile(aFile);
                 if (isDeleteFile() && !aFile.delete()) {
@@ -236,7 +230,7 @@ public class TrueZipPollerEndpoint extends PollingEndpoint implements TrueZipEnd
                 }
             }
         } catch (Exception e) {
-            logger.error("Failed to process file: " + aFile + ". Reason: " + e, e);
+            logger.error("Failed to process file: {}.", aFile, e);
         }
     }
 

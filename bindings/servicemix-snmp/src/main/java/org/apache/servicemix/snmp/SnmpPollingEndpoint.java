@@ -204,8 +204,8 @@ public class SnmpPollingEndpoint extends PollingEndpoint implements SnmpEndpoint
         // check for valid response
         if (event.getRequest() == null || event.getResponse() == null) {
             // ignore null requests/responses
-            logger.debug("Received invalid snmp event. Request: " + event.getRequest() + " / Response: "
-                      + event.getResponse());
+            logger.debug("Received invalid snmp event. Request: {} / Response: {}", event.getRequest(),
+                      event.getResponse());
             return;
         }
 

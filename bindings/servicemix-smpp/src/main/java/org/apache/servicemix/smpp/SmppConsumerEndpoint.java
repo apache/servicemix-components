@@ -97,7 +97,7 @@ public class SmppConsumerEndpoint extends ConsumerEndpoint implements SmppEndpoi
 
         // check for valid port number
         if (this.port <= 0) {
-            logger.warn("Invalid SMPP port specified. Use the default one : " + SMPP_DEFAULT_PORT);
+            logger.warn("Invalid SMPP port specified. Use the default one : {}", SMPP_DEFAULT_PORT);
             this.port = SMPP_DEFAULT_PORT;
         }
         // check for valid host

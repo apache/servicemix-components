@@ -262,7 +262,7 @@ public class DroolsEndpoint extends ProviderEndpoint {
                 done(exchange);
             }
         } else {
-            logger.debug("No pending exchange found for " + correlation + ", no additional rules will be triggered");
+            logger.debug("No pending exchange found for {}, no additional rules will be triggered", correlation);
         }
     }
 

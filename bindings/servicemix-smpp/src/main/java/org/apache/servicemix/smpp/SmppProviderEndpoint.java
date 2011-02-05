@@ -106,7 +106,7 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
 
         // check for valid port number
         if (this.port <= 0) {
-            logger.warn("Invalid SMPP port specified. Use the default one : " + SMPP_DEFAULT_PORT);
+            logger.warn("Invalid SMPP port specified. Use the default one : {}", SMPP_DEFAULT_PORT);
             this.port = SMPP_DEFAULT_PORT;
         }
         // check for valid host
@@ -215,7 +215,7 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
         MessageRequest sm = marshaler.fromNMS(exchange, in);
 
         try {
-            logger.debug("Submiting request: " + sm);
+            logger.debug("Submiting request: {}", sm);
             String messageId = session
                     .submitShortMessage("CMT", TypeOfNumber.valueOf(sm.getSourceAddrTon()),
                             NumberingPlanIndicator.valueOf(sm.getSourceAddrNpi()),
@@ -227,7 +227,7 @@ public class SmppProviderEndpoint extends ProviderEndpoint implements SmppEndpoi
                                     Alphabet.ALPHA_DEFAULT), (byte) 0, sm
                                     .getShortMessage());
 
-            logger.debug("Message sent with ID " + messageId);
+            logger.debug("Message sent with ID {}", messageId);
         } catch (PDUException pduException) {
             logger.error("Invalid PDU parameter", pduException);
             fail(exchange, new Exception("Invalid PDU parameter", pduException));

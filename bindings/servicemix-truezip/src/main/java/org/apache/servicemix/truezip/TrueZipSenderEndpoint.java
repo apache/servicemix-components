@@ -84,9 +84,7 @@ public class TrueZipSenderEndpoint extends ProviderEndpoint implements TrueZipEn
             } else {
                 newFile = new File(directory, name);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Writing to file: " + newFile.getCanonicalPath());
-            }
+            logger.debug("Writing to file: {}", newFile.getCanonicalPath());
             out = new BufferedOutputStream(new FileOutputStream(newFile));
             marshaler.writeMessage(exchange, in, out, name);
         } finally {
@@ -94,7 +92,7 @@ public class TrueZipSenderEndpoint extends ProviderEndpoint implements TrueZipEn
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.error("Caught exception while closing stream on error: " + e, e);
+                    logger.error("Caught exception while closing stream on error: {}" + e.getMessage(), e);
                 }
             }
         }

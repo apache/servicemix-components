@@ -158,13 +158,13 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                                        "Property org.apache.servicemix.vfs was removed from the exchange -- unable to delete/archive the file");
             }
             
-            logger.debug("Releasing " + aFile.getName().getPathDecoded());
+            logger.debug("Releasing {}", aFile.getName().getPathDecoded());
         
             // first try to close the stream
             try {
             	stream.close();            	
             } catch (IOException ex) {
-            	logger.error("Unable to close stream for file " + aFile.getName().getPathDecoded(), ex);
+            	logger.error("Unable to close stream for file {}", aFile.getName().getPathDecoded(), ex);
             }
             
             try {
@@ -181,8 +181,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                         throw new JBIException(
                                                "Received an exchange with status ERROR, but no exception was set");
                     }
-                    logger.warn("Message in file " + aFile.getName().getPathDecoded() + " could not be handled successfully: "
-                                + e.getMessage(), e);
+                    logger.warn("Message in file {} could not be handled successfully.", aFile.getName().getPathDecoded(), e);
                 } else {
                     // we should never get an ACTIVE exchange -- the File poller
                     // only sends InOnly exchanges
@@ -217,7 +216,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                 lock.unlock();
             } catch (Exception ex) {
                 // can't release the lock
-                logger.error("", ex);
+                logger.error("Can't release the lock.", ex);
             }
         }
     }
@@ -232,7 +231,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         	try	{
         		file = FileObjectResolver.resolveToFileObject(getFileSystemManager(), getPath());
         	} catch (Exception e) {
-        		logger.debug("Unable to resolve path: " + getPath(), e);
+        		logger.debug("Unable to resolve path: {}", getPath(), e);
         		file = null;
         	}        	
         }
@@ -268,7 +267,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
             pollFile(fileOrDirectory); 
         } else if (processDir) {
             // process the folder
-            logger.debug("Polling directory " + fileOrDirectory.getName().getPathDecoded());
+            logger.debug("Polling directory {}", fileOrDirectory.getName().getPathDecoded());
             
             FileObject[] files = null;
             if (selector != null) {
@@ -282,7 +281,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                 pollFileOrDirectory(f, isRecursive()); 
             }
         } else {
-            logger.debug("Skipping directory " + fileOrDirectory.getName().getPathDecoded());
+            logger.debug("Skipping directory {}", fileOrDirectory.getName().getPathDecoded());
         }
     }
     
@@ -313,9 +312,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         }
         // try to add to set of processed files
         if (workingSet.add(aFile)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Scheduling file " + aFile.getName().getPathDecoded() + " for processing");
-            }
+            logger.debug("Scheduling file {} for processing.", aFile.getName().getPathDecoded());
             
             // execute processing in another thread
             getExecutor().execute(new ExecutorAwareRunnable() {
@@ -326,9 +323,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
                         processFileNow(aFile);
                     } else {
                     	workingSet.remove(aFile);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Unable to acquire lock on " + aFile.getName().getURI());
-                        }
+                        logger.debug("Unable to acquire lock on {}", aFile.getName().getURI());
                     }
                 }
                 public boolean shouldRunSynchronously(){
@@ -345,9 +340,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
      */
     protected void processFileNow(FileObject aFile) {
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing file " + aFile.getName().getURI());
-            }
+            logger.debug("Processing file {}", aFile.getName().getURI());
             
             if (aFile.exists()) {
                 processFile(aFile);
@@ -355,7 +348,7 @@ public class VFSPollingEndpoint extends PollingEndpoint implements VFSEndpointTy
         } catch (Exception e) {
         	workingSet.remove(aFile);
         	unlockAsyncFile(aFile);
-        	logger.error("Failed to process file: " + aFile.getName().getURI() + ". Reason: " + e, e);
+        	logger.error("Failed to process file: {}", aFile.getName().getURI(), e);
         }
     }
 
