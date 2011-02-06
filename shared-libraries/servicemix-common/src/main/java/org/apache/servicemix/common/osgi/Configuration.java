@@ -53,7 +53,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setCorePoolSize(int)
      */
     public void setCorePoolSize(int size) {
-        logger.debug("Setting core thread pool size: " + size);
+        logger.debug("Setting core thread pool size: {}", size);
         executorConfig.setCorePoolSize(size);
     }
 
@@ -62,7 +62,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setMaximumPoolSize(int)
      */
     public void setMaximumPoolSize(int size) {
-        logger.debug("Setting maximum thread pool size: " + size);
+        logger.debug("Setting maximum thread pool size: {}", size);
         executorConfig.setMaximumPoolSize(size);
     }
 
@@ -71,7 +71,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setQueueSize(int)
      */
     public void setQueueSize(int size) {
-        logger.debug("Setting executor queue size: " + size);
+        logger.debug("Setting executor queue size: {}", size);
         executorConfig.setQueueSize(size);        
     }
 
@@ -80,7 +80,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setAllowCoreThreadsTimeout(boolean)  
      */
     public void setAllowCoreThreadTimeout(boolean timeout) {
-        logger.debug("Setting core thread timeout allow: " + timeout);
+        logger.debug("Setting core thread timeout allow: {}", timeout);
         executorConfig.setAllowCoreThreadsTimeout(timeout);
     }
 
@@ -89,7 +89,7 @@ public class Configuration {
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setKeepAliveTime(long) 
      */
     public void setKeepAliveTime(int time) {
-        logger.debug("Setting thread keep-alive time: " + time);
+        logger.debug("Setting thread keep-alive time: {}", time);
         executorConfig.setKeepAliveTime(time);
     }
 

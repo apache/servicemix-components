@@ -106,7 +106,7 @@ public class ExampleFunction implements FunctionProvider {
 
             if (exampleNode != null) {
                 String value = exampleNode.getTextContent();
-                logger.info("Received content: " + value);
+                logger.info("Received content: {}", value);
                 propertySet.setString("ExampleKey", value);
             } else {
                 throw new WorkflowException(

@@ -59,7 +59,7 @@ public class JbiTransport extends AbstractTransport implements WSDL11Transport, 
     }
 
     protected Channel createNewChannel(String uri) {
-        logger.debug("Creating new channel for uri: " + uri);
+        logger.debug("Creating new channel for uri: {}", uri);
         JbiChannel c = new JbiChannel(uri, this);
         c.setEndpoint(new DefaultEndpoint());
         return c;

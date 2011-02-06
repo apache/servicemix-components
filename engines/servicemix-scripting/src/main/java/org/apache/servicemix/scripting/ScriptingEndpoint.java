@@ -272,8 +272,7 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                 try {
                     is = this.marshaler.getScriptCode(this, exchange);
                 } catch (IOException ioex) {
-                    logger.error("Unable to load script in marshaler: "
-                                    + this.marshaler.getClass().getName(), ioex);
+                    logger.error("Unable to load script in marshaler: {}", this.marshaler.getClass().getName(), ioex);
                 }
                 // if the marshaler does not return a valid input stream, use the script property to load it
                 if (is != null) {
@@ -299,7 +298,7 @@ public class ScriptingEndpoint extends ProviderEndpoint implements ScriptingEndp
                             engine.eval(new InputStreamReader(this.script.getInputStream()), scriptBindings);
                         }
                     } catch (IOException ioex) {
-                        logger.error("Unable to load the script " + script.getFilename(), ioex);
+                        logger.error("Unable to load the script {}", script.getFilename(), ioex);
                         throw new MessagingException("Unable to load the script " + script.getFilename());
                     } catch (ScriptException ex) {
                         logger.error("Error executing the script: " + ex.getFileName() + " at line: "

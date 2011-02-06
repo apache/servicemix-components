@@ -184,24 +184,18 @@ public class WSNComponent extends DefaultComponent {
      */
     @Override
     public Document getServiceDescription(ServiceEndpoint endpoint) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Querying service description for " + endpoint);
-        }
+        logger.debug("Querying service description for {}", endpoint);
         String key = EndpointSupport.getKey(endpoint);
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             QName interfaceName = ep.getInterfaceName();
             if (interfaceName == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Could not retrieve description for endpoint " + key + " (no interface defined)");
-                }
+                logger.debug("Could not retrieve description for endpoint {} (no interface defined)", key);
                 return null;
             }
             return getDescription(interfaceName);
         } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("No endpoint found for " + key);
-            }
+            logger.debug("No endpoint found for {}", key);
             return null;
         }
     }
@@ -246,9 +240,7 @@ public class WSNComponent extends DefaultComponent {
             }
             return doc;
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Error retrieving endpoint description", e);
-            }
+            logger.debug("Error retrieving endpoint description", e);
             return null;
         }
     }

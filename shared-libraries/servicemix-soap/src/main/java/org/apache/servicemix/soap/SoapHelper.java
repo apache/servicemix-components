@@ -369,7 +369,7 @@ public class SoapHelper {
                             definition = reader.readWSDL(null, description);
                             definitions.put(key, definition);
                         } catch (WSDLException e) {
-                            logger.info("Could not read wsdl from endpoint descriptor: " + e.getMessage());
+                            logger.info("Could not read wsdl from endpoint descriptor: {}", e.getMessage());
                             logger.debug("Could not read wsdl from endpoint descriptor", e);
                         }
                     }

@@ -124,13 +124,11 @@ public class OSWorkflow implements Runnable {
         // call the endpoint method for init actions
         this.endpoint.preWorkflow();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Starting workflow...");
-            logger.debug("Name:       " + this.osWorkflowName);
-            logger.debug("Action:     " + this.action);
-            logger.debug("Caller:     " + this.caller);
-            logger.debug("Map:        " + this.map);
-        }
+        logger.debug("Starting workflow...");
+        logger.debug("Name:       {}", this.osWorkflowName);
+        logger.debug("Action:     {}", this.action);
+        logger.debug("Caller:     {}", this.caller);
+        logger.debug("Map:        {}", this.map);
 
         // loop as long as there are more actions to do and the workflow is not
         // finished or aborted
@@ -172,15 +170,13 @@ public class OSWorkflow implements Runnable {
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Stopping workflow...");
-            logger.debug("Name:       " + this.osWorkflowName);
-            logger.debug("Action:     " + this.action);
-            logger.debug("Caller:     " + this.caller);
-            logger.debug("Map:        " + this.map);
-            logger.debug("WorkflowId: " + this.workflowId);
-            logger.debug("End state:  " + (finished ? "Finished" : "Aborted"));
-        }
+        logger.debug("Stopping workflow...");
+        logger.debug("Name:       {}", this.osWorkflowName);
+        logger.debug("Action:     {}", this.action);
+        logger.debug("Caller:     {}", this.caller);
+        logger.debug("Map:        {}", this.map);
+        logger.debug("WorkflowId: {}", this.workflowId);
+        logger.debug("End state:  {}", (finished ? "Finished" : "Aborted"));
 
         // call the endpoint method for cleanup actions or message exchange
         this.endpoint.postWorkflow();

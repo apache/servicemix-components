@@ -83,7 +83,7 @@ public class FaultTest extends TestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writer.write(baos);
         
-        logger.info("Resulting Fault: \n" + baos);
+        logger.info("Resulting Fault: \n{}", baos);
     }
 
     public void testReadSoap11UsingDom() throws Exception {

@@ -236,7 +236,7 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
         if (uri != null) {
             try {
                 URL url = new URL(uri);
-                logger.debug("Setting wsdlResource: " + url.toExternalForm());
+                logger.debug("Setting wsdlResource: {}", url.toExternalForm());
                 this.setWsdlResource(new UrlResource(url));
             } catch (MalformedURLException e) {
                 logger.warn("Could not parse URL", e);
@@ -301,15 +301,13 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
      * informations to it.
      */
     protected void retrieveProxiedEndpointDefinition() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Retrieving proxied endpoint definition");
-        }
+        logger.debug("Retrieving proxied endpoint definition");
         try {
             ComponentContext ctx = this.serviceUnit.getComponent().getComponentContext();
             ServiceEndpoint ep = null;
             if (targetService != null && targetEndpoint != null) {
                 ep = ctx.getEndpoint(targetService, targetEndpoint);
-                if (ep == null && logger.isDebugEnabled()) {
+                if (ep == null) {
                     logger.debug("Could not retrieve endpoint targetService/targetEndpoint");
                 }
             }
@@ -318,7 +316,7 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
                 if (eps != null && eps.length > 0) {
                     ep = eps[0];
                 }
-                if (ep == null && logger.isDebugEnabled()) {
+                if (ep == null) {
                     logger.debug("Could not retrieve endpoint for targetService");
                 }
             }
@@ -327,13 +325,13 @@ public abstract class SoapEndpoint extends AbstractEndpoint {
                 if (eps != null && eps.length > 0) {
                     ep = eps[0];
                 }
-                if (ep == null && logger.isDebugEnabled()) {
+                if (ep == null) {
                     logger.debug("Could not retrieve endpoint for targetInterfaceName");
                 }
             }
             if (ep == null && service != null && endpoint != null) {
                 ep = ctx.getEndpoint(service, endpoint);
-                if (ep == null && logger.isDebugEnabled()) {
+                if (ep == null) {
                     logger.debug("Could not retrieve endpoint for service/endpoint");
                 }
             }

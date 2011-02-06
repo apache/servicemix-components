@@ -233,13 +233,13 @@ public class Jsr181Endpoint extends ProviderEndpoint {
             Method mth = pojo.getClass().getMethod("setContext", new Class[] {ComponentContext.class });
             mth.invoke(pojo, new Object[] {context });
         } catch (Exception e) {
-            logger.debug("Unable to inject ComponentContext: " + e.getMessage());
+            logger.debug("Unable to inject ComponentContext: {}", e.getMessage());
         }
         try {
             Method mth = pojo.getClass().getMethod("setContainer", new Class[] {Container.class });
             mth.invoke(pojo, new Object[] {container });
         } catch (Exception e) {
-            logger.debug("Unable to inject JBIContainer: " + e.getMessage());
+            logger.debug("Unable to inject JBIContainer: {}", e.getMessage());
         }
     }
     
@@ -250,7 +250,7 @@ public class Jsr181Endpoint extends ProviderEndpoint {
             field.setAccessible(true);
             return (Container) field.get(ctx);
         } catch (Exception e) {
-            logger.debug("Unable to retrieve JBIContainer: " + e.getMessage());
+            logger.debug("Unable to retrieve JBIContainer: {}", e.getMessage());
             return null;
         }
     }
@@ -348,16 +348,12 @@ public class Jsr181Endpoint extends ProviderEndpoint {
         if (service == null) {
             service = serviceName;
         } else if (!service.equals(serviceName)) {
-            logger.warn("The service name defined in the wsdl (" + serviceName
-                        + ") does not match the service name defined in the endpoint spec (" + service 
-                        + "). WSDL description may be unusable.");
+            logger.warn("The service name defined in the wsdl ({}) does not match the service name defined in the endpoint spec ({}). WSDL description may be unusable.", serviceName, service);
         }
         if (interfaceName == null) {
             interfaceName = interfName;
         } else if (!interfaceName.equals(interfName)) {
-            logger.warn("The interface name defined in the wsdl (" + interfName 
-                    + ") does not match the service name defined in the endpoint spec (" + interfaceName 
-                    + "). WSDL description may be unusable.");
+            logger.warn("The interface name defined in the wsdl ({}) does not match the service name defined in the endpoint spec ({}). WSDL description may be unusable.", interfName, interfaceName);
         }
 
         // Parse the WSDL
@@ -387,11 +383,9 @@ public class Jsr181Endpoint extends ProviderEndpoint {
         description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
 
         // Write WSDL
-        if (logger.isDebugEnabled()) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
-            logger.debug(baos.toString());
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        WSDLFactory.newInstance().newWSDLWriter().writeWSDL(definition, baos);
+        logger.debug("{}", baos.toString());
     }
 
     protected void updateDescription() throws Exception {

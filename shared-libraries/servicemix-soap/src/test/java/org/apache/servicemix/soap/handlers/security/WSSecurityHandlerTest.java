@@ -57,7 +57,7 @@ public class WSSecurityHandlerTest extends TestCase {
                 System.setProperty("java.security.auth.login.config", path);
             }
         }
-        logger.info("Path to login config: " + path);
+        logger.info("Path to login config: {}", path);
     }
 
     public void testUserNameToken() throws Exception {

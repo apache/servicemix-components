@@ -261,7 +261,7 @@ public class JbiProxy {
                                     detail.getName());
             Class<?>[] exceptions = method.getExceptionTypes();
             for (int i = 0; i < exceptions.length; i++) {
-                logger.debug("Checking exception: " + exceptions[i]);
+                logger.debug("Checking exception: {}", exceptions[i]);
                 WebFault wf = exceptions[i].getAnnotation(WebFault.class);
                 if (wf == null) {
                     logger.debug("No WebFault annotation");
@@ -282,10 +282,10 @@ public class JbiProxy {
                         Constructor<?> cst = exceptions[i].getConstructor(String.class, infoClass);
                         return (Exception) cst.newInstance(xfireFault.toString(), obj.getValue());
                     } catch (Throwable e) {
-                        logger.debug("Error: " + e);
+                        logger.debug("Error: {}", e);
                     }
                 } else {
-                    logger.debug("QName mismatch: element: " + qname + ", exception: " + exceptionName);
+                    logger.debug("QName mismatch: element: {}, execption: {}", qname, exceptionName);
                 }
             }
             return t;

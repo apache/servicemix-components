@@ -133,7 +133,7 @@ public class EndpointExporter implements BundleContextAware, ApplicationContextA
         }
         if (ep != null && (ep.getServiceUnit() == null 
             || !ep.getServiceUnit().getComponent().getRegistry().isRegistered(ep.getServiceUnit()))) {
-            logger.info("something wrong during register endpoint " + ep.getKey());
+            logger.info("something wrong during register endpoint {}", ep.getKey());
             //get chance to unregister all endpoints with this EndpointExporter
             for (Endpoint e : deployed) {
                 e.getServiceUnit().getComponent().getRegistry().unregisterServiceUnit(e.getServiceUnit());

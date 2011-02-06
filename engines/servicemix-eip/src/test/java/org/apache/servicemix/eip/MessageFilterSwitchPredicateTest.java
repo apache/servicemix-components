@@ -54,9 +54,9 @@ public class MessageFilterSwitchPredicateTest extends AbstractEIPTest {
         // Message exchange turned off - message should NOT reach the target.
         me.getInMessage().setContent(createSource("<orderIn><widget>5</widget></orderIn>"));
         me.getInMessage().setProperty("on", Boolean.FALSE);
-        logger.info("Before client.sendSync me.getProperty(\"on\") is: " + me.getProperty("on"));
+        logger.info("Before client.sendSync me.getProperty(\"on\") is: {} ", me.getProperty("on"));
         client.sendSync(me);
-        logger.info("After client.sendSync me.getProperty(\"on\" is: " + me.getProperty("on"));
+        logger.info("After client.sendSync me.getProperty(\"on\" is: {}", me.getProperty("on"));
         assertEquals("Message exchange status should be DONE", ExchangeStatus.DONE, me.getStatus());
         
         rec.getMessageList().assertMessagesReceived(0);

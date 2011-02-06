@@ -194,9 +194,7 @@ public class ExecEndpoint extends ProviderEndpoint {
 			// try to extract the command from the in message content
 			if (exchange.getMessage("in") != null) {
 				// in message presents
-				if (logger.isDebugEnabled()) {
-					logger.debug("Received exchange: " + exchange);
-				}
+				logger.debug("Received exchange: {}", exchange);
 				
 				// gets the in message
 				NormalizedMessage in = exchange.getMessage("in");

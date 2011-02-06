@@ -73,17 +73,17 @@ public abstract class BaseComponent implements ServiceMixComponent {
      * @see javax.jbi.component.Component#getServiceDescription(javax.jbi.servicedesc.ServiceEndpoint)
      */
     public Document getServiceDescription(ServiceEndpoint endpoint) {
-        logger.debug("Querying service description for " + endpoint);
+        logger.debug("Querying service description for {}", endpoint);
         String key = EndpointSupport.getKey(endpoint);
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             Document doc = ep.getDescription();
             if (doc == null) {
-                logger.debug("No description found for " + key);
+                logger.debug("No description found for {}", key);
             }
             return doc;
         } else {
-            logger.debug("No endpoint found for " + key);
+            logger.debug("No endpoint found for {}", key);
             return null;
         }
     }
@@ -96,13 +96,13 @@ public abstract class BaseComponent implements ServiceMixComponent {
         Endpoint ep = this.registry.getEndpoint(key);
         if (ep != null) {
             if (ep.getRole() != Role.PROVIDER) {
-                logger.debug("Endpoint " + key + " is a consumer. Refusing exchange with consumer.");
+                logger.debug("Endpoint {} is a consumer. Refusing exchange with consumer.", key);
                 return false;
             } else {
                 return ep.isExchangeOkay(exchange);
             }
         } else {
-            logger.debug("No endpoint found for " + key + ". Refusing exchange with consumer.");
+            logger.debug("No endpoint found for {}. Refusing exchange with consumer.", key);
             return false;
         }
     }

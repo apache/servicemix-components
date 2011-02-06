@@ -343,9 +343,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
                 } else {
                     store.store(correlationId, aggregation);
                     if (timeout != null) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Scheduling timeout at " + timeout + " for aggregate " + correlationId);
-                        }
+                        logger.debug("Scheduling timeout at {} for aggregate {}", timeout, correlationId);
                         Timer t = getTimerManager().schedule(new TimerListener() {
                             public void timerExpired(Timer timer) {
                                 AbstractAggregator.this.onTimeout(processCorrelationId, correlationId, timer);
@@ -400,7 +398,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
     }
 
     protected void onTimeout(String processCorrelationId, String correlationId, Timer timer) {
-        logger.debug("Timeout expired for aggregate " + correlationId);
+        logger.debug("Timeout expired for aggregate {}", correlationId);
         Lock lock = getLockManager().getLock(correlationId);
         lock.lock();
         try {
@@ -429,7 +427,7 @@ public abstract class AbstractAggregator extends EIPEndpoint {
             } else if (!isAggregationClosed(correlationId)) {
                 throw new IllegalStateException("Aggregation is not closed, but can not be retrieved from the store");
             } else {
-                logger.debug("Aggregate " + correlationId + " is closed");
+                logger.debug("Aggregate {} is closed", correlationId);
             }
         } catch (Exception e) {
             logger.info("Caught exception while processing timeout aggregation", e);

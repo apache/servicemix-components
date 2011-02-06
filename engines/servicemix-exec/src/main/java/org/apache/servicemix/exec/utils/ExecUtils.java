@@ -54,7 +54,7 @@ public class ExecUtils {
 		    exec = exec + " " + argument;
 		}
 		
-		logger.info("Execute command " + exec);
+		logger.info("Execute command {}", exec);
 		String[] shellCommand = null;
 		logger.debug("Define the shell.");
 		logger.debug("Get the OS name property.");
@@ -63,7 +63,7 @@ public class ExecUtils {
 			logger.debug("Microsoft Windows platform detected.");
 			String comSpec = System.getProperty("ComSpec");
 			if (comSpec != null) {
-				logger.debug("The ComSpec MS Windows environment variable is defined, using it: " + comSpec + " /C " + exec);
+				logger.debug("The ComSpec MS Windows environment variable is defined, using it: {} /C {}", comSpec, exec);
 				shellCommand = new String[] { comSpec, "/C", exec };
 			} else {
 				logger.debug("The ComSpec MS Windows environment variable is not defined, found the shell command depending of the MS Windows version.");
@@ -71,10 +71,10 @@ public class ExecUtils {
 						|| osName.startsWith("Windows 95")
 						|| osName.startsWith("Windows 98")
 						|| osName.startsWith("Windows ME")) {
-					logger.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C " + exec);
+					logger.debug("MS Windows 3.1/95/98/Me detected, using: command.com /C {}", exec);
 					shellCommand = new String[] { "command.com", "/C", exec };
 				} else {
-					logger.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C " + exec);
+					logger.debug("MS Windows NT/XP/Vista detected, using: cmd.exe /C {}", exec);
 					shellCommand = new String[] { "cmd.exe", "/C", exec };
 				}
 			}
@@ -82,10 +82,10 @@ public class ExecUtils {
 			logger.debug("Unix platform detected.");
 			String shell = System.getProperty("SHELL");
 			if (shell != null) {
-				logger.debug("The SHELL Unix environment variable is defined, using it: " + shell + " -c " + exec);
+				logger.debug("The SHELL Unix environment variable is defined, using it: {} -c {}", shell, exec);
 				shellCommand = new String[] { shell, "-c", exec };
 			} else {
-				logger.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c " + exec);
+				logger.debug("The SHELL Unix environment variable is not defined, using the default Unix shell: /bin/sh -c {}", exec);
 				shellCommand = new String[] { "/bin/sh", "-c", exec };
 			}
 		}
@@ -115,13 +115,13 @@ public class ExecUtils {
 			
 			if (exitValue != 0) {
 				// an error occured
-				logger.error("Command " + exec + " execution failed with return code " + exitValue + " : " + execResponse.getErrorData().toString());
+				logger.error("Command {} execution failed with return code {}", exec, exitValue);
 			} else {
 				// command was successful
-				logger.debug("Command " + exec + " execution completed: " + execResponse.getOutputData().toString());
+				logger.debug("Command {} execution completed: {}", exec, execResponse.getOutputData().toString());
 			}
 		} catch (Exception exception) {
-			logger.error("Command " + exec + " execution failed.", exception);
+			logger.error("Command {} execution failed.", exec, exception);
 			throw new ExecException("Command " + exec + " execution failed.", exception);
 		}
 
@@ -164,7 +164,7 @@ class StreamGobbler extends Thread {
 				response.append('\n');
 			}
 		} catch (IOException ioException) {
-			logger.warn("System command stream gobbler error : " + ioException.getMessage());
+			logger.warn("System command stream gobbler error : {}", ioException.getMessage());
 		}
 	}
 

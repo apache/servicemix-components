@@ -215,7 +215,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
      * @return the jar location URLs.
      */
     protected List<URL> getJarResources(String location) {
-        logger.debug("Get jar resources from " + location);
+        logger.debug("Get jar resources from {}", location);
         List<URL> urls = new LinkedList<URL>();
         // get the !/ separator index
         int separatorIndex = location.indexOf("!/");
@@ -270,7 +270,7 @@ public class ClassLoaderXmlPreprocessor implements SpringXmlPreprocessor {
      * @return
      */
     protected List<URL> getFileResources(String location) {
-        logger.debug("Get file resources from " + location);
+        logger.debug("Get file resources from {}", location);
         List<URL> urls = new LinkedList<URL>();
         int starIndex = location.indexOf("*");
         if (starIndex == -1) {

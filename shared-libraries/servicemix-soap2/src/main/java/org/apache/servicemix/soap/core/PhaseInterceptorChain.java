@@ -56,7 +56,7 @@ public class PhaseInterceptorChain implements InterceptorChain {
     }
 
     public void add(Interceptor i) {
-        logger.debug("Adding interceptor " + i.getId());
+        logger.debug("Adding interceptor {}", i.getId());
         insertInterceptor(i);
     }
 
@@ -77,22 +77,16 @@ public class PhaseInterceptorChain implements InterceptorChain {
         try {
             while (iterator.hasNext()) {
                 Interceptor currentInterceptor = iterator.next();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Invoking handleMessage on interceptor " + currentInterceptor.getId());
-                }
+                logger.debug("Invoking handleMessage on interceptor {}", currentInterceptor.getId());
                 currentInterceptor.handleMessage(message);
             }
         } catch (RuntimeException ex) {
-            if (logger.isInfoEnabled()) {
-                logger.info("Interceptor has thrown exception, unwinding now", ex);
-            }
+            logger.info("Interceptor has thrown exception, unwinding now", ex);
             message.setContent(Exception.class, ex);
             // Unwind
             while (iterator.hasPrevious()) {
                 Interceptor currentInterceptor = iterator.previous();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Invoking handleFault on interceptor " + currentInterceptor.getId());
-                }
+                logger.debug("Invoking handleFault on interceptor {}", currentInterceptor.getId());
                 currentInterceptor.handleFault(message);
             }
             throw ex;

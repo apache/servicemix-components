@@ -230,14 +230,14 @@ public abstract class PollingEndpoint extends ConsumerEndpoint {
                 });
             }
             catch (Throwable e) {
-                logger.error("Failed to schedule work: " + e, e);
+                logger.error("Failed to schedule work: {}", e, e);
                 pollActive.set(false);
             }
         }
     }
 
     protected void handlePollException(Exception e) {
-        logger.error("Caught exception while polling: " + e, e);
+        logger.error("Caught exception while polling: {}", e, e);
     }
 
 

@@ -55,7 +55,7 @@ public class SchemaCollection {
     }
     
     public SchemaCollection(URI baseUri) {
-        logger.debug("Initializing schema collection with baseUri: " + baseUri);
+        logger.debug("Initializing schema collection with baseUri: {}", baseUri);
         this.baseUri = baseUri;
         this.schemas = new HashMap<String, Schema>();
     }
@@ -84,7 +84,7 @@ public class SchemaCollection {
     }
     
     public void read(String location, URI baseUri) throws Exception {
-        logger.debug("Reading schema at '" + location + "' with baseUri '" + baseUri + "'");
+        logger.debug("Reading schema at '{}' with baseUri '{}'", location, baseUri);
         if (baseUri == null) {
             baseUri = this.baseUri;
         }
@@ -148,10 +148,10 @@ public class SchemaCollection {
             Node parentNode = ce.getParentNode();
             Element root = schema.getRoot();
             if (root == parentNode) { 
-                logger.debug("Removing child include node: " + ce);
+                logger.debug("Removing child include node: {}", ce);
                 schema.getRoot().removeChild(ce);
             } else {
-                logger.warn("Skipping child include node removal: " + ce);
+                logger.warn("Skipping child include node removal: {}", ce);
             }
 	        if (location != null && !"".equals(location)) {
 	            read(location, baseUri);

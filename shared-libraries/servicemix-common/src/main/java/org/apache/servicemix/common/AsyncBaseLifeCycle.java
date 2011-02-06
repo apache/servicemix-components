@@ -484,7 +484,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
             }
             processExchange(exchange);
         } catch (Throwable t) {
-            logger.error("Error processing exchange " + exchange, t);
+            logger.error("Error processing exchange {}", exchange, t);
             try {
                 // If we are transacted, check if this exception should
                 // rollback the transaction
@@ -543,7 +543,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         try {
             processExchange(exchange);
         } catch (Throwable t) {
-            logger.error("Error processing exchange " + exchange, t);
+            logger.error("Error processing exchange {}", exchange, t);
             try {
                 // If we are transacted and this is a runtime exception
                 // try to mark transaction as rollback
@@ -566,8 +566,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
     }
 
     protected void processExchange(MessageExchange exchange) throws Exception {
-        logger.debug("Received exchange: status: " + exchange.getStatus() + ", role: "
-                    + (exchange.getRole() == Role.CONSUMER ? "consumer" : "provider"));
+        logger.debug("Received exchange: status: {}, role: {}", exchange.getStatus(), (exchange.getRole() == Role.CONSUMER ? "consumer" : "provider"));
         if (exchange.getRole() == Role.PROVIDER) {
             boolean dynamic = false;
             ServiceEndpoint endpoint = exchange.getEndpoint();
@@ -625,7 +624,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                 // Set the id in threadlocal variable
                 correlationId.set(correlationID);
             }
-            logger.debug("Retrieved correlation id: " + correlationID);
+            logger.debug("Retrieved correlation id: {}", correlationID);
             EndpointDeliveryChannel.setEndpoint(ep);
             handleExchange(ep, exchange, exchange.getStatus() == ExchangeStatus.ACTIVE);
             ep.process(exchange);
@@ -653,11 +652,11 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                     // to trace the process instance
                     correlationIDValue = exchange.getExchangeId();
                     exchange.setProperty(JbiConstants.CORRELATION_ID, exchange.getExchangeId());
-                    logger.debug("Created correlation id: " + correlationIDValue);
+                    logger.debug("Created correlation id: {}", correlationIDValue);
                 } else {
                     // Use correlation id retrieved from previous message exchange
                     exchange.setProperty(JbiConstants.CORRELATION_ID, correlationIDValue);
-                    logger.debug("Correlation id retrieved from ThreadLocal: " + correlationIDValue);
+                    logger.debug("Correlation id retrieved from ThreadLocal: {}", correlationIDValue);
                 }
             }
             // Set the sender endpoint property
@@ -700,7 +699,7 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
         synchronized (exchanges) {
             if (!exchanges.isEmpty()) {
                 for (String id : exchanges) {
-                    logger.debug("Waiting for exchange " + id + " in " + endpoint);
+                    logger.debug("Waiting for exchange {} in {}", id, endpoint);
                 }
                 exchanges.wait(timeout);
                 logger.debug(String.format("Gave up waiting for %s exchanges in %s after %s ms",

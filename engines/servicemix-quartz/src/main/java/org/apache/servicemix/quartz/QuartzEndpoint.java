@@ -143,9 +143,7 @@ public class QuartzEndpoint extends ConsumerEndpoint {
     }
 
     public void onJobExecute(JobExecutionContext context) throws JobExecutionException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Firing Quartz Job with context: " + context);
-        }
+        logger.debug("Firing Quartz Job with context: {}", context);
         try {
             InOnly exchange = getExchangeFactory().createInOnlyExchange();
             NormalizedMessage message = exchange.createMessage();

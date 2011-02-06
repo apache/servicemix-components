@@ -61,9 +61,7 @@ public class SwitchPredicate implements InitializingBean, Predicate {
             if (propertyResource != null && propertyResource.exists()) {
                 // get property from properties file
                 propertyFile = propertyResource.getFile();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("loading property file: " + propertyFile.getAbsolutePath());
-                }
+                logger.debug("loading property file: {}", propertyFile.getAbsolutePath());
                 props = new Properties();
                 props.load(propertyResource.getInputStream());
             } else {

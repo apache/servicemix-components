@@ -53,7 +53,7 @@ public class AbstractXBeanDeployer extends AbstractDeployer {
      */
     public boolean canDeploy(String serviceUnitName, String serviceUnitRootPath) {
         File xbean = new File(serviceUnitRootPath, getXBeanFile() + ".xml");
-        logger.debug("Looking for " + xbean + ": " + xbean.exists());
+        logger.debug("Looking for {}: {}", xbean, xbean.exists());
         return xbean.exists();
     }
 
