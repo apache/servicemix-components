@@ -27,10 +27,14 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.phase.AbstractPhaseInterceptor;
+import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
@@ -90,6 +94,8 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     
     private Object componentRegistry;
 
+    private boolean clearClientResponseContext = true;
+    
     public Object getObject() throws Exception {
         if (proxy == null) {
             proxy = createProxy();
@@ -140,6 +146,12 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
             ClientProxy.getClient(proxy).getEndpoint()
                 .getBinding().getOutInterceptors().add(new AttachmentOutInterceptor());
         }
+        if (isClearClientResponseContext()) {
+            ClearClientResponseContextInterceptor clearClientResponseContextInterceptor = new ClearClientResponseContextInterceptor(ClientProxy.getClient(proxy));
+            ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutInterceptors().add(clearClientResponseContextInterceptor);
+            ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutFaultInterceptors().add(clearClientResponseContextInterceptor);
+        }
+            
         return proxy;
     }
 
@@ -383,6 +395,40 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
 
     public Object getComponentRegistry() {
         return componentRegistry;
+    }
+
+    /**
+     * Specifies if the CXF client response context is cleared after each proxy invocation. Set to true if
+     * caller wishes to use CXF client call to getResponseContext() to obtain response values directly, such
+     * as the message exchange for the invocation.
+     * 
+     * @org.apache.xbean.Property description=
+     *                            "Specifies if the CXF client response context is cleared after each proxy invocation. The default is
+     *                            <code>true</code>."
+     */
+    public void setClearClientResponseContext(boolean clearClientResponseContext) {
+        this.clearClientResponseContext = clearClientResponseContext;
+    }
+
+    public boolean isClearClientResponseContext() {
+        return clearClientResponseContext;
+    }
+
+    public static class ClearClientResponseContextInterceptor extends AbstractPhaseInterceptor<Message> {
+        private final Client client;
+
+        public ClearClientResponseContextInterceptor(Client client) {
+            super(Phase.POST_LOGICAL_ENDING);
+            this.client = client;
+        }
+
+        public void handleMessage(Message message) throws Fault {
+            client.getResponseContext().clear();
+        }
+
+        public void handleFault(Message message) {
+            client.getResponseContext().clear();
+        }
     }
 
 }
