@@ -152,6 +152,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
             ClientProxy.getClient(proxy).getEndpoint().getBinding().getOutFaultInterceptors().add(clearClientResponseContextInterceptor);
         }
             
+        ClientProxy.getClient(proxy).setThreadLocalRequestContext(true);
         return proxy;
     }
 
