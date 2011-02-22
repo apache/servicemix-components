@@ -21,6 +21,13 @@ import java.util.List;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessageExchangeFactory;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 
@@ -100,6 +107,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         if (proxy == null) {
             proxy = createProxy();
         }
+        
         return proxy;
     }
 
@@ -153,6 +161,9 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         }
             
         ClientProxy.getClient(proxy).setThreadLocalRequestContext(true);
+        if (isPropagateSecuritySubject()) {
+            jbiTransportFactory.setDeliveryChannel(new PropagateSecuritySubjectDeliveryChannel(jbiTransportFactory.getDeliveryChannel()));
+        }
         return proxy;
     }
 
@@ -432,4 +443,69 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         }
     }
 
+    public class PropagateSecuritySubjectDeliveryChannel implements DeliveryChannel {
+
+        private DeliveryChannel delegate;
+
+        public PropagateSecuritySubjectDeliveryChannel(DeliveryChannel dc) {
+            this.delegate = dc;
+        }
+
+        public void close() throws MessagingException {
+            delegate.close();
+        }
+
+        public MessageExchangeFactory createExchangeFactory() {
+            return delegate.createExchangeFactory();
+        }
+
+        public MessageExchangeFactory createExchangeFactory(QName interfaceName) {
+            return delegate.createExchangeFactory(interfaceName);
+        }
+
+        public MessageExchangeFactory createExchangeFactoryForService(QName serviceName) {
+            return delegate.createExchangeFactoryForService(serviceName);
+        }
+
+        public MessageExchangeFactory createExchangeFactory(ServiceEndpoint endpoint) {
+            return delegate.createExchangeFactory(endpoint);
+        }
+
+        public MessageExchange accept() throws MessagingException {
+            return delegate.accept();
+        }
+
+        public MessageExchange accept(long timeout) throws MessagingException {
+            return delegate.accept(timeout);
+        }
+
+        public void send(MessageExchange exchange) throws MessagingException {
+            propagateSubject(exchange);
+            delegate.send(exchange);
+        }
+
+        public boolean sendSync(MessageExchange exchange) throws MessagingException {
+            propagateSubject(exchange);
+            return delegate.sendSync(exchange);
+        }
+
+        public boolean sendSync(MessageExchange exchange, long timeout) throws MessagingException {
+            propagateSubject(exchange);
+            return delegate.sendSync(exchange, timeout);
+        }
+
+        private void propagateSubject(MessageExchange exchange) {
+            NormalizedMessage msg;
+            if (exchange instanceof InOnly) {
+                msg = ((InOnly) exchange).getInMessage();
+            } else if (exchange instanceof InOut) {
+                msg = ((InOut) exchange).getInMessage();
+            } else {
+                throw new RuntimeException("Unable to determine message type to propagate subject: " + exchange.getClass().getName());
+            }
+            if (msg.getSecuritySubject() == null && JBIContext.getMessageExchange() != null && JBIContext.getMessageExchange().getMessage("in") != null) {
+                msg.setSecuritySubject(JBIContext.getMessageExchange().getMessage("in").getSecuritySubject());
+            }
+        }
+    }
 }
