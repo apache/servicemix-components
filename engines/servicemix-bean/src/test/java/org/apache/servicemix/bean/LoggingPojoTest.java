@@ -16,20 +16,7 @@
  */
 package org.apache.servicemix.bean;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-import javax.xml.namespace.QName;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.bean.pojos.LoggingPojo;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClientFacade;
@@ -37,6 +24,13 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.jbi.messaging.*;
+import javax.xml.namespace.QName;
+import java.util.LinkedList;
+import java.util.List;
 
 public class LoggingPojoTest extends TestCase {
 
@@ -212,7 +206,7 @@ public class LoggingPojoTest extends TestCase {
             messages.add(message);
         }
         public void info(String message, Object args) {
-            messages.add(message);
+            messages.add(message + args.toString());
         }
         public void info(String message, Object args1, Object args2) {
             messages.add(message);

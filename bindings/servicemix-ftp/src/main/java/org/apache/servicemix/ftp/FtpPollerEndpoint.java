@@ -457,7 +457,7 @@ public class FtpPollerEndpoint extends PollingEndpoint implements FtpEndpointTyp
                 logger.debug("Skipping {}: the file no longer exists on the server", file);
             }
         } catch (Exception e) {
-            logger.error("Failed to process file: {}. Reason: {}", file, e, e);
+            logger.error("Failed to process file: {}. Reason: {}", file, e);
         } finally {
             if (ftp != null) {
                 returnClient(ftp);
