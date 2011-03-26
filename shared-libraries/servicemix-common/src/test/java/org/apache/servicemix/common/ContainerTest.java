@@ -52,9 +52,9 @@ public class ContainerTest extends TestCase {
         assertNotNull(factory);
 
         assertEquals("Executor config should have been copied from OSGi Configuration instance",
-                     10, factory.getDefaultConfig().getCorePoolSize());
+                     new Integer(10), factory.getDefaultConfig().getCorePoolSize());
         assertEquals("Executor config should have been copied from OSGi Configuration instance",
-                     50, factory.getDefaultConfig().getMaximumPoolSize());
+                     new Integer(50), factory.getDefaultConfig().getMaximumPoolSize());
     }
 
     public void testUnknown() {

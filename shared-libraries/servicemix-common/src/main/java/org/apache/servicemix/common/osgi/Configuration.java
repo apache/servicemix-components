@@ -88,7 +88,7 @@ public class Configuration {
      * Set the keep alive time on the executor
      * @see org.apache.servicemix.executors.impl.ExecutorConfig#setKeepAliveTime(long) 
      */
-    public void setKeepAliveTime(int time) {
+    public void setKeepAliveTime(long time) {
         logger.debug("Setting thread keep-alive time: {}", time);
         executorConfig.setKeepAliveTime(time);
     }

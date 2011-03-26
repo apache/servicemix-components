@@ -39,11 +39,11 @@ public class ConfigurationTest extends TestCase {
 
         ExecutorConfig executorConfig = config.getExecutorConfig();
         assertNotNull(executorConfig);
-        assertEquals(10, executorConfig.getCorePoolSize());
-        assertEquals(50, executorConfig.getMaximumPoolSize());
-        assertEquals(100, executorConfig.getQueueSize());
+        assertEquals(new Integer(10), executorConfig.getCorePoolSize());
+        assertEquals(new Integer(50), executorConfig.getMaximumPoolSize());
+        assertEquals(new Integer(100), executorConfig.getQueueSize());
         assertFalse(executorConfig.isAllowCoreThreadsTimeout());
-        assertEquals(30000, executorConfig.getKeepAliveTime());
+        assertEquals(new Long(30000), executorConfig.getKeepAliveTime());
     }
 
 }
