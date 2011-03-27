@@ -70,6 +70,6 @@
     <property name="backOffMultiplier" value="2" />
   </bean>
 
-  <bean id="logger" class="org.apache.camel.processor.Logger" />
+  <bean id="logger" class="org.apache.camel.processor.CamelLogger" />
 
 </beans>
