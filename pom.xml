@@ -97,7 +97,7 @@
         <activemq.version>5.4.2</activemq.version>
 
         <!-- CXF -->
-        <cxf.version>2.3.2</cxf.version>
+        <cxf.version>2.3.3</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
