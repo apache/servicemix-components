@@ -34,7 +34,7 @@ public class ConfigurationTest extends TestCase {
         config.setCorePoolSize(10);
         config.setMaximumPoolSize(50);
         config.setQueueSize(100);
-        config.setAllowCoreThreadTimeout(false);
+        config.setAllowCoreThreadTimeOut(false);
         config.setKeepAliveTime(30000);
 
         ExecutorConfig executorConfig = config.getExecutorConfig();
@@ -42,7 +42,7 @@ public class ConfigurationTest extends TestCase {
         assertEquals(new Integer(10), executorConfig.getCorePoolSize());
         assertEquals(new Integer(50), executorConfig.getMaximumPoolSize());
         assertEquals(new Integer(100), executorConfig.getQueueSize());
-        assertFalse(executorConfig.isAllowCoreThreadsTimeout());
+        assertFalse(executorConfig.isAllowCoreThreadTimeOut());
         assertEquals(new Long(30000), executorConfig.getKeepAliveTime());
     }
 

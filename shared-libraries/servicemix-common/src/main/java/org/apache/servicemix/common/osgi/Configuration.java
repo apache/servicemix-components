@@ -77,11 +77,11 @@ public class Configuration {
 
     /**
      * Allow the core threads to time out
-     * @see org.apache.servicemix.executors.impl.ExecutorConfig#setAllowCoreThreadsTimeout(boolean)  
+     * @see org.apache.servicemix.executors.impl.ExecutorConfig#setAllowCoreThreadTimeOut(boolean)  
      */
-    public void setAllowCoreThreadTimeout(boolean timeout) {
+    public void setAllowCoreThreadTimeOut(boolean timeout) {
         logger.debug("Setting core thread timeout allow: {}", timeout);
-        executorConfig.setAllowCoreThreadsTimeout(timeout);
+        executorConfig.setAllowCoreThreadTimeOut(timeout);
     }
 
     /**
