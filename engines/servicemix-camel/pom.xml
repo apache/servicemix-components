@@ -35,8 +35,6 @@
     </description>
 
     <properties>
-        <camel.version>2.7.0</camel.version>
-
         <servicemix.osgi.import>
             !org.apache.servicemix.camel*,
             !META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.camel,
