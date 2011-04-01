@@ -23,7 +23,7 @@
   <!-- Configuration Admin PID org.apache.servicemix.jbi -->
   <cm:property-placeholder persistent-id="org.apache.servicemix.jbi">
     <cm:default-properties>
-      <cm:property name="allowCoreThreadTimeout" value="true"/>
+      <cm:property name="allowCoreThreadTimeOut" value="true"/>
       <cm:property name="corePoolSize" value="4"/>
       <cm:property name="keepAliveTime" value="60000"/>
       <cm:property name="maximumPoolSize" value="-1"/>
@@ -33,7 +33,7 @@
 
   <!-- Creating the singleton and setting the configuration on it -->
   <bean class="org.apache.servicemix.common.osgi.Configuration" factory-method="getInstance">
-    <property name="allowCoreThreadTimeout" value="${allowCoreThreadTimeout}" />
+    <property name="allowCoreThreadTimeOut" value="${allowCoreThreadTimeOut}" />
     <property name="corePoolSize" value="${corePoolSize}" />
     <property name="keepAliveTime" value="${keepAliveTime}" />
     <property name="maximumPoolSize" value="${maximumPoolSize}"/>
