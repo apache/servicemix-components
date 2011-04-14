@@ -50,12 +50,12 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     /**
      * The JNDI name of the AuthenticationService object
      */
-    private String authenticationServiceName = "java:comp/env/smx/AuthenticationService";
+    private String authenticationServiceName = "org/apache/servicemix/AuthenticationService";
 
     /**
      * The JNDI name of the KeystoreManager object
      */
-    private String keystoreManagerName = "java:comp/env/smx/KeystoreManager";
+    private String keystoreManagerName = "org/apache/servicemix/KeystoreManager";
 
     /**
      * The maximum number of threads for the Jetty thread pool. It's set to 255

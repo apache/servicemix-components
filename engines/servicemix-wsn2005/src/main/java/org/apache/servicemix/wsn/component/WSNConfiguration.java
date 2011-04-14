@@ -24,7 +24,7 @@ public class WSNConfiguration extends PersistentConfiguration implements WSNConf
 
     private String jndiProviderURL;
 
-    private String jndiConnectionFactoryName = "java:comp/env/jms/wsnotificationCF";
+    private String jndiConnectionFactoryName = "org/apache/servicemix/jms/wsnotificationCF";
 
     private String brokerName = "Broker";
 
