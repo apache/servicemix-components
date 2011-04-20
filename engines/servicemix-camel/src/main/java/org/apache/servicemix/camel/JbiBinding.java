@@ -205,8 +205,9 @@ public class JbiBinding {
     public void copyPropertiesFromJbiToCamel(MessageExchange from, Exchange to) {
         for (Object object : from.getPropertyNames()) {
             String key = object.toString();
-            if (!strategies.applyFilterToCamelHeaders(key, from.getProperty(key), null)) {
-                to.setProperty(key, from.getProperty(key));
+            Object value = from.getProperty(key);
+            if (!strategies.applyFilterToCamelHeaders(key, value, null)) {
+                to.setProperty(key, value);
             }
         }
     }
@@ -219,13 +220,16 @@ public class JbiBinding {
      */
     public void copyFromJbiToCamel(NormalizedMessage from, Message to) {
         to.setBody(from.getContent());
-        if (from.getSecuritySubject() != null) {
-            to.setHeader(SECURITY_SUBJECT, from.getSecuritySubject());
+        Subject securitySubject = from.getSecuritySubject();
+        if (securitySubject != null) {
+            to.setHeader(SECURITY_SUBJECT, securitySubject);
         }
+        Exchange exchange = to.getExchange();
         for (Object object : from.getPropertyNames()) {
             String key = object.toString();
-            if (!strategies.applyFilterToCamelHeaders(key, from.getProperty(key), to.getExchange())) { 
-                to.setHeader(key, from.getProperty(key));
+            Object value = from.getProperty(key);
+            if (!strategies.applyFilterToCamelHeaders(key, value, exchange)) { 
+                to.setHeader(key, value);
             }
         }
         for (Object id : from.getAttachmentNames()) {
@@ -235,21 +239,24 @@ public class JbiBinding {
 
     public void copyFromCamelToJbi(Message message, NormalizedMessage normalizedMessage) throws MessagingException {
         if (message != null && message.getBody() != null) {
-            if (message.getBody(Source.class) == null) {
+            Source body = message.getBody(Source.class);
+            if (body == null) {
                 logger.warn("Unable to convert message body of type {} into an XML Source", message.getBody().getClass());
             } else {
-                normalizedMessage.setContent(message.getBody(Source.class));
+                normalizedMessage.setContent(body);
             }
         }
         
-        if (getSecuritySubject(message) != null) {
-            normalizedMessage.setSecuritySubject(getSecuritySubject(message));
+        Subject securitySubject = getSecuritySubject(message);
+        if (securitySubject != null) {
+            normalizedMessage.setSecuritySubject(securitySubject);
         }
-        
+
+        Exchange exchange = message.getExchange();
         for (Map.Entry<String, Object> entry : message.getHeaders().entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            if (value != null && !strategies.applyFilterToCamelHeaders(key, value, message.getExchange())) {
+            if (value != null && !strategies.applyFilterToCamelHeaders(key, value, exchange)) {
                 normalizedMessage.setProperty(key, value);
             }
         }
@@ -335,9 +342,6 @@ public class JbiBinding {
      * @return the Subject or <code>null</code> is no Subject is available in the headers
      */
     public static Subject getSecuritySubject(Message message) {
-        if (message.getHeader(SECURITY_SUBJECT) != null) {
-            return message.getHeader(SECURITY_SUBJECT, Subject.class);
-        }
-        return null;
+        return message.getHeader(SECURITY_SUBJECT, Subject.class);
     }
 }
