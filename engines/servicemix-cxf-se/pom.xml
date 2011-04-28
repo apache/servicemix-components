@@ -114,7 +114,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-local</artifactId>
+            <artifactId>cxf-rt-transports-http</artifactId>
             <version>${cxf.version}</version>
         </dependency>        
         <dependency>
@@ -126,10 +126,6 @@
                     <artifactId>XmlSchema</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.commons.schema</groupId>
-            <artifactId>XmlSchema</artifactId>
         </dependency>
         <dependency>
             <groupId>wsdl4j</groupId>
@@ -183,7 +179,11 @@
             <artifactId>spring-core</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-servlet_3.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- test -->
         <dependency>
             <groupId>org.apache.servicemix</groupId>

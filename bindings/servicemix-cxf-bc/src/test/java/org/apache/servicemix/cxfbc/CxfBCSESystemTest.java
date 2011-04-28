@@ -39,12 +39,7 @@ public class CxfBCSESystemTest extends CxfBcSpringTestSupport {
     
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSESystemTest.class);
     
-    static {
-        SpringBusFactory bf = new SpringBusFactory();
-        Bus bus = bf.createBus("org/apache/servicemix/cxfbc/jettyThreadPool.xml");
-        BusFactory.setDefaultBus(bus);
-    }
-    
+      
     public void setUp() throws Exception {
         //override super setup
         LOG.info("setUp is invoked");

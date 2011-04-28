@@ -69,7 +69,7 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
                 subject = new Subject();
                 currentSubject.set(subject);
             }
-            List<Object> results = (Vector<Object>)message.get(WSHandlerConstants.RECV_RESULTS);
+            List<Object> results = (List<Object>)message.get(WSHandlerConstants.RECV_RESULTS);
             if (results == null) {
                 return;
             }
@@ -86,8 +86,8 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
                 for (Iterator it = hr.getResults().iterator(); it.hasNext();) {
                     WSSecurityEngineResult er = (WSSecurityEngineResult) it.next();
                         
-                    if (er != null && er.getPrincipal() instanceof WSUsernameTokenPrincipal) {
-                        WSUsernameTokenPrincipal p = (WSUsernameTokenPrincipal)er.getPrincipal();
+                    if (er != null && er.get(WSSecurityEngineResult.TAG_PRINCIPAL) instanceof WSUsernameTokenPrincipal) {
+                        WSUsernameTokenPrincipal p = (WSUsernameTokenPrincipal)er.get(WSSecurityEngineResult.TAG_PRINCIPAL);
                         subject.getPrincipals().add(p);
                         this.authenticationService.authenticate(subject, domain, p.getName(), p.getPassword());
                         authenticated = true;
@@ -100,8 +100,8 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
 	                for (Iterator it = hr.getResults().iterator(); it.hasNext();) {
 	                  WSSecurityEngineResult er = (WSSecurityEngineResult) it.next();
 	
-	                    if (er != null && er.getCertificate() instanceof X509Certificate) {
-	                      X509Certificate cert = er.getCertificate();
+	                    if (er != null && er.get(WSSecurityEngineResult.TAG_X509_CERTIFICATES) instanceof X509Certificate) {
+	                      X509Certificate cert = (X509Certificate)er.get(WSSecurityEngineResult.TAG_X509_CERTIFICATES);
 	                      this.authenticationService.authenticate(subject, domain, cert.getIssuerX500Principal().getName(), cert);
 	                  }
 	                }

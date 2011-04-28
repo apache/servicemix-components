@@ -100,7 +100,7 @@
         <camel.version>2.7.0</camel.version>
 
         <!-- CXF -->
-        <cxf.version>2.3.3</cxf.version>
+        <cxf.version>2.4.0</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
@@ -145,7 +145,7 @@
         <junit.version>4.7</junit.version>
         <log4j.version>1.2.16</log4j.version>
         <mx4j.version>3.0.1</mx4j.version>
-        <neethi.version>2.0.4</neethi.version>
+        <neethi.version>3.0.0</neethi.version>
         <opensaml.version>1.1</opensaml.version>
         <oscore.version>2.2.4</oscore.version>
         <oro.version>2.0.8</oro.version>
@@ -159,7 +159,7 @@
         <woden.version>1.0.0M6</woden.version>
         <woodstox.version>4.0.8</woodstox.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <wss4j.version>1.5.9</wss4j.version>
+        <wss4j.version>1.6.0</wss4j.version>
         <xalan.version>2.7.1</xalan.version>
         <xbean.version>3.7</xbean.version>
         <xercesImpl.version>2.9.1</xercesImpl.version>

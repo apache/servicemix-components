@@ -53,8 +53,10 @@ public class CxfBcJmsTransactionTest extends CxfBcSpringTestSupport {
         if (System.getProperty("activemq.store.dir") != null) {
             props.put("activemq.store.dir", System.getProperty("activemq.store.dir"));
         }
-        props.put("java.util.logging.config.file", 
+        if (System.getProperty("java.util.logging.config.file") != null) {
+            props.put("java.util.logging.config.file", 
                   System.getProperty("java.util.logging.config.file"));
+        }
         
         assertTrue("server did not launch correctly", 
                    launchServer(EmbededJMSBrokerLauncher.class, props, true));

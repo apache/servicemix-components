@@ -368,7 +368,7 @@ public abstract class BaseCrypto implements Crypto {
      * @return The private key
      * @throws Exception
      */
-    public abstract PrivateKey getPrivateKey(String alias, String password) throws Exception;
+    public abstract PrivateKey getPrivateKey(String alias, String password) throws WSSecurityException;
 
     /**
      * Reads the SubjectKeyIdentifier information from the certificate.

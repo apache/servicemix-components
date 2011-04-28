@@ -71,7 +71,7 @@ public class CxfBcHttpsConsumerTest extends CxfBcSpringTestSupport {
         assertEquals(ret, "Bonjour");
         ret = greeter.greetMe("ffang");
         assertEquals(ret, "Hello ffang");
-        
+       
         //test redeploy
         CxfBcComponent component = (CxfBcComponent) jbi.getComponent("servicemix-cxfbc").getComponent();
         component.getServiceUnitManager().stop("#default#");

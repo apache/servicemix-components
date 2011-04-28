@@ -45,7 +45,6 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
-import org.apache.servicemix.cxfse.interceptors.AttachmentOutInterceptor;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.api.ClientFactory;
 import org.apache.servicemix.jbi.api.Container;
@@ -124,7 +123,7 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         }
         ComponentContext internalContext = getInternalContext();
        
-        Bus bus = new SpringBusFactory().createBus(CXF_CONFIG);;
+        Bus bus = new SpringBusFactory().createBus();
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) bus
                 .getExtension(ConduitInitiatorManager.class)
                 .getConduitInitiator(JBITransportFactory.TRANSPORT_ID);
@@ -151,8 +150,6 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         if (isMtomEnabled()) {
             ClientProxy.getClient(proxy).getEndpoint()
                 .getBinding().getInInterceptors().add(new AttachmentInInterceptor());
-            ClientProxy.getClient(proxy).getEndpoint()
-                .getBinding().getOutInterceptors().add(new AttachmentOutInterceptor());
         }
         if (isClearClientResponseContext()) {
             ClearClientResponseContextInterceptor clearClientResponseContextInterceptor = new ClearClientResponseContextInterceptor(ClientProxy.getClient(proxy));

@@ -430,10 +430,9 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                             sfForSoapBinding = new JaxWsServerFactoryBean();
                         }
                         sfForSoapBinding.setServiceBean(getPojo());
-                        //sfForSoapBinding.setAddress("http://dummyaddress");
                         sfForSoapBinding.getServiceFactory().setPopulateFromClass(true);
                         sfForSoapBinding.setStart(false);
-                        sfForSoapBinding.setAddress("local://dummy");
+                        sfForSoapBinding.setAddress("/dummy");
                         soapBindingServer = sfForSoapBinding.create();
                     }
                     Message message = soapBindingServer.getEndpoint().getBinding().createMessage();

@@ -604,7 +604,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         assertEquals("Unexpected maximum sequence length.", BigInteger.TEN,
             manager.getSourcePolicy().getSequenceTerminationPolicy().getMaxLength());
         manager.getSourcePolicy().getSequenceTerminationPolicy().setMaxLength(
-            new BigInteger("2"));
+            new Long("2"));
 
         greeter.greetMe("one");
         greeter.greetMe("two");
@@ -669,13 +669,13 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
             public void handleMessage(Message m) {
                 RMProperties rmps = RMContextUtils.retrieveRMProperties(m, true);
                 if (null != rmps && null != rmps.getSequence()) {
-                    rmps.getSequence().setMessageNumber(BigInteger.ONE);
+                    rmps.getSequence().setMessageNumber(new Long(1));
                 }
             }
         }
         greeterBus.getOutInterceptors().add(new MessageNumberInterceptor());
         RMManager manager = greeterBus.getExtension(RMManager.class);
-        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
+        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new Long("2000"));
 
         greeter.greetMe("one");
         try {
@@ -744,7 +744,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         }
         greeterBus.getOutInterceptors().add(new SequenceIdInterceptor());
         RMManager manager = greeterBus.getExtension(RMManager.class);
-        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
+        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new Long("2000"));
 
         try {
             greeter.greetMe("one");
@@ -848,7 +848,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         greeterBus.getOutInterceptors().add(new MessageLossSimulator());
         RMManager manager = greeterBus.getExtension(RMManager.class);
-        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
+        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new Long("2000"));
 
         greeter.greetMeOneWay("one");
         greeter.greetMeOneWay("two");
@@ -912,7 +912,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         greeterBus.getOutInterceptors().add(new MessageLossSimulator());
         RMManager manager = greeterBus.getExtension(RMManager.class);
-        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new BigInteger("2000"));
+        manager.getRMAssertion().getBaseRetransmissionInterval().setMilliseconds(new Long("2000"));
 
         greeter.greetMe("one");
         greeter.greetMe("two");
@@ -1215,7 +1215,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         }
         // avoid client side resends
         greeterBus.getExtension(RMManager.class).getRMAssertion().getBaseRetransmissionInterval()
-            .setMilliseconds(new BigInteger("60000"));
+            .setMilliseconds(new Long("60000"));
 
         greeter.greetMe("one");
         greeter.greetMe("two");

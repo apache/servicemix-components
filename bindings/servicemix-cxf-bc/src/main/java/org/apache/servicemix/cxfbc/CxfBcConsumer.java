@@ -409,7 +409,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 if (allBuses.keySet().contains(providedBus.getId())) {
                     allBuses.remove(providedBus.getId());
                 }
-                providedBus.shutdown(true);
                 providedBus = null;
             } else {
                 if (allBuses.keySet().contains(bus.getId())) {

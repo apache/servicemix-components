@@ -24,9 +24,6 @@
  
   <import resource="classpath:org/apache/servicemix/cxfbc/ws/security/provider/CherryServer.xml"/>
   <import resource="classpath:META-INF/cxf/cxf.xml" /> 
-  <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
-  <import resource="classpath:META-INF/cxf/cxf-extension-http.xml" />
-  <import resource="classpath:META-INF/cxf/cxf-extension-http-jetty.xml" />
   <sm:container id="jbi" embedded="true">
     
     <sm:endpoints>

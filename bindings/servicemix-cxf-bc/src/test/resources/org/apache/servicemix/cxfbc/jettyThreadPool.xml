@@ -42,10 +42,8 @@
 
   <httpj:engine-factory bus="cxf">
    <httpj:engine port="19000">
-       <httpj:threadingParameters minThreads="1" maxThreads="3" />
+       <httpj:threadingParameters minThreads="1" maxThreads="5" />
    </httpj:engine>
   </httpj:engine-factory>
   
-  <!-- We need a bean named "cxf" -->
-  <bean id="cxf" class="org.apache.cxf.bus.CXFBusImpl"/>
 </beans>

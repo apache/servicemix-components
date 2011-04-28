@@ -37,6 +37,9 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.MustUnderstandInterceptor;
@@ -126,6 +129,7 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             contentType = (String) message.get(Message.CONTENT_TYPE);
             SoapMessage soapMessage = 
                 (SoapMessage) this.providerEndpoint.getCxfEndpoint().getBinding().createMessage(message);
+            
                     
             soapMessage
                     .put(org.apache.cxf.message.Message.REQUESTOR_ROLE, true);
@@ -140,6 +144,11 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
                 } else {
                     //decoupled endpoint case we need try to restore the exchange first;
                     Exchange exchange = restoreExchange(soapMessage);
+                    Node nd = soapMessage.getContent(Node.class);
+                    if (nd instanceof Document) {
+                        soapMessage.setContent(Node.class, ((Document)nd).getDocumentElement());
+                    }
+
                     if (exchange != null) {
                         MessageObserver rmMessageObserver = exchange.get(MessageObserver.class);
                         if (rmMessageObserver != null) {
@@ -160,9 +169,12 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
             if (messageExchange != null && messageExchange.getStatus() != ExchangeStatus.ACTIVE) {
                 return;
             }
+                  
+            Node nd = soapMessage.getContent(Node.class);
+            if (nd instanceof Document) {
+                soapMessage.setContent(Node.class, ((Document)nd).getDocumentElement());
+            }
                       
-            
-            
             inChain.doIntercept(soapMessage);
             closeConnectionStream(soapMessage);
             if (soapMessage.getContent(Exception.class) != null || soapMessage.getContent(Source.class) == null) {    

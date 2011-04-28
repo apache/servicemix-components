@@ -86,12 +86,10 @@ public class JbiInWsdl1Interceptor extends AbstractSoapInterceptor {
         	if (useSOAPEnvelope) {
         		Element soapEnv = DomUtil.createElement(document, new QName(
                     soapVersion.getEnvelope().getNamespaceURI(), soapVersion
-                            .getEnvelope().getLocalPart(), soapVersion
-                            .getPrefix()));
+                            .getEnvelope().getLocalPart(), "soap"));
         		Element soapBody = DomUtil.createElement(soapEnv, new QName(
                     soapVersion.getBody().getNamespaceURI(), soapVersion
-                            .getBody().getLocalPart(), soapVersion
-                            .getPrefix()));
+                            .getBody().getLocalPart(), "soap"));
         		setExtraPrefix(message, soapEnv);
                         
                 soapEnv.appendChild(soapBody);

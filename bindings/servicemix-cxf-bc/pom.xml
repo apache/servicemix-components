@@ -47,7 +47,7 @@
     </scm>
 
     <properties>
-        <cxf.jetty.version>7.2.1.v20101111</cxf.jetty.version>
+        <cxf.jetty.version>7.3.1.v20110307</cxf.jetty.version>
         <surefire.fork.mode>pertest</surefire.fork.mode>
 
         <servicemix.osgi.import>
@@ -160,10 +160,6 @@
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-shared</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.ws.commons.schema</groupId>
-            <artifactId>XmlSchema</artifactId>
-        </dependency>        
         <dependency>
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>woodstox-core-asl</artifactId>

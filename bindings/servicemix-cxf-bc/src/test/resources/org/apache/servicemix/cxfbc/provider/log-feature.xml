@@ -25,7 +25,6 @@
 http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="cxf" class="org.apache.cxf.bus.CXFBusImpl"/>
     <cxf:bus>
         <cxf:features>
             <cxf:logging/>

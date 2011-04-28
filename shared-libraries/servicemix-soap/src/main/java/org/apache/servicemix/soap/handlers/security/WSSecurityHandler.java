@@ -23,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -39,7 +40,6 @@ import org.apache.servicemix.soap.Handler;
 import org.apache.servicemix.soap.SoapFault;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSDocInfo;
-import org.apache.ws.security.WSDocInfoStore;
 import org.apache.ws.security.WSPasswordCallback;
 import org.apache.ws.security.WSSConfig;
 import org.apache.ws.security.WSSecurityEngine;
@@ -53,6 +53,7 @@ import org.apache.ws.security.handler.WSHandlerConstants;
 import org.apache.ws.security.handler.WSHandlerResult;
 import org.apache.ws.security.message.token.Timestamp;
 import org.apache.ws.security.processor.Processor;
+import org.apache.ws.security.processor.SignatureProcessor;
 import org.apache.ws.security.util.WSSecurityUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -113,46 +114,7 @@ public class WSSecurityHandler extends WSHandler implements Handler {
         }
     }
     
-    private static class SignatureProcessor extends org.apache.ws.security.processor.SignatureProcessor {
-        private String signatureId;
-        public void handleToken(Element elem, Crypto crypto, Crypto decCrypto, CallbackHandler cb, WSDocInfo wsDocInfo, Vector returnResults, WSSConfig wsc) throws WSSecurityException {
-            WSDocInfoStore.store(wsDocInfo);
-            X509Certificate[] returnCert = new X509Certificate[1];
-            Set returnElements = new HashSet();
-            byte[][] signatureValue = new byte[1][];
-            Principal lastPrincipalFound = null;
-            try {
-                WSSecurityHandler handler = WSSecurityHandler.getCurrentHandler();
-                lastPrincipalFound = verifyXMLSignature((Element) elem,
-                        crypto, returnCert, returnElements, null, signatureValue, null, null);
-                if (lastPrincipalFound instanceof WSUsernameTokenPrincipal) {
-                    WSUsernameTokenPrincipal p = (WSUsernameTokenPrincipal) lastPrincipalFound;
-                    handler.checkUser(p.getName(), p.getPassword());
-                } else {
-                    handler.checkUser(returnCert[0].getSubjectX500Principal().getName(), returnCert[0]);
-                }
-            } catch (GeneralSecurityException e) {
-                throw new WSSecurityException("Unable to authenticate user", e);
-            } finally {
-                WSDocInfoStore.delete(wsDocInfo);
-            }
-            if (lastPrincipalFound instanceof WSUsernameTokenPrincipal) {
-                returnResults.add(0, new WSSecurityEngineResult(
-                        WSConstants.UT_SIGN, lastPrincipalFound, null,
-                        returnElements, signatureValue[0]));
-
-            } else {
-                returnResults.add(0, new WSSecurityEngineResult(
-                        WSConstants.SIGN, lastPrincipalFound,
-                        returnCert[0], returnElements, signatureValue[0]));
-            }
-            signatureId = elem.getAttributeNS(null, "Id");
-        }
-        public String getId() {
-            return signatureId;
-        }
-    }
-    
+        
     /**
      * @return the username
      */
@@ -273,6 +235,10 @@ public class WSSecurityHandler extends WSHandler implements Handler {
         }
         return ((Context) msgContext).getProperty(key); 
     }
+    
+    public void setHandler(CallbackHandler handler) {
+        this.handler = handler;
+    }
 
     public void setPassword(Object msgContext, String password) {
         ((Context) msgContext).setProperty("password", password);
@@ -319,7 +285,7 @@ public class WSSecurityHandler extends WSHandler implements Handler {
              */
             doReceiverAction(doAction, reqData);
 
-            Vector wsResult = null;
+            List wsResult = null;
 
             try {
                 wsResult = secEngine.processSecurityHeader(
@@ -343,54 +309,7 @@ public class WSSecurityHandler extends WSHandler implements Handler {
                 checkSignatureConfirmation(reqData, wsResult);
             }
 
-            /*
-             * Now we can check the certificate used to sign the message. In the
-             * following implementation the certificate is only trusted if
-             * either it itself or the certificate of the issuer is installed in
-             * the keystore.
-             * 
-             * Note: the method verifyTrust(X509Certificate) allows custom
-             * implementations with other validation algorithms for subclasses.
-             */
-
-            // Extract the signature action result from the action vector
-            WSSecurityEngineResult actionResult = WSSecurityUtil.fetchActionResult(wsResult, WSConstants.SIGN);
-
-            if (actionResult != null) {
-                X509Certificate returnCert = actionResult.getCertificate();
-
-                if (returnCert != null) {
-                    if (!verifyTrust(returnCert, reqData)) {
-                        throw new SoapFault(new WSSecurityException(
-                                        "WSSecurityHandler: the certificate used for the signature is not trusted"));
-                    }
-                }
-            }
-
-            /*
-             * Perform further checks on the timestamp that was transmitted in
-             * the header. In the following implementation the timestamp is
-             * valid if it was created after (now-ttl), where ttl is set on
-             * server side, not by the client.
-             * 
-             * Note: the method verifyTimestamp(Timestamp) allows custom
-             * implementations with other validation algorithms for subclasses.
-             */
-
-            // Extract the timestamp action result from the action vector
-            actionResult = WSSecurityUtil.fetchActionResult(wsResult, WSConstants.TS);
-
-            if (actionResult != null) {
-                Timestamp timestamp = actionResult.getTimestamp();
-
-                if (timestamp != null) {
-                    if (!verifyTimestamp(timestamp, decodeTimeToLive(reqData))) {
-                        throw new SoapFault(new WSSecurityException(
-                                        "WSSecurityHandler: the timestamp could not be validated"));
-                    }
-                }
-            }
-
+            
             /*
              * now check the security actions: do they match, in right order?
              */
@@ -416,8 +335,8 @@ public class WSSecurityHandler extends WSHandler implements Handler {
                 WSHandlerResult hr = (WSHandlerResult) iter.next();
                 for (Iterator it = hr.getResults().iterator(); it.hasNext();) {
                     WSSecurityEngineResult er = (WSSecurityEngineResult) it.next();
-                    if (er.getPrincipal() != null) {
-                        context.getInMessage().addPrincipal(er.getPrincipal());
+                    if (er.get(WSSecurityEngineResult.TAG_PRINCIPAL) != null) {
+                        context.getInMessage().addPrincipal((Principal)er.get(WSSecurityEngineResult.TAG_PRINCIPAL));
                     }
                 }
             }
@@ -545,12 +464,13 @@ public class WSSecurityHandler extends WSHandler implements Handler {
         
         protected void processUsernameTokenUnkown(WSPasswordCallback callback) throws IOException, UnsupportedCallbackException {
             try {
-                checkUser(callback.getIdentifer(), callback.getPassword());
+                checkUser(callback.getIdentifier(), callback.getPassword());
             } catch (GeneralSecurityException e) {
                 throw new UnsupportedCallbackException(callback, "Unable to authenticate user");
             }
         }
-
+        
+        
     }
 
     /**

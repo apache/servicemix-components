@@ -18,13 +18,20 @@ package org.apache.servicemix.soap.handlers.security;
 
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.apache.servicemix.common.security.KeystoreInstance;
 import org.apache.servicemix.common.security.KeystoreManager;
+import org.apache.ws.security.WSSecurityException;
+import org.apache.ws.security.components.crypto.CryptoType;
 
 public class KeystoreInstanceCrypto extends BaseCrypto {
 
@@ -76,12 +83,73 @@ public class KeystoreInstanceCrypto extends BaseCrypto {
         return keystore.getCertificateChain(alias);
     }
 
-    public PrivateKey getPrivateKey(String alias, String password) throws Exception {
+    public PrivateKey getPrivateKey(String alias, String password) throws WSSecurityException {
         return keystore.getPrivateKey(alias);
     }
 
     protected String[] getTrustCertificates() throws KeyStoreException {
         return keystore.listTrustCertificates();
+    }
+
+    public String getCryptoProvider() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setCryptoProvider(String provider) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public String getDefaultX509Identifier() throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setDefaultX509Identifier(String identifier) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setCertificateFactory(String provider, CertificateFactory certFactory) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public byte[] getBytesFromCertificates(X509Certificate[] certs) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public X509Certificate[] getCertificatesFromBytes(byte[] data) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public X509Certificate[] getX509Certificates(CryptoType cryptoType) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String getX509Identifier(X509Certificate cert) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public PrivateKey getPrivateKey(X509Certificate certificate, CallbackHandler callbackHandler)
+        throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public boolean verifyTrust(X509Certificate[] certs) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public boolean verifyTrust(PublicKey publicKey) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

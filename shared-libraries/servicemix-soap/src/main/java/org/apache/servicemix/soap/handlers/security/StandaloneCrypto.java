@@ -22,15 +22,24 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.security.auth.callback.CallbackHandler;
+
+import org.apache.ws.security.WSSecurityException;
 import org.apache.ws.security.components.crypto.CredentialException;
+import org.apache.ws.security.components.crypto.CryptoType;
 import org.springframework.core.io.Resource;
 
 public class StandaloneCrypto extends BaseCrypto {
@@ -114,7 +123,7 @@ public class StandaloneCrypto extends BaseCrypto {
         return loadKeyStore().getCertificateChain(alias);
     }
 
-    public PrivateKey getPrivateKey(String alias, String password) throws Exception {
+    public PrivateKey getPrivateKey(String alias, String password) throws WSSecurityException {
         // The password given here is a dummy password
         // See WSSecurityHandler.DefaultHandler#processSignature
         password = keyPassword;
@@ -122,16 +131,31 @@ public class StandaloneCrypto extends BaseCrypto {
             password = keyStorePassword;
         }
         if (alias == null) {
-            throw new Exception("alias is null");
+            throw new WSSecurityException("alias is null");
         }
-        KeyStore keystore = loadKeyStore();
-        boolean b = keystore.isKeyEntry(alias);
+        KeyStore keystore = null;
+        try {
+            keystore = loadKeyStore();
+        } catch (Exception e) {
+            throw new WSSecurityException("Cannot load key store", e);
+        }
+        boolean b = false;
+        try {
+            b = keystore.isKeyEntry(alias);
+        } catch (KeyStoreException e) {
+            throw new WSSecurityException("Cannot find key for alias: " + alias, e);
+        }
         if (!b) {
-            throw new Exception("Cannot find key for alias: " + alias);
+            throw new WSSecurityException("Cannot find key for alias: " + alias);
         }
-        Key keyTmp = keystore.getKey(alias, (password == null || password.length() == 0) ? new char[0] : password.toCharArray());
+        Key keyTmp = null;
+        try {
+            keyTmp = keystore.getKey(alias, (password == null || password.length() == 0) ? new char[0] : password.toCharArray());
+        } catch (Exception e) {
+            throw new WSSecurityException("Cannot get private key", e);
+        }       
         if (!(keyTmp instanceof PrivateKey)) {
-            throw new Exception("Key is not a private key, alias: " + alias);
+            throw new WSSecurityException("Key is not a private key, alias: " + alias);
         }
         return (PrivateKey) keyTmp;
     }
@@ -184,6 +208,67 @@ public class StandaloneCrypto extends BaseCrypto {
                 try { input.close(); } catch (Exception ignore) {} 
             }
         }
+    }
+
+    public String getCryptoProvider() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setCryptoProvider(String provider) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public String getDefaultX509Identifier() throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setDefaultX509Identifier(String identifier) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setCertificateFactory(String provider, CertificateFactory certFactory) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public byte[] getBytesFromCertificates(X509Certificate[] certs) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public X509Certificate[] getCertificatesFromBytes(byte[] data) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public X509Certificate[] getX509Certificates(CryptoType cryptoType) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String getX509Identifier(X509Certificate cert) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public PrivateKey getPrivateKey(X509Certificate certificate, CallbackHandler callbackHandler)
+        throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public boolean verifyTrust(X509Certificate[] certs) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public boolean verifyTrust(PublicKey publicKey) throws WSSecurityException {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }
