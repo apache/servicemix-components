@@ -51,12 +51,12 @@ public class JmsConfiguration implements JmsConfigurationMBean {
     /**
      * The JNDI name of the AuthenticationService object
      */
-    private String authenticationServiceName = "org/apache/servicemix/AuthenticationService";
+    private String authenticationServiceName = "java:org/apache/servicemix/AuthenticationService";
     
     /**
      * The JNDI name of the KeystoreManager object
      */
-    private String keystoreManagerName = "org/apache/servicemix/KeystoreManager";
+    private String keystoreManagerName = "java:org/apache/servicemix/KeystoreManager";
 
     
     /**
