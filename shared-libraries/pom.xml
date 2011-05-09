@@ -43,8 +43,8 @@
 
     <modules>
         <module>servicemix-common</module>
-        <!--module>servicemix-soap</module>
-        <module>servicemix-soap2</module-->
+        <module>servicemix-soap</module>
+        <module>servicemix-soap2</module>
         <module>servicemix-shared</module>
     </modules>
 
