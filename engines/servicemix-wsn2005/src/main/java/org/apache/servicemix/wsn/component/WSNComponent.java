@@ -17,6 +17,8 @@
 package org.apache.servicemix.wsn.component;
 
 import com.ibm.wsdl.Constants;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.broker.BrokerService;
 import org.apache.servicemix.common.*;
 import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
 import org.apache.servicemix.wsn.EndpointManager;
@@ -62,6 +64,9 @@ public class WSNComponent extends DefaultComponent {
     private List<Endpoint> endpoints;
 
     private WSNDeployer deployer;
+
+    private BrokerService brokerService;
+
 
     public WSNComponent() {
         configuration = new WSNConfiguration();
@@ -141,16 +146,25 @@ public class WSNComponent extends DefaultComponent {
         notificationBroker = new JbiNotificationBroker(configuration.getBrokerName());
         notificationBroker.setManager(new WSNEndpointManager());
         if (connectionFactory == null) {
-            connectionFactory = lookupConnectionFactory();
+            try {
+                connectionFactory = lookupConnectionFactory();
+            } catch (Throwable t) {
+                // create some embedded cf
+                this.brokerService = new BrokerService();
+                this.brokerService.setUseJmx(false);
+                this.brokerService.setPersistent(false);
+                this.brokerService.setBrokerName(configuration.getBrokerName());
+                this.brokerService.start();
+                this.connectionFactory = new ActiveMQConnectionFactory("vm://" + configuration.getBrokerName());
+            }
         }
-        notificationBroker.setConnectionFactory(connectionFactory);
-        notificationBroker.init();
+        if (connectionFactory != null) {
+            notificationBroker.setConnectionFactory(connectionFactory);
+            notificationBroker.init();
+        }
         // Create PullPoint
         createPullPoint = new JmsCreatePullPoint(configuration.getBrokerName());
         createPullPoint.setManager(new WSNEndpointManager());
-        if (connectionFactory == null) {
-            connectionFactory = lookupConnectionFactory();
-        }
         createPullPoint.setConnectionFactory(connectionFactory);
         createPullPoint.init();
         // Create endpoints
@@ -174,6 +188,10 @@ public class WSNComponent extends DefaultComponent {
     protected void doShutDown() throws Exception {
         notificationBroker.destroy();
         createPullPoint.destroy();
+        if (this.brokerService != null) {
+            this.brokerService.stop();
+            this.brokerService = null;
+        }
         super.doShutDown();
     }
 

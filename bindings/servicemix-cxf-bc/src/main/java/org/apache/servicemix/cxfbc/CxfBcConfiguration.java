@@ -36,7 +36,7 @@ public class CxfBcConfiguration {
     /**
      * The JNDI name of the AuthenticationService object
      */
-    private String authenticationServiceName = "java:org/apache/servicemix/AuthenticationService";
+    private String authenticationServiceName = "org.apache.servicemix.AuthenticationService";
     
     
     /**
