@@ -45,6 +45,8 @@ import java.util.*;
 
 public class WSNComponent extends DefaultComponent {
 
+    private static final String EMBEDDED_AMQ_BROKER_NAME = "smx_embedded";
+
     private WSDLFlattener flattener;
 
     private Map<QName, Document> descriptions;
@@ -153,9 +155,9 @@ public class WSNComponent extends DefaultComponent {
                 this.brokerService = new BrokerService();
                 this.brokerService.setUseJmx(false);
                 this.brokerService.setPersistent(false);
-                this.brokerService.setBrokerName(configuration.getBrokerName());
+                this.brokerService.setBrokerName(EMBEDDED_AMQ_BROKER_NAME);
                 this.brokerService.start();
-                this.connectionFactory = new ActiveMQConnectionFactory("vm://" + configuration.getBrokerName());
+                this.connectionFactory = new ActiveMQConnectionFactory("vm://" + EMBEDDED_AMQ_BROKER_NAME);
             }
         }
         if (connectionFactory != null) {
