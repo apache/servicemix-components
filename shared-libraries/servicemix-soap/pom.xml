@@ -38,15 +38,19 @@
 
     <properties>
         <servicemix.osgi.import>
+            !org.apache.servicemix.soap*,
+            !META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.soap,
             org.apache.ws.security*;resolution:=optional,
+            org.apache.xbean.spring.context.v2,
             org.springframework.beans.factory.xml;resolution:=optional;version="[2.5,4)",
             org.springframework.beans.factory;resolution:=optional;version="[2.5,4)",
             org.springframework*;resolution:=optional;version="[2.5,4)",
             *
         </servicemix.osgi.import>
-        <servicemix.osgi.export.pkg>
-            org.apache.servicemix.soap
-        </servicemix.osgi.export.pkg>
+        <servicemix.osgi.export>
+            org.apache.servicemix.soap*;version=${project.version},
+            META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.soap
+        </servicemix.osgi.export>
     </properties>
 
     <dependencies>
