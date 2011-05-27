@@ -65,6 +65,7 @@ import org.apache.cxf.endpoint.EndpointImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.endpoint.ServerImpl;
 import org.apache.cxf.feature.AbstractFeature;
+import org.apache.cxf.frontend.WSDLGetInterceptor;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.AttachmentInInterceptor;
 import org.apache.cxf.interceptor.AttachmentOutInterceptor;
@@ -474,6 +475,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getInInterceptors().add(new MustUnderstandInterceptor());
             cxfService.getInInterceptors().add(new AttachmentInInterceptor());
             cxfService.getInInterceptors().add(new StaxInInterceptor());
+            cxfService.getInInterceptors().add(WSDLGetInterceptor.INSTANCE);
             cxfService.getInInterceptors().add(new OneWayProcessorInterceptor());
             cxfService.getInInterceptors().add(
                     new ReadHeadersInterceptor(getBus()));

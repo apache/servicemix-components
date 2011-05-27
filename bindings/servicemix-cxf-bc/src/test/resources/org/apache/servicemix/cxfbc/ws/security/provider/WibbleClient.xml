@@ -35,7 +35,7 @@
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <http:conduit name="{http://apache.org/hello_world_soap_http}TimestampSignEncrypt.http-conduit">
+  <http:conduit name="https://localhost:9001/.*">
     <http:tlsClientParameters disableCNCheck="true">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="password"

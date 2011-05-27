@@ -111,7 +111,7 @@ public class CxfBCSESystemTest extends CxfBcSpringTestSupport {
     
     private void calculatorTestBase() throws Exception {
 
-        URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
+        URL wsdl = new URL("http://localhost:19000/CalculatorService/SoapPort?wsdl");
         assertNotNull(wsdl);
         CalculatorService service = new CalculatorService(wsdl, new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));

@@ -18,6 +18,8 @@ package org.apache.servicemix.cxfbc.ws.security;
 
 
 
+import java.net.URL;
+
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.cxf.Bus;
@@ -32,19 +34,6 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBcHttpsConsumerTest extends CxfBcSpringTestSupport {
     
-    private static final java.net.URL WSDL_LOC;
-    static {
-        java.net.URL tmp = null;
-        try {
-            tmp = CxfBCSecurityTest.class.getClassLoader().getResource(
-                "org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl"
-            );
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
-        WSDL_LOC = tmp;
-    }
-    
     public void testHttps() throws Exception {
         
         Bus bus = new SpringBusFactory().createBus(
@@ -56,7 +45,8 @@ public class CxfBcHttpsConsumerTest extends CxfBcSpringTestSupport {
         LoggingOutInterceptor out = new LoggingOutInterceptor();
         bus.getOutInterceptors().add(out);
         bus.getOutFaultInterceptors().add(out);
-        final javax.xml.ws.Service svc = javax.xml.ws.Service.create(WSDL_LOC,
+        final javax.xml.ws.Service svc = javax.xml.ws.Service.create(
+                new URL("https://localhost:9001/SoapContext/SoapPort?wsdl"),
                 new javax.xml.namespace.QName(
                         "http://apache.org/hello_world_soap_http",
                         "SOAPServiceWSSecurity"));
