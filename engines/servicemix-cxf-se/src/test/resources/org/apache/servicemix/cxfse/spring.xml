@@ -34,8 +34,10 @@
         <cxfse:pojo>
           <bean class="org.apache.cxf.calculator.CalculatorImpl">
           </bean>
-              
         </cxfse:pojo>
+        <cxfse:dataBinding>
+          <ref bean="myDataBinding"/>
+        </cxfse:dataBinding>
         <cxfse:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
         </cxfse:inInterceptors>
@@ -53,4 +55,12 @@
     
   </sm:container>
   
+  <bean id="myDataBinding" class="org.apache.cxf.jaxb.JAXBDataBinding" >
+      <property name="extraClass">
+          <list>
+              <value>java.lang.String</value>
+          </list>
+      </property>
+  </bean>
+ 
 </beans>

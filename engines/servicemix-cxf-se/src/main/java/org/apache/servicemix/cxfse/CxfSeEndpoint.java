@@ -50,11 +50,13 @@ import org.apache.cxf.aegis.databinding.AegisDatabinding;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
+import org.apache.cxf.databinding.AbstractDataBinding;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.frontend.ServerFactoryBean;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.interceptor.InterceptorProvider;
+import org.apache.cxf.jaxb.JAXBDataBinding;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.jaxws.ServiceImpl;
@@ -121,6 +123,8 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     private QName pojoInterfaceName;
 
     private Server soapBindingServer;
+    
+    private AbstractDataBinding dataBinding;
     
     /**
      * Returns the object implementing the endpoint's functionality. It is
@@ -261,7 +265,11 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             sf = new ServerFactoryBean();
             sf.setServiceBean(getPojo());
             sf.setAddress(address);
-            sf.getServiceFactory().setDataBinding(new AegisDatabinding());
+            if (getDataBinding() != null && getDataBinding() instanceof AegisDatabinding) {
+                sf.getServiceFactory().setDataBinding(getDataBinding());
+            } else {
+                sf.getServiceFactory().setDataBinding(new AegisDatabinding());
+            }
           
             sf.getServiceFactory().setPopulateFromClass(true);
             sf.setStart(false);
@@ -320,8 +328,17 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
                 endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
             }
             if (isUseXmlBeans()) {
-                endpoint.setDataBinding(new XmlBeansDataBinding());
+                if (getDataBinding() != null && getDataBinding() instanceof XmlBeansDataBinding) {
+                    endpoint.setDataBinding(getDataBinding());
+                } else {
+                    endpoint.setDataBinding(new XmlBeansDataBinding());
+                }
+            } else {
+                if (getDataBinding() != null && getDataBinding() instanceof JAXBDataBinding) {
+                    endpoint.setDataBinding(getDataBinding());
+                } 
             }
+            
             endpoint.setInInterceptors(getInInterceptors());
             endpoint.setInFaultInterceptors(getInFaultInterceptors());
             endpoint.setOutInterceptors(getOutInterceptors());
@@ -700,6 +717,21 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
 
     public boolean isUseXmlBeans() {
         return useXmlBeans;
+    }
+
+   
+    /**
+     * Specifies dataBinding used by the Endpoint
+     * 
+     * @org.apache.xbean.Property description="Specifies dataBinding used by the Endpoint".
+     */
+    public void setDataBinding(AbstractDataBinding dataBinding) {
+        this.dataBinding = dataBinding;
+    }
+
+   
+    public AbstractDataBinding getDataBinding() {
+        return dataBinding;
     }
 
 }
