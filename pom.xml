@@ -135,7 +135,7 @@
         <commons-pool.version>1.5.4</commons-pool.version>
         <derby.version>10.5.3.0_1</derby.version>
         <easymock.version>2.4</easymock.version>
-        <javax.mail.version>1.4.3</javax.mail.version>
+        <javax.mail.version>1.4.4</javax.mail.version>
         <jaxb-api.version>2.1</jaxb-api.version>
         <jaxb-impl.version>2.1.12</jaxb-impl.version>
         <jaxb-xjc.version>2.1.12</jaxb-xjc.version>
