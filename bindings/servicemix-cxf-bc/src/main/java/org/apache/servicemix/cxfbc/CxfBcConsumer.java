@@ -115,6 +115,7 @@ import org.apache.servicemix.cxfbc.interceptors.MtomCheckInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.JbiFault;
 import org.apache.servicemix.cxfbc.interceptors.SchemaValidationInInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.SchemaValidationOutInterceptor;
+import org.apache.servicemix.cxfbc.interceptors.SetSoapVersionInterceptor;
 import org.apache.servicemix.cxfbc.interceptors.SetStatusInterceptor;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.util.DomUtil;
@@ -505,6 +506,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     new JbiOutWsdl1Interceptor(isUseJBIWrapper(), isUseSOAPEnvelope()));
             cxfService.getOutInterceptors().add(
                     new ExtractHeaderPartIntercepor());
+            cxfService.getOutInterceptors().add(
+                    new SetSoapVersionInterceptor());
             cxfService.getOutInterceptors().add(
                     new SetStatusInterceptor());
 

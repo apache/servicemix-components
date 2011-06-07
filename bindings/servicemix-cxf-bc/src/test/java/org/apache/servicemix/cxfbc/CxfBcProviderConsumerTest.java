@@ -20,6 +20,7 @@ import java.net.URL;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
 import javax.xml.ws.soap.SOAPBinding;
 import org.apache.cxf.calculator.CalculatorImpl;
 import org.apache.cxf.calculator.CalculatorPortType;
@@ -34,6 +35,7 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBcProviderConsumerTest extends CxfBcSpringTestSupport {
 
+    
     public void testBridge() throws Exception {
         
         URL wsdl = getClass().getResource("/wsdl/calculator.wsdl");
@@ -50,12 +52,13 @@ public class CxfBcProviderConsumerTest extends CxfBcSpringTestSupport {
         // start external client
         
         assertNotNull(wsdl);
-        CalculatorService service1 = new CalculatorService(wsdl, new QName(
+        Service service1 = Service.create(new QName(
                 "http://apache.org/cxf/calculator", "CalculatorService"));
         QName endpointName = new QName("http://apache.org/cxf/calculator", "CalculatorPort");
         service1.addPort(endpointName, 
-                SOAPBinding.SOAP12HTTP_BINDING, "http://localhost:19000/CalculatorService/SoapPort");
+                SOAPBinding.SOAP11HTTP_BINDING, "http://localhost:19000/CalculatorService/SoapPort");
         CalculatorPortType port = service1.getPort(endpointName, CalculatorPortType.class);
+        
         ClientProxy.getClient(port).getInFaultInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getOutFaultInterceptors().add(new LoggingOutInterceptor());
@@ -73,6 +76,7 @@ public class CxfBcProviderConsumerTest extends CxfBcSpringTestSupport {
         }
 
     }
+
 
     @Override
     protected AbstractXmlApplicationContext createBeanFactory() {
