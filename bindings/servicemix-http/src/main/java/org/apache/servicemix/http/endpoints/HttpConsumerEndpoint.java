@@ -53,7 +53,6 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
-import org.mortbay.util.ajax.WaitingContinuation;
 
 import static org.apache.servicemix.http.jetty.ContinuationHelper.isNewContinuation;
 
@@ -79,6 +78,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private Map<String, Object> mutexes = new ConcurrentHashMap<String, Object>();
     private Object httpContext;
     private boolean started = false;
+    private LateResponseStrategy lateResponseStrategy = LateResponseStrategy.error;
 
     public HttpConsumerEndpoint() {
         super();
@@ -203,6 +203,25 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      */
     public void setDefaultMep(URI defaultMep) {
         this.defaultMep = defaultMep;
+    }
+
+    public String getLateResponseStrategy() {
+        return lateResponseStrategy.name();
+    }
+
+    /**
+     * Set the strategy to be used for handling a late response from the ESB (i.e. a response that arrives after the HTTP request has timed out).
+     * Defaults to <code>error</code>
+     *
+     * <ul>
+     *     <li><code>error</code> will terminate the exchange with an ERROR status and log an exception for the late response</li>
+     *     <li><code>warning</code> will end the exchange with a DONE status and log a warning for the late response instead</li>
+     * </ul>
+     *
+     * @param value
+     */
+    public void setLateResponseStrategy(String value) {
+        this.lateResponseStrategy = LateResponseStrategy.valueOf(value);
     }
 
     public void activate() throws Exception {
@@ -347,8 +366,6 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      * Handle the HTTP response based on the information in the message exchange we received
      */
     private void handleResponse(MessageExchange exchange, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        // At this point, we have received the exchange response,
-        // so process it and send back the HTTP response
         if (exchange.getStatus() == ExchangeStatus.ERROR) {
             Exception e = exchange.getError();
             if (e == null) {
@@ -381,11 +398,15 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      * Handle a message exchange that is being received after the corresponding HTTP request has timed out
      */
     private void handleLateResponse(MessageExchange exchange) throws Exception {
-        throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
-
-        // TODO: allow multiple options for handling late response from the ESB
-        // - by throwing an exception to make the exchange end in error
-        // - by logging a warning (make sure MEP gets handled appropriately here!)
+        // if the exchange is no longer active by now, something else probably went wrong in the meanwhile
+        if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
+            if (lateResponseStrategy == LateResponseStrategy.error) {
+                fail(exchange, new Exception("HTTP request has timed out for exchange: {} " + exchange.getExchangeId()));
+            } else {
+                logger.warn("HTTP request has timed out for exchange: {}", exchange.getExchangeId());
+                done(exchange);
+            }
+        }
     }
 
     /*
@@ -535,5 +556,22 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
             ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
         }
+    }
+
+    /**
+     * Determines how the HTTP consumer endpoint should handle a late response from the NMR
+     */
+    protected enum LateResponseStrategy {
+
+        /**
+         * Terminate the exchange with an ERROR status and log an exception for the late response
+         */
+        error,
+
+        /**
+         * End the exchange with a DONE status and log a warning for the late response
+         */
+        warning
+
     }
 }
