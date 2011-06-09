@@ -18,6 +18,7 @@ package org.apache.servicemix.http.endpoints;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +38,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.apache.servicemix.common.DefaultComponent;
 import org.apache.servicemix.common.ServiceUnit;
@@ -79,6 +83,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private Object httpContext;
     private boolean started = false;
     private LateResponseStrategy lateResponseStrategy = LateResponseStrategy.error;
+    private boolean rewriteSoapAddress = false;
 
     public HttpConsumerEndpoint() {
         super();
@@ -223,8 +228,31 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     public void setLateResponseStrategy(String value) {
         this.lateResponseStrategy = LateResponseStrategy.valueOf(value);
     }
+    
+    public boolean isRewriteSoapAddress() {
+		return rewriteSoapAddress;
+	}
 
-    public void activate() throws Exception {
+    /**
+     * Toggles the rewriting of the soap address based on the request info.
+     * <p>
+     * When active, the soap address in the wsdl will be updated according
+     * to the protocol, host and port of the request.  This is useful when
+     * listening on 0.0.0.0 or when behind a NAT (or reverse-proxy in some 
+     * cases).<br />
+     * This function only works on the main wsdl, not in imported wsdl-parts.
+     * This means the service with its port must be declared in the main
+     * wsdl.
+     * </p><p>
+     * By default it is activated.
+     * </p>
+     * @param value
+     */
+	public void setRewriteSoapAddress(boolean value) {
+		this.rewriteSoapAddress = value;
+	}
+
+	public void activate() throws Exception {
         super.activate();
         loadStaticResources();
         httpContext = getServerManager().createContext(locationURI, this);
@@ -473,7 +501,29 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         if (path.lastIndexOf('/') >= 0) {
             path = path.substring(path.lastIndexOf('/') + 1);
         }
-        Object res = getResource(path);
+        Object res;
+        if (rewriteSoapAddress && path.equals(MAIN_WSDL) && getResource(path) instanceof Document) {
+        	// determine the location based on the request
+            String location = getLocationURI();
+            try {
+                URL listUrl = new URL(getLocationURI());
+                URL requestUrl = new URL(request.getRequestURL().toString());
+                URL acceptUri = new URL(requestUrl.getProtocol(), requestUrl.getHost(), requestUrl.getPort(),
+                        listUrl.getFile());
+                location = acceptUri.toExternalForm();
+            
+	            //Update the location for this request
+	            Document copy = (Document) ((Document) getResource(path)).cloneNode(true);
+	            updateSoapLocations(location, copy.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap12/", "address"));
+	            updateSoapLocations(location, copy.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "address"));
+	            res = copy;
+            } catch (Exception e) {
+                logger.warn("Could not update soap location, using default", e);
+                res = getResource(path);
+            }
+        } else {
+        	res = getResource(path);
+        }
         if (res == null) {
             return false;
         }
@@ -555,6 +605,17 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         }
         if (marshaler instanceof DefaultHttpConsumerMarshaler) {
             ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
+        }
+    }
+    
+    protected void updateSoapLocations(String location, NodeList addresses) {
+        int i = 0;
+        while (i < addresses.getLength()) {
+            Element address = (Element) addresses.item(i);
+            if (getLocationURI().equals(address.getAttribute("location"))) {
+                address.setAttribute("location", location);
+            }
+            i++;
         }
     }
 

@@ -16,48 +16,46 @@
  */
 package org.apache.servicemix.http;
 
-import java.util.List;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.Binding;
+import javax.wsdl.BindingOperation;
+import javax.wsdl.Definition;
+import javax.wsdl.Port;
+import javax.wsdl.Service;
+import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.soap.SOAPAddress;
+import javax.wsdl.extensions.soap.SOAPOperation;
+import javax.wsdl.extensions.soap12.SOAP12Address;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
-import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
-import javax.wsdl.Definition;
-import javax.wsdl.Binding;
-import javax.wsdl.BindingOperation;
-import javax.wsdl.extensions.ExtensibilityElement;
-import javax.wsdl.extensions.soap.SOAPOperation;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.Document;
-import org.w3c.dom.traversal.NodeIterator;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
 import org.apache.servicemix.components.util.TransformComponentSupport;
+import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpSoapConsumerEndpoint;
 import org.apache.servicemix.jbi.container.JBIContainer;
@@ -70,12 +68,17 @@ import org.apache.servicemix.soap.bindings.soap.Soap12;
 import org.apache.servicemix.soap.bindings.soap.SoapConstants;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.util.DomUtil;
-import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
-import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
+import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.xpath.CachedXPathAPI;
-import org.springframework.core.io.ClassPathResource;
 import org.mortbay.jetty.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
 
 public class ConsumerEndpointTest extends TestCase {
 
@@ -240,6 +243,10 @@ public class ConsumerEndpointTest extends TestCase {
     }
 
     protected void initSoapEndpoints(boolean useJbiWrapper) throws Exception {
+    	initSoapEndpoints(useJbiWrapper, true);
+    }
+    
+    protected void initSoapEndpoints(boolean useJbiWrapper, boolean dynamic) throws Exception {
         HttpComponent http = new HttpComponent();
         HttpSoapConsumerEndpoint ep1 = new HttpSoapConsumerEndpoint();
         ep1.setService(new QName("uri:HelloWorld", "HelloService"));
@@ -249,6 +256,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep1.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC.wsdl"));
         ep1.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep1.setUseJbiWrapper(useJbiWrapper);
+        ep1.setRewriteSoapAddress(dynamic);
         HttpSoapConsumerEndpoint ep2 = new HttpSoapConsumerEndpoint();
         ep2.setService(new QName("uri:HelloWorld", "HelloService"));
         ep2.setEndpoint("HelloPortSoap12");
@@ -257,6 +265,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep2.setWsdl(new ClassPathResource("/org/apache/servicemix/http/HelloWorld-DOC.wsdl"));
         ep2.setValidateWsdl(false); // TODO: Soap 1.2 not handled yet
         ep2.setUseJbiWrapper(useJbiWrapper);
+        ep2.setRewriteSoapAddress(dynamic);
         http.setEndpoints(new HttpEndpointType[] {ep1, ep2});
         container.activateComponent(http, "http");
         container.start();
@@ -728,5 +737,48 @@ public class ConsumerEndpointTest extends TestCase {
         container.deactivateComponent("echo");
         container.deactivateComponent("http");
     }
+    
+    public void testProvidedWsdlWithDynamicAddress() throws Exception {
+    	initSoapEndpoints(true);
+
+    	checkAddress("http://127.0.0.1:"+port1+"/ep1/", "http://127.0.0.1:"+port1+"/ep1/?wsdl", 11);
+    	checkAddress("http://127.0.0.1:"+port1+"/ep2/", "http://127.0.0.1:"+port1+"/ep2/?wsdl", 12);
+    	
+        container.deactivateComponent("http");
+    }
+    
+    public void testProvidedWsdlWithStaticAddress() throws Exception {
+    	initSoapEndpoints(true, false);
+
+    	checkAddress("http://localhost:"+port1+"/ep1/", "http://127.0.0.1:"+port1+"/ep1/?wsdl", 11);
+    	checkAddress("http://localhost:"+port1+"/ep2/", "http://127.0.0.1:"+port1+"/ep2/?wsdl", 12);
+    	
+        container.deactivateComponent("http");
+    }
+    
+	private void checkAddress(String expected, String wsdlUrl, int soapVersion)
+			throws Exception {
+		WSDLFactory factory = WSDLFactory.newInstance();
+		WSDLReader reader = factory.newWSDLReader();
+		Definition def = reader.readWSDL(wsdlUrl);
+
+		Service serv = def.getService(new QName("uri:HelloWorld", "HelloService"));
+
+		ExtensibilityElement ee;
+
+		switch (soapVersion) {
+		case 11:
+			Port port11 = serv.getPort("HelloPortSoap11");
+			ee = (ExtensibilityElement) port11.getExtensibilityElements().iterator().next();
+			assertTrue(ee instanceof SOAPAddress);
+			assertEquals(expected, ((SOAPAddress) ee).getLocationURI());
+			break;
+		case 12:
+			Port port12 = serv.getPort("HelloPortSoap12");
+			ee = (ExtensibilityElement) port12.getExtensibilityElements().iterator().next();
+			assertTrue(ee instanceof SOAP12Address);
+			assertEquals(expected, ((SOAP12Address) ee).getLocationURI());
+		}
+	}
 
 }
