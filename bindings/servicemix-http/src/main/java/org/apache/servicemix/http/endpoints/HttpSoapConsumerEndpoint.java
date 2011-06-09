@@ -175,7 +175,7 @@ public class HttpSoapConsumerEndpoint extends HttpConsumerEndpoint {
         description = DomUtil.parse(wsdl.getInputStream());
         javax.wsdl.xml.WSDLReader reader = javax.wsdl.factory.WSDLFactory.newInstance().newWSDLReader();
         reader.setFeature("javax.wsdl.verbose", false);
-        definition = reader.readWSDL(null, description);
+        definition = reader.readWSDL(new SpringWSDLLocator(wsdl));
     }
 
     /**
