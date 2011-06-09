@@ -120,9 +120,19 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private int consumerProcessorSuspendTime = 60000;
   	
     /***
-     * HttpProvider endpoint expiration time.
+     * HttpProvider endpoint expiration time when jettyClientPerProvider is false.
      */
     private int providerExpirationTime = 300000;
+    
+    /***
+     * HttpProvider endpoint clientSoTimeout when jettyClientPerProvider is false.
+     */
+    private int clientSoTimeout = 10000;    
+    
+    /***
+     * HttpProvider endpoint maxConnectionsPerAddress when jettyClientPerProvider is false.
+     */    
+    private int maxConnectionsPerAddress = 32;
 
     /**
      * Number of times a given HTTP request will be tried until successful. If
@@ -432,7 +442,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      * The default behavior is that all HTTP provider endpoints use a shrared
      * Jetty client.
      * 
-     * @param jettyClientProvider <code>true</code> if HTTP providers are to use
+     * @param jettyClientPerProvider <code>true</code> if HTTP providers are to use
      *            individual Jetty clients
      * @org.apache.xbean.Property description="Specifies if HTTP provider endpoints share a Jetty client or use per-endpoint Jetty clients. The default setting is
      *                            <code>false</code> meaning that all provider
@@ -579,15 +589,59 @@ public class HttpConfiguration implements HttpConfigurationMBean {
      * Sets the number of milliseconds the provider will wait for a response (read timeout).
      * The default default value for Jetty is 300000.
      *
-     * @param providerExpirationTime an int representing the number of milliseconds the Jetty will wait for a response.
-     * @org.apache.xbean.Property description="the number of miliseconds Jetty will susspend the processing of a request. The default is 60000."
+     * @param providerExpirationTime an int representing the number of milliseconds the Jetty will wait for a response (read timeout).
+     * @org.apache.xbean.Property description="the number of miliseconds the provider will wait for a response (read timeout). The default is 300000."
      */
     public void setProviderExpirationTime(int providerExpirationTime) {
         this.providerExpirationTime = providerExpirationTime;
         save();
     }
+    
+    /***
+     * Gets the number of milliseconds for soTimeout parameter of JettyClient when JettyClient instance is shared among http:provider enpoints.
+     * @return an int representing the JettyClient soTimeout.
+     */
+    public int getClientSoTimeout() {
+        return clientSoTimeout;
+    }
+
+    /**
+     * Sets the number of milliseconds for soTimeout parameter of JettyClient when JettyClient instance is shared among http:provider enpoints.
+     * The default default value for Jetty is 10000.
+     *
+     * @param clientSoTimeout an int representing the JettyClient soTimeout.
+     * @org.apache.xbean.Property description="the number of miliseconds representign shared JettyClient soTimeout. The default is 10000."
+     */
+    public void setClientSoTimeout(int clientSoTimeout) {
+        this.clientSoTimeout = clientSoTimeout;
+        save();
+    }    
 
 
+
+    
+    /***
+     * Gets the number of the maximum connections per address that JettyClient creates for each destination.
+     * 
+     * @return an int representing the JettyClient maxConnectionsPerAddress.
+     */
+    public int getMaxConnectionsPerAddress() {
+        return maxConnectionsPerAddress;
+    }
+
+    
+    /**
+     * Sets the number of the maximum connections per address that JettyClient creates for each destination.
+     * The default default value for Jetty is 32.
+     * 
+     * @param maxConnectionsPerAddress the maxConnectionsPerAddress to set
+     * @org.apache.xbean.Property description="the number of the maximum connections per address that JettyClient creates for each destination. The default is 32."
+     * 
+     */
+    public void setMaxConnectionsPerAddress(int maxConnectionsPerAddress) {
+        this.maxConnectionsPerAddress = maxConnectionsPerAddress;
+        save();
+    }
 
     /**
      * Gets the number of times a request will be tried before an error is
@@ -723,9 +777,10 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         setProperty(componentName + ".jettyManagement", Boolean.toString(jettyManagement));
         setProperty(componentName + ".connectorMaxIdleTime", Integer.toString(connectorMaxIdleTime));
         setProperty(componentName + ".soLingerTime", Integer.toString(soLingerTime));
-        setProperty(componentName + ".consumerProcessorSuspendTime", Integer
-            .toString(consumerProcessorSuspendTime));
+        setProperty(componentName + ".consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
         setProperty(componentName + ".providerExpirationTime", Integer.toString(providerExpirationTime));
+        setProperty(componentName + ".clientSoTimeout", Integer.toString(clientSoTimeout));
+        setProperty(componentName + ".maxConnectionsPerAddress", Integer.toString(maxConnectionsPerAddress));
         setProperty(componentName + ".retryCount", Integer.toString(retryCount));
         setProperty(componentName + ".proxyHost", proxyHost);
         setProperty(componentName + ".proxyPort", Integer.toString(proxyPort));
@@ -831,6 +886,14 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         if (properties.getProperty(componentName + ".providerExpirationTime") != null) {
             providerExpirationTime = Integer.parseInt(properties
                 .getProperty(componentName + ".providerExpirationTime"));
+        }
+        if (properties.getProperty(componentName + ".clientSoTimeout") != null) {
+        	clientSoTimeout = Integer.parseInt(properties
+                .getProperty(componentName + ".clientSoTimeout"));
+        }
+        if (properties.getProperty(componentName + ".maxConnectionsPerAddress") != null) {
+            maxConnectionsPerAddress = Integer.parseInt(properties
+                .getProperty(componentName + ".maxConnectionsPerAddress"));
         }
         if (properties.getProperty(componentName + ".retryCount") != null) {
             retryCount = Integer.parseInt(properties.getProperty(componentName + ".retryCount"));

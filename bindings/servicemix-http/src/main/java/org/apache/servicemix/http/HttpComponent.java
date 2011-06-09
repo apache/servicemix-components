@@ -16,32 +16,24 @@
  */
 package org.apache.servicemix.http;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.servicedesc.ServiceEndpoint;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.servicemix.common.BaseServiceUnitManager;
-import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.Deployer;
-import org.apache.servicemix.common.Endpoint;
-import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.DefaultServiceUnit;
+import org.apache.servicemix.common.*;
 import org.apache.servicemix.common.util.IntrospectionSupport;
 import org.apache.servicemix.common.util.URISupport;
-import org.apache.servicemix.common.security.AuthenticationService;
-import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
 import org.mortbay.thread.QueuedThreadPool;
+
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 /**
  * an HTTP JBI component
@@ -73,7 +65,7 @@ public class HttpComponent extends DefaultComponent {
     /**
      * Returns the host name.
      * 
-     * @return a string contianing the host name
+     * @return a string containing the host name
      */
     public String getHost() {
         return host;
@@ -179,6 +171,8 @@ public class HttpComponent extends DefaultComponent {
         tempClient.setThreadPool(btp);
         tempClient.setConnectorType(org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
         tempClient.setTimeout(getConfiguration().getProviderExpirationTime());
+        tempClient.setSoTimeout(getConfiguration().getClientSoTimeout());
+        tempClient.setMaxConnectionsPerAddress(getConfiguration().getMaxConnectionsPerAddress());
         tempClient.start();
         return tempClient;
     }
@@ -241,7 +235,7 @@ public class HttpComponent extends DefaultComponent {
                 configuration.setAuthenticationService(as);
             } catch (Throwable e) {
                 try {
-                    Class cl = Class
+                    Class<?> cl = Class
                         .forName("org.apache.servicemix.jbi.security.auth.impl.JAASAuthenticationService");
                     configuration.setAuthenticationService(cl.newInstance());
                 } catch (Throwable t) {

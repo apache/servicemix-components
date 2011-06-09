@@ -16,32 +16,14 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.jbi.management.DeploymentException;
-import javax.xml.namespace.QName;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.JbiConstants;
 import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
+import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.HttpComponent;
-import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.HttpConfiguration;
+import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.mortbay.jetty.client.Address;
@@ -49,8 +31,21 @@ import org.mortbay.jetty.client.HttpClient;
 import org.mortbay.jetty.client.security.ProxyAuthorization;
 import org.mortbay.jetty.client.security.Realm;
 import org.mortbay.jetty.client.security.SimpleRealmResolver;
-import org.mortbay.thread.QueuedThreadPool;
 import org.mortbay.resource.Resource;
+import org.mortbay.thread.QueuedThreadPool;
+
+import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.net.ssl.*;
+import javax.xml.namespace.QName;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.SecureRandom;
 
 /**
  * A plain HTTP provider. This type of endpoint can be used to send non-SOAP requests to HTTP endpoints.
@@ -65,6 +60,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
     private String locationURI;
     private int clientSoTimeout = 60000;
     private int providerExpirationTime = 300000;
+    private int maxConnectionsPerAddress = 32;
     private HttpClient jettyClient;
     private boolean ownClient = false;
     private String principal;
@@ -267,12 +263,17 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
             }
             SmxHttpExchange httpEx = new Exchange(exchange);
             marshaler.createRequest(exchange, nm, httpEx);
-            getConnectionPool().send(httpEx);
+            jettyClient.send(httpEx);
         }
     }
+    
+    @Override
+    public synchronized void start() throws Exception {
+    	getConnectionPool();
+    }
 
-
-    public void stop() throws Exception {
+    @Override
+    public synchronized void stop() throws Exception {
         if (ownClient && jettyClient != null) {
             jettyClient.stop();
             jettyClient = null;
@@ -331,6 +332,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                 }
                 jettyClient.setSoTimeout(getClientSoTimeout());
                 jettyClient.setTimeout(getProviderExpirationTime());
+                jettyClient.setMaxConnectionsPerAddress(getMaxConnectionsPerAddress());
                 if (principal != null && credentials != null) {
                     jettyClient.setRealmResolver(new SimpleRealmResolver(new Realm() {
                         public String getPrincipal() {
@@ -350,10 +352,6 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                 // return shared client
                 jettyClient = comp.getConnectionPool();
             }
-        }
-        if (!ownClient) {
-            // Always reset the SO timeout, in case the client is shared
-            jettyClient.setSoTimeout(getClientSoTimeout());
         }
         return jettyClient;
     }
@@ -385,6 +383,22 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
      */
     public void setProviderExpirationTime(int providerExpirationTime) {
         this.providerExpirationTime = providerExpirationTime;
+    }
+    
+    public int getMaxConnectionsPerAddress() {
+        return maxConnectionsPerAddress;
+    }
+
+    /**
+     * Sets the number of the maximum connections per address that JettyClient creates for each destination.
+     * The default default value for Jetty is 32.
+     * 
+     * @param maxConnectionsPerAddress the maxConnectionsPerAddress to set
+     * @org.apache.xbean.Property description="the number of the maximum connections per address that JettyClient creates for each destination. The default is 32."
+     * 
+     */
+    public void setMaxConnectionsPerAddress(int maxConnectionsPerAddress) {
+        this.maxConnectionsPerAddress = maxConnectionsPerAddress;
     }
 
     public void validate() throws DeploymentException {
