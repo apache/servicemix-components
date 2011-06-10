@@ -24,7 +24,7 @@
         xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
         xmlns="http://schemas.xmlsoap.org/wsdl/">
 
-    <import location="HelloWorld-DOC-import.wsdl" namespace="uri:HelloWorld" />
+    <import location="import/HelloWorld-DOC-import.wsdl" namespace="uri:HelloWorld" />
 
     <binding name="HelloSoap11Binding" type="tns:HelloPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>

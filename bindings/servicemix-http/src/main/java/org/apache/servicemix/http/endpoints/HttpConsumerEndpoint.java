@@ -498,8 +498,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             return true;
         }
         String path = request.getPathInfo();
-        if (path.lastIndexOf('/') >= 0) {
-            path = path.substring(path.lastIndexOf('/') + 1);
+        if (path.indexOf('/') >= 0) {
+            path = path.substring(path.indexOf('/') + 1);
         }
         Object res;
         if (rewriteSoapAddress && path.equals(MAIN_WSDL) && getResource(path) instanceof Document) {
