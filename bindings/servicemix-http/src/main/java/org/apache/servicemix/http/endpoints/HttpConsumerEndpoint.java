@@ -38,6 +38,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.servicemix.http.exception.HttpTimeoutException;
+import org.apache.servicemix.http.exception.LateResponseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -291,7 +293,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         synchronized (mutex) {
             final Continuation continuation = continuations.get(id);
             if (continuation != null && continuation.isPending()) {
-                logger.debug("Resuming continuation for exchange: {}", exchange.getExchangeId());
+                logger.debug("Resuming continuation for exchange: {}", id);
 
                 // in case of the JMS/JCA flow, you might have a different instance of the message exchange here
                 continuation.setObject(exchange);
@@ -318,7 +320,6 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      *   (either because the exchange was received or because the request timed out)
      */
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         MessageExchange exchange = null;
 
         try {
@@ -363,7 +364,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                     // Right after this if-block, we will try suspending the continuation
                     // If a SelectConnector is being used, the call to suspend will throw a RetryRequest
                     // This will free the thread - this method will be invoked again when the continuation gets resumed
-                    logger.debug("Suspending continuation for exchange: {}", exchange.getExchangeId());
+                    logger.debug("Suspending continuation for exchange: {}", id);
                 } else {
                     logger.debug("Resuming HTTP request: {}", request);
                 }
@@ -374,9 +375,9 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                 // Cleaning up the stored objects for this continuation now
                 exchange = doEndContinuation(continuation);
 
-                // Timeout if SelectConnector is not used
+                // Throw exception when HTTP time-out has occurred
                 if (istimeout) {
-                    throw new Exception("HTTP request has timed out for exchange: " + exchange.getExchangeId());
+                    throw new HttpTimeoutException(exchange);
                 }
             }
 
@@ -397,7 +398,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         if (exchange.getStatus() == ExchangeStatus.ERROR) {
             Exception e = exchange.getError();
             if (e == null) {
-                e = new Exception("Unkown error (exchange aborted ?)");
+                e = new Exception("Unknown error (exchange aborted ?)");
             }
             throw e;
         } else if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
@@ -429,9 +430,11 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         // if the exchange is no longer active by now, something else probably went wrong in the meanwhile
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             if (lateResponseStrategy == LateResponseStrategy.error) {
-                fail(exchange, new Exception("HTTP request has timed out for exchange: {} " + exchange.getExchangeId()));
+                // ends the exchange in ERROR
+                fail(exchange, new LateResponseException(exchange));
             } else {
-                logger.warn("HTTP request has timed out for exchange: {}", exchange.getExchangeId());
+                // let's log the exception message text, but end the exchange with DONE
+                logger.warn(LateResponseException.createMessage(exchange));
                 done(exchange);
             }
         }

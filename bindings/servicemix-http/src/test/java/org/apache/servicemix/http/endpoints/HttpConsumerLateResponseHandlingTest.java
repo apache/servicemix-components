@@ -24,6 +24,7 @@ import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.PortFinder;
+import org.apache.servicemix.http.exception.LateResponseException;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.helper.MessageUtil;
 
@@ -63,7 +64,8 @@ public class HttpConsumerLateResponseHandlingTest extends TestCase {
     public void testInOutWithStrategyError() throws Exception {
         MessageExchange exchange = doTestInOutWithStrategy(HttpConsumerEndpoint.LateResponseStrategy.error);
         assertEquals("Exchange should have ended in ERROR", ExchangeStatus.ERROR, exchange.getStatus());
-        assertNotNull(exchange.getError());
+        assertTrue("Expecting a LateResponseException, but was " + exchange.getError().getClass().getName(),
+                   exchange.getError() instanceof LateResponseException);
     }
 
     public void testInOutWithStrategyWarning() throws Exception {
