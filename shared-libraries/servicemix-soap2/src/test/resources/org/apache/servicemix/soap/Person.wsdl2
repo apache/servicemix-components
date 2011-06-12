@@ -24,9 +24,9 @@
   xmlns:wsdlx="http://www.w3.org/2006/01/wsdl-extensions" 
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.w3.org/2006/01/wsdl http://www.w3.org/2006/03/wsdl/wsdl20.xsd
-                      http://www.w3.org/2006/01/wsdl-extensions http://www.w3.org/2002/ws/desc/ns/wsdl-extensions.xsd
-                      http://www.w3.org/2006/01/wsdl/http http://www.w3.org/2002/ws/desc/ns/http.xsd">
+  xsi:schemaLocation="http://www.w3.org/2006/01/wsdl ./wsdl20.xsd
+                      http://www.w3.org/2006/01/wsdl-extensions ./wsdl-extensions.xsd
+                      http://www.w3.org/2006/01/wsdl/http ./http.xsd">
   
   <wsdl:documentation>This test shows a valid use of the HTTP binding.</wsdl:documentation>
   
