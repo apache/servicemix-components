@@ -75,7 +75,7 @@
         <eclipse.output.directory>${basedir}/eclipse-classes</eclipse.output.directory>
 
         <!-- Previous Components Releases -->
-        <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01,2009.02,2010.01</previous.releases>
+        <previous.releases>3.1.2,3.2,3.2.1,3.2.2,3.2.3,2008.01,2009.01,2009.02,2010.01,2010.02,2011.01</previous.releases>
 
         <!-- ServiceMix Stuff -->
         <servicemix.legal.version>1.0</servicemix.legal.version>
