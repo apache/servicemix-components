@@ -37,10 +37,6 @@
   <!-- Import the CXF core and optional components needed:
        WS-Security, HTTP, and SOAP. -->
   <import resource="classpath:META-INF/cxf/cxf.xml" />
-  <import resource="classpath:META-INF/cxf/cxf-extension-policy.xml" />
-  <import resource="classpath:META-INF/cxf/cxf-extension-ws-security.xml" />
-  <import resource="classpath:META-INF/cxf/cxf-extension-http.xml" />
-  <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 
   <cxf:bus/>
   

@@ -100,7 +100,7 @@
         <camel.version>2.7.0</camel.version>
 
         <!-- CXF -->
-        <cxf.version>2.4.0</cxf.version>
+        <cxf.version>2.4.1</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
