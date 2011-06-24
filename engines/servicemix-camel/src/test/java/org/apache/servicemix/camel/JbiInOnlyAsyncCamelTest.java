@@ -65,7 +65,7 @@ public class JbiInOnlyAsyncCamelTest extends JbiTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                errorHandler(deadLetterChannel("mock:dlc").maximumRedeliveries(0).handled(false));
+                onException().to("mock:dlc").maximumRedeliveries(0).handled(false);
 
                 from("jbi:service:urn:test:in-only")
                     .threads(1)

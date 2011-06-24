@@ -87,8 +87,7 @@ public class JbiInOutCamelJMSFlowExceptionTest extends JbiCamelErrorHandlingTest
             public void configure() throws Exception {
                 onException(org.apache.camel.processor.validation.SchemaValidationException.class).handled(false);
                 onException(org.apache.camel.CamelException.class).handled(true);
-                errorHandler(
-                    deadLetterChannel("mock:errors").maximumRedeliveries(1).redeliverDelay(300).handled(false));
+                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(1).maximumRedeliveryDelay(300));
                 from("jbi:service:urn:test:error-not-handled?convertExceptions=true")
                     .to("validator:org/apache/servicemix/camel/simple.xsd");
                 from("jbi:service:urn:test:error-handled-true")

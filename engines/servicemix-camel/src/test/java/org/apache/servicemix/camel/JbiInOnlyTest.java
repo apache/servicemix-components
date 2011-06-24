@@ -115,7 +115,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
             @Override
             public void configure() throws Exception {
                 // let's not retry things too often as this will only slow down the unit tests
-                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(0).handled(false));                            
+                onException().to("mock:errors").maximumRedeliveries(0).handled(false);
                 
                 from("jbi:service:urn:test:forward").to("jbi:service:urn:test:in-only?mep=in-only");
                 from("jbi:service:urn:test:in-only").convertBodyTo(String.class).to("mock:done");
