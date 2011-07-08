@@ -36,7 +36,6 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 import org.mortbay.io.ByteArrayBuffer;
 import org.mortbay.jetty.HttpHeaders;
 import org.mortbay.jetty.HttpMethods;
@@ -49,7 +48,7 @@ import org.mortbay.jetty.HttpMethods;
  */
 public class DefaultHttpProviderMarshaler extends AbstractHttpProviderMarshaler implements HttpProviderMarshaler {
 
-    private SourceTransformer transformer = new StAXSourceTransformer();
+    private SourceTransformer transformer = new SourceTransformer();
     private String locationURI;
     private Expression locationURIExpression;
     private String method;

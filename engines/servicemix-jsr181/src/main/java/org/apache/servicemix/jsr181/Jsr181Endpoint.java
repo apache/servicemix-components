@@ -52,7 +52,7 @@ import org.apache.servicemix.common.ManagementSupport;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.common.tools.wsdl.WSDLFlattener;
 import org.apache.servicemix.jbi.api.Container;
-import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jsr181.xfire.JbiFaultSerializer;
 import org.apache.servicemix.jsr181.xfire.JbiTransport;
@@ -107,7 +107,7 @@ public class Jsr181Endpoint extends ProviderEndpoint {
     protected Resource wsdlResource;
     protected boolean mtomEnabled;
     protected Map properties;
-    protected StAXSourceTransformer transformer;
+    protected SourceTransformer transformer;
 
     /* should the payload be automaticaly validated by the ws engine
      * if not set then it is up to the engine to decide
@@ -115,7 +115,7 @@ public class Jsr181Endpoint extends ProviderEndpoint {
     private Boolean validationEnabled;
     
     public Jsr181Endpoint() {
-        this.transformer = new StAXSourceTransformer();
+        this.transformer = new SourceTransformer();
     }
     
     /**

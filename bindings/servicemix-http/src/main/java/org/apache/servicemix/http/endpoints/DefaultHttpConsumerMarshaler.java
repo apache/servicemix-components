@@ -31,20 +31,19 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.XMLStreamHelper;
 import org.apache.servicemix.common.JbiConstants;
 import org.mortbay.jetty.HttpHeaders;
 
 /**
  * The default consumer marshaler used for non-soap consumer endpoints.
- * 
- * @author gnodet
+ *
  * @since 3.2
  */
 public class DefaultHttpConsumerMarshaler extends AbstractHttpConsumerMarshaler {
 
-    private StAXSourceTransformer transformer = new StAXSourceTransformer();
+    private SourceTransformer transformer = new SourceTransformer();
     private URI defaultMep;
 
     public DefaultHttpConsumerMarshaler() {

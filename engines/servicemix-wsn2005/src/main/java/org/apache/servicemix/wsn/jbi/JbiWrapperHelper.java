@@ -27,13 +27,13 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import org.apache.servicemix.common.util.DOMUtil;
 import org.apache.servicemix.jbi.jaxp.StaxSource;
 import org.apache.servicemix.jbi.jaxp.FragmentStreamReader;
-import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 
 /**
  * Helper classes dealing with the WSDL 1.1 JBI wrapper
@@ -51,7 +51,7 @@ public class JbiWrapperHelper {
     public static final String WSDL11_WRAPPER_PART_LOCALNAME = "part";
     public static final QName WSDL11_WRAPPER_PART = new QName(WSDL11_WRAPPER_NAMESPACE, WSDL11_WRAPPER_PART_LOCALNAME, WSDL11_WRAPPER_PREFIX);
 
-    private static final StAXSourceTransformer transformer = new StAXSourceTransformer();
+    private static final SourceTransformer transformer = new SourceTransformer();
 
     public static Document createDocument() throws ParserConfigurationException {
         return transformer.createDocument();
@@ -123,7 +123,7 @@ public class JbiWrapperHelper {
     }
 
     public static Source unwrap(Source source) throws TransformerException, XMLStreamException {
-        XMLStreamReader reader = new StAXSourceTransformer().toXMLStreamReader(source);
+        XMLStreamReader reader = new SourceTransformer().toXMLStreamReader(source);
         reader.nextTag();
         if (!reader.isStartElement()) {
              throw new IllegalStateException("expected an element");

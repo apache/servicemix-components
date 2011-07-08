@@ -34,7 +34,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.helper.MessageExchangePattern;
 import org.apache.servicemix.jsr181.JBIContext;
@@ -60,17 +60,17 @@ public class JbiChannel extends AbstractChannel {
     public static final String JBI_ENDPOINT = "jbi.endpoint";
     public static final String JBI_SECURITY_PROPAGATATION = "jbi.security.propagation";
 
-    private static ThreadLocal<StAXSourceTransformer> transformer = new ThreadLocal<StAXSourceTransformer>();
+    private static ThreadLocal<SourceTransformer> transformer = new ThreadLocal<SourceTransformer>();
 
     public JbiChannel(String uri, JbiTransport transport) {
         setTransport(transport);
         setUri(uri);
     }
 
-    protected static StAXSourceTransformer getTransformer() {
-        StAXSourceTransformer t = transformer.get();
+    protected static SourceTransformer getTransformer() {
+        SourceTransformer t = transformer.get();
         if (t == null) {
-            t = new StAXSourceTransformer();
+            t = new SourceTransformer();
             transformer.set(t);
         }
         return t;

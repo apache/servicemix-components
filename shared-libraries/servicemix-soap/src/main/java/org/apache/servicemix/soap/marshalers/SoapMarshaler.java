@@ -16,11 +16,11 @@
  */
 package org.apache.servicemix.soap.marshalers;
 
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
-
-import org.apache.servicemix.jbi.jaxp.StAXSourceTransformer;
 
 /**
  * 
@@ -66,7 +66,7 @@ public class SoapMarshaler {
     
 	protected XMLInputFactory inputFactory;
 	protected XMLOutputFactory outputFactory;
-	protected StAXSourceTransformer  sourceTransformer;
+	protected SourceTransformer sourceTransformer;
 	protected boolean repairingNamespace;
 	protected String prefix = SOAP_PREFIX;
 	protected boolean soap = true;
@@ -106,9 +106,9 @@ public class SoapMarshaler {
         return outputFactory;
     }
     
-    public StAXSourceTransformer getSourceTransformer() {
+    public SourceTransformer getSourceTransformer() {
     	if (sourceTransformer == null) {
-    		sourceTransformer = new StAXSourceTransformer();
+    		sourceTransformer = new SourceTransformer();
     	}
     	return sourceTransformer;
     }
