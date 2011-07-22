@@ -65,7 +65,6 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
     
     private static final String[] CXF_CONFIG = new String[] {
         "META-INF/cxf/cxf.xml",
-        "META-INF/cxf/cxf-extension-soap.xml",
         "META-INF/cxf/transport/jbi/cxf-transport-jbi.xml",
         "META-INF/cxf/binding/jbi/cxf-binding-jbi.xml"
     };
