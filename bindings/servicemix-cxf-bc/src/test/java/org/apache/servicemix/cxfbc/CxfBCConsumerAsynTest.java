@@ -84,7 +84,7 @@ public class CxfBCConsumerAsynTest extends CxfBcSpringTestSupport {
         CalculatorPortType port = service.getPort(endpoint, CalculatorPortType.class);
         ClientProxy.getClient(port).getInInterceptors().add(new LoggingInInterceptor());
         ClientProxy.getClient(port).getOutInterceptors().add(new LoggingOutInterceptor());
-        MultiClientThread[] clients = new MultiClientThread[2];
+        MultiClientThread[] clients = new MultiClientThread[3];
         for (int i = 0; i < clients.length; i++) {
             clients[i] = new MultiClientThread(port, i);
         }
@@ -97,7 +97,7 @@ public class CxfBCConsumerAsynTest extends CxfBcSpringTestSupport {
         for (int i = 0; i < clients.length; i++) {
             clients[i].join();
             //ensure the second invocation return first since it's less time consuming
-            assertEquals(clients[i].getResult(), "20");
+            assertEquals(clients[i].getResult(), "420");
         }
     }
     

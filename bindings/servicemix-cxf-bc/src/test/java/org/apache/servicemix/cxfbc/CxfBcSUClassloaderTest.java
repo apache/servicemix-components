@@ -99,6 +99,7 @@ public class CxfBcSUClassloaderTest extends CxfBcSpringTestSupport {
     }
     
     protected String getServiceUnitPath(String name) {
+    	// we should load other BC on different port, otherwise the continuation can not work rightly.
         URL url = getClass().getClassLoader().getResource("org/apache/servicemix/cxfbc/" + name + "/xbean.xml");
         File path = new File(url.getFile());
         path = path.getParentFile();

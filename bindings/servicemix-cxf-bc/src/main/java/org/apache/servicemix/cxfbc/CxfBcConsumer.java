@@ -178,8 +178,6 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private List<AbstractFeature> features = new CopyOnWriteArrayList<AbstractFeature>();
 
     private boolean transactionEnabled;
- 
-    private boolean isSTFlow;
    
     private ClassLoader suClassLoader;
    
@@ -320,11 +318,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         .get(ContinuationProvider.class.getName());
                 Continuation continuation = continuationProvider
                         .getContinuation();
-                if (continuation.isPending()) {
-                    continuation.resume();
-                    isSTFlow = false;
-                } else {
-                    isSTFlow = true;
+                synchronized(continuation) {
+                	if (continuation.isPending()) {
+                		continuation.resume();
+                	}
                 }
             }
         }
@@ -870,23 +867,19 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                             Continuation continuation = continuationProvider
                                     .getContinuation();
                             if (continuation.isNew()) {
+                            	continuation.suspend(timeout * 1000);
                                 CxfBcConsumer.this.messages.put(exchange
                                         .getExchangeId(), message);
                                 context.getDeliveryChannel().send(exchange);
-                                if (!isSTFlow) {
-                                    continuation.suspend(timeout * 1000);
-                                }
                             } else if (!continuation.isResumed()) {
                                 if (!continuation.isPending()) {
                                     messages.remove(exchange.getExchangeId());
+                                    continuation.reset();
                                     // exchange timeout
                                     throw new Exception("Exchange timed out: "
                                             + exchange.getExchangeId());
-                                } else {
-                                    //retry
-                                    throw new org.apache.cxf.continuations.SuspendedInvocationException();
                                 }
-                            } 
+                            }
                         }
                     }
                 }

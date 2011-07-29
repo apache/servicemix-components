@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import junit.framework.TestCase;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
@@ -34,12 +32,13 @@ import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.testutil.common.ServerLauncher;
 import org.apache.hello_world_soap_http.Greeter;
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 
-public class CxfBcSecurityJAASTest extends TestCase {
+public class CxfBcSecurityJAASTest extends Assert {
 
     private static final Logger LOG = LogUtils.getL7dLogger(CxfBCSecurityTest.class);
     
@@ -66,14 +65,16 @@ public class CxfBcSecurityJAASTest extends TestCase {
     
     
     protected static boolean serversStarted;
-    private ServerLauncher sl;
+    private static ServerLauncher sl;
     
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void startServer() throws Exception {
         startJBIContainers();
         Thread.sleep(3000);
     }
     
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void stopServer() throws Exception {
         try {
             sl.stopServer();
         } catch (IOException ex) {
@@ -81,13 +82,10 @@ public class CxfBcSecurityJAASTest extends TestCase {
             fail("failed to stop jbi container " + sl.getClass());
         } 
         serversStarted = false;
-        
-        super.tearDown();
+       
     }
-    
-    
-    
-    
+   
+    @Test
     public void testJAASPolicy() {
         LOG.info("test security ws-policy");
         Bus bus = new SpringBusFactory().createBus(
@@ -112,6 +110,7 @@ public class CxfBcSecurityJAASTest extends TestCase {
         assertEquals(ret, "Hello ffang");
     }
     
+    @Test
     public void testJAAS() {
         LOG.info("test security");
         Bus bus = new SpringBusFactory().createBus(
@@ -136,6 +135,7 @@ public class CxfBcSecurityJAASTest extends TestCase {
         assertEquals(ret, "Hello ffang");
     }
     
+    @Test
     public void testUserNotExist() {
         LOG.info("test user not exist");
         Bus bus = new SpringBusFactory().createBus(
@@ -162,6 +162,7 @@ public class CxfBcSecurityJAASTest extends TestCase {
         }
     }
     
+    @Test
     public void testPasswordMismatch() {
         LOG.info("test password not match");
         Bus bus = new SpringBusFactory().createBus(
@@ -196,7 +197,7 @@ public class CxfBcSecurityJAASTest extends TestCase {
     }
     **/
     
-    protected void startJBIContainers() throws Exception {
+    protected static void startJBIContainers() throws Exception {
         if (serversStarted) {
             return;
         }
@@ -221,7 +222,7 @@ public class CxfBcSecurityJAASTest extends TestCase {
         serversStarted = true;
     }
     
-    protected boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
+    protected static boolean launchServer(Class<?> clz, Map<String, String> p, boolean inProcess) {
         boolean ok = false;
         try { 
             sl = new ServerLauncher(clz.getName(), p, null, inProcess);

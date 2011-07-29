@@ -53,7 +53,7 @@
                       >
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-          <bean class="org.apache.servicemix.cxfbc.AsyncCxfBcConsumerInterceptor"/>
+          <!--bean class="org.apache.servicemix.cxfbc.AsyncCxfBcConsumerInterceptor"/-->
         </cxfbc:inInterceptors>
         <cxfbc:outInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
