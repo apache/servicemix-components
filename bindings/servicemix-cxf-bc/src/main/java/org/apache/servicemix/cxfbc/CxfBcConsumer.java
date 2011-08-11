@@ -310,7 +310,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
         
         boolean oneway = message.getExchange().get(BindingOperationInfo.class)
                 .getOperationInfo().isOneWay();
-        if (!isSynchronous() && !oneway) {
+        if (!isSynchronous() && !oneway 
+            && !isServletTransport()) {
             if (isNativeAsyn(message)) {
                 message.getInterceptorChain().resume();
             } else {
@@ -325,6 +326,10 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 }
             }
         }
+    }
+
+    private boolean isServletTransport() {
+        return locationURI != null && locationURI.startsWith("/");
     }
 
     @Override
@@ -671,13 +676,18 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
 
     protected Bus getBus() {
         Bus ret = null;
+        if (isServletTransport()) {
+            //it's serlvet transport, using the bus from CXFNonSpringServlet
+            ret = BusFactory.getDefaultBus();
+            return ret;
+        }
         if (providedBus != null) {
             ret = providedBus;
         } else if (getBusCfg() != null) {
             if (bus == null) {
                 SpringBusFactory bf = new SpringBusFactory();
                 bus = bf.createBus(getBusCfg());
-                if (locationURI != null && locationURI.startsWith("/")) {
+                if (isServletTransport()) {
                     //it's in the servlet container
                     //set this bus so that it could be used in CXFManagerServlet
                     BusFactory.setDefaultBus(bus);
@@ -828,8 +838,9 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             	if (CxfBcConsumer.this.isOneway) {
                         CxfBcConsumer.this.messages.put(exchange.getExchangeId(), message);
             		context.getDeliveryChannel().send(exchange);
-            	} else if (CxfBcConsumer.this.isSynchronous()
-                        && !CxfBcConsumer.this.isOneway) {
+            	} else if ((CxfBcConsumer.this.isSynchronous()
+                        && !CxfBcConsumer.this.isOneway)
+                        || isServletTransport()) {
                     CxfBcConsumer.this.messages.put(exchange.getExchangeId(), message);
                     context.getDeliveryChannel().sendSync(exchange,
                             timeout * 1000);
