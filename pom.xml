@@ -97,7 +97,7 @@
         <activemq.version>5.5.0</activemq.version>
         
         <!-- Camel -->
-        <camel.version>2.8.0</camel.version>
+        <camel.version>2.8.1-SNAPSHOT</camel.version>
 
         <!-- CXF -->
         <cxf.version>2.4.2</cxf.version>
@@ -113,7 +113,7 @@
         <geronimo-jms.version>1.1.1</geronimo-jms.version>
         <geronimo-jta.version>1.1.1</geronimo-jta.version>
         <geronimo-servlet.version>1.0</geronimo-servlet.version>
-        <geronimo-ws-metadata.version>1.1.2</geronimo-ws-metadata.version>
+        <geronimo-ws-metadata.version>1.1.3</geronimo-ws-metadata.version>
 
         <!-- OSGi -->
         <osgi.core.version>4.2.0</osgi.core.version>
