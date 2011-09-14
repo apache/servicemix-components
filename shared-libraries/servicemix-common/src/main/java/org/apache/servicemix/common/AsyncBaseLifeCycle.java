@@ -696,14 +696,23 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
      */
     public void prepareShutdown(Endpoint endpoint, long timeout) throws InterruptedException {
         Set<String> exchanges = getKnownExchanges(endpoint);
+        long start = System.currentTimeMillis();
+        long interval = timeout / 3;         // if a timeout has been set, we'll check 3 times within the timeout period
+
         synchronized (exchanges) {
-            if (!exchanges.isEmpty()) {
+            while (!exchanges.isEmpty()) {
                 for (String id : exchanges) {
                     logger.debug("Waiting for exchange {} in {}", id, endpoint);
                 }
-                exchanges.wait(timeout);
-                logger.debug(String.format("Gave up waiting for %s exchanges in %s after %s ms",
-                        exchanges.size(), endpoint, timeout));
+                exchanges.wait(interval);
+
+                // if a timeout has been set, this would be a good time to check that
+                long delta = System.currentTimeMillis() - start;
+                if (timeout != 0 && delta >= timeout) {
+                    logger.debug(String.format("Gave up waiting for %s exchanges in %s after %s ms",
+                                               exchanges.size(), endpoint, delta));
+                    break;
+                }
             }
         }
     }

@@ -57,11 +57,12 @@ public class AsyncBaseLifeCycleTest extends TestCase {
     public void testPrepareShutdown() throws InterruptedException {
         final Endpoint endpoint = new MockEndpoint() ;
 
-        MockMessageExchange exchange = new MockMessageExchange();
-        exchange.setExchangeId(UUID.randomUUID().toString());
+        MockMessageExchange exchange1 = createMockExchange();
+        MockMessageExchange exchange2 = createMockExchange();
 
-        // adding a known exchange
-        lifecycle.handleExchange(endpoint, exchange, true);
+        // adding 2 known exchanges
+        lifecycle.handleExchange(endpoint, exchange1, true);
+        lifecycle.handleExchange(endpoint, exchange2, true);
 
         final CountDownLatch done = new CountDownLatch(1);
 
@@ -76,12 +77,23 @@ public class AsyncBaseLifeCycleTest extends TestCase {
             }
         });
 
-        assertFalse("Should be waiting for prepareShutdown to complete",
+        assertFalse("Should be waiting for prepareShutdown to complete (2 exchanges pending)",
                     done.await(1, TimeUnit.SECONDS));
 
-        lifecycle.handleExchange(endpoint, exchange, false);
+        lifecycle.handleExchange(endpoint, exchange1, false);
+
+        assertFalse("Should be waiting for prepareShutdown to complete (1 exchange pending)",
+                    done.await(1, TimeUnit.SECONDS));
+
+        lifecycle.handleExchange(endpoint, exchange2, false);
 
         assertTrue("prepareShutdown is now done", done.await(100, TimeUnit.SECONDS));
+    }
+
+    private MockMessageExchange createMockExchange() {
+        MockMessageExchange exchange = new MockMessageExchange();
+        exchange.setExchangeId(UUID.randomUUID().toString());
+        return exchange;
     }
 
     public void testPrepareShutdownWithTimeout() throws InterruptedException, ExecutionException, TimeoutException {
