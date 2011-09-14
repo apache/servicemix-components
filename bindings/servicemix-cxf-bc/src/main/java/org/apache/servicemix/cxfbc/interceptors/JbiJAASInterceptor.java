@@ -39,14 +39,15 @@ import org.apache.ws.security.handler.WSHandlerResult;
 
 public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
 
-    private String domain = "servicemix-domain";
+    private String domain;
     private AuthenticationService authenticationService;
     private ThreadLocal<Subject> currentSubject = new ThreadLocal<Subject>();
     private boolean x509;
     private boolean delegateToJaas;
     
     
-    public JbiJAASInterceptor(AuthenticationService authenticationService, boolean x509, boolean delegateToJaas) {
+    public JbiJAASInterceptor(AuthenticationService authenticationService, boolean x509, boolean delegateToJaas,
+                              String jaasDomain) {
         super();
         setPhase(Phase.PRE_PROTOCOL);
         getAfter().add(WSS4JInInterceptor.class.getName());
@@ -54,6 +55,7 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
         this.authenticationService = authenticationService;
         this.x509 = x509;
         this.delegateToJaas = delegateToJaas;
+        this.domain = jaasDomain;
     }
     
     

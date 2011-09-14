@@ -59,7 +59,7 @@
                       endpoint="TimestampSignEncrypt"
                       targetEndpoint="TimestampSignEncrypt"
                       targetService="greeter:SOAPServiceWSSecurity"
-		              targetInterface="greeter:Greeter">
+		              targetInterface="greeter:Greeter" jaasDomain="karaf">
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
           <ref bean="TimestampSignEncrypt_Request"/>
@@ -84,7 +84,7 @@
                       targetService="greeter:SOAPServiceWSSecurity"
                       targetInterface="greeter:Greeter"
                       busCfg="org/apache/servicemix/cxfbc/ws/security/xbean-jaas-policy-bus-context.xml"
-                      properties="#properties">
+                      properties="#properties" jaasDomain="karaf">
         <cxfbc:inInterceptors>
           <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
         </cxfbc:inInterceptors>

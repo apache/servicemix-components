@@ -187,6 +187,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     
     private boolean delegateToJaas = true;
     
+    private String jaasDomain = "servicemix-domain";
+    
     private Map<String, Object> properties = new ConcurrentHashMap<String, Object>();
 
     /**
@@ -498,7 +500,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
             cxfService.getInInterceptors().add(new JbiJAASInterceptor(
                     AuthenticationService.Proxy.create(
                         ((CxfBcComponent)this.getServiceUnit().getComponent())
-                            .getAuthenticationService()), isX509(), isDelegateToJaas()));
+                            .getAuthenticationService()), isX509(), isDelegateToJaas(),
+                            this.jaasDomain));
             cxfService.getInInterceptors().add(new JbiInvokerInterceptor());
             cxfService.getInInterceptors().add(new JbiPostInvokerInterceptor());
 
@@ -1290,5 +1293,19 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
      
      public Map<String, Object> getProperties() {
          return this.properties;
+     }
+
+     /**
+      * Specifies the jaasDomain of this cxfbc consumer endpoint
+      *
+      * @param jaasDomain the jaasDomain as a string
+      * @org.apache.xbean.Property description="jaasDomain of this cxfbc consumer endpoint"
+      **/
+     public void setJaasDomain(String jaasDomain) {
+         this.jaasDomain = jaasDomain;
+     }
+
+     public String getJaasDomain() {
+        return jaasDomain;
      }
 }
