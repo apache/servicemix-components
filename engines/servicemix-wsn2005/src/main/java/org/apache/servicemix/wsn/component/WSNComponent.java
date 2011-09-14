@@ -292,6 +292,8 @@ public class WSNComponent extends DefaultComponent {
                 public void run() {
                     try {
                         Endpoint ep = (Endpoint) endpoint;
+                        // let's wait for pending exchanges to be done before actually removing the endpoint
+                        WSNComponent.this.prepareShutdown(ep);
                         WSNComponent.this.removeEndpoint(ep);
                     } catch (Exception e) {
                         logger.error("Unable to deactivate endpoint", e);

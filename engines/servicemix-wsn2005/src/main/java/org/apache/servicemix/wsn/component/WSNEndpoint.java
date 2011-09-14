@@ -217,7 +217,7 @@ public class WSNEndpoint extends ProviderEndpoint {
                 JbiWrapperHelper.wrap(doc);
             }
             msg.setContent(new DOMSource(doc));
-            sendSync(exchange);
+            send(exchange);
         }
     }
 
