@@ -515,7 +515,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     new SetSoapVersionInterceptor());
             cxfService.getOutInterceptors().add(
                     new SetStatusInterceptor());
-
+            
             cxfService.getOutInterceptors().add(new AttachmentOutInterceptor());
             cxfService.getOutInterceptors().add(
                     new MtomCheckInterceptor(isMtomEnabled()));
@@ -1044,6 +1044,16 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 //this exception is undefined in the wsdl, so tell the transactionManager injected into
                 //jms transport need rollback
                 throw new Error("rollback");
+            }
+            MessageExchange exchange = message.getContent(MessageExchange.class);
+            try {
+                if (message.get("needSetDone") != null && message.get("needSetDone").equals(Boolean.TRUE)
+                    && exchange.getStatus() == ExchangeStatus.ACTIVE) {
+                    exchange.setStatus(ExchangeStatus.DONE);
+                    message.getExchange().get(ComponentContext.class).getDeliveryChannel().send(exchange);
+                }
+            } catch (Exception e) {
+                throw new Fault(e);
             }
         }
 
