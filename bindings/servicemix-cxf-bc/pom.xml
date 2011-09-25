@@ -61,6 +61,7 @@
             org.springframework.beans.factory.xml,
             sun.misc;resolution:=optional,
             org.apache.servicemix.nmr.api.security,
+            javax.servlet.*;version="[0.0,4)";resolution:=optional,
             *
         </servicemix.osgi.import>
         <servicemix.osgi.export>
