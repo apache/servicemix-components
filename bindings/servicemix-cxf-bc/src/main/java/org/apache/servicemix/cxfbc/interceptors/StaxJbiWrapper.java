@@ -515,12 +515,13 @@ public class StaxJbiWrapper implements XMLStreamReader {
 
     public String getNamespacePrefix(int i) {
         String prefix = parts.get(part).get(reader).getNamespacePrefix(i);
-        if (prefix != null && prefix.length() == 0 
-                && parts.get(part).get(reader).getNamespaceURI().length() > 0) {
-            return CxfJbiConstants.WSDL11_WRAPPER_PART_LOCALNAME;
-        } else {
-            return prefix;
+        if (prefix != null && prefix.length() == 0) {
+            String uri = parts.get(part).get(reader).getNamespaceURI();
+            if (uri != null && uri.length() > 0) {
+                return CxfJbiConstants.WSDL11_WRAPPER_PART_LOCALNAME;
+            }
         }
+        return prefix;
     }
 
     public String getNamespaceURI(int i) {

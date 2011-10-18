@@ -18,4 +18,4 @@
 
 -->
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns2="uri:HelloWorld"><soap:Body><ns2:SayHiRequest><text>hello</text></ns2:SayHiRequest></soap:Body></soap:Envelope>
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns2="uri:HelloWorld"><soap:Body><ns2:SayHiRequest><text xmlns="" xmlns:q1="*">q1:hello</text></ns2:SayHiRequest></soap:Body></soap:Envelope>
