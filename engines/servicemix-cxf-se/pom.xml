@@ -70,6 +70,9 @@
             org.springframework.core,
             org.springframework.beans,
             org.springframework.context,
+            servicemix-common,
+            servicemix-soap,
+            servicemix-soap2
             org.apache.servicemix.bundles.xmlbeans
         </servicemix.osgi.bundles>
     </properties>

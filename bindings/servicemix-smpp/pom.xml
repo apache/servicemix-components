@@ -55,11 +55,6 @@
             org.apache.servicemix.smpp*;version=${project.version},
             META-INF.services.org.apache.xbean.spring.smpp.servicemix.apache.org.smpp
         </servicemix.osgi.export>
-        <servicemix.osgi.bundles>
-            org.springframework.core,
-            org.springframework.beans,
-            org.springframework.context
-        </servicemix.osgi.bundles>
     </properties>
 
     <repositories>

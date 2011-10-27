@@ -33,6 +33,18 @@
 
     <name>Apache ServiceMix :: Components :: Service Engines</name>
 
+    <!-- configure required bundles to mimic ServiceMix 3 JBI component classloader in OSGi environment -->
+    <properties>
+        <servicemix.osgi.bundles>
+            org.springframework.core,
+            org.springframework.beans,
+            org.springframework.context,
+            servicemix-common,
+            servicemix-soap,
+            servicemix-soap2
+        </servicemix.osgi.bundles>
+    </properties>
+
     <modules>
         <module>servicemix-bean</module>
         <module>servicemix-camel</module>

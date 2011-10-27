@@ -56,11 +56,6 @@
             org.apache.servicemix.jsr181*;version=${project.version},
             META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.jsr181
         </servicemix.osgi.export>
-        <servicemix.osgi.bundles>
-            org.springframework.core,
-            org.springframework.beans,
-            org.springframework.context
-        </servicemix.osgi.bundles>
     </properties>
 
     <dependencies>

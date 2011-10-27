@@ -72,7 +72,10 @@
             org.apache.cxf.bundle,
             org.springframework.core,
             org.springframework.beans,
-            org.springframework.context
+            org.springframework.context,
+            servicemix-common,
+            servicemix-soap,
+            servicemix-soap2
         </servicemix.osgi.bundles>
     </properties>
 
