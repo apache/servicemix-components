@@ -29,6 +29,7 @@ import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.ws.security.wss4j.AbstractWSS4JInterceptor;
 import org.apache.cxf.ws.security.wss4j.PolicyBasedWSS4JInInterceptor;
+import org.apache.cxf.ws.security.wss4j.UsernameTokenInterceptor;
 import org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.ws.security.WSSecurityEngineResult;
@@ -52,6 +53,7 @@ public class JbiJAASInterceptor extends AbstractWSS4JInterceptor {
         setPhase(Phase.PRE_PROTOCOL);
         getAfter().add(WSS4JInInterceptor.class.getName());
         getAfter().add(PolicyBasedWSS4JInInterceptor.class.getName());
+        getAfter().add(UsernameTokenInterceptor.class.getName());
         this.authenticationService = authenticationService;
         this.x509 = x509;
         this.delegateToJaas = delegateToJaas;
