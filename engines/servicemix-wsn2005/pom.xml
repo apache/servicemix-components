@@ -55,6 +55,9 @@
             org.apache.servicemix.wsn*;version=${project.version},
             META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.wsn
         </servicemix.osgi.export>
+        <servicemix.osgi.bundles>
+            activemq-broker.xml
+        </servicemix.osgi.bundles>
     </properties>
 
     <dependencies>
