@@ -44,10 +44,12 @@ public class JCLLogger implements Logger {
     public static void init() {
         // TODO: use org.mortbay.log.Log#setLog when available (beta18)
         String old = System.getProperty("org.mortbay.log.class");
+        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
         try {
             System.setProperty("org.mortbay.log.class", JCLLogger.class.getName());
             // For the class to be loaded by invoking a public static method
             Class<?> cl = Logger.class.getClassLoader().loadClass("org.mortbay.log.Log");
+            Thread.currentThread().setContextClassLoader(JCLLogger.class.getClassLoader());
             cl.getMethod("isDebugEnabled", new Class[0]).invoke(null);
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,6 +59,7 @@ public class JCLLogger implements Logger {
             } else {
                 System.getProperties().remove("org.mortbay.log.class");
             }
+            Thread.currentThread().setContextClassLoader(oldLoader);
         }
     }
     
