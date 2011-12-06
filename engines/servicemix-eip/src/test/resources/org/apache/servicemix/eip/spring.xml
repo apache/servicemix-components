@@ -41,7 +41,7 @@
           <bean class="org.apache.servicemix.executors.impl.ExecutorConfig">
             <property name="corePoolSize" value="0" />
             <property name="maximumPoolSize" value="16" />
-            <property name="allowCoreThreadsTimeout" value="true" />
+            <property name="allowCoreThreadTimeOut" value="true" />
             <property name="queueSize" value="0" />
             <property name="keepAliveTime" value="500" />
           </bean>

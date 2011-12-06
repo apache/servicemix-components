@@ -187,6 +187,7 @@
                     <excludes>
                         <!-- exclude abstract test cases -->
                         <exclude>**/Abstract*.*</exclude>
+                        <exclude>**/*TxTest.*</exclude>
                     </excludes>
                     <argLine>-Dactivemq.port1=${port1}</argLine>
                 </configuration>
