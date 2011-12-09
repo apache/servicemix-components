@@ -26,7 +26,10 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
 
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Policy;
@@ -39,7 +42,8 @@ public class JmsSoapProviderMarshaler implements JmsProviderMarshaler {
     private boolean useJbiWrapper = true;
     private Policy[] policies;
     private String baseUrl;
-
+    private SourceTransformer sourceTransformer = new SourceTransformer();
+    
     public Binding<?> getBinding() {
         return binding;
     }
@@ -74,7 +78,11 @@ public class JmsSoapProviderMarshaler implements JmsProviderMarshaler {
 
     public Message createMessage(MessageExchange exchange, NormalizedMessage in, Session session) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
+        Source source = in.getContent();
+        if (!(source instanceof DOMSource)) {
+            source = sourceTransformer.toDOMSource(source);
+            in.setContent(source);
+        }
         org.apache.servicemix.soap.api.Message msg = binding.createMessage();
         exchange.setProperty(org.apache.servicemix.soap.api.Message.class.getName(), null);
         msg.put(JbiConstants.USE_JBI_WRAPPER, useJbiWrapper);
