@@ -30,7 +30,10 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
 
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
 import org.apache.servicemix.soap.api.Policy;
@@ -45,7 +48,7 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     private boolean useJbiWrapper = true;
     private Policy[] policies;
     private boolean rollbackOnError = true;
-
+    private SourceTransformer sourceTransformer = new SourceTransformer();
     /**
      * @return the binding
      */
@@ -115,6 +118,11 @@ public class JmsSoapConsumerMarshaler implements JmsConsumerMarshaler {
     }
 
     public Message createOut(MessageExchange exchange, NormalizedMessage outMsg, Session session, JmsContext context) throws Exception {
+        Source source = outMsg.getContent();
+        if (!(source instanceof DOMSource)) {
+            source = sourceTransformer.toDOMSource(source);
+            outMsg.setContent(source);
+        }
         org.apache.servicemix.soap.api.Message in = ((Context) context).msg;
         org.apache.servicemix.soap.api.Message msg = binding.createMessage(in);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
