@@ -28,7 +28,7 @@
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components</artifactId>
-    <version>2012.02-SNAPSHOT</version>
+    <version>2012.01-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Apache ServiceMix :: Components</name>
