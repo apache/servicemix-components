@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>service-engines</artifactId>
-        <version>2012.01-SNAPSHOT</version>
+        <version>2011.02</version>
     </parent>
 
     <groupId>org.apache.servicemix</groupId>
