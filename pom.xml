@@ -147,7 +147,7 @@
         <woden.version>1.0.0M6</woden.version>
         <woodstox.version>4.0.8</woodstox.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <wss4j.version>1.6.0</wss4j.version>
+        <wss4j.version>1.6.3</wss4j.version>
         <xalan.version>2.7.1</xalan.version>
         <xbean.version>3.7</xbean.version>
         <xercesImpl.version>2.9.1</xercesImpl.version>

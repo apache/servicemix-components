@@ -152,4 +152,8 @@ public class KeystoreInstanceCrypto extends BaseCrypto {
         return false;
     }
 
+    public boolean verifyTrust(X509Certificate[] certs, boolean enableRevocation) throws WSSecurityException {
+        return false;
+    }
+
 }
