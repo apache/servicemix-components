@@ -16,7 +16,7 @@
  */
 package org.apache.servicemix.cxfbc.provider;
 
-import org.apache.cxf.binding.jbi.JBIFault;
+import org.apache.servicemix.cxf.binding.jbi.JBIFault;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;

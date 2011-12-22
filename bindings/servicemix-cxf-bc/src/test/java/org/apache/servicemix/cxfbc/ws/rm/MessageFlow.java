@@ -27,6 +27,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import junit.framework.Assert;
+import org.apache.cxf.ws.rm.RM10Constants;
 import org.apache.cxf.ws.rm.RMConstants;
 
 
@@ -308,7 +309,7 @@ public class MessageFlow extends Assert {
     
     public void verifySequenceFault(QName code, boolean outbound, int index) throws Exception {
         Document d = outbound ? outboundMessages.get(index) : inboundMessages.get(index);
-        assert null != getRMHeaderElement(d, RMConstants.getSequenceFaultName());
+        assert null != getRMHeaderElement(d, RMConstants.SEQUENCE_FAULT_NAME);
     }
     
     public void verifyHeader(QName name, boolean outbound, int index) throws Exception {
@@ -326,7 +327,7 @@ public class MessageFlow extends Assert {
     }
    
     protected String getAction(Document document) throws Exception {
-        Element e = getHeaderElement(document, RMConstants.getAddressingNamespace(), "Action");
+        Element e = getHeaderElement(document, "http://schemas.xmlsoap.org/ws/2004/08/addressing", "Action");
         if (null != e) {
             return getText(e);
         }
@@ -334,7 +335,7 @@ public class MessageFlow extends Assert {
     }
 
     protected Element getSequence(Document document) throws Exception {
-        return getRMHeaderElement(document, RMConstants.getSequenceName());
+        return getRMHeaderElement(document, "Sequence");
     }
 
     public String getMessageNumber(Element elem) throws Exception {
@@ -356,15 +357,15 @@ public class MessageFlow extends Assert {
     }
 
     protected Element getAcknowledgment(Document document) throws Exception {
-        return getRMHeaderElement(document, RMConstants.getSequenceAckName());
+        return getRMHeaderElement(document, RMConstants.SEQUENCE_ACK_NAME);
     }
     
     private Element getAckRequested(Document document) throws Exception {
-        return getRMHeaderElement(document, RMConstants.getAckRequestedName());
+        return getRMHeaderElement(document, RMConstants.ACK_REQUESTED_NAME);
     }
 
     private Element getRMHeaderElement(Document document, String name) throws Exception {
-        return getHeaderElement(document, RMConstants.getNamespace(),  name);
+        return getHeaderElement(document, "http://schemas.xmlsoap.org/ws/2005/02/rm",  name);
     }
 
     private Element getHeaderElement(Document document, String namespace, String localName)

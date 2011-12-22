@@ -442,6 +442,10 @@
                             <value>${basedir}/target/derby</value>
                         </property>
                     </systemProperties>
+                    <excludes>
+                        <exclude>**/CxfBcDecoupledProviderTest*.*</exclude>
+                    </excludes>
+
                 </configuration>
             </plugin>
             <plugin>

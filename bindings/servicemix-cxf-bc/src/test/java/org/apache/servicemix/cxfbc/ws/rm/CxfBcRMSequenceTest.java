@@ -48,7 +48,7 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
-import org.apache.cxf.ws.rm.RMConstants;
+import org.apache.cxf.ws.rm.RM10Constants;
 import org.apache.cxf.ws.rm.RMContextUtils;
 import org.apache.cxf.ws.rm.RMInInterceptor;
 import org.apache.cxf.ws.rm.RMManager;
@@ -208,7 +208,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), GREETMEONEWAY_ACTION,
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(), GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION, GREETMEONEWAY_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
@@ -216,10 +216,10 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // createSequenceResponse plus 3 partial responses
 
         mf.verifyMessages(4, false);
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction()};
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction()};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, null, null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, true, true}, false);
@@ -244,12 +244,12 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         greeter.greetMeOneWay("thrice");
 
-        awaitMessages(4, 4);
+        awaitMessages(4, 2);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         // three application messages plus createSequence
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(), GREETMEONEWAY_ACTION,
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(), GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION, GREETMEONEWAY_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3"}, true);
@@ -257,13 +257,13 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // createSequenceResponse message plus 3 partial responses, only the
         // last one should include a sequence acknowledgment
 
-        mf.verifyMessages(4, false);
+        mf.verifyMessages(2, false);
         expectedActions =
-            new String[] {RMConstants.getCreateSequenceResponseAction(), null, null,
-                          RMConstants.getSequenceAcknowledgmentAction()};
+            new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                          RM10Constants.INSTANCE.getSequenceAckAction()};
         mf.verifyActions(expectedActions, false);
-        mf.verifyMessageNumbers(new String[] {null, null, null, null}, false);
-        mf.verifyAcknowledgements(new boolean[] {false, false, false, true}, false);
+        mf.verifyMessageNumbers(new String[] {null, null}, false);
+        mf.verifyAcknowledgements(new boolean[] {false, true}, false);
     }
 
 
@@ -279,11 +279,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         // CreateSequence plus two greetMeOneWay requests
 
-        awaitMessages(3, 4);
+        awaitMessages(3, 1);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION};
         mf.verifyActions(expectedActions, true);
@@ -292,14 +292,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // CreateSequenceResponse plus three partial responses, no
         // acknowledgments included
 
-        mf.verifyMessages(4, false);
-        mf.verifyMessageNumbers(new String[4], false);
-        mf.verifyAcknowledgements(new boolean[4], false);
+        mf.verifyMessages(1, false);
+        mf.verifyMessageNumbers(new String[1], false);
+        mf.verifyAcknowledgements(new boolean[1], false);
 
-        mf.verifyPartialResponses(3);
-        mf.purgePartialResponses();
-
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction()};
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction()};
         mf.verifyActionsIgnoringPartialResponses(expectedActions);
         mf.purge();
 
@@ -335,17 +332,17 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // two application messages plus two createSequence plus two
         // terminateSequence
 
-        awaitMessages(6, 6);
+        awaitMessages(6, 4);
 
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(6, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
-                                                 RMConstants.getTerminateSequenceAction(),
-                                                 RMConstants.getCreateSequenceAction(),
+                                                 RM10Constants.INSTANCE.getTerminateSequenceAction(),
+                                                 RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
-                                                 RMConstants.getTerminateSequenceAction()};
+                                                 RM10Constants.INSTANCE.getTerminateSequenceAction()};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", null, null, "1", null}, true);
         mf.verifyLastMessage(new boolean[] {false, true, false, false, true, false}, true);
@@ -353,16 +350,16 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // createSequenceResponse message plus partial responses to
         // greetMeOneWay and terminateSequence ||: 2
 
-        mf.verifyMessages(6, false);
+        mf.verifyMessages(4, false);
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(), null,
-                                        RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(), null};
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction(),
+                                        RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction()};
         mf.verifyActions(expectedActions, false);
-        mf.verifyMessageNumbers(new String[] {null, null, null, null, null, null}, false);
-        mf.verifyLastMessage(new boolean[] {false, false, false, false, false, false}, false);
-        mf.verifyAcknowledgements(new boolean[] {false, true, false, false, true, false}, false);
+        mf.verifyMessageNumbers(new String[] {null, null, null, null}, false);
+        mf.verifyLastMessage(new boolean[] {false, false, false, false}, false);
+        mf.verifyAcknowledgements(new boolean[] {false, true, false, true}, false);
     }
 
 
@@ -391,12 +388,12 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         // three application messages plus createSequence
 
-        awaitMessages(4, 4, 2000);
+        awaitMessages(4, 1, 2000);
 
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION};
@@ -406,11 +403,9 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // createSequenceResponse plus 3 partial responses, none of which
         // contain an acknowledgment
 
-        mf.verifyMessages(4, false);
-        mf.verifyPartialResponses(3, new boolean[3]);
-        mf.purgePartialResponses();
-
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction()};
+        mf.verifyMessages(1, false);
+       
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction()};
         mf.verifyActions(expectedActions, false);
 
         mf.purge();
@@ -440,13 +435,13 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // CreateSequence and three greetMe messages
         // TODO there should be partial responses to the decoupled responses!
 
-        awaitMessages(4, 8);
+        awaitMessages(4, 4);
 
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
 
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  GREETME_ACTION,
                                                  GREETME_ACTION};
@@ -459,12 +454,9 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // one partial response for each of the four messages
         // the first partial response should no include an acknowledgement, the other three should
 
-        mf.verifyMessages(8, false);
-        mf.verifyPartialResponses(4, new boolean[4]);
-
-        mf.purgePartialResponses();
-
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        mf.verifyMessages(4, false);
+        
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
@@ -492,13 +484,13 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // CreateSequence and three greetMe messages
         // TODO there should be partial responses to the decoupled responses!
 
-        awaitMessages(4, 8);
+        awaitMessages(4, 4);
 
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
 
         mf.verifyMessages(4, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  GREETME_ACTION,
                                                  GREETME_ACTION};
@@ -511,12 +503,9 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // one partial response for each of the four messages
         // the first partial response should no include an acknowledgement, the other three should
 
-        mf.verifyMessages(8, false);
-        mf.verifyPartialResponses(4, new boolean[4]);
-
-        mf.purgePartialResponses();
-
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        mf.verifyMessages(4, false);
+            
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
@@ -540,11 +529,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // CreateSequence and three greetMe messages, no acknowledgments
         // included
 
-        awaitMessages(3, 6);
+        awaitMessages(3, 3);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
@@ -556,13 +545,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // one partial response for each of the three messages no acknowledgments
         // included
 
-        mf.verifyMessages(6, false);
-        mf.verifyLastMessage(new boolean[6], false);
-        mf.verifyAcknowledgements(new boolean[6], false);
+        mf.verifyMessages(3, false);
+        mf.verifyLastMessage(new boolean[3], false);
+        mf.verifyAcknowledgements(new boolean[3], false);
 
-        mf.verifyPartialResponses(3);
-        mf.purgePartialResponses();
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
@@ -614,12 +601,12 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(7, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  GREETME_ACTION,
-                                                 RMConstants.getTerminateSequenceAction(),
-                                                 RMConstants.getSequenceAckAction(),
-                                                 RMConstants.getCreateSequenceAction(),
+                                                 RM10Constants.INSTANCE.getTerminateSequenceAction(),
+                                                 RM10Constants.INSTANCE.getSequenceAckAction(),
+                                                 RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", null, null, null, "1"}, true);
@@ -636,11 +623,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         mf.purgePartialResponses();
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION,
-                                        RMConstants.getTerminateSequenceAction(),
-                                        RMConstants.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getTerminateSequenceAction(),
+                                        RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", null, null, "1"}, false);
@@ -699,7 +686,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + two requests
 
         String[] expectedActions = new String[3];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();
+        expectedActions[0] = RM10Constants.INSTANCE.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
@@ -714,7 +701,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + 1 fault
 
         mf.verifyMessages(3, false);
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION, null};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
@@ -758,7 +745,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         // the third inbound message has a SequenceFault header
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
-        mf.verifySequenceFault(RMConstants.getUnknownSequenceFaultCode(), false, 1);
+        mf.verifySequenceFault(RM10Constants.INSTANCE.getUnknownSequenceFaultCode(), false, 1);
     }
 
     public void testInactivityTimeout() throws Exception {
@@ -797,11 +784,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // in the meantime the client has terminated the sequence
 
         String[] expectedActions = new String[4];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();
+        expectedActions[0] = RM10Constants.INSTANCE.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
-        expectedActions[2] = RMConstants.getSequenceAcknowledgmentAction();
+        expectedActions[2] = RM10Constants.INSTANCE.getSequenceAckAction();
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", null, "2"}, true);
         mf.verifyLastMessage(new boolean[4], true);
@@ -812,16 +799,15 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + 1 response with acknowledgement
         // + 1 fault without acknowledgement
 
-        mf.verifyMessages(4, false);
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        mf.verifyMessages(3, false);
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
-                                        null,
                                         null};
         mf.verifyActions(expectedActions, false);
-        mf.verifyMessageNumbers(new String[] {null, "1", null, null}, false);
-        mf.verifyAcknowledgements(new boolean[] {false, true, false, false} , false);
+        mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
+        mf.verifyAcknowledgements(new boolean[] {false, true, false} , false);
         // the last inbound message has a SequenceFault header
-        mf.verifySequenceFault(RMConstants.getUnknownSequenceFaultCode(), false, 3);
+        mf.verifySequenceFault(RM10Constants.INSTANCE.getUnknownSequenceFaultCode(), false, 2);
 
     }
 
@@ -866,7 +852,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // on the timing of the ACKs)
 
         String[] expectedActions = new String[7];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();
+        expectedActions[0] = RM10Constants.INSTANCE.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETMEONEWAY_ACTION;
         }
@@ -881,11 +867,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + 2 partial responses to resent messages
 
         mf.verifyMessages(5, false);
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction(),
-                                        RMConstants.getSequenceAcknowledgmentAction()};
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction()};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, null, null, null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, true, true, true}, false);
@@ -919,7 +905,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         greeter.greetMe("three");
         greeter.greetMe("four");
 
-        awaitMessages(7, 10, 10000);
+        awaitMessages(7, 5, 10000);
 
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
@@ -929,7 +915,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + 2 resends
 
         String[] expectedActions = new String[7];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();
+        expectedActions[0] = RM10Constants.INSTANCE.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
@@ -948,10 +934,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // + 5 partial responses (to CSR & each of the initial greetMe messages)
         // + at least 2 further partial response (for each of the resends)
 
-        mf.verifyPartialResponses(5);
-        mf.purgePartialResponses();
-
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION, GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION, GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
@@ -973,23 +956,20 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         // Outbound expected:
         // CreateSequence + greetMe + CreateSequenceResponse = 3 messages
 
-        awaitMessages(3, 6);
+        awaitMessages(3, 3);
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION,
-                                                 RMConstants.getCreateSequenceResponseAction()};
+                                                 RM10Constants.INSTANCE.getCreateSequenceResponseAction()};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, true);
         mf.verifyLastMessage(new boolean[] {false, false, false}, true);
         mf.verifyAcknowledgements(new boolean[] {false, false, false}, true);
 
-        mf.verifyPartialResponses(3, new boolean[3]);
-        mf.purgePartialResponses();
-
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getCreateSequenceAction(),
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getCreateSequenceAction(),
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, null, "1"}, false);
@@ -1015,7 +995,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         mf.verifyMessages(6, true);
         String[] expectedActions = new String[6];
-        expectedActions[0] = RMConstants.getCreateSequenceAction();
+        expectedActions[0] = RM10Constants.INSTANCE.getCreateSequenceAction();
         for (int i = 1; i < expectedActions.length; i++) {
             expectedActions[i] = GREETME_ACTION;
         }
@@ -1077,7 +1057,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
                                                  clients[i].inRecorder.getInboundMessages());
 
                 mf.verifyMessages(4, true);
-                String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+                String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                          GREETMEONEWAY_ACTION, GREETMEONEWAY_ACTION,
                                                          GREETMEONEWAY_ACTION};
                 mf.verifyActions(expectedActions, true);
@@ -1086,10 +1066,10 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
                 // createSequenceResponse plus 3 partial responses
 
                 mf.verifyMessages(4, false);
-                expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                                RMConstants.getSequenceAcknowledgmentAction(),
-                                                RMConstants.getSequenceAcknowledgmentAction(),
-                                                RMConstants.getSequenceAcknowledgmentAction()};
+                expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                                RM10Constants.INSTANCE.getSequenceAckAction(),
+                                                RM10Constants.INSTANCE.getSequenceAckAction(),
+                                                RM10Constants.INSTANCE.getSequenceAckAction()};
                 mf.verifyActions(expectedActions, false);
                 mf.verifyMessageNumbers(new String[] {null, null, null, null}, false);
                 mf.verifyAcknowledgements(new boolean[] {false, true, true, true}, false);
@@ -1160,7 +1140,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
                                                  clients[i].inRecorder.getInboundMessages());
 
                 mf.verifyMessages(4, true);
-                String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+                String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                          GREETME_ACTION,
                                                          GREETME_ACTION,
                                                          GREETME_ACTION};
@@ -1178,7 +1158,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
                 mf.purgePartialResponses();
 
-                expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+                expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                                 GREETME_RESPONSE_ACTION,
                                                 GREETME_RESPONSE_ACTION,
                                                 GREETME_RESPONSE_ACTION};
@@ -1228,7 +1208,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
 
         mf.verifyMessages(3, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETME_ACTION,
                                                  GREETME_ACTION};
         mf.verifyActions(expectedActions, true);
@@ -1245,7 +1225,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         mf.purgePartialResponses();
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
                                         GREETME_RESPONSE_ACTION};
         mf.verifyActions(expectedActions, false);
@@ -1270,12 +1250,12 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         MessageFlow mf = new MessageFlow(outRecorder.getOutboundMessages(), inRecorder.getInboundMessages());
 
         mf.verifyMessages(6, true);
-        String[] expectedActions = new String[] {RMConstants.getCreateSequenceAction(),
+        String[] expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceAction(),
                                                  GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION,
                                                  GREETMEONEWAY_ACTION,
-                                                 RMConstants.getLastMessageAction(),
-                                                 RMConstants.getTerminateSequenceAction()};
+                                                 RM10Constants.CLOSE_SEQUENCE_ACTION,
+                                                 RM10Constants.TERMINATE_SEQUENCE_ACTION};
         mf.verifyActions(expectedActions, true);
         mf.verifyMessageNumbers(new String[] {null, "1", "2", "3", "4", null}, true);
 
@@ -1289,8 +1269,8 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         mf.purgePartialResponses();
 
 
-        expectedActions = new String[] {RMConstants.getCreateSequenceResponseAction(),
-                                        RMConstants.getSequenceAckAction()};
+        expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
+                                        RM10Constants.INSTANCE.getSequenceAckAction()};
         mf.verifyActions(expectedActions, false);
         mf.verifyAcknowledgements(new boolean[] {false, true}, false);
 
@@ -1402,12 +1382,11 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
     }
 
     private void removeRMInterceptors(List<Interceptor<? extends Message>> interceptors) {
-        for (Iterator<Interceptor<? extends Message>> it = interceptors.iterator(); it.hasNext();) {
-            Interceptor i = it.next();
+        for (Interceptor<? extends Message> i : interceptors) {
             if (i instanceof RMSoapInterceptor
                 || i instanceof RMOutInterceptor
                 || i instanceof RMInInterceptor) {
-                it.remove();
+                interceptors.remove(i);
             }
         }
     }
