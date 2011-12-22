@@ -43,7 +43,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.ConduitInitiatorManager;
-import org.apache.cxf.transport.jbi.JBITransportFactory;
+import org.apache.servicemix.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
 import org.apache.servicemix.id.IdGenerator;
 import org.apache.servicemix.jbi.api.ClientFactory;
@@ -118,11 +118,11 @@ public class CxfSeProxyFactoryBean implements FactoryBean, InitializingBean,
         cf.setServiceClass(type);
         cf.setAddress("jbi://" + new IdGenerator().generateSanitizedId());
         if (isUseJBIWrapper()) {
-            cf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+            cf.setBindingId(org.apache.servicemix.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
         }
         ComponentContext internalContext = getInternalContext();
        
-        Bus bus = new SpringBusFactory().createBus();
+        Bus bus = new SpringBusFactory().createBus(CXF_CONFIG);
         JBITransportFactory jbiTransportFactory = (JBITransportFactory) bus
                 .getExtension(ConduitInitiatorManager.class)
                 .getConduitInitiator(JBITransportFactory.TRANSPORT_ID);

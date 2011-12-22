@@ -66,9 +66,9 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.ConduitInitiatorManager;
-import org.apache.cxf.transport.jbi.JBIDestination;
-import org.apache.cxf.transport.jbi.JBIDispatcherUtil;
-import org.apache.cxf.transport.jbi.JBITransportFactory;
+import org.apache.servicemix.cxf.transport.jbi.JBIDestination;
+import org.apache.servicemix.cxf.transport.jbi.JBIDispatcherUtil;
+import org.apache.servicemix.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
 import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
@@ -274,7 +274,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             sf.getServiceFactory().setPopulateFromClass(true);
             sf.setStart(false);
             if (isUseJBIWrapper()) {
-                sf.setBindingId(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+                sf.setBindingId(org.apache.servicemix.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
             }
             if (getPojoService() != null) {
                 sf.setServiceName(getPojoService());
@@ -325,7 +325,7 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             }
             endpoint = new EndpointImpl(getBus(), getPojo(), new JaxWsServerFactoryBean(serviceFactory));
             if (isUseJBIWrapper()) {
-                endpoint.setBindingUri(org.apache.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
+                endpoint.setBindingUri(org.apache.servicemix.cxf.binding.jbi.JBIConstants.NS_JBI_BINDING);
             }
             if (isUseXmlBeans()) {
                 if (getDataBinding() != null && getDataBinding() instanceof XmlBeansDataBinding) {

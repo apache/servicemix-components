@@ -82,7 +82,7 @@ public class CxfSeComponent extends DefaultComponent {
             CXF_CONFIG[0] = configuration.getBusCfg();
         } 
         if (bus == null) {
-            bus = new SpringBusFactory().createBus();
+            bus = new SpringBusFactory().createBus(CXF_CONFIG);
             bus.getProperties().put(org.apache.cxf.interceptor.OneWayProcessorInterceptor.USE_ORIGINAL_THREAD, "true");
         }
         super.doInit();

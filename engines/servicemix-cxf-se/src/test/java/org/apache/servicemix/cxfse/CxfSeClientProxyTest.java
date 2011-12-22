@@ -29,7 +29,7 @@ import junit.framework.TestCase;
 
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.transport.ConduitInitiatorManager;
-import org.apache.cxf.transport.jbi.JBITransportFactory;
+import org.apache.servicemix.cxf.transport.jbi.JBITransportFactory;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;

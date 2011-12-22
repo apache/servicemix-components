@@ -41,7 +41,6 @@
             !META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.cxfse,
             javax.jws,
             javax.xml.bind.annotation,
-            org.apache.cxf.binding.jbi;version="[2.1.0,3.0.0)",
             org.apache.cxf*;version="[2.1.0,3.0.0)",
             org.apache.servicemix.common,
             org.apache.servicemix.common.osgi,
@@ -55,8 +54,6 @@
             org.springframework.beans.factory.config,
             sun.misc;resolution:=optional,
             META-INF.cxf,
-            META-INF.cxf.transport.jbi,
-            META-INF.cxf.binding.jbi,
             *
         </servicemix.osgi.import>
         <servicemix.osgi.export>
@@ -65,8 +62,6 @@
         </servicemix.osgi.export>
         <servicemix.osgi.bundles>
             org.apache.cxf.bundle,
-            org.apache.cxf.rt-bindings-jbi,
-            org.apache.cxf.rt-transports-jbi,
             org.springframework.core,
             org.springframework.beans,
             org.springframework.context,
@@ -78,17 +73,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-bindings-jbi</artifactId>
-            <version>${cxf.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.servicemix</groupId>
-                    <artifactId>servicemix-jbi</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-aegis</artifactId>
@@ -103,17 +87,6 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
             <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-jbi</artifactId>
-            <version>${cxf.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.servicemix</groupId>
-                    <artifactId>servicemix-jbi</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
