@@ -22,7 +22,7 @@ import javax.jbi.messaging.InOut;
 import javax.xml.namespace.QName;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 

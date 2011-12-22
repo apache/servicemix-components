@@ -24,7 +24,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 
-import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.StringSource;
 import org.apache.servicemix.MessageExchangeListener;
 import org.apache.servicemix.components.util.ComponentSupport;
 import org.apache.servicemix.jbi.container.ActivationSpec;

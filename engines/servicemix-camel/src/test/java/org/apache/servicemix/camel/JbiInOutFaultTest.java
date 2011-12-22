@@ -23,7 +23,7 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
-import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.StringSource;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.FaultException;
 

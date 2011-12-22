@@ -61,6 +61,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
     public JbiEndpoint(JbiComponent jbiComponent, String uri) {
         super(uri, jbiComponent);
         this.jbiComponent = jbiComponent;
+        this.setEndpointUri(uri);
         parseUri(uri);
 
         //now create the binding based on the information read from the URI

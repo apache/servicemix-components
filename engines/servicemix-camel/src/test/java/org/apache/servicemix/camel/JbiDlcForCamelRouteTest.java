@@ -26,7 +26,7 @@ import javax.xml.namespace.QName;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.StringSource;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
 

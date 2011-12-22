@@ -26,7 +26,7 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.converter.jaxp.StringSource;
+import org.apache.camel.StringSource;
 import org.apache.servicemix.camel.test.InvalidSerializableObject;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;

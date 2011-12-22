@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.Collection;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.impl.ServiceSupport;
+import org.apache.camel.spring.SpringCamelContext;
 import org.apache.servicemix.common.Endpoint;
 import org.apache.servicemix.common.ServiceUnit;
 import org.slf4j.Logger;
@@ -57,14 +57,14 @@ public class CamelContextEndpointLifeCycleTest extends NonJbiCamelEndpointsInteg
             assertTrue("It should be CamelContextEndpoint", endpoint instanceof CamelContextEndpoint);
             CamelContext camelContext = ((CamelContextEndpoint)endpoint).getCamelContext();
             // check the CamelContextEndpoint status
-            assertTrue("The CamelContext should be started", ((ServiceSupport)camelContext).isStarted());
+            assertTrue("The CamelContext should be started", ((SpringCamelContext)camelContext).isStarted());
             // Stop
             component.getServiceUnitManager().stop(suName);
             // check the CamelContextEndpoint status
-            assertTrue("The CamelContext should be stopped", ((ServiceSupport)camelContext).isStopped());
+            assertTrue("The CamelContext should be stopped", ((SpringCamelContext)camelContext).isStopped());
             // reStart
             component.getServiceUnitManager().start(suName);
-            assertTrue("The CamelContext should be started", ((ServiceSupport)camelContext).isStarted());
+            assertTrue("The CamelContext should be started", ((SpringCamelContext)camelContext).isStarted());
 
             component.getServiceUnitManager().stop(suName);
             component.getServiceUnitManager().shutDown(suName);
