@@ -21,8 +21,7 @@
            xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
            xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0">
 
-  <!-- Configuration Admin PID org.apache.servicemix.jbi -->
-  <cm:property-placeholder persistent-id="org.apache.servicemix.jbi">
+  <cm:property-placeholder persistent-id="org.apache.servicemix.components.camel">
       <cm:default-properties>
           <cm:property name="shutdownTimeout" value="0"/>
 	    </cm:default-properties>
