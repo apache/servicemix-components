@@ -85,7 +85,7 @@
         <activemq.version>5.5.1</activemq.version>
         
         <!-- Camel -->
-        <camel.version>2.9.0-SNAPSHOT</camel.version>
+        <camel.version>2.9.0</camel.version>
 
         <!-- CXF -->
         <cxf.version>2.5.1</cxf.version>
