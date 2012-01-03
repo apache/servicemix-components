@@ -156,7 +156,7 @@
         <xmlschema.version>1.4.7</xmlschema.version>
         <xmlParserAPIs.version>2.2.1</xmlParserAPIs.version>
         <xmlunit.version>1.1</xmlunit.version>
-        <xmlsec.version>1.4.3</xmlsec.version>
+        <xmlsec.version>1.4.5</xmlsec.version>
         <xstream.version>1.3</xstream.version>
 
         <!-- Tooling -->
