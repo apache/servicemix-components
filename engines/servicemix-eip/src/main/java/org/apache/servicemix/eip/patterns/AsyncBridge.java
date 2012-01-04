@@ -267,11 +267,13 @@ public class AsyncBridge extends EIPEndpoint {
                     throw new IllegalArgumentException("Could not retrieve correlation id for incoming exchange");
                 }
                 t0 = (MessageExchange) store.load(correlationId + ".t0");
-                store.store(correlationId + ".t2", t2);
                 // The request is found and has not timed out
                 if (t0 != null) {
+                    store.store(correlationId + ".t2", t2);
                     MessageUtil.transferInToOut(t2, t0);
                     send(t0);
+                } else {
+                    done(t2);
                 }
             } else {
                 throw new IllegalStateException();
