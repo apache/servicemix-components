@@ -138,6 +138,37 @@ public class CxfBcJmsTest extends CxfBcSpringTestSupport {
         setUpJBI("org/apache/servicemix/cxfbc/jms_transport_asyn.xml");
         jmsTestBase();
     }
+    
+    public void testJMSTransportTimeoutException() throws Exception {
+        setUpJBI("org/apache/servicemix/cxfbc/jms_transport_timeout.xml");
+        SpringBusFactory bf = new SpringBusFactory();
+        Bus testBus = bf.createBus("org/apache/servicemix/cxfbc/jms_test_timeout.xml");
+        BusFactory.setDefaultBus(testBus);
+
+        URL wsdl = getWSDLURL("org/apache/servicemix/cxfbc/ws/security/hello_world.wsdl");
+
+        QName serviceName = getServiceName(new QName(
+                "http://apache.org/hello_world_soap_http", "HelloWorldService"));
+        QName portName = getPortName(new QName(
+                "http://apache.org/hello_world_soap_http", "HelloWorldPort"));
+        
+        assertNotNull(wsdl);
+
+        HelloWorldService service = new HelloWorldService(wsdl, serviceName);
+        assertNotNull(service);
+        try {
+            Greeter greeter = service.getPort(portName,
+                    Greeter.class);
+            try {
+                greeter.greetMe("wait");
+                fail("should get timeout exception");
+            } catch (Exception e) {
+                assertTrue(e.getMessage().startsWith("Timeout receiving message with correlationId"));
+            }
+        } catch (UndeclaredThrowableException ex) {
+            throw (Exception) ex.getCause();
+        }       
+    }
 
     private void jmsTestBase() throws Exception, NoSuchCodeLitFault, BadRecordLitFault {
         SpringBusFactory bf = new SpringBusFactory();

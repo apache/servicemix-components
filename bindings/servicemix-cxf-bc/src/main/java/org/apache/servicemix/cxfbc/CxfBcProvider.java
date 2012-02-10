@@ -53,6 +53,8 @@ import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
 
+import org.apache.cxf.binding.soap.Soap11;
+import org.apache.cxf.binding.soap.Soap12;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
@@ -272,10 +274,18 @@ public class CxfBcProvider extends ProviderEndpoint implements
     private void faultProcess(MessageExchange exchange, Message message, Exception e) throws MessagingException {
         javax.jbi.messaging.Fault fault = exchange.createFault();
         if (e.getCause() != null) {
-            handleJBIFault(message, e.getCause().getMessage());
+            if (isUseJBIWrapper()) {
+                handleJBIFault(message, e.getCause().getMessage());
+            } else {
+                handleSoapFault(message, e.getCause().getMessage(), exchange);
+            }
         } else {
-            handleJBIFault(message, e.getMessage());
-        }
+            if (isUseJBIWrapper()) {
+                handleJBIFault(message, e.getMessage());
+            } else {
+                handleSoapFault(message, e.getMessage(), exchange);
+            }
+        }        
         fault.setContent(message.getContent(Source.class));
         exchange.setFault(fault);
         boolean txSync = exchange.getStatus() == ExchangeStatus.ACTIVE
@@ -290,6 +300,72 @@ public class CxfBcProvider extends ProviderEndpoint implements
     }
 
    
+    private void handleSoapFault(Message message, String faultMessage, MessageExchange exchange) {
+        Document document = DomUtil.createDocument();
+        SoapVersion soapVersion = ((SoapMessage)message).getVersion();
+        
+        
+        if (isUseSOAPEnvelope()) {
+            Element soapEnv = DomUtil.createElement(document, new QName(
+                soapVersion.getEnvelope().getNamespaceURI(), soapVersion
+                        .getEnvelope().getLocalPart(), "soap"));
+            Element soapBody = DomUtil.createElement(soapEnv, new QName(
+                soapVersion.getBody().getNamespaceURI(), soapVersion
+                        .getBody().getLocalPart(), "soap"));
+                                  
+            soapEnv.appendChild(soapBody);
+            Element faultBody = DomUtil.createElement(soapBody, new QName(
+                                    soapVersion.getEnvelope().getNamespaceURI(),
+                                    "Fault", "soap"));
+            Element faultCode = DomUtil.createElement(faultBody, 
+                                                      new QName("", "faultcode"));
+            faultCode.setTextContent("soap:Client");
+            Element faultString = DomUtil.createElement(faultBody, 
+                                                      new QName("", "faultstring"));
+            faultString.setTextContent(faultMessage);
+            Element faultDetail = null;
+            if (soapVersion instanceof Soap12) {
+                faultDetail = DomUtil.createElement(faultBody, new QName(
+                                        soapVersion.getBody().getNamespaceURI(), 
+                                        "Detail", "soap"));
+            } else {
+                faultDetail = DomUtil.createElement(faultBody, new QName(
+                                        soapVersion.getBody().getNamespaceURI(), 
+                                        "detail"));
+            }
+            faultDetail.setTextContent(faultMessage);
+            /*exchange.setProperty("faultcode", 
+                                 new QName(soapVersion.getEnvelope().getNamespaceURI(), "Client"));
+            exchange.setProperty("faultstring", faultMessage);*/
+                   
+        } else {
+            Element faultBody = DomUtil.createElement(document, new QName(
+                                    soapVersion.getEnvelope().getNamespaceURI(),
+                                    "Fault", "soap"));
+            Element faultCode = DomUtil.createElement(faultBody, 
+                                                      new QName("", "faultcode"));
+            faultCode.setTextContent("soap:Client");
+            Element faultString = DomUtil.createElement(faultBody, 
+                                                      new QName("", "faultstring"));
+            faultString.setTextContent(faultMessage);
+            Element faultDetail = null;
+            if (soapVersion instanceof Soap12) {
+                faultDetail = DomUtil.createElement(faultBody, new QName(
+                                        soapVersion.getBody().getNamespaceURI(), 
+                                        "Detail", "soap"));
+            } else {
+                faultDetail = DomUtil.createElement(faultBody, new QName(
+                                        "", 
+                                        "detail"));
+            }
+            faultDetail.setTextContent(faultMessage);
+            /*exchange.setProperty("faultcode", 
+                                 new QName(soapVersion.getEnvelope().getNamespaceURI(), "Client"));
+            exchange.setProperty("faultstring", faultMessage);*/
+        }
+        message.setContent(Source.class, new DOMSource(document));
+    }
+
     private void handleJBIFault(Message message, String detail) {
         Document doc = DomUtil.createDocument();
         Element jbiFault = DomUtil.createElement(doc, new QName(

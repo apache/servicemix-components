@@ -953,6 +953,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                                 details.getNamespaceURI(), "Fault").item(0);
                         }
                         assert details != null;
+                        NodeList reason = details.getElementsByTagName("faultstring");
+                        NodeList code = details.getElementsByTagName("faultcode");
                         if (exchange.getProperty("faultstring") != null) {
                             details = (Element) details.getElementsByTagName("faultstring").item(0);
                         } else {
@@ -970,6 +972,11 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                         f.setDetail(details);
                         if (exchange.getProperty("faultstring") != null) {
                             f.setMessage((String)exchange.getProperty("faultstring"));
+                        } else {
+                            if (reason != null && reason.item(0) != null 
+                                && ((Element)reason.item(0)).getTextContent() != null) {
+                                f.setMessage(((Element)reason.item(0)).getTextContent());
+                            }
                         }
                         
                         if (exchange.getProperty("faultcode") != null) {
