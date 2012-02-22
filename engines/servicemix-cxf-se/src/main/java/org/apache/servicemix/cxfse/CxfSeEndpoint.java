@@ -19,6 +19,8 @@ package org.apache.servicemix.cxfse;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -50,6 +52,7 @@ import org.apache.cxf.aegis.databinding.AegisDatabinding;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.model.SoapBindingInfo;
+import org.apache.cxf.catalog.OASISCatalogManager;
 import org.apache.cxf.databinding.AbstractDataBinding;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.frontend.ServerFactoryBean;
@@ -65,11 +68,14 @@ import org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
+import org.apache.cxf.service.model.OperationInfo;
+import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.servicemix.cxf.transport.jbi.JBIDestination;
 import org.apache.servicemix.cxf.transport.jbi.JBIDispatcherUtil;
 import org.apache.servicemix.cxf.transport.jbi.JBITransportFactory;
 import org.apache.cxf.wsdl11.ServiceWSDLBuilder;
+import org.apache.cxf.wsdl11.WSDLServiceBuilder;
 import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
 import org.apache.servicemix.common.endpoints.ProviderEndpoint;
 import org.apache.servicemix.cxfse.interceptors.AttachmentInInterceptor;
@@ -91,8 +97,6 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
     private Object pojo;
 
     private EndpointImpl endpoint;
-
-    private String address;
 
     private ServerFactoryBean sf;
 
@@ -395,15 +399,55 @@ public class CxfSeEndpoint extends ProviderEndpoint implements InterceptorProvid
             removeInterceptor(server.getEndpoint().getBinding().getOutInterceptors(), "StaxOutInterceptor");
         }
 
-        // publish the WSDL in the endpoint descriptor
-        try {
-            definition = new ServiceWSDLBuilder(getBus(), server.getEndpoint().getService().getServiceInfos().iterator().next()).build();
-            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(definition);
-        } catch (WSDLException e) {
-            throw new DeploymentException(e);
-        }
+        setDescriptor();
         
         super.validate();
+
+    }
+    
+    private void setDescriptor() throws DeploymentException {
+        // publish the WSDL in the endpoint descriptor
+        // ensure the import schema is inline for a provider endpoint
+
+        try {
+            // ensure the jax-ws-catalog is loaded
+            OASISCatalogManager.getCatalogManager(getBus()).loadContextCatalogs();
+            definition = new ServiceWSDLBuilder(getBus(), server.getEndpoint().getService().getServiceInfos()
+                .iterator().next()).build();
+            EndpointInfo ei = server.getEndpoint().getService().getServiceInfos().iterator().next()
+                .getEndpoints().iterator().next();
+
+            for (ServiceInfo serviceInfo : server.getEndpoint().getService().getServiceInfos()) {
+                if (serviceInfo.getName().equals(service)
+                    && getEndpoint() != null
+                    && serviceInfo.getEndpoint(new QName(serviceInfo.getName().getNamespaceURI(),
+                                                         getEndpoint())) != null) {
+                    ei = serviceInfo.getEndpoint(new QName(serviceInfo.getName().getNamespaceURI(),
+                                                           getEndpoint()));
+
+                }
+            }
+            ServiceInfo serInfo = new ServiceInfo();
+
+            Map<String, Element> schemaList = new HashMap<String, Element>();
+            SchemaUtil schemaUtil = new SchemaUtil(getBus(), schemaList);
+            schemaUtil.getSchemas(definition, serInfo);
+
+            serInfo = ei.getService();
+            List<ServiceInfo> serviceInfos = new ArrayList<ServiceInfo>();
+            serviceInfos.add(serInfo);
+
+            ServiceWSDLBuilder swBuilder = new ServiceWSDLBuilder(getBus(), serviceInfos);
+
+            serInfo.setProperty(WSDLServiceBuilder.WSDL_DEFINITION, null);
+            serInfo.getInterface().setProperty(WSDLServiceBuilder.WSDL_PORTTYPE, null);
+            for (OperationInfo opInfo : serInfo.getInterface().getOperations()) {
+                opInfo.setProperty(WSDLServiceBuilder.WSDL_OPERATION, null);
+            }
+            description = WSDLFactory.newInstance().newWSDLWriter().getDocument(swBuilder.build());
+        } catch (WSDLException ex) {
+            throw new DeploymentException(ex);
+        }
 
     }
 
