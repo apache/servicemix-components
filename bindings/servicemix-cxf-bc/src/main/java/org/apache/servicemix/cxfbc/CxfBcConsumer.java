@@ -671,8 +671,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 definition = getBus().getExtension(WSDLManager.class)
                         .getDefinition(wsdl.getURL());
             } catch (WSDLException ex) {
-                // throw new ServiceConstructionException(new
-                // Message("SERVICE_CREATION_MSG", LOG), ex);
+                throw new DeploymentException(ex);
             }
         }
     }
