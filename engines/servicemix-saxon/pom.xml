@@ -45,7 +45,7 @@
     </repositories>    
 
     <properties>
-        <saxon.version>9.1.0.8</saxon.version>
+        <saxon.version>9.3.0.11</saxon.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.saxon*,
@@ -67,12 +67,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sf.saxon</groupId>
-            <artifactId>saxon</artifactId>
-            <version>${saxon.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>saxon-dom</artifactId>
+            <artifactId>saxon9he</artifactId>
             <version>${saxon.version}</version>
         </dependency>
         <dependency>

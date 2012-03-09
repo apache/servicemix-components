@@ -99,13 +99,20 @@
       <saxon:xquery service="test:xquery-inline" endpoint="endpoint" reload="true">
         <!-- CDATA are not supported currently -->
         <saxon:query>
+           &lt;titles&gt;
+           {
            for $x in /bookstore/book
            where $x/price > 30
            return $x/title
+           }
+           &lt;/titles&gt;
         </saxon:query>
-        <saxon:outputProperties>
+     
+        <!--need revise xquery-inline as the Serialization parameter {http://saxon.sf.net/}wrap-result-sequence isn't available
+         in  9.3.0.11HomeEdition anymore-->
+        <!--saxon:outputProperties>
           <saxon:property key="{http://saxon.sf.net/}wrap-result-sequence">yes</saxon:property>
-        </saxon:outputProperties>
+        </saxon:outputProperties-->
       </saxon:xquery>
       <!-- END SNIPPET: xquery-inline -->
       	      

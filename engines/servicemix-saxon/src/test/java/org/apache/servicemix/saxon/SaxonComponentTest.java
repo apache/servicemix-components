@@ -251,13 +251,8 @@ public class SaxonComponentTest extends SpringTestSupport {
         }
         logger.info(transformer.toString(me.getOutMessage().getContent()));
         Element el = transformer.toDOMElement(me.getOutMessage());
+        assertEquals("XQuery Kick Start", textValueOfXPath(el, "/titles/title[1]"));
         client.done(me);
-        assertEquals(new QName("http://saxon.sf.net/xquery-results", "sequence"), DOMUtil.getQName(el));
-        el = DOMUtil.getFirstChildElement(el);
-        assertEquals(new QName("http://saxon.sf.net/xquery-results", "element"), DOMUtil.getQName(el));
-        el = DOMUtil.getFirstChildElement(el);
-        assertEquals(new QName("title"), DOMUtil.getQName(el));
-        assertEquals("XQuery Kick Start", DOMUtil.getElementText(el));
     }
 
     public void testXQueryDynamic() throws Exception {
