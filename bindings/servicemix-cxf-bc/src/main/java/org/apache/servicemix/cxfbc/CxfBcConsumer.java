@@ -835,9 +835,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     ComponentContext.class);
             
             String unsubscribeAddress = (String)message.getContextualProperty(CxfBcConsumer.WSN_UNSUBSCRIBE_ADDRESS);
-            System.out.println("unsubscribeAddress is =====" + unsubscribeAddress);
             if (unsubscribeAddress != null && unsubscribeAddress.length() > 0) {
-                System.out.println("unsubscribeAddress is =====" + unsubscribeAddress);
                 CxfBcConsumer.this.setTargetEndpoint(unsubscribeAddress);
             }
             

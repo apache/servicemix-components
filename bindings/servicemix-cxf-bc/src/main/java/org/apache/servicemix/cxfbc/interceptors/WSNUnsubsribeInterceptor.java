@@ -52,7 +52,6 @@ public class WSNUnsubsribeInterceptor extends AbstractSoapInterceptor {
         String address = null;
         address = getAddress(message);
         address = address.substring("http://servicemix.org/wsnotification/Subscription/".length());
-        System.out.println("the address is =============" + address);
         message.setContextualProperty(CxfBcConsumer.WSN_UNSUBSCRIBE_ADDRESS, address);
     }
     
@@ -61,11 +60,9 @@ public class WSNUnsubsribeInterceptor extends AbstractSoapInterceptor {
             //as we need read the incoming message to determine the target endpoint
             //ensure the Source is re-readable;
             Node node = XMLUtils.fromSource(message.getContent(Source.class));
-            XMLUtils.printDOM("======the node before address is", node);
             message.setContent(Source.class, new DOMSource(node));
             String ret = DOMUtils.findAllElementsByTagNameNS(
                                  (Element)node.getFirstChild(), "http://docs.oasis-open.org/wsrf/bf-2", "Address").get(0).getTextContent();
-            XMLUtils.printDOM("======the node before address is", node);
             return ret;
            
         } catch (Exception e) {
