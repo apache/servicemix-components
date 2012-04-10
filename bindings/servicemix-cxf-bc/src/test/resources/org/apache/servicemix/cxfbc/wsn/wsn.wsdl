@@ -1,0 +1,149 @@
+<?xml version="1.0" ?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<wsdl:definitions name="ServiceMix-WS-BrokeredNotification"
+   xmlns="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:wsa="http://www.w3.org/2005/08/addressing"
+   xmlns:wsn-br="http://docs.oasis-open.org/wsn/br-2"
+   xmlns:wsn-brw="http://docs.oasis-open.org/wsn/brw-2"
+   xmlns:wsn-b="http://docs.oasis-open.org/wsn/b-2"
+   xmlns:wsn-bw="http://docs.oasis-open.org/wsn/bw-2"
+   xmlns:wsrf-bf="http://docs.oasis-open.org/wsrf/bf-2"
+   xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2"
+   xmlns:wsrf-rpw="http://docs.oasis-open.org/wsrf/rpw-2"
+   xmlns:tns="http://sample.com/wsn"
+   xmlns:sample-wsn="http://sample.com/wsn"
+   targetNamespace="http://sample.com/wsn">
+
+   <wsdl:import namespace="http://sample.com/wsn"
+      location="WSN_PortTypes.wsdl">
+   </wsdl:import>
+
+    <wsdl:import namespace="http://docs.oasis-open.org/wsrf/rpw-2"
+        location="rpw-2.wsdl">
+    </wsdl:import>
+
+
+   <wsdl:binding name="NotificationBrokerJBI"
+      type="sample-wsn:NotificationBroker">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+         style="document" />
+      <wsdl:operation name="Notify">
+         <soap:operation soapAction="http://sample.com/wsn/Notify"/>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="Subscribe">
+         <soap:operation soapAction="http://sample.com/wsn/Subscribe"/>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="ResourceUnknownFault">
+            <soap:fault use="literal" name="ResourceUnknownFault" />
+         </wsdl:fault>
+         <wsdl:fault name="InvalidFilterFault">
+            <soap:fault use="literal" name="InvalidFilterFault" />
+         </wsdl:fault>
+         <wsdl:fault name="TopicExpressionDialectUnknownFault">
+            <soap:fault use="literal"
+               name="TopicExpressionDialectUnknownFault" />
+         </wsdl:fault>
+         <wsdl:fault name="InvalidTopicExpressionFault">
+            <soap:fault use="literal"
+               name="InvalidTopicExpressionFault" />
+         </wsdl:fault>
+         <wsdl:fault name="TopicNotSupportedFault">
+            <soap:fault use="literal" name="TopicNotSupportedFault" />
+         </wsdl:fault>
+         <wsdl:fault
+            name="InvalidProducerPropertiesExpressionFault">
+            <soap:fault use="literal"
+               name="InvalidProducerPropertiesExpressionFault" />
+         </wsdl:fault>
+         <wsdl:fault name="InvalidMessageContentExpressionFault">
+            <soap:fault use="literal"
+               name="InvalidMessageContentExpressionFault" />
+         </wsdl:fault>
+         <wsdl:fault
+            name="UnacceptableInitialTerminationTimeFault">
+            <soap:fault use="literal"
+               name="UnacceptableInitialTerminationTimeFault" />
+         </wsdl:fault>
+         <wsdl:fault name="UnrecognizedPolicyRequestFault">
+            <soap:fault use="literal"
+               name="UnrecognizedPolicyRequestFault" />
+         </wsdl:fault>
+         <wsdl:fault  name="UnsupportedPolicyRequestFault">
+            <soap:fault use="literal"
+               name="UnsupportedPolicyRequestFault" />
+         </wsdl:fault>
+         <wsdl:fault name="NotifyMessageNotSupportedFault">
+            <soap:fault use="literal"
+               name="NotifyMessageNotSupportedFault" />
+         </wsdl:fault>
+         <wsdl:fault name="SubscribeCreationFailedFault">
+            <soap:fault use="literal"
+               name="SubscribeCreationFailedFault" />
+         </wsdl:fault>
+      </wsdl:operation>
+
+   </wsdl:binding>
+   <wsdl:service name="NotificationBrokerService">
+      <wsdl:port name="Broker" binding="tns:NotificationBrokerJBI">   
+        <soap:address location="http://localhost:5728/sample/NotificationBrokerService/" />
+      </wsdl:port>
+   </wsdl:service>
+
+   <wsdl:binding name="SubscriptionManagerJBI"
+      type="sample-wsn:SubscriptionManager">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+         style="document" />
+
+      <wsdl:operation name="Unsubscribe">
+         <soap:operation soapAction="http://sample.com/wsn/Unsubscribe"/>
+         <wsdl:input name="UnsubscribeRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output name="UnsubscribeResponse">
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="ResourceUnknownFault">
+            <soap:fault use="literal" name="ResourceUnknownFault" />
+         </wsdl:fault>
+         <wsdl:fault name="UnableToDestroySubscriptionFault">
+            <soap:fault use="literal"
+               name="UnableToDestroySubscriptionFault" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="SubscriptionManagerService">
+      <wsdl:port name="SubscriptionManager" binding="tns:SubscriptionManagerJBI">
+        <soap:address location="http://localhost:5728/sample/SubscriptionManagerService/" />
+      </wsdl:port>
+   </wsdl:service>
+
+</wsdl:definitions>

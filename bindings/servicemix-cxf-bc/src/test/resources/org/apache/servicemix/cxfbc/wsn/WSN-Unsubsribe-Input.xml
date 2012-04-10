@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+  <env:Body>
+  <ns5:Unsubscribe xmlns:ns5="http://docs.oasis-open.org/wsn/b-2" xmlns:ns2="http://docs.oasis-open.org/wsrf/bf-2" xmlns:ns3="http://www.w3.org/2005/08/addressing" xmlns:ns4="http://docs.oasis-open.org/wsrf/rp-2" xmlns:ns6="http://docs.oasis-open.org/wsn/t-1" xmlns:ns7="http://docs.oasis-open.org/wsn/br-2" xmlns:ns8="http://docs.oasis-open.org/wsrf/r-2">
+     <ns5:SubscriptionReference>
+       <ns2:Address>http://servicemix.org/wsnotification/Subscription/ID-192-168-1-102-1369a1368ec-27-0</ns2:Address>
+       <ns2:ReferenceParameters/>
+     </ns5:SubscriptionReference>
+  </ns5:Unsubscribe>
+  </env:Body>
+</env:Envelope>

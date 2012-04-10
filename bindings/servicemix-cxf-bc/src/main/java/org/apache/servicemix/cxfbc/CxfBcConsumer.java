@@ -130,6 +130,8 @@ import org.springframework.transaction.PlatformTransactionManager;
  */
 public class CxfBcConsumer extends ConsumerEndpoint implements
         CxfBcEndpointWithInterceptor {
+    
+    public static final String WSN_UNSUBSCRIBE_ADDRESS = "wsn.unsubscribe.address";
 
     List<Interceptor<? extends Message>> in = new CopyOnWriteArrayList<Interceptor<? extends Message>>();
 
@@ -831,10 +833,19 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                     .getContent(MessageExchange.class);
             ComponentContext context = message.getExchange().get(
                     ComponentContext.class);
+            
+            String unsubscribeAddress = (String)message.getContextualProperty(CxfBcConsumer.WSN_UNSUBSCRIBE_ADDRESS);
+            System.out.println("unsubscribeAddress is =====" + unsubscribeAddress);
+            if (unsubscribeAddress != null && unsubscribeAddress.length() > 0) {
+                System.out.println("unsubscribeAddress is =====" + unsubscribeAddress);
+                CxfBcConsumer.this.setTargetEndpoint(unsubscribeAddress);
+            }
+            
             CxfBcConsumer.this.configureExchangeTarget(exchange);
             CxfBcConsumer.this.isOneway = message.getExchange().get(
                     BindingOperationInfo.class).getOperationInfo().isOneWay();
             message.getExchange().setOneWay(CxfBcConsumer.this.isOneway);
+            
 
             try {
             	if (CxfBcConsumer.this.isOneway) {
