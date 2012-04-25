@@ -397,6 +397,12 @@
             <artifactId>slf4j-log4j12</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml</artifactId>
+            <version>2.5.1-1</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- documentation -->
         <dependency>
