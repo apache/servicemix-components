@@ -17,7 +17,6 @@
 package org.apache.servicemix.cxfbc;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,21 +38,18 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.cxf.phase.PhaseChainCache;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.ibm.wsdl.Constants;
 
 import org.apache.cxf.Bus;
 
-import org.apache.cxf.binding.soap.Soap11;
 import org.apache.cxf.binding.soap.Soap12;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.SoapVersion;
@@ -85,7 +81,6 @@ import org.apache.cxf.service.model.BindingMessageInfo;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.OperationInfo;
-import org.apache.cxf.service.model.SchemaInfo;
 import org.apache.cxf.service.model.ServiceInfo;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.ConduitInitiator;
@@ -257,9 +252,7 @@ public class CxfBcProvider extends ProviderEndpoint implements
                 throw ex;
             }
             
-            OutputStream os = message.getContent(OutputStream.class);
-            os.flush();
-            os.close();
+            conduit.close(message);
         } catch (Exception e) {
             if (!(exchange instanceof InOnly)) {
         	faultProcess(exchange, message, e);

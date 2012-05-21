@@ -24,7 +24,7 @@ import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
-import org.apache.cxf.ws.addressing.AddressingPropertiesImpl;
+import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.addressing.AttributedURIType;
 import org.apache.cxf.ws.addressing.ContextUtils;
 import org.apache.servicemix.cxfbc.CxfBcConsumer;
@@ -42,7 +42,7 @@ public class JbiAddressingInterceptor extends AbstractPhaseInterceptor<Message> 
        
     public void handleMessage(Message message) throws Fault {
         
-        final AddressingPropertiesImpl maps = ContextUtils.retrieveMAPs(message, false, false);
+        final AddressingProperties maps = ContextUtils.retrieveMAPs(message, false, false);
         if (null == maps) {
             return;
         }
