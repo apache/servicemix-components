@@ -88,7 +88,7 @@
         <camel.version>2.9.0</camel.version>
 
         <!-- CXF -->
-        <cxf.version>2.6.0</cxf.version>
+        <cxf.version>2.6.1</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
