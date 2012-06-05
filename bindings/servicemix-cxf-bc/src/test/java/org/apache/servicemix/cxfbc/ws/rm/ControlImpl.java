@@ -172,5 +172,18 @@ public class ControlImpl {
         return null;
     } 
 
+    public Response<?> setRobustInOnlyModeAsync(boolean in) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Future<?> setRobustInOnlyModeAsync(boolean in, AsyncHandler<?> asyncHandler) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setRobustInOnlyMode(boolean in) {
+        endpoint.getProperties().put(Message.ROBUST_ONEWAY, in);        
+    }
   
 }
