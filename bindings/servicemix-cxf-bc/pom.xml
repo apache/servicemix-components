@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>binding-components</artifactId>
-        <version>2011.02.1-SNAPSHOT</version>
+        <version>2011.02.1</version>
     </parent>
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-cxf-bc</artifactId>
-    <version>2011.02.1-SNAPSHOT</version>
+    <version>2011.02.1</version>
     <packaging>jbi-component</packaging>
     <name>Apache ServiceMix :: Components :: CXF Binding Component</name>
     <description>
@@ -41,9 +41,9 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2011.02.1-SNAPSHOT</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2011.02.1-SNAPSHOT</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2011.02.1-SNAPSHOT</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2011.02.1</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2011.02.1</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2011.02.1</url>
     </scm>
 
     <properties>
