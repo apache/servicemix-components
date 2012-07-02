@@ -119,13 +119,11 @@ public class CxfBCPolicyTest extends TestCase {
             ConnectionHelper.setKeepAliveConnection(greeter, true);
         }
 
-        //set timeout to 30 secs to avoid intermitly failed
-        ((ClientImpl)ClientProxy.getClient(greeter)).setSynchronousTimeout(30000);
+        //set timeout to 100 secs to avoid intermitly failed
+        ((ClientImpl)ClientProxy.getClient(greeter)).setSynchronousTimeout(100000);
         
         // oneway
         greeter.greetMeOneWay("CXF");
-
-        // two-way
 
         assertEquals("CXF", greeter.greetMe("cxf"));
 
