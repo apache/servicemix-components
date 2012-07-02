@@ -125,9 +125,7 @@ public class CxfBCPolicyTest extends TestCase {
         // oneway
         greeter.greetMeOneWay("CXF");
 
-        // two-way
-        // randomly fails
-        // assertEquals("CXF", greeter.greetMe("cxf"));
+        assertEquals("CXF", greeter.greetMe("cxf"));
 
         // exception
 
