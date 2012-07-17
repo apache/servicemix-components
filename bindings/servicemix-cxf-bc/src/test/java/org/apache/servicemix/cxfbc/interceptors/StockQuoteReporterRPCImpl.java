@@ -25,7 +25,7 @@ import org.apache.cxf.common.logging.LogUtils;
                 targetNamespace = "http://servicemix.apache.org/cxfbc/interceptors",
                 portName = "StockQuoteReporterRPCPort",
                 serviceName = "StockQuoteReporterRPCService",
-                wsdlLocation = "C:/fuse-esb-3.3.0.6/examples/cxf-java-first-rpc/cxf-server-rpc/src/main/resources/quote.wsdl")
+                wsdlLocation = "org/apache/servicemix/cxfbc/interceptors/quote.wsdl")
 
 public class StockQuoteReporterRPCImpl implements QuoteReporterRPC {
 
