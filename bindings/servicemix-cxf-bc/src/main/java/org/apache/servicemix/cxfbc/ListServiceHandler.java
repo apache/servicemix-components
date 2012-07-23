@@ -31,6 +31,7 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.endpoint.ServerRegistry;
 import org.apache.cxf.transport.http_jetty.JettyHTTPDestination;
+import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngine;
 import org.eclipse.jetty.http.HttpMethods;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.server.HttpConnection;
@@ -84,9 +85,13 @@ public class ListServiceHandler extends AbstractHandler {
             ServerRegistry serverRegistry = bus.getExtension(ServerRegistry.class);
             servers.addAll(serverRegistry.getServers());
         }
+        int serverPort = request.getServerPort();
         for (Iterator<Server> iter = servers.iterator(); iter.hasNext();) {
             Server server = (Server) iter.next();
             JettyHTTPDestination jhd = (JettyHTTPDestination)server.getDestination();
+            if (((JettyHTTPServerEngine)jhd.getEngine()).getPort() != serverPort) {
+                continue;
+            }
             String address = jhd.getAddress().getAddress().getValue();
             writer.write("<li><a href=\"");
             writer.write(address);
