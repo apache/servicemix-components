@@ -40,6 +40,8 @@ public class CxfBcComponent extends DefaultComponent {
 
     private String busCfg;
     
+    private boolean showAllServices = false;
+    
     private CxfBcConfiguration configuration = new CxfBcConfiguration();
     
     /**
@@ -163,6 +165,14 @@ public class CxfBcComponent extends DefaultComponent {
      */
     public void setAuthenticationService(Object authenticationService) {
         this.configuration.setAuthenticationService(authenticationService);
+    }
+
+    public boolean isShowAllServices() {
+        return showAllServices;
+    }
+
+    public void setShowAllServices(boolean showAllServices) {
+        this.showAllServices = showAllServices;
     }
 
 }

@@ -45,9 +45,15 @@ public class ListServiceHandler extends AbstractHandler {
 
 
     private Map<String, Bus> allBuses;
+    private CxfBcComponent cxfBcComponent;
     
     public ListServiceHandler(Map<String, Bus> allBuses) {
         this.allBuses = allBuses;
+    }
+    
+    public ListServiceHandler(Map<String, Bus> allBuses, CxfBcComponent cxfBcComponent) {
+        this.allBuses = allBuses;
+        this.cxfBcComponent = cxfBcComponent;
     }
     
     public void handle(String target, HttpServletRequest request,
@@ -89,7 +95,9 @@ public class ListServiceHandler extends AbstractHandler {
         for (Iterator<Server> iter = servers.iterator(); iter.hasNext();) {
             Server server = (Server) iter.next();
             JettyHTTPDestination jhd = (JettyHTTPDestination)server.getDestination();
-            if (((JettyHTTPServerEngine)jhd.getEngine()).getPort() != serverPort) {
+            if (cxfBcComponent != null
+                && !cxfBcComponent.isShowAllServices() 
+                && ((JettyHTTPServerEngine)jhd.getEngine()).getPort() != serverPort) {
                 continue;
             }
             String address = jhd.getAddress().getAddress().getValue();

@@ -389,7 +389,8 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 handlers = new ArrayList<Handler>();
                 jettyEng.setHandlers(handlers);
             }
-            handlers.add(new ListServiceHandler(((CxfBcComponent) getServiceUnit().getComponent()).getAllBuses()));
+            handlers.add(new ListServiceHandler(((CxfBcComponent) getServiceUnit().getComponent()).getAllBuses(),
+                                                (CxfBcComponent) getServiceUnit().getComponent()));
         }
     }
 
