@@ -28,6 +28,7 @@
         <property name="configuration" ref="servicemix-cxfbc-configuration" />
         <property name="authenticationService" ref="authenticationService" />
         <property name="executorFactory" ref="executorFactory" />
+        <property name="showAllServices" value="${showAllServices}"/>
     </bean>
    
     <bean id="servicemix-cxfbc-configuration" class="org.apache.servicemix.cxfbc.CxfBcConfiguration">
@@ -82,6 +83,7 @@
             <cm:property name="threadPoolMaximumPoolSize" value="32"/>
             <cm:property name="threadPoolQueueSize" value="256"/>
             <cm:property name="busCfg" value=""/>
+            <cm:property name="showAllServices" value="false"/>
         </cm:default-properties>
     </cm:property-placeholder>
     
