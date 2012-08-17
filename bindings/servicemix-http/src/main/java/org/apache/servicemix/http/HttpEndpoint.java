@@ -16,31 +16,25 @@
  */
 package org.apache.servicemix.http;
 
-import java.net.URI;
-
-import javax.jbi.management.DeploymentException;
-import javax.jbi.messaging.MessageExchange.Role;
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.wsdl.Binding;
-import javax.wsdl.Definition;
-import javax.wsdl.Port;
-import javax.wsdl.PortType;
-import javax.wsdl.Service;
-import javax.wsdl.extensions.ExtensibilityElement;
-import javax.wsdl.extensions.http.HTTPAddress;
-import javax.xml.namespace.QName;
-
+import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
 import org.apache.servicemix.common.ExternalEndpoint;
 import org.apache.servicemix.common.ManagementSupport;
-import org.apache.servicemix.common.tools.wsdl.PortTypeDecorator;
 import org.apache.servicemix.common.security.AuthenticationService;
 import org.apache.servicemix.common.security.KeystoreManager;
+import org.apache.servicemix.common.tools.wsdl.PortTypeDecorator;
 import org.apache.servicemix.http.processors.ConsumerProcessor;
 import org.apache.servicemix.http.processors.ProviderProcessor;
 import org.apache.servicemix.soap.SoapEndpoint;
 import org.apache.servicemix.soap.SoapExchangeProcessor;
 
-import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
+import javax.jbi.management.DeploymentException;
+import javax.jbi.messaging.MessageExchange.Role;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.*;
+import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.http.HTTPAddress;
+import javax.xml.namespace.QName;
+import java.net.URI;
 
 /**
  * an HTTP endpoint. This is the base for all HTTP endpoints.
@@ -62,6 +56,8 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
     protected boolean wantContentTypeHeaderFromExchangeIntoHttpRequest;
     protected int timeout;
     protected boolean responseContentTypeCheck;
+    protected boolean supportAllHttpMethods;
+    protected String lateResponseStrategy;
 
     public HttpEndpoint() {
     }
@@ -456,4 +452,39 @@ public class HttpEndpoint extends SoapEndpoint implements HttpEndpointType {
         return new DeploymentException(ManagementSupport.createComponentMessage(msg));
     }
 
+
+    public boolean isSupportAllHttpMethods() {
+        return supportAllHttpMethods;
+    }
+
+    /**
+     * Sets the configuration information to support all HTTP methods by a HTTP consumer endpoint.
+     * Default (false) is to support only GET and POST
+     *
+     * @param supportAllHttpMethods  Indicates whether all HTTP methods are supported by a HTTP consumer endpoint
+     * @org.apache.xbean.Property description="configuration indicator in order to support all HTTP methods by a HTTP consumer endpoint, otherwise only  GET,POST methods are supported"
+     */
+    public void setSupportAllHttpMethods(boolean supportAllHttpMethods) {
+        this.supportAllHttpMethods = supportAllHttpMethods;
+    }
+
+
+    /**
+     * Set the strategy to be used for handling a late response from the ESB (i.e. a response that arrives after the HTTP request has timed out).
+     * Defaults to <code>error</code>
+     * <p/>
+     * <ul>
+     * <li><code>error</code> will terminate the exchange with an ERROR status and log an exception for the late response</li>
+     * <li><code>warning</code> will end the exchange with a DONE status and log a warning for the late response instead</li>
+     * </ul>
+     *
+     * @param value
+     */
+    public void setLateResponseStrategy(String value) {
+        this.lateResponseStrategy = value;
+    }
+
+    public String getLateResponseStrategy() {
+        return lateResponseStrategy;
+    }
 }

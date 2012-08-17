@@ -52,10 +52,10 @@
             org.apache.servicemix.nmr.api.security,
             org.apache.woden*;resolution:=optional,
             org.apache.xbean.spring.context.v2,
-            org.mortbay.jetty.client*;resolution:=optional;version="[6.1.0,6.2.0)",
-            org.mortbay*;version="[6.1.0,6.2.0)",
-            org.mortbay.jetty.bio;resolution:=optional;version="[6.1.0,6.2.0)",
-            org.springframework*;resolution:=optional;version="[2.5,4)",
+            org.eclipse.jetty.client*;resolution:=optional;version="[8.1.0,8.2.0)",
+            org.eclipse*;version="[8.1.0,8.2.0)",
+            org.eclipse.jetty.bio;resolution:=optional;version="[8.1.0,8.2.0)",
+            org.springframework*;resolution:=optional;version="[3.0,)",
             sun.misc;resolution:=optional,
             *
         </servicemix.osgi.import>
@@ -87,37 +87,37 @@
             <artifactId>servicemix-shared</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>servlet-api-2.5</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jmx</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-management</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>mx4j</groupId>
-                    <artifactId>mx4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>mx4j</groupId>
-                    <artifactId>mx4j-tools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>servlet-api-2.5</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.mortbay.jetty</groupId>
+            <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-client</artifactId>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-continuation</artifactId>
+        </dependency>
 
         <!-- provided -->
         <dependency>
@@ -188,6 +188,11 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jcl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

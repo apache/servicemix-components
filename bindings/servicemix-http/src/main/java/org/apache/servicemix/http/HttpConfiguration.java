@@ -16,14 +16,10 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
-import org.mortbay.jetty.nio.SelectChannelConnector;
+import java.io.*;
+import java.util.Properties;
 
 /**
  * Class to hold the configuration for the Jetty instance used by an HTTP
@@ -125,9 +121,9 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private int providerExpirationTime = 300000;
     
     /***
-     * HttpProvider endpoint clientSoTimeout when jettyClientPerProvider is false.
+     * HttpProvider endpoint clientConnectTimeout when jettyClientPerProvider is false.
      */
-    private int clientSoTimeout = 10000;    
+    private int clientConnectTimeout = 75000;
     
     /***
      * HttpProvider endpoint maxConnectionsPerAddress when jettyClientPerProvider is false.
@@ -167,6 +163,12 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     private boolean preemptiveAuthentication;
 
     private boolean useHostPortForAuthScope;
+
+
+    /**
+     * Jetty server graceful timeout in ms, default is 0
+     **/
+    private int serverGracefulTimeout;
 
     /**
      * @return Returns the rootDir.
@@ -598,22 +600,22 @@ public class HttpConfiguration implements HttpConfigurationMBean {
     }
     
     /***
-     * Gets the number of milliseconds for soTimeout parameter of JettyClient when JettyClient instance is shared among http:provider enpoints.
+     * Gets the number of milliseconds for soTimeout parameter of JettyClient when JettyClient instance is shared among http:provider endpoints.
      * @return an int representing the JettyClient soTimeout.
      */
-    public int getClientSoTimeout() {
-        return clientSoTimeout;
+    public int getClientConnectTimeout() {
+        return clientConnectTimeout;
     }
 
     /**
-     * Sets the number of milliseconds for soTimeout parameter of JettyClient when JettyClient instance is shared among http:provider enpoints.
+     * Sets the number of milliseconds for soTimeout parameter of JettyClient when JettyClient instance is shared among http:provider endpoints.
      * The default default value for Jetty is 10000.
      *
-     * @param clientSoTimeout an int representing the JettyClient soTimeout.
-     * @org.apache.xbean.Property description="the number of miliseconds representign shared JettyClient soTimeout. The default is 10000."
+     * @param clientConnectTimeout an int representing the JettyClient soTimeout.
+     * @org.apache.xbean.Property description="the number of miliseconds representign shared JettyClient connectTimeout. The default is 75000."
      */
-    public void setClientSoTimeout(int clientSoTimeout) {
-        this.clientSoTimeout = clientSoTimeout;
+    public void setClientConnectTimeout(int clientConnectTimeout) {
+        this.clientConnectTimeout = clientConnectTimeout;
         save();
     }    
 
@@ -764,6 +766,25 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         save();
     }
 
+
+    /**
+     * @return Returns the serverGracefulTimeout.
+     */
+    public int getServerGracefulTimeout() {
+        return this.serverGracefulTimeout;
+    }
+
+    /**
+     * @param serverGracefulTimeout The Jetty serverGracefulTimeout to set.
+     * @org.apache.xbean.Property description="the timeout for HTTP Jetty server to gracefully shutdown its contexts; default 0"
+     */
+    public void setServerGracefulTimeout(int serverGracefulTimeout) {
+        if (serverGracefulTimeout >=0 ) {
+            this.serverGracefulTimeout = serverGracefulTimeout;
+            save();
+        }
+    }
+
     public void save() {
         setProperty(componentName + ".jettyThreadPoolSize", Integer.toString(jettyThreadPoolSize));
         setProperty(componentName + ".jettyClientThreadPoolSize", Integer.toString(jettyClientThreadPoolSize));
@@ -779,7 +800,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
         setProperty(componentName + ".soLingerTime", Integer.toString(soLingerTime));
         setProperty(componentName + ".consumerProcessorSuspendTime", Integer.toString(consumerProcessorSuspendTime));
         setProperty(componentName + ".providerExpirationTime", Integer.toString(providerExpirationTime));
-        setProperty(componentName + ".clientSoTimeout", Integer.toString(clientSoTimeout));
+        setProperty(componentName + ".clientConnectTimeout", Integer.toString(clientConnectTimeout));
         setProperty(componentName + ".maxConnectionsPerAddress", Integer.toString(maxConnectionsPerAddress));
         setProperty(componentName + ".retryCount", Integer.toString(retryCount));
         setProperty(componentName + ".proxyHost", proxyHost);
@@ -788,6 +809,7 @@ public class HttpConfiguration implements HttpConfigurationMBean {
             .toString(wantHeadersFromHttpIntoExchange));
         setProperty(componentName + ".preemptiveAuthentication", Boolean.toString(preemptiveAuthentication));
         setProperty(componentName + ".useHostPortForAuthScope", Boolean.toString(useHostPortForAuthScope));
+        setProperty(componentName + ".serverGracefulTimeout", Integer.toString(serverGracefulTimeout));
         if (rootDir != null) {
             File f = new File(rootDir, CONFIG_FILE);
             try {
@@ -887,9 +909,9 @@ public class HttpConfiguration implements HttpConfigurationMBean {
             providerExpirationTime = Integer.parseInt(properties
                 .getProperty(componentName + ".providerExpirationTime"));
         }
-        if (properties.getProperty(componentName + ".clientSoTimeout") != null) {
-        	clientSoTimeout = Integer.parseInt(properties
-                .getProperty(componentName + ".clientSoTimeout"));
+        if (properties.getProperty(componentName + ".clientConnectTimeout") != null) {
+        	clientConnectTimeout = Integer.parseInt(properties
+                .getProperty(componentName + ".clientConnectTimeout"));
         }
         if (properties.getProperty(componentName + ".maxConnectionsPerAddress") != null) {
             maxConnectionsPerAddress = Integer.parseInt(properties
@@ -915,6 +937,9 @@ public class HttpConfiguration implements HttpConfigurationMBean {
 
         if (properties.getProperty(componentName + ".useHostPortForAuthScope") != null) {
             useHostPortForAuthScope = Boolean.valueOf(properties.getProperty(componentName + ".useHostPortForAuthScope")).booleanValue();
+        }
+        if (properties.getProperty(componentName + ".serverGracefulTimeout") != null) {
+            serverGracefulTimeout = Integer.parseInt(properties.getProperty(componentName + ".serverGracefulTimeout"));
         }
         return true;
     }

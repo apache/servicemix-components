@@ -16,32 +16,7 @@
  */
 package org.apache.servicemix.http.processors;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.jbi.messaging.DeliveryChannel;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.Fault;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOptionalOut;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpHost;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -53,13 +28,23 @@ import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpoint;
 import org.apache.servicemix.soap.Context;
-import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.SoapExchangeProcessor;
+import org.apache.servicemix.soap.SoapHelper;
 import org.apache.servicemix.soap.marshalers.SoapMessage;
 import org.apache.servicemix.soap.marshalers.SoapReader;
 import org.apache.servicemix.soap.marshalers.SoapWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.jbi.messaging.*;
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
@@ -347,6 +332,8 @@ public class ProviderProcessor extends AbstractProcessor implements SoapExchange
 
     protected HttpClient getClient() {
         HttpComponent comp =  (HttpComponent) endpoint.getServiceUnit().getComponent();
+        //TODO apply the same changes what was applied to HttpProviderEndpoint during last 5 years
+        // it can work only when there is only one http:endpoint with role provider in the whole jvm
         HttpClient client = comp.getClient();
         client.getParams().setSoTimeout(endpoint.getTimeout());
         return client;

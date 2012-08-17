@@ -16,15 +16,6 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Map;
-import java.util.HashMap;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.apache.servicemix.soap.api.InterceptorChain;
 import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
@@ -33,9 +24,17 @@ import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.api.model.Binding;
 import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
 import org.apache.servicemix.soap.interceptors.xml.StaxInInterceptor;
-import org.mortbay.io.ByteArrayBuffer;
-import org.mortbay.jetty.HttpMethods;
-import org.mortbay.jetty.HttpHeaders;
+import org.eclipse.jetty.http.HttpHeaders;
+import org.eclipse.jetty.http.HttpMethods;
+import org.eclipse.jetty.io.ByteArrayBuffer;
+
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 

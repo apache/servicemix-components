@@ -16,16 +16,14 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import java.security.GeneralSecurityException;
-import java.security.Principal;
-
-import javax.security.auth.Subject;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.common.security.AuthenticationService;
+import org.eclipse.jetty.server.UserIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.auth.Subject;
+import java.security.GeneralSecurityException;
 
 public class JaasUserRealmTest extends TestCase {
 
@@ -51,55 +49,41 @@ public class JaasUserRealmTest extends TestCase {
 
     // Test authenticate() when username is null
     public void testAuthenticateUsernameIsNull() throws Exception {
-        assertNull("authenticate() should return null for null username", jaasUserRealm.authenticate(null, null, null));
+        assertNull("authenticate() should return null for null username", jaasUserRealm.login(null, null));
     }
 
     // Test authenticate() when authenticationService's authenticate throws 
     // a GeneralSecurityException
     public void testAuthenticateFails() throws Exception {
         String msg = "authenticate() should return null when authService authenticate fails";
-        assertNull(msg, jaasUserRealm.authenticate(USERNAME, null, null));
+        assertNull(msg, jaasUserRealm.login(USERNAME, null));
     }
 
     // Test authenticate() when authenticationService's authenticate is successful.
     public void testAuthenticateSuccess() throws Exception {
-        Principal userPrincipal = jaasUserRealm.authenticate(USERNAME, PASSWORD, null);
+        UserIdentity userPrincipal = jaasUserRealm.login(USERNAME, PASSWORD);
         assertNotNull("authenticate() should return non-null Principal", userPrincipal);
     }
 
     // Test logout() when user logged in
     public void testLogoutUserLoggedIn() throws Exception {
         // authenticate the user
-        Principal userPrincipal = jaasUserRealm.authenticate(USERNAME, PASSWORD, null);
+        UserIdentity userPrincipal = jaasUserRealm.login(USERNAME, PASSWORD);
 
         // now log them out
         jaasUserRealm.logout(userPrincipal);
 
         // verify the user is not in the map
-        assertNull("logout() should have removed principal: " + USERNAME, jaasUserRealm.getPrincipal(USERNAME));
+        assertNull("logout() should have removed principal: " + USERNAME, jaasUserRealm.loadUser(USERNAME));
     }
 
     // Test logout() when user not logged in
     public void testLogoutUserNotLoggedIn() throws Exception {
-        Principal userPrincipal = new JaasJettyPrincipal(USERNAME);
+        UserIdentity userPrincipal = new JaasJettyPrincipal(new Subject(), USERNAME, null);
         // user principal not added to the map via authenticate
         jaasUserRealm.logout(userPrincipal);
         // verify the user is not in the map
-        assertNull("logout() should have removed principal: " + USERNAME, jaasUserRealm.getPrincipal(USERNAME));
-    }
-
-    // Test reauthenticate() when user logged in
-    public void testReauthenticateUserLoggedIn() throws Exception {
-        Principal userPrincipal = jaasUserRealm.authenticate(USERNAME, PASSWORD, null);
-
-        assertTrue("reauthenticate() should return true for logged in user", jaasUserRealm.reauthenticate(userPrincipal));
-    }
-
-    // Test reauthenticate() when user not logged in
-    public void testReauthenticateUserNotLoggedIn() throws Exception {
-        Principal userPrincipal = new JaasJettyPrincipal(USERNAME);
- 
-        assertFalse("reauthenticate() should return false for user not logged in", jaasUserRealm.reauthenticate(userPrincipal));
+        assertNull("logout() should have removed principal: " + USERNAME, jaasUserRealm.loadUser(USERNAME));
     }
 
     // Mock implementation of an AuthenticationService to help with testing.

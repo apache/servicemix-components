@@ -16,10 +16,10 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import javax.net.ssl.SSLServerSocketFactory;
-
-import org.mortbay.jetty.security.SslSocketConnector;
 import org.apache.servicemix.common.security.KeystoreManager;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
+
+import javax.net.ssl.SSLServerSocketFactory;
 
 public class ServiceMixSslSocketConnector extends SslSocketConnector {
 

@@ -21,7 +21,7 @@ import java.io.Reader;
 
 import junit.framework.TestCase;
 
-import org.mortbay.io.ByteArrayBuffer;
+import org.eclipse.jetty.io.ByteArrayBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

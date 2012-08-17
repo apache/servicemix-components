@@ -98,7 +98,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>jetty</groupId>
-                    <artifactId>org.mortbay.jetty</artifactId>
+                    <artifactId>org.eclipse.jetty</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-httpclient</groupId>
@@ -152,7 +152,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>jetty</groupId>
-                    <artifactId>org.mortbay.jetty</artifactId>
+                    <artifactId>org.eclipse.jetty</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-httpclient</groupId>

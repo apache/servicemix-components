@@ -16,11 +16,16 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.servicemix.soap.api.InterceptorChain;
+import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
+import org.apache.servicemix.soap.api.Message;
+import org.apache.servicemix.soap.api.Policy;
+import org.apache.servicemix.soap.api.model.Binding;
+import org.apache.servicemix.soap.bindings.http.HttpConstants;
+import org.apache.servicemix.soap.bindings.soap.SoapFault;
+import org.apache.servicemix.soap.bindings.soap.SoapVersion;
+import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
+import org.eclipse.jetty.http.HttpHeaders;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.Fault;
@@ -29,17 +34,11 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
-
-import org.apache.servicemix.soap.api.InterceptorChain;
-import org.apache.servicemix.soap.api.Message;
-import org.apache.servicemix.soap.api.Policy;
-import org.apache.servicemix.soap.api.InterceptorProvider.Phase;
-import org.apache.servicemix.soap.api.model.Binding;
-import org.apache.servicemix.soap.bindings.http.HttpConstants;
-import org.apache.servicemix.soap.bindings.soap.SoapFault;
-import org.apache.servicemix.soap.bindings.soap.SoapVersion;
-import org.apache.servicemix.soap.interceptors.jbi.JbiConstants;
-import org.mortbay.jetty.HttpHeaders;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 

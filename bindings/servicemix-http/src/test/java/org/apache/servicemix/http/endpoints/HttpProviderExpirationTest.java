@@ -16,17 +16,7 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.net.URI;
-
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.namespace.QName;
-
 import junit.framework.TestCase;
-
 import org.apache.activemq.broker.BrokerService;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.Destination;
@@ -38,6 +28,14 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.nmr.flow.Flow;
 import org.apache.servicemix.jbi.nmr.flow.seda.SedaFlow;
 
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
+import java.net.URI;
+
 /**
  *
  * @author ioannis canellos
@@ -45,7 +43,7 @@ import org.apache.servicemix.jbi.nmr.flow.seda.SedaFlow;
 public class HttpProviderExpirationTest extends TestCase {
 
     String activemq = System.getProperty("activemq.port");
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1", "61101");
     
     private JBIContainer jbi;
     private BrokerService broker;

@@ -16,21 +16,7 @@
  */
 package org.apache.servicemix.http;
 
-import java.util.List;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.servicedesc.ServiceEndpoint;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
@@ -38,12 +24,23 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOnly;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import java.util.List;
 
 public class HttpURITest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(HttpURITest.class);
 
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1", "61101");
     
     private JBIContainer jbi;
 

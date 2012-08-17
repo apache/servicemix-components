@@ -16,20 +16,16 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.HashSet;
-
-import org.mortbay.jetty.HttpHeaders;
+import org.eclipse.jetty.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public abstract class AbstractHttpProviderMarshaler implements HttpProviderMarshaler {
 

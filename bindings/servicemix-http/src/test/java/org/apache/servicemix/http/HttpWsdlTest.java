@@ -16,34 +16,7 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.wsdl.Definition;
-import javax.wsdl.Input;
-import javax.wsdl.Message;
-import javax.wsdl.Operation;
-import javax.wsdl.Output;
-import javax.wsdl.Part;
-import javax.wsdl.PortType;
-import javax.wsdl.WSDLException;
-import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
-import javax.xml.namespace.QName;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
 import junit.framework.TestCase;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.servicemix.components.util.EchoComponent;
@@ -52,20 +25,34 @@ import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.messaging.MessageExchangeSupport;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.AbstractHandler;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.UrlResource;
+import org.w3c.dom.Document;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.wsdl.*;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
+import javax.xml.namespace.QName;
+import java.io.*;
 
 public class HttpWsdlTest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(HttpWsdlTest.class);
       
-    private Integer port4 = Integer.parseInt(System.getProperty("http.port4"));
-    private Integer port5 = Integer.parseInt(System.getProperty("http.port5"));
-    private Integer port6 = Integer.parseInt(System.getProperty("http.port6"));
-    private Integer port7 = Integer.parseInt(System.getProperty("http.port7"));
-    private Integer port8 = Integer.parseInt(System.getProperty("http.port8"));
+    private Integer port4 = Integer.parseInt(System.getProperty("http.port4", "61104"));
+    private Integer port5 = Integer.parseInt(System.getProperty("http.port5", "61105"));
+    private Integer port6 = Integer.parseInt(System.getProperty("http.port6", "61106"));
+    private Integer port7 = Integer.parseInt(System.getProperty("http.port7", "61107"));
+    private Integer port8 = Integer.parseInt(System.getProperty("http.port8", "61108"));
     
 
     protected JBIContainer container;
@@ -206,11 +193,7 @@ public class HttpWsdlTest extends TestCase {
         int remoteHttpServerPort = port7;
         Server remoteServer = new Server(remoteHttpServerPort);
         Handler handler = new AbstractHandler() {
-
-            public void handle(String arg0, HttpServletRequest req,
-                    HttpServletResponse res, int arg3) throws IOException,
-                    ServletException {
-
+            public void handle(String target, Request baseRequest, HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
                 res.setContentType("text/xml");
                 PrintWriter writer = res.getWriter();
                 BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -223,10 +206,9 @@ public class HttpWsdlTest extends TestCase {
                 br.close();
                 writer.close();
             }
-
         };
         
-        remoteServer.addHandler(handler);
+        remoteServer.setHandler(handler);
         remoteServer.start();
         
         try {

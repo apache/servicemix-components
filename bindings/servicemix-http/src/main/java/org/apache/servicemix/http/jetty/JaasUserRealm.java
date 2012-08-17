@@ -16,32 +16,35 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import java.security.GeneralSecurityException;
-import java.security.Principal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.security.auth.Subject;
-
 import org.apache.servicemix.common.security.AuthenticationService;
-import org.mortbay.jetty.Request;
-import org.mortbay.jetty.security.UserRealm;
+import org.eclipse.jetty.security.DefaultIdentityService;
+import org.eclipse.jetty.security.IdentityService;
+import org.eclipse.jetty.security.MappedLoginService;
+import org.eclipse.jetty.server.UserIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.Principal;
+
 /**
- * A JAAS based implementation of a realm for jetty 6.
- * 
+ * A JAAS based implementation of a identity service for jetty 8.
+ *
  * @author gnodet
  */
-public class JaasUserRealm implements UserRealm {
+public class JaasUserRealm extends MappedLoginService {
 
     private final Logger logger = LoggerFactory.getLogger(JaasUserRealm.class);
 
-    private String name = getClass().getName();
     private String domain = "servicemix-domain";
     private AuthenticationService authenticationService;
-    private final Map<String, JaasJettyPrincipal> userMap = new ConcurrentHashMap<String, JaasJettyPrincipal>();
+
+
+    public JaasUserRealm() {
+        this._identityService = new JaasJettyIdentityService();
+    }
 
     /**
      * @return the authenticationService
@@ -51,8 +54,7 @@ public class JaasUserRealm implements UserRealm {
     }
 
     /**
-     * @param authenticationService
-     *            the authenticationService to set
+     * @param authenticationService the authenticationService to set
      */
     public void setAuthenticationService(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
@@ -66,91 +68,54 @@ public class JaasUserRealm implements UserRealm {
     }
 
     /**
-     * @param domain
-     *            the domain to set
+     * @param domain the domain to set
      */
     public void setDomain(String domain) {
         this.domain = domain;
     }
 
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return this.name;
-    }
+    @Override
+    public UserIdentity login(String username, Object credentials) {
+        if ((username != null) && (!username.equals(""))) {
+            // user has been previously authenticated, but
+            // re-authentication has been requested, so remove them if exists
+            _users.remove(username);
 
-    /**
-     * @param name
-     *            the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Principal authenticate(final String username, final Object credentials, Request request) {
-        try {
-            if ((username != null) && (!username.equals(""))) {
-
-                JaasJettyPrincipal userPrincipal = userMap.get(username);
-
-                // user has been previously authenticated, but
-                // re-authentication has been requested, so remove them
-                if (userPrincipal != null) {
-                    userMap.remove(username);
+            // set up the login context
+            Subject subject = new Subject();
+            try {
+                if (authenticationService != null){
+                    authenticationService.authenticate(subject, domain, username, credentials);
                 }
-
-                // set up the login context
-                Subject subject = new Subject();
-                authenticationService.authenticate(subject, domain, username, credentials);
-                // login success
-                userPrincipal = new JaasJettyPrincipal(username);
-                userPrincipal.setSubject(subject);
-
-                userMap.put(username, userPrincipal);
-
-                return userPrincipal;
-            } else {
-                logger.debug("Login Failed - null userID");
+            } catch (GeneralSecurityException e) {
+                logger.debug("Login Failed", e);
                 return null;
             }
 
-        } catch (GeneralSecurityException e) {
-            logger.debug("Login Failed", e);
+            // login success
+            return new JaasJettyPrincipal(subject, username, IdentityService.NO_ROLES);
+        } else {
+            logger.debug("Login Failed - null userID");
             return null;
         }
     }
 
-    public void disassociate(Principal user) {
+    @Override
+    protected UserIdentity loadUser(String username) {
+        return _users.get(username);
     }
 
-    public Principal getPrincipal(String username) {
-        return userMap.get(username);
+    @Override
+    protected void loadUsers() throws IOException {
     }
 
-    public boolean isUserInRole(Principal user, String role) {
-        // TODO: ?
-        return false;
+
+    public static class JaasJettyIdentityService extends DefaultIdentityService {
+        @Override
+        public UserIdentity newUserIdentity(Subject subject, Principal userPrincipal, String[] roles) {
+            return new JaasJettyPrincipal(subject, userPrincipal.getName(), roles);
+        }
     }
 
-    public void logout(Principal user) {
-        JaasJettyPrincipal principal = (JaasJettyPrincipal) user;
-        userMap.remove(principal.getName());
-    }
-
-    public Principal popRole(Principal user) {
-        // TODO: ?
-        return null;
-    }
-
-    public Principal pushRole(Principal user, String role) {
-        // TODO: ?
-        return null;
-    }
-
-    public boolean reauthenticate(Principal user) {
-        // get the user out of the cache
-        return userMap.get(user.getName()) != null;
-    }
 
 }

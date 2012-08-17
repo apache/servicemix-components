@@ -16,28 +16,22 @@
  */
 package org.apache.servicemix.http.processors;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
+import org.apache.commons.httpclient.ConnectTimeoutException;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.servicemix.common.security.KeystoreManager;
+import org.apache.servicemix.http.SslParameters;
+import org.eclipse.jetty.util.resource.Resource;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.jbi.JBIException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
-
-import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
-import org.apache.servicemix.common.security.KeystoreManager;
-import org.apache.servicemix.http.SslParameters;
-import org.mortbay.resource.Resource;
-import org.springframework.core.io.ClassPathResource;
+import java.io.IOException;
+import java.net.*;
+import java.security.KeyStore;
 
 public class CommonsHttpSSLSocketFactory implements SecureProtocolSocketFactory {
 

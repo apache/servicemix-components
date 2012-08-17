@@ -47,7 +47,6 @@
     </scm>
 
     <properties>
-        <cxf.jetty.version>7.3.1.v20110307</cxf.jetty.version>
         <surefire.fork.mode>pertest</surefire.fork.mode>
 
         <servicemix.osgi.import>
@@ -176,7 +175,6 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>${cxf.jetty.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet</groupId>
@@ -187,12 +185,10 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>${cxf.jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>${cxf.jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

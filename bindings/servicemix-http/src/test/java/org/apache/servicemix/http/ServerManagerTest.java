@@ -16,11 +16,7 @@
  */
 package org.apache.servicemix.http;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import junit.framework.TestCase;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -28,18 +24,21 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.mortbay.jetty.handler.ContextHandler;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class ServerManagerTest extends TestCase {
 
     private final static Logger logger = LoggerFactory.getLogger(ServerManagerTest.class);
 
-    String port1 = System.getProperty("http.port1");
-    String port2 = System.getProperty("http.port2");
-    String port3 = System.getProperty("http.port3");
+    String port1 = System.getProperty("http.port1", "61101");
+    String port2 = System.getProperty("http.port2", "61101");
+    String port3 = System.getProperty("http.port3", "61101");
     
     protected JettyContextManager server;
     protected HttpConfiguration configuration;

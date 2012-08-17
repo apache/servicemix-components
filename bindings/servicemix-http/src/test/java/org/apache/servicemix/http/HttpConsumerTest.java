@@ -16,21 +16,7 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.RobustInOnly;
-import javax.wsdl.Definition;
-import javax.wsdl.factory.WSDLFactory;
-import javax.xml.namespace.QName;
-import javax.xml.transform.stream.StreamSource;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.components.http.HttpInvoker;
 import org.apache.servicemix.components.http.HttpSoapClientMarshaler;
@@ -43,13 +29,25 @@ import org.apache.servicemix.tck.ReceiverComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.RobustInOnly;
+import javax.wsdl.Definition;
+import javax.wsdl.factory.WSDLFactory;
+import javax.xml.namespace.QName;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+
 public class HttpConsumerTest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(HttpConsumerTest.class);
 
     protected JBIContainer container;
     
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1","61101");
     
     protected void setUp() throws Exception {
         container = new JBIContainer();

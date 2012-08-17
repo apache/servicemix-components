@@ -16,34 +16,8 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.Fault;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.namespace.QName;
-import javax.xml.transform.stream.StreamSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import junit.framework.TestCase;
-
 import com.ibm.wsdl.util.xml.DOMUtils;
+import junit.framework.TestCase;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
@@ -55,8 +29,8 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.TransformComponentSupport;
-import org.apache.servicemix.jbi.api.Destination;
 import org.apache.servicemix.jbi.FaultException;
+import org.apache.servicemix.jbi.api.Destination;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
@@ -67,16 +41,34 @@ import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.soap.marshalers.JBIMarshaler;
 import org.apache.servicemix.soap.marshalers.SoapMarshaler;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.jbi.messaging.*;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 
 public class HttpSoapTest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(HttpSoapTest.class);
 
     protected JBIContainer container;
-    
-    String port1 = System.getProperty("http.port1");
-    String port2 = System.getProperty("http.port2");
-    String port3 = System.getProperty("http.port3");
+
+    String port1 = System.getProperty("http.port1","61101");
+    String port2 = System.getProperty("http.port2", "61102");
+    String port3 = System.getProperty("http.port3", "61103");
 
     protected void setUp() throws Exception {
         container = new JBIContainer();

@@ -16,13 +16,6 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
-import javax.xml.namespace.QName;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -41,11 +34,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOut;
+import javax.xml.namespace.QName;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+
 public class HttpSpringTest extends SpringTestSupport {
 
     private final Logger logger = LoggerFactory.getLogger(HttpSpringTest.class);
     
-    String port9 = System.getProperty("http.port9");
+    String port9 = System.getProperty("http.port9", "61109");
 
     protected void setUp() throws Exception {
         String str = "Basic " + EncodingUtil.getAsciiString(

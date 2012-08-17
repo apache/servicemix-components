@@ -16,7 +16,16 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.StringWriter;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.SpringTestSupport;
+import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.w3c.dom.Document;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.wsdl.Binding;
@@ -26,24 +35,13 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.soap.SOAPOperation;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.tck.SpringTestSupport;
-import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.springframework.context.support.AbstractXmlApplicationContext;
+import java.io.StringWriter;
 
 public class WsdlRoundtripTest extends SpringTestSupport {
 
     private final Logger logger = LoggerFactory.getLogger(WsdlRoundtripTest.class);
 
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1", "61101");
     
     protected AbstractXmlApplicationContext createBeanFactory() {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "org/apache/servicemix/http/wsdlroundtrip.xml" }, false);

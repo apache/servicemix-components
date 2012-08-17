@@ -1,21 +1,19 @@
 package org.apache.servicemix.http.endpoints;
 
-import java.util.HashMap;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-
+import junit.framework.TestCase;
 import org.apache.servicemix.expression.PropertyExpression;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.mock.MockExchangeFactory;
-import org.mortbay.jetty.HttpMethods;
+import org.eclipse.jetty.http.HttpMethods;
 
-import junit.framework.TestCase;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.NormalizedMessage;
+import java.util.HashMap;
 
 public class DefaultHttpProviderMarshalerTest extends TestCase {
 
-        String port1 = System.getProperty("http.port1");
+        String port1 = System.getProperty("http.port1", "61101");
         
 	private DefaultHttpProviderMarshaler defHttpProviderMarshaler;
 	

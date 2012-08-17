@@ -16,46 +16,38 @@
  */
 package org.apache.servicemix.http;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.io.IOException;
-
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.messaging.MessagingException;
-import javax.jbi.component.ComponentContext;
-import javax.xml.namespace.QName;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.http.endpoints.DefaultHttpConsumerMarshaler;
 import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
 import org.apache.servicemix.http.endpoints.HttpSoapProviderEndpoint;
-import org.apache.servicemix.http.endpoints.HttpConsumerMarshaler;
-import org.apache.servicemix.http.endpoints.DefaultHttpConsumerMarshaler;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlets.ProxyServlet;
 import org.springframework.core.io.ClassPathResource;
-import org.mortbay.proxy.AsyncProxyServlet;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.nio.SelectChannelConnector;
+
+import javax.jbi.component.ComponentContext;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.MessageExchange;
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.namespace.QName;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ProviderEndpointTest extends TestCase {
 
-    Integer port1 = Integer.parseInt(System.getProperty("http.port1"));
-    Integer port2 = Integer.parseInt(System.getProperty("http.port2"));
+    Integer port1 = Integer.parseInt(System.getProperty("http.port1", "61101"));
+    Integer port2 = Integer.parseInt(System.getProperty("http.port2", "61102"));
     
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
@@ -334,8 +326,8 @@ public class ProviderEndpointTest extends TestCase {
         connector.setPort(port2);
         proxy.addConnector(connector);
         ServletHandler handler = new ServletHandler();
-        handler.addServletWithMapping(AsyncProxyServlet.class, "/");
-        proxy.addHandler(handler);
+        handler.addServletWithMapping(ProxyServlet.class, "/");
+        proxy.setHandler(handler);
         proxy.start();
 
         ServiceMixClient client = new DefaultServiceMixClient(container);

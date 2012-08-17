@@ -23,13 +23,16 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
+import org.apache.servicemix.http.LateResponseStrategy;
 import org.apache.servicemix.http.PortFinder;
 import org.apache.servicemix.http.exception.LateResponseException;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.helper.MessageUtil;
 
 import javax.jbi.JBIException;
-import javax.jbi.messaging.*;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -62,21 +65,21 @@ public class HttpConsumerLateResponseHandlingTest extends TestCase {
     }
 
     public void testInOutWithStrategyError() throws Exception {
-        MessageExchange exchange = doTestInOutWithStrategy(HttpConsumerEndpoint.LateResponseStrategy.error);
+        MessageExchange exchange = doTestInOutWithStrategy(LateResponseStrategy.error);
         assertEquals("Exchange should have ended in ERROR", ExchangeStatus.ERROR, exchange.getStatus());
         assertTrue("Expecting a LateResponseException, but was " + exchange.getError().getClass().getName(),
                    exchange.getError() instanceof LateResponseException);
     }
 
     public void testInOutWithStrategyWarning() throws Exception {
-        MessageExchange exchange = doTestInOutWithStrategy(HttpConsumerEndpoint.LateResponseStrategy.warning);
+        MessageExchange exchange = doTestInOutWithStrategy(LateResponseStrategy.warning);
         assertEquals("Exchange should have ended normally", ExchangeStatus.DONE, exchange.getStatus());
     }
 
     /*
      * Perform test for strategy and return MessageExchange object being sent/received
      */
-    private MessageExchange doTestInOutWithStrategy(HttpConsumerEndpoint.LateResponseStrategy strategy) throws JBIException, IOException, InterruptedException {
+    private MessageExchange doTestInOutWithStrategy(LateResponseStrategy strategy) throws JBIException, IOException, InterruptedException {
         HttpComponent http = new HttpComponent();
         HttpConsumerEndpoint ep = new HttpConsumerEndpoint();
         ep.setService(new QName("urn:test", "svc"));

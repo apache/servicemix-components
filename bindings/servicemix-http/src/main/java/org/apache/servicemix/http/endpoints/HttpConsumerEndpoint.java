@@ -16,12 +16,22 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.apache.servicemix.common.DefaultComponent;
+import org.apache.servicemix.common.JbiConstants;
+import org.apache.servicemix.common.ServiceUnit;
+import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
+import org.apache.servicemix.http.*;
+import org.apache.servicemix.http.exception.HttpTimeoutException;
+import org.apache.servicemix.http.exception.LateResponseException;
+import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.eclipse.jetty.continuation.Continuation;
+import org.eclipse.jetty.continuation.ContinuationSupport;
+import org.eclipse.jetty.server.Server;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -37,42 +47,27 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.apache.servicemix.http.exception.HttpTimeoutException;
-import org.apache.servicemix.http.exception.LateResponseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.apache.servicemix.common.DefaultComponent;
-import org.apache.servicemix.common.ServiceUnit;
-import org.apache.servicemix.common.JbiConstants;
-import org.apache.servicemix.common.endpoints.ConsumerEndpoint;
-import org.apache.servicemix.http.ContextManager;
-import org.apache.servicemix.http.HttpComponent;
-import org.apache.servicemix.http.HttpEndpointType;
-import org.apache.servicemix.http.HttpProcessor;
-import org.apache.servicemix.http.SslParameters;
-import org.apache.servicemix.http.jetty.JaasJettyPrincipal;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.mortbay.jetty.RetryRequest;
-import org.mortbay.util.ajax.Continuation;
-import org.mortbay.util.ajax.ContinuationSupport;
-
-import static org.apache.servicemix.http.jetty.ContinuationHelper.isNewContinuation;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Plain HTTP consumer endpoint. This endpoint can be used to handle plain HTTP request (without SOAP) or to be able to
  * process the request in a non standard way. For HTTP requests, a WSDL2 HTTP binding can be used.
  *
  * @author gnodet
- * @since 3.2
  * @org.apache.xbean.XBean element="consumer"
+ * @since 3.2
  */
 public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProcessor, HttpEndpointType {
 
     public static final String MAIN_WSDL = "main.wsdl";
+    private static final String EXCHANGE = MessageExchange.class.getName();
+    private static final String MUTEX = MessageExchange.class.getName() + "Mutex";
+    private static final String EXCHANGEID = MessageExchange.class.getName() + "Mutex";
     private String authMethod;
     private SslParameters ssl;
     private String locationURI;
@@ -82,6 +77,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     private Map<String, Object> resources = new HashMap<String, Object>();
     private Map<String, Continuation> continuations = new ConcurrentHashMap<String, Continuation>();
     private Map<String, Object> mutexes = new ConcurrentHashMap<String, Object>();
+    private Map<String, MessageExchange> sentExchanges = new ConcurrentHashMap<String, MessageExchange>();
     private Object httpContext;
     private boolean started = false;
     private LateResponseStrategy lateResponseStrategy = LateResponseStrategy.error;
@@ -131,8 +127,8 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      * Specifies the timeout value for an HTTP consumer endpoint. The timeout is specified in milliseconds. The default value is 0
      * which means that the endpoint will never timeout.
      *
-     * @org.apache.xbean.Property description="the timeout is specified in milliseconds. The default value is 0 which means that the endpoint will never timeout."
      * @param timeout the length time, in milliseconds, to wait before timing out
+     * @org.apache.xbean.Property description="the timeout is specified in milliseconds. The default value is 0 which means that the endpoint will never timeout."
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
@@ -219,10 +215,10 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     /**
      * Set the strategy to be used for handling a late response from the ESB (i.e. a response that arrives after the HTTP request has timed out).
      * Defaults to <code>error</code>
-     *
+     * <p/>
      * <ul>
-     *     <li><code>error</code> will terminate the exchange with an ERROR status and log an exception for the late response</li>
-     *     <li><code>warning</code> will end the exchange with a DONE status and log a warning for the late response instead</li>
+     * <li><code>error</code> will terminate the exchange with an ERROR status and log an exception for the late response</li>
+     * <li><code>warning</code> will end the exchange with a DONE status and log a warning for the late response instead</li>
      * </ul>
      *
      * @param value
@@ -230,17 +226,17 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     public void setLateResponseStrategy(String value) {
         this.lateResponseStrategy = LateResponseStrategy.valueOf(value);
     }
-    
+
     public boolean isRewriteSoapAddress() {
-		return rewriteSoapAddress;
-	}
+        return rewriteSoapAddress;
+    }
 
     /**
      * Toggles the rewriting of the soap address based on the request info.
      * <p>
      * When active, the soap address in the wsdl will be updated according
      * to the protocol, host and port of the request.  This is useful when
-     * listening on 0.0.0.0 or when behind a NAT (or reverse-proxy in some 
+     * listening on 0.0.0.0 or when behind a NAT (or reverse-proxy in some
      * cases).<br />
      * This function only works on the main wsdl, not in imported wsdl-parts.
      * This means the service with its port must be declared in the main
@@ -248,16 +244,18 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      * </p><p>
      * By default it is activated.
      * </p>
+     *
      * @param value
      */
-	public void setRewriteSoapAddress(boolean value) {
-		this.rewriteSoapAddress = value;
-	}
+    public void setRewriteSoapAddress(boolean value) {
+        this.rewriteSoapAddress = value;
+    }
 
-	public void activate() throws Exception {
+    public void activate() throws Exception {
         super.activate();
         loadStaticResources();
         httpContext = getServerManager().createContext(locationURI, this);
+
     }
 
     public void deactivate() throws Exception {
@@ -269,9 +267,16 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     public void start() throws Exception {
         super.start();
         started = true;
+        if (httpContext instanceof Server.Graceful){
+            ((Server.Graceful)httpContext).setShutdown(false);
+        }
+
     }
 
     public void stop() throws Exception {
+        if (httpContext instanceof Server.Graceful){
+            ((Server.Graceful)httpContext).setShutdown(true);
+        }
         started = false;
         super.stop();
     }
@@ -281,36 +286,41 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      */
     public void process(MessageExchange exchange) throws Exception {
         final String id = exchange.getExchangeId();
-        final Object mutex = mutexes.get(id);
 
-        // if the mutex is no longer available, the HTTP request timed out before the message exchange got handled by the ESB
-        if (mutex == null) {
-            handleLateResponse(exchange);
-            return;
-        }
+        // Synchronize on the mutex object while we're tinkering with the continuation object,
+        // this is still jetty, so do not trust jetty locks anymore
+        final Continuation continuation = continuations.get(id);
+        if (continuation != null){
+            final Object mutex = continuation.getAttribute(MUTEX);
+            if (mutex == null) {
+                handleLateResponse(exchange);
+                return;
+            }
+            synchronized (mutex) {
+                if (!continuation.isExpired() && !continuation.isResumed()) {
+                    logger.debug("Resuming continuation for exchange: {}", id);
 
-        // Synchronize on the mutex object while we're tinkering with the continuation object
-        synchronized (mutex) {
-            final Continuation continuation = continuations.get(id);
-            if (continuation != null && continuation.isPending()) {
-                logger.debug("Resuming continuation for exchange: {}", id);
+                    // in case of the JMS/JCA flow, you might have a different instance of the message exchange here
+                    continuation.setAttribute(EXCHANGE, exchange);
 
-                // in case of the JMS/JCA flow, you might have a different instance of the message exchange here
-                continuation.setObject(exchange);
+                    continuation.resume();
 
-                continuation.resume();
 
-                // if the continuation could no longer be resumed, the HTTP request might have timed out before the message
-                // exchange got handled by the ESB
-                if (!continuation.isResumed()) {
+                    // if the continuation could no longer be resumed, the HTTP request might have timed out before the message
+                    // exchange got handled by the ESB
+                    if (!continuation.isResumed()) {
+                        handleLateResponse(exchange);
+                    }
+                } else {
+                    // it the continuation is no longer available or no longer pending, the HTTP request has time out before
+                    // the message exchange got handled by the ESB
                     handleLateResponse(exchange);
                 }
-            } else {
-                // it the continuation is no longer available or no longer pending, the HTTP request has time out before
-                // the message exchange got handled by the ESB
-                handleLateResponse(exchange);
             }
+        } else {
+            handleLateResponse(exchange);
         }
+
     }
 
     /*
@@ -320,75 +330,80 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      *   (either because the exchange was received or because the request timed out)
      */
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        MessageExchange exchange = null;
+        MessageExchange exchange;
+        Continuation continuation = null;
+        Object mutex = null;
+        String id = null;
 
         try {
             // Handle WSDLs, XSDs
             if (handleStaticResource(request, response)) {
                 return;
             }
+            continuation = ContinuationSupport.getContinuation(request);
+            mutex = getOrCreateMutex(continuation);
 
-            // configure the timeout
-            long to = this.timeout;
-            if (to == 0) {
-                to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration().getConsumerProcessorSuspendTime();
-            }
-
-            final Continuation continuation = ContinuationSupport.getContinuation(request, null);
-            exchange = (MessageExchange) continuation.getObject();
-            final Object mutex = getOrCreateMutex(exchange);
-
-            // Synchronize on the mutex object while we're tinkering with the continuation object
+            boolean sendExchange = false;
             synchronized (mutex) {
-                if (isNewContinuation(continuation)) {
+                exchange = (MessageExchange) continuation.getAttribute(EXCHANGE);
+                id = (String)continuation.getAttribute(EXCHANGEID);
+
+                if (exchange == null) {
+                    // well, new request.. hope so
+                    long timeoutMs = obtainTimeout();
+                    // Synchronize on the mutex object while we're (s)tinkering with the continuation object
+                    // if this is  a timeout
+                    if (continuation.isExpired()) {
+                        throw new HttpTimeoutException(id);
+                    }
+
                     logger.debug("Receiving HTTP request: {}", request);
 
-                    // send back HTTP status 503 (Not Avaialble) to reject any new requests if the endpoint is not started
+                    // send back HTTP status 503 (Not Available) to reject any new requests if the endpoint is not started
                     if (!started) {
                         response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Endpoint is stopped");
                         return;
                     }
 
+                    continuation.setTimeout(timeoutMs);
+
                     // Create the exchange
                     exchange = createExchange(request);
-                    final String id = exchange.getExchangeId();
+                    id = exchange.getExchangeId();
 
-                    // Put the exchange into the continuation for later retrieval and store the mutex/continuation objects
-                    continuation.setObject(exchange);
+                    continuation.setAttribute(MUTEX, mutex);
+                    continuation.setAttribute(EXCHANGEID, id);
                     mutexes.put(id, mutex);
                     continuations.put(id, continuation);
+                    sentExchanges.put(id, exchange);
 
-                    // Send the exchange and then suspend the HTTP request until the message exchange gets answered
-                    send(exchange);
-
-                    // Right after this if-block, we will try suspending the continuation
-                    // If a SelectConnector is being used, the call to suspend will throw a RetryRequest
-                    // This will free the thread - this method will be invoked again when the continuation gets resumed
                     logger.debug("Suspending continuation for exchange: {}", id);
-                } else {
-                    logger.debug("Resuming HTTP request: {}", request);
-                }
-
-                boolean istimeout = !continuation.suspend(to);
-
-                // Continuation is being ended (either because the message exchange was handled or the continuation timed out)
-                // Cleaning up the stored objects for this continuation now
-                exchange = doEndContinuation(continuation);
-
-                // Throw exception when HTTP time-out has occurred
-                if (istimeout) {
-                    throw new HttpTimeoutException(exchange);
+                    continuation.suspend(response);
+                    sendExchange = true;
                 }
             }
 
+            if (sendExchange) {
+                send(exchange);
+                return;
+            }
+
+
             // message exchange has been completed, so we're ready to send back an HTTP response now
+            logger.debug("Resuming HTTP request: {}", request);
+            doClean(mutex, continuation, id);
             handleResponse(exchange, request, response);
-        } catch (RetryRequest e) {
-            // retrow the RetryRequest to allow Jetty to re-invoke this method when the continuation is being resumed
-            throw e;
         } catch (Exception e) {
-            sendError(exchange, e, request, response);
+            sendError(doClean(mutex, continuation, id), e, request, response);
         }
+    }
+
+    private long obtainTimeout() {
+        long to = this.timeout;
+        if (to == 0) {
+            to = ((HttpComponent) getServiceUnit().getComponent()).getConfiguration().getConsumerProcessorSuspendTime();
+        }
+        return to;
     }
 
     /*
@@ -428,13 +443,13 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      */
     private void handleLateResponse(MessageExchange exchange) throws Exception {
         // if the exchange is no longer active by now, something else probably went wrong in the meanwhile
+        logger.warn(LateResponseException.createMessage(exchange));
         if (exchange.getStatus() == ExchangeStatus.ACTIVE) {
             if (lateResponseStrategy == LateResponseStrategy.error) {
                 // ends the exchange in ERROR
                 fail(exchange, new LateResponseException(exchange));
             } else {
                 // let's log the exception message text, but end the exchange with DONE
-                logger.warn(LateResponseException.createMessage(exchange));
                 done(exchange);
             }
         }
@@ -443,12 +458,12 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     /*
      * Get or create an object that can be used for synchronizing code blocks for a given exchange
      */
-    private Object getOrCreateMutex(MessageExchange exchange) {
+    private Object getOrCreateMutex(Continuation continuation) {
         Object result = null;
 
         // let's try to find the object that corresponds to the exchange first
-        if (exchange != null) {
-            result = mutexes.get(exchange.getExchangeId());
+        if (continuation != null) {
+            result = continuation.getAttribute(MUTEX);
         }
 
         // no luck finding an existing object, let's create a new one
@@ -459,18 +474,28 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         return result;
     }
 
-    /*
-     * End the continuation by removing all objects stored on/for the continuation
-     * and returning the MessageExchange that was represented by the continuation
-     */
-    private MessageExchange doEndContinuation(Continuation continuation) {
-        final MessageExchange exchange = (MessageExchange) continuation.getObject();
-        final String id = exchange.getExchangeId();
-
-        continuation.setObject(null);
-        mutexes.remove(id);
-        continuations.remove(id);
-        return exchange;
+    private MessageExchange doClean(Object mutex, Continuation continuation, String exchangeId) {
+        if (mutex != null) {
+            synchronized (mutex) {
+                if (exchangeId == null && continuation != null) {
+                    exchangeId = (String) continuation.getAttribute(EXCHANGEID);
+                }
+                if (exchangeId != null && continuation == null) {
+                    continuation = continuations.remove(exchangeId);
+                }
+                if (continuation != null) {
+                    continuation.removeAttribute(EXCHANGEID);
+                    continuation.removeAttribute(EXCHANGE);
+                    continuation.removeAttribute(MUTEX);
+                }
+                if (exchangeId != null) {
+                    mutexes.remove(exchangeId);
+                    continuations.remove(exchangeId);
+                    return sentExchanges.remove(exchangeId);
+                }
+            }
+        }
+        return null;
     }
 
     protected void loadStaticResources() throws Exception {
@@ -479,7 +504,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
     /**
      * Handle static resources
      *
-     * @param request the http request
+     * @param request  the http request
      * @param response the http response
      * @return <code>true</code> if the request has been handled
      * @throws IOException
@@ -506,7 +531,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
         }
         Object res;
         if (rewriteSoapAddress && path.equals(MAIN_WSDL) && getResource(path) instanceof Document) {
-        	// determine the location based on the request
+            // determine the location based on the request
             String location = getLocationURI();
             try {
                 URL listUrl = new URL(getLocationURI());
@@ -514,18 +539,18 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
                 URL acceptUri = new URL(requestUrl.getProtocol(), requestUrl.getHost(), requestUrl.getPort(),
                         listUrl.getFile());
                 location = acceptUri.toExternalForm();
-            
-	            //Update the location for this request
-	            Document copy = (Document) ((Document) getResource(path)).cloneNode(true);
-	            updateSoapLocations(location, copy.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap12/", "address"));
-	            updateSoapLocations(location, copy.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "address"));
-	            res = copy;
+
+                //Update the location for this request
+                Document copy = (Document) ((Document) getResource(path)).cloneNode(true);
+                updateSoapLocations(location, copy.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap12/", "address"));
+                updateSoapLocations(location, copy.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "address"));
+                res = copy;
             } catch (Exception e) {
                 logger.warn("Could not update soap location, using default", e);
                 res = getResource(path);
             }
         } else {
-        	res = getResource(path);
+            res = getResource(path);
         }
         if (res == null) {
             return false;
@@ -610,7 +635,7 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             ((DefaultHttpConsumerMarshaler) marshaler).setDefaultMep(getDefaultMep());
         }
     }
-    
+
     protected void updateSoapLocations(String location, NodeList addresses) {
         int i = 0;
         while (i < addresses.getLength()) {
@@ -621,21 +646,5 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             i++;
         }
     }
-
-    /**
-     * Determines how the HTTP consumer endpoint should handle a late response from the NMR
-     */
-    protected enum LateResponseStrategy {
-
-        /**
-         * Terminate the exchange with an ERROR status and log an exception for the late response
-         */
-        error,
-
-        /**
-         * End the exchange with a DONE status and log a warning for the late response
-         */
-        warning
-
-    }
 }
+

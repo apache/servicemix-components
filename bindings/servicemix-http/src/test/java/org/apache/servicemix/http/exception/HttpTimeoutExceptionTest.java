@@ -37,7 +37,7 @@ public class HttpTimeoutExceptionTest extends TestCase {
     }
 
     public void testMessageWithNullExchange() throws MessagingException {
-        HttpTimeoutException exception = new HttpTimeoutException(null);
+        HttpTimeoutException exception = new HttpTimeoutException((String)null);
         assertNotNull("We still expect some kind of message", exception.getMessage());
     }
 

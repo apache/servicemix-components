@@ -16,6 +16,12 @@
  */
 package org.apache.servicemix.http;
 
+import org.eclipse.jetty.http.MimeTypes;
+import org.eclipse.jetty.util.ByteArrayISO8859Writer;
+import org.eclipse.jetty.util.StringUtil;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -23,14 +29,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-import org.mortbay.jetty.MimeTypes;
-import org.mortbay.util.ByteArrayISO8859Writer;
-import org.mortbay.util.StringUtil;
 
 public class ManagedContextManager implements ContextManager {
 

@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
-import org.mortbay.jetty.Request;
-import org.mortbay.jetty.Response;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 
 public class HttpBridgeServletTest extends TestCase {
 

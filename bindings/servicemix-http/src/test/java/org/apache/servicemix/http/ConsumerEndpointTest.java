@@ -16,41 +16,12 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.jbi.servicedesc.ServiceEndpoint;
-import javax.wsdl.Binding;
-import javax.wsdl.BindingOperation;
-import javax.wsdl.Definition;
-import javax.wsdl.Port;
-import javax.wsdl.Service;
-import javax.wsdl.extensions.ExtensibilityElement;
-import javax.wsdl.extensions.soap.SOAPAddress;
-import javax.wsdl.extensions.soap.SOAPOperation;
-import javax.wsdl.extensions.soap12.SOAP12Address;
-import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
-import javax.xml.namespace.QName;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
-
 import junit.framework.TestCase;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.log4j.Level;
 import org.apache.servicemix.components.http.InvalidStatusResponseException;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.components.util.MockServiceComponent;
@@ -71,7 +42,7 @@ import org.apache.servicemix.soap.util.DomUtil;
 import org.apache.servicemix.tck.ExchangeCompletedListener;
 import org.apache.servicemix.tck.ReceiverComponent;
 import org.apache.xpath.CachedXPathAPI;
-import org.mortbay.jetty.HttpHeaders;
+import org.eclipse.jetty.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -80,18 +51,43 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.wsdl.*;
+import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.soap.SOAPAddress;
+import javax.wsdl.extensions.soap.SOAPOperation;
+import javax.wsdl.extensions.soap12.SOAP12Address;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
+import javax.xml.namespace.QName;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
 public class ConsumerEndpointTest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(ConsumerEndpointTest.class);
 
-    String port1 = System.getProperty("http.port1");
-    String port2 = System.getProperty("http.port2");
+    String port1 = System.getProperty("http.port1", "61101");
+    String port2 = System.getProperty("http.port2", "61102");
     
     protected JBIContainer container;
     protected SourceTransformer transformer = new SourceTransformer();
 
     static {
         System.setProperty("org.apache.servicemix.preserveContent", "true");
+
     }
 
     protected void setUp() throws Exception {
@@ -103,6 +99,7 @@ public class ConsumerEndpointTest extends TestCase {
         factory.getDefaultConfig().setQueueSize(0);
         container.setExecutorFactory(factory);
         container.init();
+        org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
     }
 
     protected void tearDown() throws Exception {
@@ -134,7 +131,7 @@ public class ConsumerEndpointTest extends TestCase {
         ep.setService(new QName("urn:test", "svc"));
         ep.setEndpoint("ep");
         ep.setTargetService(new QName("urn:test", "recv"));
-        ep.setLocationURI("http://localhost:"+port1+"/ep1/");
+        ep.setLocationURI("http://localhost:"+port1+"/ep1");
         ep.setDefaultMep(MessageExchangeSupport.IN_ONLY);
         http.setEndpoints(new HttpEndpointType[] {ep});
         container.activateComponent(http, "http");
@@ -145,7 +142,7 @@ public class ConsumerEndpointTest extends TestCase {
 
         container.start();
 
-        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/");
+        PostMethod post = new PostMethod("http://localhost:"+port1+"/ep1/23");
         post.setRequestEntity(new StringRequestEntity("<hello>world</hello>"));
         new HttpClient().executeMethod(post);
         String res = post.getResponseBodyAsString();
@@ -198,7 +195,7 @@ public class ConsumerEndpointTest extends TestCase {
         String res = post.getResponseBodyAsString();
         logger.info(res);
         
-        if (post.getStatusCode() != 500 || !res.contains("HTTP request has timed out for exchange")) {
+        if (post.getStatusCode() != 500 || !res.contains("HTTP request has timed out")) {
             throw new InvalidStatusResponseException(post.getStatusCode());
         }
         Thread.sleep(1000);
@@ -615,9 +612,9 @@ public class ConsumerEndpointTest extends TestCase {
         final int nbThreads = 16;
         final int nbRequests = 8;
         final int endpointTimeout = 100;
-        final int echoSleepTime = 90;
+        final int echoSleepTime = 120;
         final int soTimeout = 60 * 1000 * 1000;
-        final int listenerTimeout = 5000;
+        final int listenerTimeout = 15000;
 
         ExchangeCompletedListener listener = new ExchangeCompletedListener(listenerTimeout);
         container.addListener(listener);
@@ -681,7 +678,7 @@ public class ConsumerEndpointTest extends TestCase {
                             if (post != null) {
                             	post.releaseConnection();
                             }
-                            //System.out.println("[" + System.currentTimeMillis() + "] Request " + latch.getCount() + " processed");
+//                            System.out.println("[" + System.currentTimeMillis() + "] Request " + latchSent.getCount() + " processed");
                         }
                     }
                 }

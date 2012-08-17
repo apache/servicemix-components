@@ -16,8 +16,10 @@
  */
 package org.apache.servicemix.common.util;
 
-import java.net.URL;
-import java.util.Set;
+import junit.framework.TestCase;
+import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.apache.servicemix.tck.mock.MockMessageExchange;
 
 import javax.activation.DataHandler;
 import javax.jbi.messaging.Fault;
@@ -25,15 +27,10 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.mail.util.ByteArrayDataSource;
 import javax.security.auth.Subject;
-import javax.xml.transform.dom.DOMSource; 
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
-
-import junit.framework.TestCase;
-
-import org.apache.servicemix.common.util.MessageUtil;
-import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
-import org.apache.servicemix.tck.mock.MockMessageExchange;
+import java.net.URL;
+import java.util.Set;
 
 public class MessageUtilTest extends TestCase {
 	
@@ -88,12 +85,13 @@ public class MessageUtilTest extends TestCase {
         MessageUtil.NormalizedMessageImpl nmsg2 = new MessageUtil.NormalizedMessageImpl(src);
         assertNull(nmsg2.getContent());
         
-        URL url = new URL("http://schemas.xmlsoap.org/soap/http");
+        URL url = getClass().getClassLoader().getResource(getClass().getName().replace('.','/')+".class");
+
         DataHandler urlDataHandler = new DataHandler(url);
         src.addAttachment("urlId", urlDataHandler);
         MessageUtil.NormalizedMessageImpl nmsg3 = new MessageUtil.NormalizedMessageImpl(src);   
         DataHandler dh = nmsg3.getAttachment("urlId");
-        assertTrue(dh.getDataSource().getContentType().startsWith("text/html"));                
+        assertTrue(dh.getDataSource().getContentType().startsWith("application/java-vm"));
     }
     
     public void testTransfers() throws Exception {      	

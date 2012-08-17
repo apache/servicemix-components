@@ -16,17 +16,9 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import javax.jbi.component.ComponentContext;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.namespace.QName;
-
-import junit.framework.TestCase;
-
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-
+import junit.framework.TestCase;
 import org.apache.servicemix.components.util.TransformComponentSupport;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
@@ -41,10 +33,16 @@ import org.springframework.remoting.support.DefaultRemoteInvocationExecutor;
 import org.springframework.remoting.support.RemoteInvocation;
 import org.springframework.remoting.support.RemoteInvocationResult;
 
+import javax.jbi.component.ComponentContext;
+import javax.jbi.messaging.MessageExchange;
+import javax.jbi.messaging.MessagingException;
+import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
+
 
 public class SerializedMarshalerTest extends TestCase {
 
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1", "61101");
     
     protected JBIContainer container;
     protected ComponentContext context;

@@ -26,13 +26,13 @@ import org.apache.servicemix.http.HttpConfiguration;
 import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.SslParameters;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
-import org.mortbay.jetty.client.Address;
-import org.mortbay.jetty.client.HttpClient;
-import org.mortbay.jetty.client.security.ProxyAuthorization;
-import org.mortbay.jetty.client.security.Realm;
-import org.mortbay.jetty.client.security.SimpleRealmResolver;
-import org.mortbay.resource.Resource;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.client.Address;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.security.ProxyAuthorization;
+import org.eclipse.jetty.client.security.Realm;
+import org.eclipse.jetty.client.security.SimpleRealmResolver;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import javax.jbi.management.DeploymentException;
 import javax.jbi.messaging.ExchangeStatus;
@@ -43,7 +43,6 @@ import javax.net.ssl.*;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 
@@ -57,8 +56,9 @@ import java.security.SecureRandom;
 public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpointType {
 
     private HttpProviderMarshaler marshaler;
+    private HttpProviderListener listener;
     private String locationURI;
-    private int clientSoTimeout = 60000;
+    private int clientConnectTimeout = 75000;
     private int providerExpirationTime = 300000;
     private int maxConnectionsPerAddress = 32;
     private HttpClient jettyClient;
@@ -124,6 +124,20 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
      */
     public void setMarshaler(HttpProviderMarshaler marshaler) {
         this.marshaler = marshaler;
+    }
+
+    public HttpProviderListener getListener() {
+        return listener;
+    }
+
+    /**
+     * Sets the class used to marshal messages.
+     *
+     * @param listener the marshaler to set
+     * @org.apache.xbean.Property description="the bean used monitor Jetty Client instance and to handle some Jetty Client events"
+     */
+    public void setListener(HttpProviderListener listener) {
+        this.listener = listener;
     }
 
     public String getProxyHost() {
@@ -262,8 +276,12 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                 throw new IllegalStateException("Exchange has no input message");
             }
             SmxHttpExchange httpEx = new Exchange(exchange);
-            marshaler.createRequest(exchange, nm, httpEx);
-            jettyClient.send(httpEx);
+            try {
+                marshaler.createRequest(exchange, nm, httpEx);
+                jettyClient.send(httpEx);
+            } catch (Exception e){
+                handleException(httpEx, exchange,  e);
+            }
         }
     }
     
@@ -274,6 +292,9 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
 
     @Override
     public synchronized void stop() throws Exception {
+        if (listener != null){
+            listener.stopJettyClientMonitoring(jettyClient);
+        }
         if (ownClient && jettyClient != null) {
             jettyClient.stop();
             jettyClient = null;
@@ -316,7 +337,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         }
     }
 
-    protected org.mortbay.jetty.client.HttpClient getConnectionPool() throws Exception {
+    protected org.eclipse.jetty.client.HttpClient getConnectionPool() throws Exception {
         if (jettyClient == null) {
             HttpComponent comp = (HttpComponent) getServiceUnit().getComponent();
             if (comp.getConfiguration().isJettyClientPerProvider() || proxyHost != null || ssl != null) {
@@ -330,7 +351,7 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                         jettyClient.setProxyAuthentication(new ProxyAuthorization(proxyUsername, proxyPassword));
                     }
                 }
-                jettyClient.setSoTimeout(getClientSoTimeout());
+                jettyClient.setConnectTimeout(getClientConnectTimeout());
                 jettyClient.setTimeout(getProviderExpirationTime());
                 jettyClient.setMaxConnectionsPerAddress(getMaxConnectionsPerAddress());
                 if (principal != null && credentials != null) {
@@ -353,22 +374,25 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                 jettyClient = comp.getConnectionPool();
             }
         }
+        if (listener != null){
+            listener.startJettyClientMonitoring(jettyClient);
+        }
         return jettyClient;
     }
 
-    public int getClientSoTimeout() {
-        return clientSoTimeout;
+    public int getClientConnectTimeout() {
+        return clientConnectTimeout;
     }
 
     /**
      * Sets the number of milliseconds the endpoint will block while attempting to read a request. The default value is 60000.
      * Setting this to 0 specifies that the endpoint will never timeout.
      * 
-     * @param clientTimeout an int specifying the number of milliseconds the socket will block while attempting to read a request
+     * @param clientConnectTimeout an int specifying the number of milliseconds the socket will block while attempting to read a request
      * @org.apache.xbean.Property description="the number of milliseconds the endpoint will block while attempting to read a request. The default value is 60000. Setting this to 0 specifies that the endpoint will never timeout."
      */
-    public void setClientSoTimeout(int clientTimeout) {
-        this.clientSoTimeout = clientTimeout;
+    public void setClientConnectTimeout(int clientConnectTimeout) {
+        this.clientConnectTimeout = clientConnectTimeout;
     }
 
     public int getProviderExpirationTime() {
@@ -445,20 +469,34 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
         protected void onExpire() {
             handleException(this, jbiExchange, new Exception("Http request expired."));
         }
-       
+
+
+        @Override
+        protected void onRequestCommitted() throws IOException {
+            if (listener != null){
+                listener.onRequestCommited(jbiExchange, this);
+            }
+        }
+
+        @Override
+        protected void onRequestComplete() throws IOException {
+            if (listener != null){
+                listener.onRequestComplete(jbiExchange, this);
+            }
+        }
     }
 
     protected class SSLManagedHttpClient extends HttpClient {
 
-        protected SSLContext getSSLContext() throws IOException {
-            if (ssl.getKeyStore() != null) {
+        protected SSLContext getSSLContext() {
+            if (ssl != null && ssl.getKeyStore() != null) {
                 return getStrictSSLContext();
             } else {
-                return getLooseSSLContext();
+                return super.getSSLContext();
             }
         }
 
-        protected SSLContext getStrictSSLContext() throws IOException {
+        protected SSLContext getStrictSSLContext() {
             try {
                 if (ssl.isManaged()) {
                     KeystoreManager keystoreMgr = KeystoreManager.Proxy.create(getConfiguration().getKeystoreManager());
@@ -497,8 +535,8 @@ public class HttpProviderEndpoint extends ProviderEndpoint implements HttpEndpoi
                     context.init(keyManagers, trustManagers, new SecureRandom());
                     return context;
                 }
-            } catch (GeneralSecurityException e) {
-                throw (IOException) new IOException("Unable to create SSL context").initCause(e);
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to create SSL context", e);
             }
         }
 

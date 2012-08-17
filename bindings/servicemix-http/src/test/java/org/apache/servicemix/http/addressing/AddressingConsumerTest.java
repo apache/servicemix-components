@@ -1,36 +1,34 @@
 package org.apache.servicemix.http.addressing;
 
-import java.net.URLConnection;
-import java.net.URL;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
-
-import javax.xml.namespace.QName;
-import javax.jbi.servicedesc.ServiceEndpoint;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
 import junit.framework.TestCase;
+import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.servicemix.http.HttpComponent;
 import org.apache.servicemix.http.HttpEndpointType;
 import org.apache.servicemix.http.endpoints.HttpSoapConsumerEndpoint;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.util.FileUtil;
-import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
-import org.apache.servicemix.soap.ws.addressing.WsAddressingPolicy;
 import org.apache.servicemix.soap.api.Policy;
 import org.apache.servicemix.soap.util.DomUtil;
-import org.apache.servicemix.components.util.EchoComponent;
+import org.apache.servicemix.soap.ws.addressing.WsAddressingPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.w3c.dom.Document;
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class AddressingConsumerTest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(AddressingConsumerTest.class);
     
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1", "61101");
     protected JBIContainer container;
 
     protected void setUp() throws Exception {

@@ -16,29 +16,52 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import java.security.Principal;
+import org.eclipse.jetty.server.UserIdentity;
 
 import javax.security.auth.Subject;
+import java.security.Principal;
 
-public class JaasJettyPrincipal implements Principal {
+public class JaasJettyPrincipal implements UserIdentity, Principal {
 
-    private final String name;
-    private Subject subject;
+    private final String _name;
+    private final Subject _subject;
+    private final String[] _roles;
 
-    public JaasJettyPrincipal(String name) {
-        this.name = name;
+    public JaasJettyPrincipal(Subject subject, String name, String[] roles)
+    {
+        _name = name;
+        _subject=subject;
+        _roles=roles;
+    }
+
+    public Subject getSubject()
+    {
+        return _subject;
+    }
+
+    public Principal getUserPrincipal()
+    {
+        return this;
+    }
+
+    public boolean isUserInRole(String role, Scope scope)
+    {
+        if (scope!=null && scope.getRoleRefMap()!=null)
+            role=scope.getRoleRefMap().get(role);
+
+        for (String r :_roles)
+            if (r.equals(role))
+                return true;
+        return false;
+    }
+
+    @Override
+    public String toString()
+    {
+        return JaasJettyPrincipal.class.getSimpleName()+"('"+_name+"')";
     }
 
     public String getName() {
-        return name;
+        return _name;
     }
-
-    public Subject getSubject() {
-        return subject;
-    }
-
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
-
 }

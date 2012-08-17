@@ -16,20 +16,14 @@
  */
 package org.apache.servicemix.http.jetty;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.io.InputStream;
+import org.eclipse.jetty.client.HttpExchange;
+import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.http.HttpHeaders;
+import org.eclipse.jetty.io.Buffer;
+import org.eclipse.jetty.io.BufferUtil;
+import org.eclipse.jetty.util.StringUtil;
 
-import org.mortbay.io.Buffer;
-import org.mortbay.io.BufferUtil;
-import org.mortbay.jetty.HttpFields;
-import org.mortbay.jetty.HttpHeaders;
-import org.mortbay.jetty.client.HttpExchange;
-import org.mortbay.util.StringUtil;
+import java.io.*;
 
 public class SmxHttpExchange extends HttpExchange {
 

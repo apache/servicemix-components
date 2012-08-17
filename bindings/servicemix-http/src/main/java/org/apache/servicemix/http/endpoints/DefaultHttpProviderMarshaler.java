@@ -16,29 +16,22 @@
  */
 package org.apache.servicemix.http.endpoints;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Map;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.Fault;
-import javax.jbi.messaging.InOnly;
-import javax.jbi.messaging.InOptionalOut;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.servicemix.expression.Expression;
 import org.apache.servicemix.http.jetty.SmxHttpExchange;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.mortbay.io.ByteArrayBuffer;
-import org.mortbay.jetty.HttpHeaders;
-import org.mortbay.jetty.HttpMethods;
+import org.eclipse.jetty.http.HttpHeaders;
+import org.eclipse.jetty.http.HttpMethods;
+import org.eclipse.jetty.io.ByteArrayBuffer;
+
+import javax.jbi.messaging.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.Map;
 
 /**
  * Default marshaler used for non-soap provider endpoints.

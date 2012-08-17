@@ -16,37 +16,46 @@
  */
 package org.apache.servicemix.http;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-
-import javax.jbi.messaging.ExchangeStatus;
-import javax.jbi.messaging.InOut;
-import javax.jbi.messaging.RobustInOnly;
-import javax.xml.namespace.QName;
-import javax.xml.transform.stream.StreamSource;
-
 import junit.framework.TestCase;
-
 import org.apache.servicemix.JbiConstants;
 import org.apache.servicemix.client.DefaultServiceMixClient;
-import org.apache.servicemix.components.http.HttpConnector;
+import org.apache.servicemix.components.http.BindingServlet;
+import org.apache.servicemix.components.http.HttpInOutBinding;
 import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.Receiver;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.bio.SocketConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.ServletMapping;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.jbi.JBIException;
+import javax.jbi.component.ComponentContext;
+import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.InOut;
+import javax.jbi.messaging.RobustInOnly;
+import javax.xml.namespace.QName;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
 
 public class HttpProviderTest extends TestCase {
 
     private final Logger logger = LoggerFactory.getLogger(HttpProviderTest.class);
 
     protected JBIContainer container;
-    Integer port1 = Integer.parseInt(System.getProperty("http.port1"));
+    Integer port1 = Integer.parseInt(System.getProperty("http.port1", "61101"));
 
     protected void setUp() throws Exception {
         container = new JBIContainer();
@@ -75,7 +84,7 @@ public class HttpProviderTest extends TestCase {
         container.activateComponent(asReceiver);
 
         // Add the http receiver
-        HttpConnector connector = new HttpConnector("localhost", port1);
+        JettyHttpConnector connector = new JettyHttpConnector("localhost", port1);
         connector.setDefaultInOut(false);
         ActivationSpec asConnector = new ActivationSpec("connector", connector);
         asConnector.setDestinationService(new QName("test", "receiver"));
@@ -135,7 +144,7 @@ public class HttpProviderTest extends TestCase {
         container.activateComponent(asReceiver);
 
         // Add the http receiver
-        HttpConnector connector = new HttpConnector("localhost", 9192);
+        JettyHttpConnector connector = new JettyHttpConnector("localhost", 9192);
         connector.setDefaultInOut(false);
         ActivationSpec asConnector = new ActivationSpec("connector", connector);
         asConnector.setDestinationService(new QName("test", "receiver"));
@@ -187,7 +196,7 @@ public class HttpProviderTest extends TestCase {
         container.activateComponent(asReceiver);
 
         // Add the http receiver
-        HttpConnector connector = new HttpConnector("localhost", port1);
+        JettyHttpConnector connector = new JettyHttpConnector("localhost", port1);
         connector.setDefaultInOut(true);
         ActivationSpec asConnector = new ActivationSpec("connector", connector);
         asConnector.setDestinationService(new QName("test", "echo"));
@@ -299,4 +308,148 @@ public class HttpProviderTest extends TestCase {
 
         testInOut(str, true);
     }
+
+
+
+
+public class JettyHttpConnector extends HttpInOutBinding {
+    private Connector listener = new SocketConnector();
+
+	/**
+	 * The maximum number of threads for the Jetty SocketListener. It's set
+	 * to 256 by default to match the default value in Jetty.
+	 */
+	private int maxThreads = 256;
+
+    private Server server;
+    private String host;
+    private int port;
+
+    /**
+     * Constructor
+     *
+     * @param host
+     * @param port
+     */
+    public JettyHttpConnector(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
+
+    /**
+     * Constructor
+     *
+     * @param listener
+     */
+    public JettyHttpConnector(Connector listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Called when the Component is initialized
+     *
+     * @param cc
+     * @throws javax.jbi.JBIException
+     */
+    public void init(ComponentContext cc) throws JBIException {
+        super.init(cc);
+        //should set all ports etc here - from the naming context I guess ?
+        if (listener == null) {
+            listener = new SocketConnector();
+        }
+        listener.setHost(host);
+        listener.setPort(port);
+        server = new Server();
+        QueuedThreadPool btp = new QueuedThreadPool();
+        btp.setMaxThreads(getMaxThreads());
+        server.setThreadPool(btp);
+    }
+
+    /**
+     * start the Component
+     *
+     * @throws JBIException
+     */
+    public void start() throws JBIException {
+        server.setConnectors(new Connector[] { listener });
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        ServletHolder holder = new ServletHolder();
+        holder.setName("jbiServlet");
+        holder.setClassName(BindingServlet.class.getName());
+        ServletHandler servletHandler = new ServletHandler();
+        servletHandler.setServlets(new ServletHolder[]{holder});
+        ServletMapping mapping = new ServletMapping();
+        mapping.setServletName("jbiServlet");
+        mapping.setPathSpec("/*");
+        servletHandler.setServletMappings(new ServletMapping[]{mapping});
+        context.setServletHandler(servletHandler);
+        server.setHandler(context);
+        context.setAttribute("binding", this);
+        try {
+            server.start();
+        }
+        catch (Exception e) {
+            throw new JBIException("Start failed: " + e, e);
+        }
+    }
+
+    /**
+     * stop
+     */
+    public void stop() throws JBIException {
+        try {
+            if (server != null) {
+                server.stop();
+            }
+        }
+        catch (Exception e) {
+            throw new JBIException("Stop failed: " + e, e);
+        }
+    }
+
+    /**
+     * shutdown
+     */
+    public void shutDown() throws JBIException {
+        super.shutDown();
+        server = null;
+    }
+
+
+    // Properties
+    //-------------------------------------------------------------------------
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
+	}
+}
 }

@@ -16,16 +16,6 @@
  */
 package org.apache.servicemix.http.security;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.net.URL;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -36,13 +26,21 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.jbi.util.FileUtil;
 import org.apache.servicemix.tck.SpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.w3c.dom.Element;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.net.URL;
 
 public class HttpSecurityTest extends SpringTestSupport {
 
     private final static Logger logger = LoggerFactory.getLogger(HttpSecurityTest.class);
     
-    String port1 = System.getProperty("http.port1");
+    String port1 = System.getProperty("http.port1", "61101");
 
     static {
         String path = System.getProperty("java.security.auth.login.config");

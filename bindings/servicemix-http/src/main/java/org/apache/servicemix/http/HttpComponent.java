@@ -25,9 +25,8 @@ import org.apache.servicemix.common.util.URISupport;
 import org.apache.servicemix.common.xbean.BaseXBeanDeployer;
 import org.apache.servicemix.http.endpoints.HttpConsumerEndpoint;
 import org.apache.servicemix.http.endpoints.HttpProviderEndpoint;
-import org.apache.servicemix.http.jetty.JCLLogger;
 import org.apache.servicemix.http.jetty.JettyContextManager;
-import org.mortbay.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.servicedesc.ServiceEndpoint;
@@ -46,14 +45,10 @@ public class HttpComponent extends DefaultComponent {
 
     public static final String[] EPR_PROTOCOLS = {"http:", "https"};
 
-    static {
-        JCLLogger.init();
-    }
-
     protected ContextManager server;
     protected HttpClient client;
     protected MultiThreadedHttpConnectionManager connectionManager;
-    protected org.mortbay.jetty.client.HttpClient connectionPool;
+    protected org.eclipse.jetty.client.HttpClient connectionPool;
     protected HttpConfiguration configuration = new HttpConfiguration();
     protected HttpEndpointType[] endpoints;
 
@@ -160,18 +155,18 @@ public class HttpComponent extends DefaultComponent {
         this.client = client;
     }
 
-    public org.mortbay.jetty.client.HttpClient getConnectionPool() {
+    public org.eclipse.jetty.client.HttpClient getConnectionPool() {
         return connectionPool;
     }
 
-    public org.mortbay.jetty.client.HttpClient createNewJettyClient() throws Exception {
-        org.mortbay.jetty.client.HttpClient tempClient = new org.mortbay.jetty.client.HttpClient();
+    public org.eclipse.jetty.client.HttpClient createNewJettyClient() throws Exception {
+        org.eclipse.jetty.client.HttpClient tempClient = new org.eclipse.jetty.client.HttpClient();
         QueuedThreadPool btp = new QueuedThreadPool();
         btp.setMaxThreads(getConfiguration().getJettyClientThreadPoolSize());
         tempClient.setThreadPool(btp);
-        tempClient.setConnectorType(org.mortbay.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
+        tempClient.setConnectorType(org.eclipse.jetty.client.HttpClient.CONNECTOR_SELECT_CHANNEL);
         tempClient.setTimeout(getConfiguration().getProviderExpirationTime());
-        tempClient.setSoTimeout(getConfiguration().getClientSoTimeout());
+        tempClient.setConnectTimeout(getConfiguration().getClientConnectTimeout());
         tempClient.setMaxConnectionsPerAddress(getConfiguration().getMaxConnectionsPerAddress());
         tempClient.start();
         return tempClient;
@@ -184,7 +179,7 @@ public class HttpComponent extends DefaultComponent {
      * @param connectionPool a Jetty <code>HttpClient</code>
      * @org.apache.xbean.Property description="a Jetty HTTP client instance maintaining a thread pool for client-side connections"
      */
-    public void setConnectionPool(org.mortbay.jetty.client.HttpClient connectionPool) {
+    public void setConnectionPool(org.eclipse.jetty.client.HttpClient connectionPool) {
         this.connectionPool = connectionPool;
     }
 

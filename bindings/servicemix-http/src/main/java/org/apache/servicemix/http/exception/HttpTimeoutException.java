@@ -24,14 +24,18 @@ import javax.jbi.messaging.MessageExchange;
 public class HttpTimeoutException extends Exception {
 
     public HttpTimeoutException(MessageExchange exchange) {
-        super(createMessage(exchange));
+        super(createMessage(exchange != null ? exchange.getExchangeId() : null ));
     }
 
-    private static String createMessage(MessageExchange exchange) {
-        if (exchange == null) {
+    public HttpTimeoutException(String id) {
+        super(createMessage(id));
+    }
+
+    private static String createMessage(String id) {
+        if (id == null) {
             return "HTTP request has timed out";
         } else {
-            return String.format("HTTP request has timed out for exchange: %s", exchange.getExchangeId());
+            return String.format("HTTP request has timed out for exchange: %s", id);
         }
     }
 

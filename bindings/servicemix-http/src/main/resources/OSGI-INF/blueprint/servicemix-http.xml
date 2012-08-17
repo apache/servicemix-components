@@ -32,14 +32,17 @@
     </bean>
 
     <bean id="servicemix-http-configuration" class="org.apache.servicemix.http.HttpConfiguration">
+		<property name="clientConnectTimeout" value="${clientConnectTimeout}" />
         <property name="connectorMaxIdleTime" value="${connectorMaxIdleTime}" />
         <property name="soLingerTime" value="${soLingerTime}" />
         <property name="consumerProcessorSuspendTime" value="${consumerProcessorSuspendTime}" />
         <property name="providerExpirationTime" value="${providerExpirationTime}" />
+		<property name="jettyClientPerProvider" value="${jettyClientPerProvider}" />		
         <property name="jettyClientThreadPoolSize" value="${jettyClientThreadPoolSize}" />
         <property name="jettyConnectorClassName" value="${jettyConnectorClassName}" />
         <property name="jettyThreadPoolSize" value="${jettyThreadPoolSize}" />
         <property name="jettyManagement" value="${jettyManagement}" />
+		<property name="maxConnectionsPerAddress" value="${maxConnectionsPerAddress}" />
         <property name="maxConnectionsPerHost" value="${maxConnectionsPerHost}" />
         <property name="maxTotalConnections" value="${maxTotalConnections}" />
         <property name="proxyHost" value="${proxyHost}" />
@@ -95,12 +98,14 @@
 
     <cm:property-placeholder persistent-id="org.apache.servicemix.components.http">
         <cm:default-properties>
+			<cm:property name="clientConnectTimeout" value="75000"/>
 			<cm:property name="connectorMaxIdleTime" value="30000"/>
-                        <cm:property name="soLingerTime" value="-1"/>
+            <cm:property name="soLingerTime" value="-1"/>
 			<cm:property name="consumerProcessorSuspendTime" value="60000"/>
-                        <cm:property name="providerExpirationTime" value="300000"/>
+            <cm:property name="providerExpirationTime" value="300000"/>
 			<cm:property name="jettyClientThreadPoolSize" value="16"/>
-			<cm:property name="jettyConnectorClassName" value="org.mortbay.jetty.nio.SelectChannelConnector"/>
+			<cm:property name="jettyClientPerProvider" value="false"/>
+			<cm:property name="jettyConnectorClassName" value="org.eclipse.jetty.server.nio.SelectChannelConnector"/>
 			<cm:property name="jettyThreadPoolSize" value="255"/>
 			<cm:property name="jettyManagement" value="false"/>
 			<cm:property name="maxConnectionsPerHost" value="65536"/>
