@@ -33,6 +33,7 @@ import javax.jbi.messaging.MessageExchange.Role;
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.management.MBeanServer;
+import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -40,6 +41,7 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.xml.namespace.QName;
 
+import org.apache.servicemix.common.management.MBeanServerHelper;
 import org.apache.servicemix.executors.Executor;
 import org.apache.servicemix.executors.ExecutorFactory;
 import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
@@ -214,20 +216,13 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
     protected void doInit() throws Exception {
         // Register extension mbean
+        MBeanServer server = this.context.getMBeanServer();
         Object mbean = getExtensionMBean();
-        if (mbean != null) {
-            MBeanServer server = this.context.getMBeanServer();
-            if (server == null) {
-                // TODO: log a warning ?
-                // throw new JBIException("null mBeanServer");
-            } else {
-                this.mbeanName = createExtensionMBeanName();
-                if (server.isRegistered(this.mbeanName)) {
-                    server.unregisterMBean(this.mbeanName);
-                }
-                server.registerMBean(mbean, this.mbeanName);
-            }
+
+        if (server != null && mbean != null) {
+            MBeanServerHelper.register(server, createExtensionMBeanName(), mbean);
         }
+
         // Obtain or create the work manager
         // When using the WorkManager from ServiceMix,
         // some class loader problems can appear when
