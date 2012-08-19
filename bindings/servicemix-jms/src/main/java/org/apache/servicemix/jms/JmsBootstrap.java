@@ -16,6 +16,8 @@
  */
 package org.apache.servicemix.jms;
 
+import org.apache.servicemix.common.management.MBeanServerHelper;
+
 import javax.jbi.JBIException;
 import javax.jbi.component.Bootstrap;
 import javax.jbi.component.InstallationContext;
@@ -66,19 +68,12 @@ public class JmsBootstrap implements Bootstrap {
         configuration.setComponentName(this.context.getComponentName());
         configuration.load();
         Object mbean = getExtensionMBean();
+
         if (mbean != null) {
-            this.mbeanName = createExtensionMBeanName();
-            MBeanServer server = this.context.getContext().getMBeanServer();
-            if (server == null) {
-                throw new JBIException("null mBeanServer");
-            }
-            if (server.isRegistered(this.mbeanName)) {
-                server.unregisterMBean(this.mbeanName);
-            }
-            server.registerMBean(mbean, this.mbeanName);
+            this.mbeanName = MBeanServerHelper.register(getMBeanServer(), createExtensionMBeanName(), mbean);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see javax.jbi.component.Bootstrap#cleanUp()
      */
@@ -93,15 +88,7 @@ public class JmsBootstrap implements Bootstrap {
     }
 
     protected void doCleanUp() throws Exception {
-        if (this.mbeanName != null) {
-            MBeanServer server = this.context.getContext().getMBeanServer();
-            if (server == null) {
-                throw new JBIException("null mBeanServer");
-            }
-            if (server.isRegistered(this.mbeanName)) {
-                server.unregisterMBean(this.mbeanName);
-            }
-        }
+        MBeanServerHelper.unregister(getMBeanServer(), mbeanName);
     }
 
     /* (non-Javadoc)
@@ -135,5 +122,11 @@ public class JmsBootstrap implements Bootstrap {
 
     protected void doOnUninstall() throws Exception {
     }
-    
+
+    /*
+     * Get the MBeanServer for the installation context
+     */
+    private MBeanServer getMBeanServer() {
+        return this.context.getContext().getMBeanServer();
+    }
 }
