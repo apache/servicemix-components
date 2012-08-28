@@ -16,6 +16,9 @@
  */
 package org.apache.servicemix.camel;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 import javax.jbi.messaging.MessageExchange;
 
 /**
@@ -35,6 +38,11 @@ public class JavaCamelRouteTest extends JbiInOutTest {
     protected void checkResult(MessageExchange exchange) {
         assertNotNull(exchange.getMessage("out"));
         assertNotNull(exchange.getMessage("out").getProperty("operation"));
-        assertEquals(exchange.getMessage("out").getProperty("operation").toString(), "{http://hello}echo");
+        String operation = exchange.getMessage("out").getProperty("operation").toString();
+        try {
+            assertEquals(URLDecoder.decode(operation, "UTF-8"), "{http://hello}echo");
+        } catch (UnsupportedEncodingException e) {
+            throw new JbiException(e);
+        }
     }
 }

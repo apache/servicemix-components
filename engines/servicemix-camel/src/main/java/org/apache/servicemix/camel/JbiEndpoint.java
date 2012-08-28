@@ -16,7 +16,9 @@
  */
 package org.apache.servicemix.camel;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -158,7 +160,9 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
                 this.destinationUri = destinationUri.substring(0, idx);
 
                 String filter = (String) params.get("headerFilterStrategy");
+                
                 if (StringUtils.hasLength(filter)) {
+                    filter = URLDecoder.decode(filter, "UTF-8");
                     Registry registry = jbiComponent.getCamelContext().getRegistry();
                     if (filter.indexOf('#') != -1) {
                         filter = filter.substring(1);
@@ -183,6 +187,8 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
                 this.setEndpointUri(endpointUri);
             }
         } catch (URISyntaxException e) {
+            throw new JbiException(e);
+        } catch (UnsupportedEncodingException e) {
             throw new JbiException(e);
         }
     }

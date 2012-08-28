@@ -16,6 +16,7 @@
  */
 package org.apache.servicemix.camel;
 
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -43,7 +44,9 @@ public class JbiOperationCamelTest extends JbiTestSupport {
         
         inonly.assertIsSatisfied();
         Exchange exchange = inonly.getExchanges().get(0);
-        assertEquals(OPERATION, JbiBinding.getOperation(exchange));
+        String str1 = URLDecoder.decode(OPERATION.toString(), "UTF-8");
+        String str2 = URLDecoder.decode(JbiBinding.getOperation(exchange).toString(), "UTF-8");
+        assertEquals(str1, str2);
     }
     
     public void testInOnlySetOperationOnCamelExchange() throws Exception {
@@ -78,7 +81,9 @@ public class JbiOperationCamelTest extends JbiTestSupport {
                 
                 from("jbi:service:urn:test:in-only").process(new Processor() {
                     public void process(Exchange exchange) throws Exception {
-                        assertEquals(OPERATION, JbiBinding.getOperation(exchange));
+                        String str1 = URLDecoder.decode(OPERATION.toString(), "UTF-8");
+                        String str2 = URLDecoder.decode(JbiBinding.getOperation(exchange).toString(), "UTF-8");
+                        assertEquals(str1, str2);
                     }                    
                 }).to("mock:in-only");
             }

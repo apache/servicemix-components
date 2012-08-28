@@ -84,7 +84,8 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         assertNotNull("Expecting to receive a DONE/ERROR MessageExchange", client.receive(10000));
         client.done(exchange);
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
-        assertNull(exchange.getOutMessage().getProperty(HEADER_TRANSFORMER));
+        Object obj = exchange.getOutMessage().getProperty(HEADER_TRANSFORMER);
+        assertNull(obj);
         Thread.sleep(1000);
     }
 
