@@ -459,6 +459,8 @@
                         <id>generate-test-sources</id>
                         <phase>generate-test-sources</phase>
                         <configuration>
+                            <!--use fork to workaround an issue in CXF codegen 2.6.2-->
+                            <fork>true</fork>
                             <testSourceRoot>${basedir}/target/generated/test/java</testSourceRoot>
                             <wsdlOptions>
                                 <wsdlOption>
