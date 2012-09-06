@@ -46,6 +46,8 @@ import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public final class MessageUtil {
+    
+    private static SourceTransformer sourceTransformer = new SourceTransformer();
 
     private MessageUtil() {
     }
@@ -140,7 +142,7 @@ public final class MessageUtil {
         if (message.getContent() instanceof StreamSource
                 || message.getContent() instanceof SAXSource) {
             try {
-                String content = new SourceTransformer().contentToString(message);
+                String content = sourceTransformer.contentToString(message);
                 if (content != null) {
                     message.setContent(new StringSource(content));
                 }
@@ -170,7 +172,7 @@ public final class MessageUtil {
 
         public NormalizedMessageImpl(NormalizedMessage message) throws MessagingException {
             try {
-                String str = new SourceTransformer().contentToString(message);
+                String str = sourceTransformer.contentToString(message);
                 if (str != null) {
                     this.content = new StringSource(str);
                 }
