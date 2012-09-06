@@ -21,18 +21,19 @@ import org.apache.servicemix.camel.JbiComponent;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
+
 
 /**
  * OSGi-specific servicemix-camel {@link JbiComponent} implementation that looks up the {@link CamelComponent} in the OSGi Service Registry
  */
-public class OsgiJbiComponent extends JbiComponent implements InitializingBean, DisposableBean {
+public class OsgiJbiComponent extends JbiComponent {
 
     private BundleContext bundleContext;
     private ServiceReference reference;
 
-    public void afterPropertiesSet() throws Exception {
+    @Override
+    public void start() throws Exception {
+        super.start();
         // get the servicemix-camel bundle's context
         bundleContext = FrameworkUtil.getBundle(OsgiJbiComponent.class).getBundleContext();
         
@@ -45,7 +46,9 @@ public class OsgiJbiComponent extends JbiComponent implements InitializingBean, 
         setCamelJbiComponent(component);
     }
 
-    public void destroy() throws Exception {
+    @Override
+    public void stop() throws Exception {
+        super.stop();
         if (reference != null) {
             bundleContext.ungetService(reference);
         }
