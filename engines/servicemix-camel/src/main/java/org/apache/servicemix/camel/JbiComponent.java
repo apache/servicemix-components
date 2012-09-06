@@ -16,14 +16,17 @@
  */
 package org.apache.servicemix.camel;
 
+import java.util.Map;
+
 import javax.xml.namespace.QName;
 
 import org.apache.camel.*;
+import org.apache.camel.impl.DefaultComponent;
 import org.apache.camel.processor.UnitOfWorkProcessor;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.id.IdGenerator;
 
-public class JbiComponent implements Component {
+public class JbiComponent extends DefaultComponent {
 
     private CamelComponent camelJbiComponent;
     private CamelContext camelContext;
@@ -168,5 +171,11 @@ public class JbiComponent implements Component {
             throw new FailedToCreateProducerException(camelEndpoint, e);
         }
         return processor;
+    }
+
+    @Override
+    protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters)
+        throws Exception {
+        return createEndpoint(uri);
     }
 }
