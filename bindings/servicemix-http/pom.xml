@@ -54,8 +54,10 @@
             org.apache.xbean.spring.context.v2,
             org.eclipse.jetty.client*;resolution:=optional;version="[7.2,8.2)",
             org.eclipse.jetty.bio;resolution:=optional;version="[7.2,8.2)",
-            org.springframework*;resolution:=optional;version="[3.0,)",
+            org.springframework*;resolution:=optional;version="[3.0, 4)",
             sun.misc;resolution:=optional,
+            javax.servlet;version="2.5",
+            javax.servlet.http;version="2.5",
             *
         </servicemix.osgi.import>
         <servicemix.osgi.export>
