@@ -109,7 +109,8 @@
 			<cm:property name="jettyThreadPoolSize" value="255"/>
 			<cm:property name="jettyManagement" value="false"/>
 			<cm:property name="maxConnectionsPerHost" value="65536"/>
-			<cm:property name="maxTotalConnections" value="65536"/>
+                        <cm:property name="maxConnectionsPerAddress" value="65536"/>
+                        <cm:property name="maxTotalConnections" value="65536"/>
 			<cm:property name="proxyHost" value=""/>
 			<cm:property name="proxyPort" value="0"/>
 			<cm:property name="retryCount" value="3"/>
