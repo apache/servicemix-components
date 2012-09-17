@@ -95,8 +95,7 @@ public abstract class AbstractEIPTest extends TestCase {
     protected void configurePattern(EIPEndpoint endpoint) {
         endpoint.setStore(new MemoryStore(new IdGenerator()) {
             public void store(String id, Object exchange) throws IOException {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                new ObjectOutputStream(baos).writeObject(exchange);
+                //do your customer store here
                 super.store(id, exchange);
             }
         });

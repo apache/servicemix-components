@@ -37,13 +37,13 @@ import javax.security.auth.Subject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 
 import org.xml.sax.SAXException;
 
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
-import org.apache.servicemix.jbi.jaxp.StringSource;
 
 public final class MessageUtil {
     
@@ -142,18 +142,18 @@ public final class MessageUtil {
         if (message.getContent() instanceof StreamSource
                 || message.getContent() instanceof SAXSource) {
             try {
-                String content = sourceTransformer.contentToString(message);
-                if (content != null) {
-                    message.setContent(new StringSource(content));
+                DOMSource domSource = (DOMSource)sourceTransformer.toDOMSource(message);
+                if (domSource != null) {
+                    message.setContent(domSource);
                 }
             } catch (TransformerException e) {
-                throw new MessagingException("Unable to convert message content into StringSource", e);
+                throw new MessagingException("Unable to convert message content into DOMSource", e);
             } catch (ParserConfigurationException e) {
-                throw new MessagingException("Unable to convert message content into StringSource", e);
+                throw new MessagingException("Unable to convert message content into DOMSource", e);
             } catch (IOException e) {
-                throw new MessagingException("Unable to convert message content into StringSource", e);
+                throw new MessagingException("Unable to convert message content into DOMSource", e);
             } catch (SAXException e) {
-                throw new MessagingException("Unable to convert message content into StringSource", e);
+                throw new MessagingException("Unable to convert message content into DOMSource", e);
             }
         }
     }
@@ -172,10 +172,11 @@ public final class MessageUtil {
 
         public NormalizedMessageImpl(NormalizedMessage message) throws MessagingException {
             try {
-                String str = sourceTransformer.contentToString(message);
-                if (str != null) {
-                    this.content = new StringSource(str);
+                DOMSource domSource = (DOMSource)sourceTransformer.toDOMSource(message);
+                if (domSource != null) {
+                    this.content = domSource;
                 }
+
                 for (Iterator it = message.getPropertyNames().iterator(); it.hasNext();) {
                     String name = (String) it.next();
                     this.properties.put(name, message.getProperty(name));

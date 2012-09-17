@@ -76,14 +76,14 @@ public class MessageUtilTest extends TestCase {
         assertTrue(sub.getPublicCredentials().contains(credential));
         
         MessageUtil.NormalizedMessageImpl nmsg = new MessageUtil.NormalizedMessageImpl(src);        
-        assertEquals("StringSource[<hello>world</hello>]", nmsg.getContent().toString());
+        assertTrue(new SourceTransformer().toString(nmsg.getContent()).contains("<hello>world</hello>"));
         
         NormalizedMessage newMsg = MessageUtil.copy(src);
-        assertEquals("StringSource[<hello>world</hello>]", newMsg.getContent().toString());
+        assertTrue(new SourceTransformer().toString(newMsg.getContent()).contains("<hello>world</hello>"));
         
         src.setContent(null);
         MessageUtil.NormalizedMessageImpl nmsg2 = new MessageUtil.NormalizedMessageImpl(src);
-        assertNull(nmsg2.getContent());
+        assertNull(((DOMSource)nmsg2.getContent()).getNode());
         
         URL url = getClass().getClassLoader().getResource(getClass().getName().replace('.','/')+".class");
 
@@ -113,7 +113,7 @@ public class MessageUtilTest extends TestCase {
         meSrc.setMessage(srcMsg, "in");
         MessageUtil.transferTo(meSrc, meDest, "in");
         NormalizedMessage nm = meDest.getMessage("in");        
-        assertEquals("StringSource[<hello>world</hello>]", nm.getContent().toString());
+        assertTrue(new SourceTransformer().toString(nm.getContent()).contains("<hello>world</hello>"));
         
         // Tests transferInToIn
         meSrc.setMessage(srcMsg, "in");
@@ -147,11 +147,11 @@ public class MessageUtilTest extends TestCase {
         
         // Tests copyIn
         NormalizedMessage copyIn = MessageUtil.copyIn(meSrc);
-        assertEquals("StringSource[<hello>world</hello>]", copyIn.getContent().toString());
+        assertTrue(new SourceTransformer().toString(copyIn.getContent()).contains("<hello>world</hello>"));
         
         // Tests copyOut
         NormalizedMessage copyOut = MessageUtil.copyOut(meSrc);
-        assertEquals("StringSource[<hello>world</hello>]", copyOut.getContent().toString());
+        assertTrue(new SourceTransformer().toString(copyOut.getContent()).contains("<hello>world</hello>"));
     }
     
     public void testEnableContentRereadability() throws Exception {
@@ -159,7 +159,7 @@ public class MessageUtilTest extends TestCase {
         srcMsg.setContent(new StringSource("<hello>world</hello>"));
         srcMsg.setProperty("name", "edell");        
         MessageUtil.enableContentRereadability(srcMsg);
-        assertEquals("StringSource[<hello>world</hello>]", srcMsg.getContent().toString());                
+        assertTrue(new SourceTransformer().toString(srcMsg.getContent()).contains("<hello>world</hello>"));                
         
         try {
             srcMsg.setContent(new StreamSource("@@@@@@@@@@@@@"));            
@@ -186,17 +186,17 @@ public class MessageUtilTest extends TestCase {
     	    	    	    	
     	// Tests copyFault    	
         Fault copyFault = MessageUtil.copyFault(exchangeSrc);
-        assertEquals("StringSource[<fault>failure</fault>]", copyFault.getContent().toString());
+        assertTrue(new SourceTransformer().toString(copyFault.getContent()).contains("<fault>failure</fault>"));
         
         NormalizedMessage nm = MessageUtil.copy(fault);
-        assertEquals("StringSource[<fault>failure</fault>]", nm.getContent().toString());
+        assertTrue(new SourceTransformer().toString(nm.getContent()).contains("<fault>failure</fault>"));
         
     	// Tests transferFaultToFault
         MessageUtil.transferFaultToFault(exchangeSrc, exchangeDest);
-        assertEquals("StringSource[<fault>failure</fault>]", exchangeDest.getFault().getContent().toString());
+        assertTrue(new SourceTransformer().toString(exchangeDest.getFault().getContent()).contains("<fault>failure</fault>"));
         
         MessageUtil.transferTo(exchangeSrc, exchangeDest, "fault");
-        assertEquals("StringSource[<fault>failure</fault>]", exchangeDest.getFault().getContent().toString());
+        assertTrue(new SourceTransformer().toString(exchangeDest.getFault().getContent()).contains("<fault>failure</fault>"));
 
     }
     
