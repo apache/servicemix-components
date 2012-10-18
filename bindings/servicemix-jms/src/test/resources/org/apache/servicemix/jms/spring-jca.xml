@@ -35,7 +35,7 @@
     <sm:flows>
       <sm:sedaFlow />
       <sm:jcaFlow connectionManager="#connectionManager"
-                  jmsURL="tcp://localhost:${activemq.port1}?jms.asyncDispatch=true&amp;jms.useAsyncSend=true" />
+                  jmsURL="tcp://localhost:${activemq.port1}?jms.useAsyncSend=true" />
     </sm:flows>
 
     <sm:activationSpecs>
@@ -118,7 +118,7 @@
   
   <!-- A managed JMS ConnectionFactory for ActiveMQ -->
   <amqra:managedConnectionFactory id="activemqMCF" resourceAdapter="#resourceAdapter" />
-  <amqra:resourceAdapter  id="resourceAdapter" serverUrl="tcp://localhost:${activemq.port1}?jms.asyncDispatch=true&amp;jms.useAsyncSend=true"/>
+  <amqra:resourceAdapter  id="resourceAdapter" serverUrl="tcp://localhost:${activemq.port1}?jms.useAsyncSend=true"/>
   <jencks:connectionFactory  id="connectionFactory"
                              managedConnectionFactory="#activemqMCF"
                              connectionManager="#connectionManager" />
