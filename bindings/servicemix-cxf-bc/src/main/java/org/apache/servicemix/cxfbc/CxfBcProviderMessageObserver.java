@@ -296,7 +296,11 @@ public class CxfBcProviderMessageObserver implements MessageObserver {
         InputStream is = soapMessage.getContent(InputStream.class);
         if (is != null) {
             CachedOutputStream bos = new CachedOutputStream();
-            IOUtils.copy(is, bos);
+            try {
+                IOUtils.copy(is, bos);
+            } catch (IOException e) {
+                //the is could be already closed for ws-rm, just ignore it.
+            }
             bos.flush();
             is.close();
             soapMessage.setContent(InputStream.class, bos.getInputStream());

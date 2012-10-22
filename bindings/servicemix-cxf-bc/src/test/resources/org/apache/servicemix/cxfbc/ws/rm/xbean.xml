@@ -42,7 +42,7 @@
           <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
         </cxfse:outFaultInterceptors>
       </cxfse:endpoint>
-      <cxfse:endpoint>
+      <cxfse:endpoint useJBIWrapper="false">
         <cxfse:pojo>
           <bean class="org.apache.servicemix.cxfbc.ws.rm.GreeterImpl" />
         </cxfse:pojo>
@@ -81,6 +81,7 @@
                       targetEndpoint="GreeterPort"
                       targetService="greeter:GreeterService"
                       targetInterface="greeter:Greeter"
+                      useJBIWrapper="false"
                       busCfg="org/apache/servicemix/cxfbc/ws/rm/decoupled.xml"
                       >
         <cxfbc:inInterceptors>
