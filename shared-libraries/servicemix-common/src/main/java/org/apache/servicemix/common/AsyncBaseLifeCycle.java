@@ -352,7 +352,11 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                     }
                     executor.execute(new Runnable() {
                         public void run() {
-                            processExchangeInTx(exchange, tx);
+                            if (tx != null) {
+                                processExchangeInTx(exchange, tx);
+                            } else {
+                                processExchangeWithoutTx(exchange);
+                            }
                         }
                     });
                 }
@@ -530,10 +534,17 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
     public void onMessageExchange(MessageExchange exchange) {
         if (!container.handleTransactions()) {
             final Transaction tx = (Transaction) exchange.getProperty(MessageExchange.JTA_TRANSACTION_PROPERTY_NAME);
-            processExchangeInTx(exchange, tx);
-            return;
+            if (tx != null) {
+                processExchangeInTx(exchange, tx);
+            } else {
+                processExchangeWithoutTx(exchange);
+            }
+        } else {
+            processExchangeWithoutTx(exchange);
         }
+    }
 
+    protected void processExchangeWithoutTx(MessageExchange exchange) {
         ExchangeStatus oldStatus = exchange.getStatus();
         try {
             processExchange(exchange);
