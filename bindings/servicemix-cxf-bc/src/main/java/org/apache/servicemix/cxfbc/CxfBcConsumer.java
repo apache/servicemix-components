@@ -418,11 +418,13 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
                 }
                 providedBus = null;
             } else {
-                if (allBuses.keySet().contains(bus.getId())) {
-                    allBuses.remove(bus.getId());
+                if (bus != null) {
+                    if (allBuses.keySet().contains(bus.getId())) {
+                        allBuses.remove(bus.getId());
+                    }
+                    bus.shutdown(true);
+                    bus = null;
                 }
-                bus.shutdown(true);
-                bus = null;
             }
         }
         super.deactivate();
