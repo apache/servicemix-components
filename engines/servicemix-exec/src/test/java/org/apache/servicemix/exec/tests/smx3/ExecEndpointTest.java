@@ -32,13 +32,18 @@ import org.apache.servicemix.exec.ExecComponent;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Test the Exec XBean descriptor.
  * 
  * @author jbonofre
  */
-public class ExecEndpointTest extends TestCase {
+public class ExecEndpointTest {
     
     protected JBIContainer container;
     
@@ -46,7 +51,8 @@ public class ExecEndpointTest extends TestCase {
      * (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // start SMX JBI container
         container = new JBIContainer();
         container.setUseMBeanServer(false);
@@ -71,7 +77,8 @@ public class ExecEndpointTest extends TestCase {
      * (non-Javadoc)
      * @see junit.framework.TestCase#tearDown()
      */
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
        if (container != null) {
            container.shutDown();
        }
@@ -84,6 +91,7 @@ public class ExecEndpointTest extends TestCase {
      * 
      * @throws Exception in case of lookup failure.
      */
+    @Test(timeout=60000)
     public void testDeployment() throws Exception {
         // test if the endpoint is present
         assertNotNull("The endpoint http://test/service/exec is not found in the JBI container.", container.getRegistry().getEndpoint(new QName("http://test", "service"), "exec"));
@@ -99,6 +107,7 @@ public class ExecEndpointTest extends TestCase {
      * 
      * @throws Exception if an error occurs during the test.
      */
+    @Test(timeout=60000)
     public void testInOnlyWithValidPayloadMessage() throws Exception {   
         // InOnly MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
@@ -128,6 +137,7 @@ public class ExecEndpointTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test(timeout=60000)
     public void testInOnlyWithEmptyMessage() throws Exception {
         // InOnly MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
@@ -152,6 +162,7 @@ public class ExecEndpointTest extends TestCase {
      * 
      * @throws Exception if an error occurs during the test.
      */
+    @Test(timeout=60000)
     public void testInOutWithValidMessage() throws Exception {
         // InOut MEP test
         DefaultServiceMixClient client = new DefaultServiceMixClient(container);
