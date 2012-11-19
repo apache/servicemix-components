@@ -43,7 +43,7 @@
     </repositories>
 
     <properties>
-        <drools.version>5.1.1</drools.version>
+        <drools.version>5.5.0.Final</drools.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.drools*,

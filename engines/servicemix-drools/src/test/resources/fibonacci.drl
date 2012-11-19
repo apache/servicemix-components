@@ -28,7 +28,7 @@ rule Init
 		$me : Exchange()
 		not Fibonacci()
 	then
-		String t = $me.getIn().getContent().getTextContent();
+		String t = $me.getInMsg().getContent().getTextContent();
 		int v = Integer.parseInt( t );
 		jbi.getLogger().debug("request value: " + v);
 		if (v > max) {

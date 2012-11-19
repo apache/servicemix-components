@@ -8,7 +8,7 @@ rule UnknownOperation
     agenda-group "init"
     auto-focus true    
     when
-        $me : Exchange( status == Exchange.ACTIVE, $in : in != null,
+        $me : Exchange( status == Exchange.ACTIVE, $inMsg : inMsg != null,
                        operation != "{smx}process")
     then
         jbi.route("service:smx/target");
@@ -18,7 +18,7 @@ rule Input
     agenda-group "input"
     auto-focus true    
     when
-        $me : Exchange( status == Exchange.ACTIVE, $in : in != null,
+        $me : Exchange( status == Exchange.ACTIVE, $inMsg : inMsg != null,
                        operation == "{smx}process" )
         eval ( true )
     then

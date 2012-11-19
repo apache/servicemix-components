@@ -22,7 +22,7 @@ global org.apache.servicemix.drools.model.JbiHelper jbi;
  
 rule "Set /test/child/@id to /test/@id"
 	when
-		me : Exchange( status == Exchange.ACTIVE, $in : in != null )
+		me : Exchange( status == Exchange.ACTIVE, $inMsg : inMsg != null )
 	then
-		$in.setXPath("/test/child/@parentId", $in.getXPath("/test/@id"));
+		$inMsg.setXPath("/test/child/@parentId", $inMsg.getXPath("/test/@id"));
 end

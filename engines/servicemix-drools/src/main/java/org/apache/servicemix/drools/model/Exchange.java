@@ -40,25 +40,25 @@ public class Exchange {
     public static final String OUT_MESSAGE = "out";
     
     private final MessageExchange exchange;
-    private Message in;
-    private Message out;
-    private Message fault;
+    private Message inMsg;
+    private Message outMsg;
+    private Message faultMsg;
     private NamespaceContext namespaceContext;
     
     public Exchange(MessageExchange exchange, NamespaceContext namespaceContext) {
         this.exchange = exchange;
         this.namespaceContext = namespaceContext;
-        if (in == null) {
+        if (inMsg == null) {
             NormalizedMessage msg = exchange.getMessage("in");
-            in = msg != null ? new Message(msg, this.namespaceContext) : null;
+            inMsg = msg != null ? new Message(msg, this.namespaceContext) : null;
         }
-        if (out == null) {
+        if (outMsg == null) {
             NormalizedMessage msg = exchange.getMessage("out");
-            out = msg != null ? new Message(msg, this.namespaceContext) : null;
+            outMsg = msg != null ? new Message(msg, this.namespaceContext) : null;
         }
-        if (fault == null) {
+        if (faultMsg == null) {
             javax.jbi.messaging.Fault msg = exchange.getFault();
-            fault = msg != null ? new Fault(msg, this.namespaceContext) : null;
+            faultMsg = msg != null ? new Fault(msg, this.namespaceContext) : null;
         }
     }
     
@@ -104,16 +104,16 @@ public class Exchange {
         exchange.setProperty(name, value);
     }
     
-    public Message getIn() {
-        return in;
+    public Message getInMsg() {
+        return inMsg;
     }
     
-    public Message getOut() {
-        return out;
+    public Message getOutMsg() {
+        return outMsg;
     }
     
-    public Message getFault() {
-        return fault;
+    public Message getFaultMsg() {
+        return faultMsg;
     }
     
     protected Message getMessage(String name) {

@@ -22,7 +22,7 @@ global org.apache.servicemix.drools.model.JbiHelper jbi;
  
 rule "Set XPath Attribute /test/@id to 0"
 	when
-		me : Exchange( status == Exchange.ACTIVE, $in : in != null )
+		me : Exchange( status == Exchange.ACTIVE, $inMsg : inMsg != null )
 	then
-		$in.setXPath("/test/@id", "0");
+		$inMsg.setXPath("/test/@id", "0");
 end
