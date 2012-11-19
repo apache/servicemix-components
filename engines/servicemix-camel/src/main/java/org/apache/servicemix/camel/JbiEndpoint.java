@@ -154,6 +154,7 @@ public class JbiEndpoint extends DefaultEndpoint implements HeaderFilterStrategy
                 }
                 String oper = (String) params.get("operation");
                 if (StringUtils.hasLength(oper)) {
+                    oper = URLDecoder.decode(oper, "UTF-8");
                     operation = QName.valueOf(oper);
                     params.remove("operation");
                 }
