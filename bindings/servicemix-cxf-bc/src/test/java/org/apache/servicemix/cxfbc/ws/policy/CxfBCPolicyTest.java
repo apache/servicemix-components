@@ -115,16 +115,11 @@ public class CxfBCPolicyTest extends TestCase {
         BasicGreeterService gs = new BasicGreeterService(wsdl, serviceName);
         final Greeter greeter = gs.getGreeterPort();
         LOG.info("Created greeter client.");
-        if ("HP-UX".equals(System.getProperty("os.name"))) {
-            ConnectionHelper.setKeepAliveConnection(greeter, true);
-        }
-
+        ConnectionHelper.setKeepAliveConnection(greeter, true);
         //set timeout to 100 secs to avoid intermitly failed
         ((ClientImpl)ClientProxy.getClient(greeter)).setSynchronousTimeout(100000);
         
-        // oneway
-        greeter.greetMeOneWay("CXF");
-
+        
         assertEquals("CXF", greeter.greetMe("cxf"));
 
         // exception
@@ -142,6 +137,8 @@ public class CxfBCPolicyTest extends TestCase {
             assertEquals(2, (int) ex.getFaultInfo().getMajor());
             assertEquals(1, (int) ex.getFaultInfo().getMinor());
         }
+        // oneway
+        greeter.greetMeOneWay("CXF");
     }
 
     

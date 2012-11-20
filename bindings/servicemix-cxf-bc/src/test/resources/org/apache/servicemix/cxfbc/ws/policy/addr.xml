@@ -20,7 +20,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:http="http://cxf.apache.org/transports/http/configuration"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cxf="http://cxf.apache.org/core"
+       xmlns:p="http://cxf.apache.org/policy"
        xsi:schemaLocation="
+http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+http://cxf.apache.org/policy http://cxf.apache.org/schemas/policy.xsd
 http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
@@ -28,14 +32,12 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
       <http:client DecoupledEndpoint="http://localhost:9999/decoupled_endpoint"/>
     </http:conduit>
 
-    <bean id="org.apache.cxf.ws.policy.PolicyEngine" class="org.apache.cxf.ws.policy.PolicyEngineImpl">
-        <property name="bus" ref="cxf"/>
-        <property name="enabled" value="true"/>
-    </bean>
+    <cxf:bus>
+        <cxf:features>
+            <p:policies/>
+        </cxf:features>
+    </cxf:bus>
 
-    <bean class="org.apache.cxf.ws.policy.attachment.external.ExternalAttachmentProvider">
-        <constructor-arg ref="cxf"/>
-        <property name="location" value="org/apache/servicemix/cxfbc/ws/policy/addr-external.xml"/>
-    </bean>
+    <p:externalAttachment location="org/apache/servicemix/cxfbc/ws/policy/addr-external.xml"/>
 
 </beans>
