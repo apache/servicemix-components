@@ -289,6 +289,7 @@
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-core</artifactId>
             <scope>test</scope>
+            <version>3.4.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.servicemix</groupId>
