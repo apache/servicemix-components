@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.jbi.JBIException;
 import javax.jbi.component.ComponentContext;
@@ -385,6 +386,11 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                     }
                     if (oldStatus == ExchangeStatus.ACTIVE) {
                             newExchange.setStatus(ExchangeStatus.ERROR);
+                            if (t instanceof RejectedExecutionException) {
+                                if (t.getMessage() == null || t.getMessage().length() == 0) {
+                                    t = new RuntimeException("Task rejected from java.util.concurrent.ThreadPoolExecutor, need bigger ThreadPool", t);
+                                }
+                            }
                             newExchange.setError(t instanceof Exception ? (Exception) t : new Exception(t));
                         channel.send(newExchange);
                     }
