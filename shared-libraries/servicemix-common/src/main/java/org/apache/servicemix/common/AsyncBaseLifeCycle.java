@@ -320,12 +320,12 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
 
         if (doPoll) {
             synchronized (this.polling) {
-                consumerExecutor.execute(new Runnable() {
+                new Thread() {
                     public void run() {
                         poller = Thread.currentThread();
                         pollDeliveryChannel();
                     }
-                });
+                }.start();
                 polling.wait();
             }
         }
@@ -385,13 +385,15 @@ public class AsyncBaseLifeCycle implements ComponentLifeCycle {
                         }
                     }
                     if (oldStatus == ExchangeStatus.ACTIVE) {
-                            newExchange.setStatus(ExchangeStatus.ERROR);
-                            if (t instanceof RejectedExecutionException) {
-                                if (t.getMessage() == null || t.getMessage().length() == 0) {
-                                    t = new RuntimeException("Task rejected from java.util.concurrent.ThreadPoolExecutor, need bigger ThreadPool", t);
-                                }
+                        newExchange.setStatus(ExchangeStatus.ERROR);
+                        if (t instanceof RejectedExecutionException) {
+                            if (t.getMessage() == null || t.getMessage().length() == 0) {
+                                t = new RuntimeException(
+                                                         "Task rejected from java.util.concurrent.ThreadPoolExecutor, need bigger ThreadPool",
+                                                         t);
                             }
-                            newExchange.setError(t instanceof Exception ? (Exception) t : new Exception(t));
+                        }
+                        newExchange.setError(t instanceof Exception ? (Exception)t : new Exception(t));
                         channel.send(newExchange);
                     }
                 } catch (Exception inner) {
