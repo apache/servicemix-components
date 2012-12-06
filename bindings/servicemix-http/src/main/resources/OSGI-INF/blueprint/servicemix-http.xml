@@ -50,6 +50,7 @@
         <property name="retryCount" value="${retryCount}" />
         <property name="streamingEnabled" value="${streamingEnabled}" />
         <property name="wantHeadersFromHttpIntoExchange" value="${wantHeadersFromHttpIntoExchange}" />
+        <property name="serverGracefulTimeout" value="${serverGracefulTimeout}" />
     </bean>
 
     <bean id="executorFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
@@ -119,6 +120,7 @@
 			<cm:property name="threadPoolMaximumPoolSize" value="32"/>
 			<cm:property name="threadPoolQueueSize" value="256"/>
 			<cm:property name="wantHeadersFromHttpIntoExchange" value="false"/>
+                        <cm:property name="serverGracefulTimeout" value="0"/>
 	    </cm:default-properties>
     </cm:property-placeholder>
     
