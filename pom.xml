@@ -918,6 +918,7 @@
                         <Bundle-Description>${project.description}</Bundle-Description>
                         <Export-Package>${servicemix.osgi.export}</Export-Package>
                         <Import-Package>${servicemix.osgi.import}</Import-Package>
+                        <Import-Service>${servicemix.osgi.service.import}</Import-Service>
                         <DynamicImport-Package>${servicemix.osgi.dynamic.import}</DynamicImport-Package>
                         <Private-Package>${servicemix.osgi.private}</Private-Package>
                         <Require-Bundle>${servicemix.osgi.bundles}</Require-Bundle>
