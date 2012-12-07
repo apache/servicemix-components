@@ -27,6 +27,7 @@ import javax.xml.datatype.DatatypeFactory;
 import org.apache.servicemix.wsn.AbstractNotificationBroker;
 import org.apache.servicemix.wsn.AbstractPublisher;
 import org.apache.servicemix.wsn.AbstractSubscription;
+import org.apache.servicemix.wsn.component.WSNConfiguration;
 import org.oasis_open.docs.wsrf.rp_2.GetResourcePropertyResponse;
 import org.oasis_open.docs.wsrf.rp_2.InvalidResourcePropertyQNameFaultType;
 import org.oasis_open.docs.wsrf.rw_2.ResourceUnavailableFault;
@@ -43,9 +44,14 @@ public abstract class JmsNotificationBroker extends AbstractNotificationBroker {
         super(name);
     }
 
-    public void init() throws Exception {
+    public void init(String brokerUsername, String brokerPassword) throws Exception {
         if (connection == null) {
-            connection = connectionFactory.createConnection();
+            if (!WSNConfiguration.isEmpty(brokerUsername) 
+                && !WSNConfiguration.isEmpty(brokerPassword)) {
+                connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
+            } else {
+                connection = connectionFactory.createConnection();
+            }
             connection.start();
         }
         super.init();

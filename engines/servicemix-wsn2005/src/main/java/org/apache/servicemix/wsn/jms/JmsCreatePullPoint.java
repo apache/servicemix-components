@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.servicemix.wsn.AbstractCreatePullPoint;
 import org.apache.servicemix.wsn.AbstractPullPoint;
+import org.apache.servicemix.wsn.component.WSNConfiguration;
 import org.oasis_open.docs.wsn.b_2.CreatePullPoint;
 
 public class JmsCreatePullPoint extends AbstractCreatePullPoint {
@@ -34,9 +35,14 @@ public class JmsCreatePullPoint extends AbstractCreatePullPoint {
         super(name);
     }
 
-    public void init() throws Exception {
+    public void init(String brokerUsername, String brokerPassword) throws Exception {
         if (connection == null) {
-            connection = connectionFactory.createConnection();
+            if (!WSNConfiguration.isEmpty(brokerUsername) 
+                && !WSNConfiguration.isEmpty(brokerPassword)) {
+                connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
+            } else {
+                connection = connectionFactory.createConnection();
+            }
             connection.start();
         }
         super.init();

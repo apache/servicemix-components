@@ -27,6 +27,8 @@
     <bean id="servicemix-wsn2005" class="org.apache.servicemix.wsn.component.WSNComponent">
         <property name="executorFactory" ref="executorFactory" />
         <property name="connectionFactory" ref="connectionFactory" />
+        <property name="brokerUsername" value="${brokerUsername}"/>
+        <property name="brokerPassword" value="${brokerPassword}"/>
     </bean>
 
     <bean id="executorFactory" class="org.apache.servicemix.executors.impl.ExecutorFactoryImpl">
@@ -76,7 +78,9 @@
             <cm:property name="threadPoolCorePoolSize" value="8"/>
             <cm:property name="threadPoolMaximumPoolSize" value="32"/>
             <cm:property name="threadPoolQueueSize" value="256"/>
-	    </cm:default-properties>
+            <cm:property name="brokerUsername" value=""/>
+            <cm:property name="brokerPassword" value=""/>
+	</cm:default-properties>
     </cm:property-placeholder>
     
 </blueprint>

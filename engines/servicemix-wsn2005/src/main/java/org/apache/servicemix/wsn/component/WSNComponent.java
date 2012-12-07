@@ -68,6 +68,10 @@ public class WSNComponent extends DefaultComponent {
     private WSNDeployer deployer;
 
     private BrokerService brokerService;
+    
+    private String brokerUsername;
+    
+    private String brokerPassword;
 
 
     public WSNComponent() {
@@ -162,13 +166,13 @@ public class WSNComponent extends DefaultComponent {
         }
         if (connectionFactory != null) {
             notificationBroker.setConnectionFactory(connectionFactory);
-            notificationBroker.init();
+            notificationBroker.init(brokerUsername, brokerPassword);
         }
         // Create PullPoint
         createPullPoint = new JmsCreatePullPoint(configuration.getBrokerName());
         createPullPoint.setManager(new WSNEndpointManager());
         createPullPoint.setConnectionFactory(connectionFactory);
-        createPullPoint.init();
+        createPullPoint.init(brokerUsername, brokerPassword);
         // Create endpoints
         endpoints = new ArrayList<Endpoint>();
         if (resources != null) {
@@ -273,6 +277,22 @@ public class WSNComponent extends DefaultComponent {
         }
         InitialContext ctx = new InitialContext(props);
         return (ConnectionFactory) ctx.lookup(configuration.getJndiConnectionFactoryName());
+    }
+
+    public String getBrokerUsername() {
+        return brokerUsername;
+    }
+
+    public void setBrokerUsername(String brokerUsername) {
+        this.brokerUsername = brokerUsername;
+    }
+
+    public String getBrokerPassword() {
+        return brokerPassword;
+    }
+
+    public void setBrokerPassword(String brokerPassword) {
+        this.brokerPassword = brokerPassword;
     }
 
     public class WSNEndpointManager implements EndpointManager {
