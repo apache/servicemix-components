@@ -88,7 +88,7 @@
         <camel.version>2.10.2</camel.version>
 
         <!-- CXF -->
-        <cxf.version>2.6.3</cxf.version>
+        <cxf.version>2.6.4</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
@@ -147,7 +147,7 @@
         <woden.version>1.0.0M6</woden.version>
         <woodstox.version>4.0.8</woodstox.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <wss4j.version>1.6.5</wss4j.version>
+        <wss4j.version>1.6.8</wss4j.version>
         <xalan.version>2.7.1</xalan.version>
         <xbean.version>3.11.1</xbean.version>
         <xercesImpl.version>2.9.1</xercesImpl.version>
@@ -156,7 +156,7 @@
         <xmlschema.version>1.4.7</xmlschema.version>
         <xmlParserAPIs.version>2.2.1</xmlParserAPIs.version>
         <xmlunit.version>1.1</xmlunit.version>
-        <xmlsec.version>1.5.1</xmlsec.version>
+        <xmlsec.version>1.5.2</xmlsec.version>
         <xstream.version>1.3</xstream.version>
 
         <!-- Tooling -->

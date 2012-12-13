@@ -49,7 +49,6 @@ import org.apache.servicemix.cxfbc.CxfBcSpringTestSupport;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class CxfBcProviderConsumerMtomSecurityTest extends CxfBcSpringTestSupport {
-//public class CxfBcProviderConsumerMtomTest extends TestCase {
     
     public static final QName MTOM_PORT = new QName(
             "http://cxf.apache.org/mime", "TestMtomPort");
