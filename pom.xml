@@ -28,7 +28,7 @@
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>components</artifactId>
-    <version>2012.01-SNAPSHOT</version>
+    <version>2013.01</version>
     <packaging>pom</packaging>
 
     <name>Apache ServiceMix :: Components</name>
@@ -39,9 +39,9 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/trunk</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/tags/components-2013.01</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/tags/components-2013.01</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/tags/components-2013.01</url>
     </scm>
     
     <modules>
@@ -68,7 +68,7 @@
         <!-- ServiceMix Stuff -->
         <servicemix.legal.version>1.0</servicemix.legal.version>
         <servicemix.specs.version>2.2.0</servicemix.specs.version>
-        <servicemix-utils.version>1.6.0-SNAPSHOT</servicemix-utils.version>
+        <servicemix-utils.version>1.6.0</servicemix-utils.version>
         <servicemix.version>3.3.2</servicemix.version>
 
         <!-- OSGi properties used by maven-bundle-plugin -->
