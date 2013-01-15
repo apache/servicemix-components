@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>shared-libraries</artifactId>
-        <version>2013.01</version>
+        <version>2013.02-SNAPSHOT</version>
     </parent>
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-soap</artifactId>
-    <version>2013.01</version>
+    <version>2013.02-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Apache ServiceMix :: Components :: Shared Libraries :: SOAP Stack</name>
     <description>

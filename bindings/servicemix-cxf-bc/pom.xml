@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.apache.servicemix</groupId>
         <artifactId>binding-components</artifactId>
-        <version>2013.01</version>
+        <version>2013.02-SNAPSHOT</version>
     </parent>
 
     <groupId>org.apache.servicemix</groupId>
     <artifactId>servicemix-cxf-bc</artifactId>
-    <version>2013.01</version>
+    <version>2013.02-SNAPSHOT</version>
     <packaging>jbi-component</packaging>
     <name>Apache ServiceMix :: Components :: CXF Binding Component</name>
     <description>
@@ -41,9 +41,9 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2013.01</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2013.01</developerConnection>
-        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/tags/components-2013.01</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/servicemix/components/bindings/servicemix-cxf-bc/trunk</developerConnection>
+        <url>http://svn.apache.org/viewcvs.cgi/servicemix/components/bindings/servicemix-cxf-bc/trunk</url>
     </scm>
 
     <properties>
