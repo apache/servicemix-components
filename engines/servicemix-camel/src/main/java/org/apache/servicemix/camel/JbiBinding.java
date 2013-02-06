@@ -39,6 +39,7 @@ import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.servicemix.camel.util.BasicSerializationHeaderFilterStrategy;
+import org.apache.servicemix.camel.util.DefaultJBIHeaderFilterStrategy;
 import org.apache.servicemix.camel.util.HeaderFilterStrategies;
 import org.apache.servicemix.camel.util.HeaderFilterStrategyConstants;
 import org.apache.servicemix.camel.util.NoCheckSerializationHeaderFilterStrategy;
@@ -46,6 +47,7 @@ import org.apache.servicemix.camel.util.StrictSerializationHeaderFilterStrategy;
 import org.apache.servicemix.jbi.exception.FaultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * The binding of how Camel messages get mapped to JBI and back again
@@ -87,6 +89,9 @@ public class JbiBinding {
                 strategies.add(new BasicSerializationHeaderFilterStrategy());
             }
         }
+        // Added the DefaultJBIHeaderFilter by default
+        strategies.add(new DefaultJBIHeaderFilterStrategy());
+
     }
 
     public void addHeaderFilterStrategy(HeaderFilterStrategy strategy) {
