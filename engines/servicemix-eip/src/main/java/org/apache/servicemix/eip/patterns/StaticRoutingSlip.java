@@ -233,7 +233,15 @@ public class StaticRoutingSlip extends EIPEndpoint {
                 targets[curIndex.intValue()].configureTarget(me, getContext());
                 store.store(exchange.getExchangeId(), exchange);
                 MessageUtil.transferOutToIn(exchange, me);
-                send(me);
+                try {
+                    send(me);
+                } catch (RuntimeException re) {
+                    // send delivery channel errors back to calling endpoint
+                    if (correlationId != null) {
+                        me = (MessageExchange) store.load(correlationId);                      
+                    } 
+                    fail(me, exchange.getError());
+                } 
                 if (previousId != null) {
                     me = (MessageExchange) store.load(previousId);
                     done(me);
