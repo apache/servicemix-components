@@ -330,11 +330,12 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
      *   (either because the exchange was received or because the request timed out)
      */
     public void process(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        MessageExchange exchange;
+        MessageExchange exchange = null;
         Continuation continuation = null;
         Object mutex = null;
         String id = null;
-
+        boolean wasCleaned = false;
+        
         try {
             // Handle WSDLs, XSDs
             if (handleStaticResource(request, response)) {
@@ -392,9 +393,13 @@ public class HttpConsumerEndpoint extends ConsumerEndpoint implements HttpProces
             // message exchange has been completed, so we're ready to send back an HTTP response now
             logger.debug("Resuming HTTP request: {}", request);
             doClean(mutex, continuation, id);
+            wasCleaned = true;
             handleResponse(exchange, request, response);
         } catch (Exception e) {
-            sendError(doClean(mutex, continuation, id), e, request, response);
+            if (!wasCleaned) {
+                exchange = doClean(mutex, continuation, id);
+            }
+            sendError(exchange, e, request, response);
         }
     }
 
