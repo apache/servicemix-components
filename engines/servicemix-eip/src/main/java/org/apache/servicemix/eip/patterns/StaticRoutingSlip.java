@@ -240,7 +240,7 @@ public class StaticRoutingSlip extends EIPEndpoint {
                     if (correlationId != null) {
                         me = (MessageExchange) store.load(correlationId);                      
                     } 
-                    fail(me, exchange.getError());
+                    fail(me, re);
                 } 
                 if (previousId != null) {
                     me = (MessageExchange) store.load(previousId);
