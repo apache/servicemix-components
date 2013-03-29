@@ -40,7 +40,7 @@
         <backport-util-concurrent.version>2.2</backport-util-concurrent.version>
         <cglib.version>2.1_3</cglib.version>
         <groovy.version>1.8.3</groovy.version>
-        <jruby.version>1.4.0</jruby.version>
+        <jruby.version>1.7.2</jruby.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.script*,

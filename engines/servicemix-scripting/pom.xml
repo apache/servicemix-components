@@ -38,17 +38,23 @@
     <repositories>
         <!-- required for scripting engine jars -->
         <repository>
-            <id>servicemix-m2-repo</id>
-            <name>Servicemix Maven2 Repository</name>
-            <url>http://svn.apache.org/repos/asf/servicemix/m2-repo/</url>
+            <id>scriptengines</id>
+            <name>Scriptengines Google Code Maven Repository</name>
+            <url>http://scriptengines.googlecode.com/svn/m2-repo</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>    
 
     <properties>
         <groovy.version>1.8.3</groovy.version>
         <livetribe-jsr223.version>2.0.5</livetribe-jsr223.version>
-        <jsr223.version>20080611</jsr223.version>
-        <jruby.version>1.3.1</jruby.version>
+        <scriptengines.version>1.1</scriptengines.version>
+        <jruby.version>1.7.2</jruby.version>
         <rhino.version>1.7R1</rhino.version>
 
         <servicemix.osgi.import>
@@ -71,19 +77,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sun.script</groupId>
-            <artifactId>groovy-engine</artifactId>
-            <version>${jsr223.version}</version>
+         <groupId>com.google.code.scriptengines</groupId>
+         <artifactId>scriptengines-javascript</artifactId>
+         <version>${scriptengines.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.script</groupId>
-            <artifactId>jruby-engine</artifactId>
-            <version>${jsr223.version}</version>
+         <groupId>com.google.code.scriptengines</groupId>
+         <artifactId>scriptengines-jruby</artifactId>
+         <version>${scriptengines.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.script</groupId>
-            <artifactId>js-engine</artifactId>
-            <version>${jsr223.version}</version>
+         <groupId>com.google.code.scriptengines</groupId>
+         <artifactId>scriptengines-groovy</artifactId>
+         <version>${scriptengines.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

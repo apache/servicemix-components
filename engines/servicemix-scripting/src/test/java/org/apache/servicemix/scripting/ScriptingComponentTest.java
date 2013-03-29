@@ -35,6 +35,55 @@ import org.springframework.context.support.AbstractXmlApplicationContext;
 public class ScriptingComponentTest extends SpringTestSupport {
     private static final String TEST_PROPERTY = "JSR-223-TEST-PROPERTY-NAME";
     private static final String PROP_VALUE    = "JSR-223-TEST-PROPERTY-VALUE";
+
+    // TODO need to run JRuby tests first here since upgrading to 1.7.2 for some reason. Was getting
+    // NameError: ArrayJavaProxy is already defined
+    // (root) at <script>:20
+    public void testJRubyInOut() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        InOut me = client.createInOutExchange();
+        me.setService(new QName("urn:test", "jruby-jsr223"));
+        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
+        client.sendSync(me);
+        if (me.getStatus() == ExchangeStatus.ERROR) {
+            if (me.getError() != null) {
+                throw me.getError();
+            } else {
+                fail("Received ERROR status");
+            }
+        } else if (me.getFault() != null) {
+            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+        }
+        assertNotNull("The out message was null...", me.getOutMessage());
+        assertNotNull("The out message content was null...", me.getOutMessage().getContent());
+        System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
+        client.done(me);
+    }
+    
+    public void testJRubyInOnly() throws Exception {
+        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
+        Receiver receiver = (Receiver) getBean("receiver");
+        InOnly me = client.createInOnlyExchange();
+        me.setService(new QName("urn:test", "jruby-jsr223"));
+        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
+        client.sendSync(me);
+        
+        if (me.getStatus() == ExchangeStatus.DONE) {
+            receiver.getMessageList().assertMessagesReceived(1);
+            NormalizedMessage msg = (NormalizedMessage)receiver.getMessageList().getMessages().get(0);
+            assertNotNull("The out message content was null...", msg.getContent());
+        } else {
+            if (me.getStatus() == ExchangeStatus.ERROR) {
+                if (me.getError() != null) {
+                    throw me.getError();
+                } else {
+                    fail("Received ERROR status");
+                }
+            } else if (me.getFault() != null) {
+                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
+            }    
+        }                
+    }
     
     public void testGroovyInOut() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
@@ -62,52 +111,6 @@ public class ScriptingComponentTest extends SpringTestSupport {
         Receiver receiver = (Receiver) getBean("receiver");
         InOnly me = client.createInOnlyExchange();
         me.setService(new QName("urn:test", "groovy-jsr223"));
-        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
-        client.sendSync(me);
-        
-        if (me.getStatus() == ExchangeStatus.DONE) {
-            receiver.getMessageList().assertMessagesReceived(1);
-            NormalizedMessage msg = (NormalizedMessage)receiver.getMessageList().getMessages().get(0);
-            assertNotNull("The out message content was null...", msg.getContent());
-        } else {
-            if (me.getStatus() == ExchangeStatus.ERROR) {
-                if (me.getError() != null) {
-                    throw me.getError();
-                } else {
-                    fail("Received ERROR status");
-                }
-            } else if (me.getFault() != null) {
-                fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
-            }    
-        }                
-    }
-
-    public void testJRubyInOut() throws Exception {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        InOut me = client.createInOutExchange();
-        me.setService(new QName("urn:test", "jruby-jsr223"));
-        me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
-        client.sendSync(me);
-        if (me.getStatus() == ExchangeStatus.ERROR) {
-            if (me.getError() != null) {
-                throw me.getError();
-            } else {
-                fail("Received ERROR status");
-            }
-        } else if (me.getFault() != null) {
-            fail("Received fault: " + new SourceTransformer().toString(me.getFault().getContent()));
-        }
-        assertNotNull("The out message was null...", me.getOutMessage());
-        assertNotNull("The out message content was null...", me.getOutMessage().getContent());
-        System.err.println(new SourceTransformer().toString(me.getOutMessage().getContent()));
-        client.done(me);
-    }
-    
-    public void testJRubyInOnly() throws Exception {
-        DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
-        Receiver receiver = (Receiver) getBean("receiver");
-        InOnly me = client.createInOnlyExchange();
-        me.setService(new QName("urn:test", "jruby-jsr223"));
         me.getInMessage().setContent(new StringSource("<hello>jsr-223</hello>"));
         client.sendSync(me);
         
