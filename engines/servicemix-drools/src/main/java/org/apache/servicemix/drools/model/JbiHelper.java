@@ -18,6 +18,7 @@ package org.apache.servicemix.drools.model;
 
 import javax.jbi.component.ComponentContext;
 import javax.jbi.messaging.DeliveryChannel;
+import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.InOnly;
 import javax.jbi.messaging.MessageExchange;
@@ -194,14 +195,17 @@ public class JbiHelper {
      * @param content the response
      * @throws Exception
      */    
-    public void answer(Source content) throws Exception {
-        MessageExchange me = this.exchange.getInternalExchange();
-        NormalizedMessage out = me.createMessage();
-        out.setContent(content);
-        me.setMessage(out, "out");
-        getChannel().send(me);
-        exchangeHandled = true;
-        update();
+    public void answer(Source content) throws Exception {        
+        MessageExchange me = this.exchange.getInternalExchange();               
+        if (me.getStatus() == ExchangeStatus.ACTIVE)
+        {            
+            NormalizedMessage out = me.createMessage();        
+            out.setContent(content);
+            me.setMessage(out, "out");
+            getChannel().send(me);
+            exchangeHandled = true;
+            update();
+        }
     }
 
     /**
