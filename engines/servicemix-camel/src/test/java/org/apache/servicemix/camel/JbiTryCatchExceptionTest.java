@@ -19,6 +19,7 @@ package org.apache.servicemix.camel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class JbiTryCatchExceptionTest extends JbiTestSupport {
     
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testInOnlyExchangeConvertBody() throws Exception {
         MockEndpoint caught = getMockEndpoint("mock:caught");
         caught.expectedMessageCount(1);

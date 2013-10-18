@@ -29,6 +29,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.StringSource;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 
 /**
  * Tests on a JBI DLC endpoint handling an error in the Camel route
@@ -37,6 +38,7 @@ public class JbiDlcForCamelRouteTest extends JbiTestSupport {
 
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testErrorHandlingByJbiEndpointInCamelRoute() throws Exception {
         InOnly exchange = getServicemixClient().createInOnlyExchange();
         exchange.setService(new QName("urn:test", "exception"));

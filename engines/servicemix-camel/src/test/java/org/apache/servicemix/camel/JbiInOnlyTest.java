@@ -32,6 +32,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel 
@@ -41,6 +42,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
     private static final String MESSAGE = "<just><a>test</a></just>";
     private static final int COUNT = 50;
 
+    @Test
     public void testInOnlyExchangeConvertBody() throws Exception {
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedBodiesReceived(MESSAGE);
@@ -54,7 +56,8 @@ public class JbiInOnlyTest extends JbiTestSupport {
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
         done.assertIsSatisfied();
     }
-    
+
+    @Test
     public void testInOnlyExchangeForwardAndConvertBody() throws Exception {
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedBodiesReceived(MESSAGE);
@@ -68,6 +71,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
         done.assertIsSatisfied();
     }
 
+    @Test
     public void testInOnlyWithException() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOnly exchange = client.createInOnlyExchange();
@@ -77,6 +81,7 @@ public class JbiInOnlyTest extends JbiTestSupport {
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
     }
 
+    @Test
     public void testInOutWithException() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();
@@ -85,7 +90,8 @@ public class JbiInOnlyTest extends JbiTestSupport {
         client.sendSync(exchange);
         assertEquals(ExchangeStatus.ERROR, exchange.getStatus());
     }
-    
+
+    @Test
     public void testInOnlyToAggregator() throws Exception {
         ServiceMixClient smxClient = getServicemixClient();
         getMockEndpoint("mock:aggregated").expectedMessageCount(1);

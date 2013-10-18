@@ -37,6 +37,7 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.helper.MessageUtil;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 import org.springframework.util.Assert;
 
 /**
@@ -52,7 +53,7 @@ public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSup
     private ReceiverComponent deadLetter;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         receiver = new ReceiverComponent() {
             public void onMessageExchange(MessageExchange exchange) throws MessagingException {
                 NormalizedMessage inMessage = getInMessage(exchange);
@@ -77,13 +78,14 @@ public class JbiInOnlyWithErrorHandledTrueSpringDSLTest extends SpringJbiTestSup
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
 
         // restore the original log level
         Logger.getLogger("org.apache.servicemix").setLevel(LOG_LEVEL);
     }
-    
+
+    @Test
     public void testErrorHandledByExceptionClause() throws Exception {
         ServiceMixClient smxClient = getServicemixClient();
         MessageExchange[] exchanges = new MessageExchange[] {smxClient.createInOnlyExchange(), smxClient.createRobustInOnlyExchange()};

@@ -30,6 +30,7 @@ import org.apache.camel.StringSource;
 import org.apache.servicemix.camel.test.InvalidSerializableObject;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.junit.Test;
 
 /**
  * Testcase for strictSerialization=true (removes all non-serializable headers, even those that incorrectly
@@ -41,6 +42,7 @@ public class JbiStrictSerializationTest extends JbiCamelErrorHandlingTestSupport
     private static final String INVALID_SERIALIZABLE_KEY = "invalid.serializable";
     private static final String NON_SERIALIZABLE_KEY = "non.serializable";
 
+    @Test
     public void testInOutWithStrictSerialization() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(1);

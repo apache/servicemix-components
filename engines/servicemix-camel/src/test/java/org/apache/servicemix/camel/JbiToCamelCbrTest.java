@@ -33,6 +33,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.SourceTransformer;
+import org.junit.Test;
 
 /**
  * Tests on correct handling of several XML Source implementations being sent by ServiceMix to Camel  
@@ -45,7 +46,7 @@ public class JbiToCamelCbrTest extends JbiTestSupport {
     private Level level;
     
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         // let's disable DEBUG logging for ServiceMix or all message content will be DOMSource anyway
         if (level == null) {
@@ -55,7 +56,7 @@ public class JbiToCamelCbrTest extends JbiTestSupport {
     }
     
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
         // restore the original log level
         if (level != null) {
@@ -64,16 +65,19 @@ public class JbiToCamelCbrTest extends JbiTestSupport {
         }
     }
 
+    @Test
     public void testCbrWithStringSource() throws Exception {
         doTestCbr(new StringSource(MESSAGE_IN_FRENCH),
                   new StringSource(MESSAGE_IN_ENGLISH));
     }
-    
+
+    @Test
     public void testCbrWithStreamSource() throws Exception {
         doTestCbr(new StreamSource(new StringReader(MESSAGE_IN_FRENCH)),
                   new StreamSource(new StringReader(MESSAGE_IN_ENGLISH)));
     }
-    
+
+    @Test
     public void testCbrWithDomSource() throws Exception {
         doTestCbr(transformer.toDOMSource(new StringSource(MESSAGE_IN_FRENCH)),
                   transformer.toDOMSource(new StringSource(MESSAGE_IN_ENGLISH)));

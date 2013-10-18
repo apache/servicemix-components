@@ -28,6 +28,7 @@ import org.apache.camel.component.seda.SedaEndpoint;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.resolver.URIResolver;
 import org.apache.servicemix.tck.SenderComponent;
+import org.junit.Test;
 
 /**
  * @version $Revision: 563665 $
@@ -35,6 +36,7 @@ import org.apache.servicemix.tck.SenderComponent;
 public class SendFromCamelToJbiAndBackToCamelTest extends JbiTestSupport {
     protected SenderComponent senderComponent = new SenderComponent();
 
+    @Test
     public void testCamelInvokingJbi() throws Exception {
         senderComponent.sendMessages(1);
 
@@ -87,7 +89,7 @@ public class SendFromCamelToJbiAndBackToCamelTest extends JbiTestSupport {
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         camelContext.stop();
     }
 }

@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.apache.servicemix.components.util.TransformComponentSupport;
 import org.apache.servicemix.jbi.api.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * Tests for handling StreamSource sent by JBI to Camel
@@ -44,7 +45,7 @@ public class JbiToCamelStreamSourceTest extends JbiTestSupport {
     private static final Level LOG_LEVEL = Logger.getLogger("org.apache.servicemix").getEffectiveLevel();
     
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
 
         // change the log level to avoid the conversion to DOMSource 
@@ -52,13 +53,14 @@ public class JbiToCamelStreamSourceTest extends JbiTestSupport {
     }
     
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
         
         // restore the original log level
         Logger.getLogger("org.apache.servicemix").setLevel(LOG_LEVEL);
     }
-    
+
+    @Test
     public void testSendingStreamSource() throws Exception {
         MockEndpoint result = getMockEndpoint("mock:result");
         result.expectedBodiesReceived(MESSAGE);

@@ -29,6 +29,7 @@ import org.apache.camel.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.exception.FaultException;
+import org.junit.Test;
 
 /**
  * Tests on handling fault messages with the Camel Exception handler  
@@ -36,7 +37,8 @@ import org.apache.servicemix.jbi.exception.FaultException;
 public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSupport {
     
     private static final String MESSAGE = "<just><a>test</a></just>";
-    
+
+    @Test
     public void testInOnlyWithNoHandleFault() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(1);
@@ -56,6 +58,7 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
         errors.assertIsSatisfied();
     }
 
+    @Test
     public void testRobustInOnlyWithNoHandleFault() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(0);
@@ -173,8 +176,8 @@ public class JbiInOnlyCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSu
             public void configure() throws Exception {
                 onException(IllegalStateException.class).handled(false).to("jbi:service:urn:test:receiver-service");
                 onException(NullPointerException.class).handled(true).to("jbi:service:urn:test:receiver-service");
-                onException().handled(false);
-                errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(1).maximumRedeliveryDelay(300));
+                onException().to("mock:errors").handled(false);
+                //errorHandler(deadLetterChannel("mock:errors").maximumRedeliveries(1).maximumRedeliveryDelay(300));
                 from("jbi:service:urn:test:no-handle-fault").to("jbi:service:urn:test:faulty-service");
                 from("jbi:service:urn:test:handle-fault").handleFault().to("jbi:service:urn:test:faulty-service");
                 from("jbi:service:urn:test:error-not-handled").to("jbi:service:urn:test:iae-error-service");

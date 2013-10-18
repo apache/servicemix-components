@@ -29,6 +29,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.exception.FaultException;
+import org.junit.Test;
 
 /**
  * Tests on handling fault messages with the Camel Exception handler
@@ -37,6 +38,7 @@ public class JbiInOutCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSup
 
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testInOutWithNoHandleFault() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(0);
@@ -56,6 +58,7 @@ public class JbiInOutCamelErrorHandlingTest extends JbiCamelErrorHandlingTestSup
         Thread.sleep(500);
     }
 
+    @Test
     public void testInOutWithHandleFault() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(0);

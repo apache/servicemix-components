@@ -25,12 +25,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.junit.Test;
 
 /**
  * Tests on conveying a simple exception thrown by a bean in the camel route
  */
 public class JbiCamelExceptionsTest extends JbiCamelErrorHandlingTestSupport {
 
+    @Test
     public void testInOnlyConveysException() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOnly exchange = client.createInOnlyExchange();
@@ -42,6 +44,7 @@ public class JbiCamelExceptionsTest extends JbiCamelErrorHandlingTestSupport {
         assertTrue("A NullPointerException was expected", exchange.getError() instanceof NullPointerException);
     }
 
+    @Test
     public void testInOutHandlingBusinessException() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();

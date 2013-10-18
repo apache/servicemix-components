@@ -27,6 +27,7 @@ import org.apache.camel.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.exception.FaultException;
+import org.junit.Test;
 
 /**
  * Test the convertExceptions=true flag (converts all exceptions to JBI FaultExceptions)
@@ -35,6 +36,7 @@ public class JbiConvertExceptionsTest extends JbiCamelErrorHandlingTestSupport {
 
     private static final String EXCEPTION = "This has completely gone wrong at runtime!";
 
+    @Test
     public void testInOnlyConvertExceptions() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();

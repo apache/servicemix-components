@@ -22,6 +22,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.spi.Synchronization;
 import org.apache.camel.test.TestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.common.Registry;
@@ -52,7 +54,7 @@ import org.apache.servicemix.tck.ExchangeCompletedListener;
 /**
  * @version $Revision: 563665 $
  */
-public abstract class JbiTestSupport extends TestSupport {
+public abstract class JbiTestSupport extends CamelTestSupport {
 
     protected Exchange receivedExchange;
 
@@ -127,7 +129,7 @@ public abstract class JbiTestSupport extends TestSupport {
     }
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         if (camelContext == null) {
             camelContext = createCamelContext();
             client = camelContext.createProducerTemplate();
@@ -195,7 +197,7 @@ public abstract class JbiTestSupport extends TestSupport {
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         exchangeCompletedListener.assertExchangeCompleted();
 
         getServicemixClient().close();
@@ -259,7 +261,8 @@ public abstract class JbiTestSupport extends TestSupport {
         // little hack to access the endpoints map in the registry directly
         Field field = Registry.class.getDeclaredField("endpoints");
         field.setAccessible(true);
-        Map<String, org.apache.servicemix.common.Endpoint> endpoints = (Map) field.get(component.getRegistry());
+        Map<String, org.apache.servicemix.common.Endpoint> endpoints = new HashMap();
+        endpoints.putAll((Map) field.get(component.getRegistry()));
 
         for (org.apache.servicemix.common.Endpoint endpoint : endpoints.values()) {
             if (type.isAssignableFrom(endpoint.getClass())) {

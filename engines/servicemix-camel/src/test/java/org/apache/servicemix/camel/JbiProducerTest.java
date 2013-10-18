@@ -22,6 +22,7 @@ import javax.jbi.management.DeploymentException;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * Test for {@link JbiEndpoint.JbiProducer}  
@@ -31,6 +32,7 @@ public class JbiProducerTest extends JbiTestSupport {
     /*
      * Ensure that no exceptions get thrown when shutting down the routes
      */
+    @Test
     public void testShutdown() throws Exception {
         client.stop();
         try {
@@ -41,7 +43,7 @@ public class JbiProducerTest extends JbiTestSupport {
     }
     
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         // testing shutdown, so will do this manually
     }
     

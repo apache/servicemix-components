@@ -32,6 +32,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
+import org.junit.Test;
 
 /**
  * Test cases to ensure multiple threads can safely create an use the {@link org.apache.camel.Producer}
@@ -41,6 +42,7 @@ public class CamelConcurrentProducerCreationTest extends JbiTestSupport {
 
     private static final int COUNT = 1000;
 
+    @Test
     public void testConcurrentlyCreateProducers() throws Exception {
         final MockEndpoint mock = getMockEndpoint("mock:test");
         mock.setResultWaitTime(60000);

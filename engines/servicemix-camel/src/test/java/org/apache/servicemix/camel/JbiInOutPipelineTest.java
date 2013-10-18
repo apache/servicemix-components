@@ -37,6 +37,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 
 /**
@@ -50,6 +51,7 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
 
     private MyHeaderFilterStrategy myFilterStrategy = new MyHeaderFilterStrategy();
 
+    @Test
     public void testPipelineWithMessageHeadersAndAttachements() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();
@@ -72,6 +74,7 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         Thread.sleep(1000);
     }
 
+    @Test
     public void testPipelineWithMessageProviderHeaderFiltering() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();
@@ -89,6 +92,7 @@ public class JbiInOutPipelineTest extends JbiTestSupport {
         Thread.sleep(1000);
     }
 
+    @Test
     public void testPipelineWithMessageConsumerHeaderFiltering() throws Exception {
 
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);

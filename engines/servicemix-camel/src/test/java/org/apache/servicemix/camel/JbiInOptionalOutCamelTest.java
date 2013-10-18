@@ -26,12 +26,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.StringSource;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel
  */
 public class JbiInOptionalOutCamelTest extends JbiTestSupport {
-    
+
+    @Test
     public void testInOptionalOutFromCamelEndpoint() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-optional-out");
         inonly.expectedMessageCount(1);
@@ -42,7 +44,8 @@ public class JbiInOptionalOutCamelTest extends JbiTestSupport {
         // let's wait for a moment to ensure that all pending Exchanges are handled
         Thread.sleep(500);
     }
-    
+
+    @Test
     public void testInOptionalOutFromJbiWithDone() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-optional-out");
         inonly.expectedMessageCount(1);
@@ -58,7 +61,8 @@ public class JbiInOptionalOutCamelTest extends JbiTestSupport {
         getServicemixClient().done(exchange);
         Thread.sleep(500);
     }
-    
+
+    @Test
     public void testInOptionalOutFromJbiWithFault() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-optional-out");
         inonly.expectedMessageCount(1);
@@ -76,7 +80,8 @@ public class JbiInOptionalOutCamelTest extends JbiTestSupport {
         getServicemixClient().sendSync(exchange);
         assertEquals(ExchangeStatus.DONE, exchange.getStatus());
     }
-    
+
+    @Test
     public void testInOptionalOutFromJbiWithError() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-optional-out");
         inonly.expectedMessageCount(1);

@@ -27,6 +27,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOut exchanges by Camel when they return a non-Source payload 
@@ -34,7 +35,8 @@ import org.apache.servicemix.jbi.jaxp.StringSource;
 public class JbiInOutWithPojoTest extends JbiTestSupport {
     
     private static final String MESSAGE = "<just><a>test</a></just>";
-    
+
+    @Test
     public void testInOutWithCamelReturningPojoPayload() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOut exchange = client.createInOutExchange();

@@ -23,6 +23,7 @@ import org.apache.servicemix.executors.impl.ExecutorFactoryImpl;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.InOnly;
@@ -37,6 +38,7 @@ public class AsyncJbiMessagingTest extends JbiTestSupport {
 
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testNoSyncMessagingDeadlock() throws Exception {
         ServiceMixClient client = new DefaultServiceMixClient(jbiContainer);
         InOnly exchange = client.createInOnlyExchange();
@@ -47,6 +49,7 @@ public class AsyncJbiMessagingTest extends JbiTestSupport {
                      ExchangeStatus.DONE, exchange.getStatus());
     }
 
+    @Test
     public void testCallbackExchangesEmptyOnError() throws Exception {
         // disable the exchange completed listener as it is unable to detect failed exchanges
         disableExchangeCompletedListener();        

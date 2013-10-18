@@ -31,6 +31,7 @@ import org.apache.servicemix.camel.test.InvalidSerializableObject;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 /**
  * <p>
@@ -45,7 +46,8 @@ public class JbiNoCheckSerializationTest extends JbiCamelErrorHandlingTestSuppor
     private static final String SERIALIZABLE_KEY = "serializable";
     private static final String INVALID_SERIALIZABLE_KEY = "invalid.serializable";
     private static final String NON_SERIALIZABLE_KEY = "non.serializable";
-    
+
+    @Test
     public void testInOutWithNoCheckSerialization() throws Exception {
         MockEndpoint errors = getMockEndpoint("mock:errors");
         errors.expectedMessageCount(1);

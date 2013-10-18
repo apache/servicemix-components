@@ -22,12 +22,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.container.JBIContainer;
 import org.apache.servicemix.tck.mock.MockMessageExchange;
+import org.junit.Test;
 
 /**
  * Test cases for {@link CamelConsumerEndpoint} 
  */
 public class CamelConsumerEndpointTest extends JbiTestSupport {
-    
+
+    @Test
     public void testInvalidMessageExchangeDoesNotThrowException() throws Exception {
         // sending a message to start the producers and create the external endpoint
         client.sendBody("direct:a", "<hello>world</hello>");

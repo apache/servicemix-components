@@ -27,6 +27,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.StringSource;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel
@@ -34,7 +35,8 @@ import org.apache.servicemix.jbi.container.ActivationSpec;
 public class JbiOperationCamelTest extends JbiTestSupport {
     
     private static final QName OPERATION = new QName("urn:test", "doit");
-    
+
+    @Test
     public void testInOnlySetOperationOnCamelEndpoint() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-only");
         inonly.expectedMessageCount(1);
@@ -48,7 +50,8 @@ public class JbiOperationCamelTest extends JbiTestSupport {
         String str2 = URLDecoder.decode(JbiBinding.getOperation(exchange).toString(), "UTF-8");
         assertEquals(str1, str2);
     }
-    
+
+    @Test
     public void testInOnlySetOperationOnCamelExchange() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-only");
         inonly.expectedMessageCount(1);

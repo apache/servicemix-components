@@ -31,6 +31,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 /**
  * Test to make sure that a Camel Pipeline is capable of preserving JBI headers 
@@ -40,8 +41,9 @@ public class JbiInOnlyPropertiesPipelineTest extends JbiTestSupport {
     private static final String MESSAGE = "<just><a>test</a></just>";
     
     private static final String HEADER_ORIGINAL = "original";
-    private static final String HEADER_TRANSFORMER = "transformer";    
+    private static final String HEADER_TRANSFORMER = "transformer";
 
+    @Test
     public void testPipelinePreservesMessageHeaders() throws Exception {
         MockEndpoint output = getMockEndpoint("mock:output");
         output.expectedBodiesReceived(MESSAGE);

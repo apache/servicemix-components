@@ -25,6 +25,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 import javax.jbi.JBIException;
 import javax.jbi.messaging.InOnly;
@@ -42,6 +43,7 @@ public class JbiExchangePropertiesPreservationTest extends JbiTestSupport {
     private static final Object NEW_VALUE = "newvalue";
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testPropertyPreservation() throws JBIException, InterruptedException {
         MockEndpoint output = getMockEndpoint("mock:output");
         output.expectedMessageCount(1);

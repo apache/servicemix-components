@@ -32,6 +32,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 /**
  * Tests for attachment handling by servicemix-camel JBI component 
@@ -41,6 +42,7 @@ public class JbiCamelAttachmentTest extends JbiTestSupport {
     private static final String ATTACHMENT_ID = "attach1";
     private static final File TEST_FILE = new File("src/test/resources/attachment.png");
 
+    @Test
     public void testPreserveAttachments() throws Exception {
         Exchange exchange = new DefaultExchange(camelContext);
         DataHandler attachment = new DataHandler(new FileDataSource(TEST_FILE));
@@ -61,7 +63,8 @@ public class JbiCamelAttachmentTest extends JbiTestSupport {
             fail("Expected a FileDataSource, but received a " + received.getIn().getAttachment(ATTACHMENT_ID).getDataSource().getClass());
         }
     }
-    
+
+    @Test
     public void testGetAttachmentsFromCamelProcessor() throws Exception {
         InOut inout = getServicemixClient().createInOutExchange();
         inout.setService(new QName("urn:test", "inout-service"));

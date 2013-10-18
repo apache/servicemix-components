@@ -30,12 +30,14 @@ import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.util.jndi.JndiContext;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
+import org.junit.Test;
 
 /**
  * Tests on using the Dynamic Recipient List pattern inside servicemix-camel
  */
 public class JbiDynamicRecipientListTest extends JbiCamelErrorHandlingTestSupport {
 
+    @Test
     public void testInOnlyDynamicRecipientListException() throws Exception {
         MockEndpoint a = getMockEndpoint("mock:a");
         a.expectedMessageCount(1);

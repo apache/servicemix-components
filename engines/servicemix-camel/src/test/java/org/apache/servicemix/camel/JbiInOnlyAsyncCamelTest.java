@@ -28,6 +28,7 @@ import org.apache.camel.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel
@@ -36,6 +37,7 @@ public class JbiInOnlyAsyncCamelTest extends JbiTestSupport {
 
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testInOnlyExchangeThroughAsyncRoute() throws Exception {
         // first remove the ExchangeListener -- it will not be notified of the undeliverable MessageExchange
         jbiContainer.removeListener(exchangeCompletedListener);

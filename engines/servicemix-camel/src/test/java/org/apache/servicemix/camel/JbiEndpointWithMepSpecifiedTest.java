@@ -28,6 +28,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 
 /**
  * Tests to check correct handling of the ?mep=xxx setting on a Camel JBI endpoint
@@ -37,11 +38,12 @@ public class JbiEndpointWithMepSpecifiedTest extends JbiTestSupport {
     private MyReceiverComponent component;
     
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         component = new MyReceiverComponent();
         super.setUp();
     }
-    
+
+    @Test
     public void testCamelInOutSendJbiInOnly() throws Exception {
         client.request("direct:a", new Processor() {
             

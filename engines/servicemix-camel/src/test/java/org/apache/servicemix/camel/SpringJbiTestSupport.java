@@ -69,7 +69,7 @@ public abstract class SpringJbiTestSupport extends JbiTestSupport {
     }
     
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
         jbiContainer.stop();
         jbiContainer.shutDown();

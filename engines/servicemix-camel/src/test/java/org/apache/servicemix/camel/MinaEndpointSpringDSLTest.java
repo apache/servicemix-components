@@ -19,16 +19,18 @@ package org.apache.servicemix.camel;
 import java.util.List;
 import junit.framework.Assert;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * This tests whether camel-mina can be deployed in ServiceMix (see CAMEL-1146)
  */
 public class MinaEndpointSpringDSLTest extends SpringJbiTestSupport {
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Test
     public void test() throws Exception {
         Assert.assertTrue(true);
     }

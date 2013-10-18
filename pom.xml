@@ -69,6 +69,7 @@
         <servicemix.legal.version>1.0</servicemix.legal.version>
         <servicemix.specs.version>2.2.0</servicemix.specs.version>
         <servicemix-utils.version>1.6.0</servicemix-utils.version>
+
         <servicemix.version>3.3.2</servicemix.version>
 
         <!-- OSGi properties used by maven-bundle-plugin -->
@@ -85,7 +86,7 @@
         <activemq.version>5.7.0</activemq.version>
         
         <!-- Camel -->
-        <camel.version>2.10.3</camel.version>
+        <camel.version>2.12.1</camel.version>
 
         <!-- CXF -->
         <cxf.version>2.6.4</cxf.version>

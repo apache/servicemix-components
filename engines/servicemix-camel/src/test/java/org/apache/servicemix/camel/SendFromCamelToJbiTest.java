@@ -25,6 +25,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.MessageList;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 
 /**
  * @version $Revision: 563665 $
@@ -33,6 +34,7 @@ public class SendFromCamelToJbiTest extends JbiTestSupport {
 
     private ReceiverComponent receiverComponent = new ReceiverComponent();
 
+    @Test
     public void testCamelInvokingJbi() throws Exception {
         sendExchangeAsync("<foo bar='123'/>");
         MessageList list = receiverComponent.getMessageList();
@@ -69,7 +71,7 @@ public class SendFromCamelToJbiTest extends JbiTestSupport {
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         camelContext.stop();
     }
 }

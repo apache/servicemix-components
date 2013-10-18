@@ -26,12 +26,14 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
+import org.junit.Test;
 
 /**
  * Tests to ensure that the Exchange.getFromEndpoint() call returns the originating Camel endpoint
  */
 public class JbiEndpointAvailableInRouteTest extends JbiTestSupport {
 
+    @Test
     public void testSendExchange() throws Exception {
         InOnly exchange = getServicemixClient().createInOnlyExchange();
         exchange.setService(new QName("urn:test", "service"));

@@ -29,6 +29,7 @@ import org.apache.servicemix.components.util.EchoComponent;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.jbi.jaxp.StringSource;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 
 /**
  * Tests on sending JBI InOut and InOnly exchanges from within a Camel route to 
@@ -38,6 +39,7 @@ public class JbiStrangeNamespaceHandlingTest extends JbiTestSupport {
 
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testInOutWithStrangeNamespace() throws Exception {
         MockEndpoint inout = getMockEndpoint("mock:in-out");
         inout.expectedMessageCount(1);
@@ -56,7 +58,8 @@ public class JbiStrangeNamespaceHandlingTest extends JbiTestSupport {
         // let's wait a moment to make sure that the last DONE MessageExchange is handled
         Thread.sleep(1000);
     }
-    
+
+    @Test
     public void testInOnlyWithStrangeNamespace() throws Exception {
         MockEndpoint inonly = getMockEndpoint("mock:in-only");
         inonly.expectedMessageCount(1);

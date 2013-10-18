@@ -20,7 +20,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.CamelTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
 
 /**
  * @version $Revision: 563665 $
@@ -64,7 +64,7 @@ public class TestCamelRouter extends CamelTestSupport {
     }
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         a = resolveMandatoryEndpoint("mock:a", MockEndpoint.class);
         b = resolveMandatoryEndpoint("mock:b", MockEndpoint.class);

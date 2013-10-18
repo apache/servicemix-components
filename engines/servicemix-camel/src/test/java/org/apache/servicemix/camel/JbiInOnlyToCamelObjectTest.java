@@ -29,6 +29,7 @@ import org.apache.camel.StringSource;
 import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel
@@ -38,6 +39,7 @@ public class JbiInOnlyToCamelObjectTest extends JbiTestSupport {
     
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testInOnlyExchangeConvertBody() throws Exception {
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedBodiesReceived(new MessageContainer(MESSAGE));

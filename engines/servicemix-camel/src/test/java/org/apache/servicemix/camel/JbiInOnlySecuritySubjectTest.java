@@ -32,6 +32,7 @@ import org.apache.servicemix.client.DefaultServiceMixClient;
 import org.apache.servicemix.client.ServiceMixClient;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel
@@ -40,6 +41,7 @@ public class JbiInOnlySecuritySubjectTest extends JbiTestSupport {
 
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testSecuritySubjectConveyedThroughCamelRoute() throws Exception {
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedMessageCount(1);

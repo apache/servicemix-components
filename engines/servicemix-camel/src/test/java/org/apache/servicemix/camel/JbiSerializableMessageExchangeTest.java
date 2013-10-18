@@ -29,6 +29,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.servicemix.jbi.container.ActivationSpec;
 import org.apache.servicemix.tck.ReceiverComponent;
+import org.junit.Test;
 
 /**
  * Tests on handling JBI InOnly exchanges by Camel 
@@ -37,6 +38,7 @@ public class JbiSerializableMessageExchangeTest extends JbiTestSupport {
     
     private static final String MESSAGE = "<just><a>test</a></just>";
 
+    @Test
     public void testInOnlyExchangeConvertBody() throws Exception {
         MockEndpoint done = getMockEndpoint("mock:done");
         done.expectedBodiesReceived(MESSAGE);

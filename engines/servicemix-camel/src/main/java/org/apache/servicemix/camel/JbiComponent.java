@@ -22,7 +22,8 @@ import javax.xml.namespace.QName;
 
 import org.apache.camel.*;
 import org.apache.camel.impl.DefaultComponent;
-import org.apache.camel.processor.UnitOfWorkProcessor;
+import org.apache.camel.processor.UnitOfWorkProducer;
+import org.apache.camel.util.AsyncProcessorConverterHelper;
 import org.apache.servicemix.common.util.URIResolver;
 import org.apache.servicemix.id.IdGenerator;
 
@@ -166,7 +167,7 @@ public class JbiComponent extends DefaultComponent {
     protected AsyncProcessor createCamelProcessor(Endpoint camelEndpoint) {
         AsyncProcessor processor = null;
         try {
-            processor = new UnitOfWorkProcessor(camelEndpoint.createProducer());
+            processor = AsyncProcessorConverterHelper.convert(new UnitOfWorkProducer(camelEndpoint.createProducer()));
         } catch (Exception e) {
             throw new FailedToCreateProducerException(camelEndpoint, e);
         }
