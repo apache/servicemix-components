@@ -359,6 +359,12 @@
             <groupId>org.apache.servicemix</groupId>
             <artifactId>servicemix-utils</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.servicemix.specs</groupId>

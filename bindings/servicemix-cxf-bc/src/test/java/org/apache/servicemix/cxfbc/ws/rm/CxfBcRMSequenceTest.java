@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -68,6 +67,8 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
     private static final String GREETMEONEWAY_ACTION = "http://cxf.apache.org/greeter_control/Greeter/greetMeOneWayRequest";
     private static final String GREETME_ACTION = "http://cxf.apache.org/greeter_control/Greeter/greetMeRequest";
     private static final String GREETME_RESPONSE_ACTION = "http://cxf.apache.org/greeter_control/Greeter/greetMeResponse";
+    private static final String RM10_GENERIC_FAULT_ACTION 
+            = "http://schemas.xmlsoap.org/ws/2004/08/addressing/fault";
     private static final QName CONTROL_SERVICE = new QName("http://cxf.apache.org/greeter_control", "ControlService");
     private static final QName GREETER_SERVICE = new QName("http://cxf.apache.org/greeter_control", "GreeterService");
 
@@ -168,10 +169,10 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         greeterBus = bf.createBus("org/apache/servicemix/cxfbc/ws/rm/rminterceptors.xml");
         BusFactory.setDefaultBus(greeterBus);
-        removeRMInterceptors(greeterBus.getOutInterceptors());
+        /*removeRMInterceptors(greeterBus.getOutInterceptors());
         removeRMInterceptors(greeterBus.getOutFaultInterceptors());
         removeRMInterceptors(greeterBus.getInInterceptors());
-        removeRMInterceptors(greeterBus.getInFaultInterceptors());
+        removeRMInterceptors(greeterBus.getInFaultInterceptors());*/
         LOG.fine("Initialised greeter bus with addressing but without RM interceptors");
 
         outRecorder = new OutMessageRecorder();
@@ -702,7 +703,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
 
         mf.verifyMessages(3, false);
         expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
-                                        GREETME_RESPONSE_ACTION, null};
+                                        GREETME_RESPONSE_ACTION, RM10_GENERIC_FAULT_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
         mf.verifyAcknowledgements(new boolean[3] , false);
@@ -802,7 +803,7 @@ public class CxfBcRMSequenceTest extends CxfBcSpringTestSupport {
         mf.verifyMessages(3, false);
         expectedActions = new String[] {RM10Constants.INSTANCE.getCreateSequenceResponseAction(),
                                         GREETME_RESPONSE_ACTION,
-                                        null};
+                                        RM10_GENERIC_FAULT_ACTION};
         mf.verifyActions(expectedActions, false);
         mf.verifyMessageNumbers(new String[] {null, "1", null}, false);
         mf.verifyAcknowledgements(new boolean[] {false, true, false} , false);

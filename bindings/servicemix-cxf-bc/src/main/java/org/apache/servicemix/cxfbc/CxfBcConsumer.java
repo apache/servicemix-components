@@ -40,6 +40,7 @@ import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.apache.cxf.feature.Feature;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -580,7 +581,7 @@ public class CxfBcConsumer extends ConsumerEndpoint implements
     private void addRMFeatureRequiredInterceptors() {
         CXFBusImpl bus = (CXFBusImpl) getBus();
         if (bus.getFeatures() != null) {
-            for (AbstractFeature feature : bus.getFeatures()){
+            for (Feature feature : bus.getFeatures()){
                 if (feature.getClass().getName().equals("org.apache.cxf.ws.rm.feature.RMFeature")) {
                     bus.getOutInterceptors().add(new BareOutInterceptor());
                 }

@@ -343,7 +343,8 @@ public class CxfBcAddressingTest extends CxfBcSpringTestSupport implements Verif
      */
     protected static String verifyHeaders(List<String> wsaHeaders,
                                           boolean partial,
-                                          boolean requestLeg) {
+                                          boolean requestLeg,
+                                          boolean replyToRequired) {
         
         String ret = null;
         if (!wsaHeaders.contains(Names.WSA_MESSAGEID_NAME)) {
@@ -353,13 +354,15 @@ public class CxfBcAddressingTest extends CxfBcSpringTestSupport implements Verif
             ret = "expected To header";
         }
        
-        if (!(wsaHeaders.contains(Names.WSA_REPLYTO_NAME)
-              || wsaHeaders.contains(Names.WSA_RELATESTO_NAME))) {
+        if (replyToRequired 
+            && !(wsaHeaders.contains(Names.WSA_REPLYTO_NAME)
+                || wsaHeaders.contains(Names.WSA_RELATESTO_NAME))) {
             ret = "expected ReplyTo or RelatesTo header";
         }
+        /*
         if (partial) { 
             if (!wsaHeaders.contains(Names.WSA_FROM_NAME)) {
-                //ret = "expected From header";
+                ret = "expected From header";
             }
         } else {
             // REVISIT Action missing from full response
@@ -367,6 +370,7 @@ public class CxfBcAddressingTest extends CxfBcSpringTestSupport implements Verif
             //    ret = "expected Action header";
             //}            
         }
+        */
         if (requestLeg && !(wsaHeaders.contains(CUSTOMER_NAME.getLocalPart()))) {
             ret = "expected CustomerKey header";
         }

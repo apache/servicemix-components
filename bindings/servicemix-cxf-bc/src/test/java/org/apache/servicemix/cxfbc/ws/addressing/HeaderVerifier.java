@@ -37,6 +37,8 @@ import org.apache.cxf.binding.soap.SoapVersion;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.interceptor.Fault;
+import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.addressing.AttributedURIType;
@@ -60,11 +62,25 @@ public class HeaderVerifier extends AbstractSoapInterceptor {
         super(Phase.POST_PROTOCOL);
     }
     
+    public HeaderVerifier(String s) {
+        super(s);
+    }
+    
     public Set<QName> getUnderstoodHeaders() {
         return Names.HEADERS;
     }
 
     public void handleMessage(SoapMessage message) {
+        if (!MessageUtils.isRequestor(message)
+            && !MessageUtils.isOutbound(message)
+            && getPhase().equals(Phase.POST_PROTOCOL)) {
+            message.getInterceptorChain().add(new AbstractSoapInterceptor(Phase.UNMARSHAL) {
+                public void handleMessage(SoapMessage message) throws Fault {
+                    mediate(message);
+                }                
+            });
+            return;
+        }
         mediate(message);
     }
 
@@ -128,7 +144,10 @@ public class HeaderVerifier extends AbstractSoapInterceptor {
                                       || outgoingPartialResponse;
             verificationCache.put(CxfBcAddressingTest.verifyHeaders(wsaHeaders, 
                                                         partialResponse,
-                                                        isRequestLeg(message)));
+                                                        isRequestLeg(message),
+                                                        false));
+            
+                                                                   
         } catch (SOAPException se) {
             verificationCache.put("SOAP header verification failed: " + se);
         }
@@ -150,6 +169,20 @@ public class HeaderVerifier extends AbstractSoapInterceptor {
                         String headerText = hdr.getTextContent();
                         if (CxfBcAddressingTest.CUSTOMER_KEY.equals(headerText)) {
                             wsaHeaders.add(hdr.getLocalName());
+                        }
+                    }
+                
+                }
+            } else if (obj instanceof JAXBElement) {
+                JAXBElement<?> el = (JAXBElement<?>)obj;
+                if (namespaceURI.equals(el.getName().getNamespaceURI())) {
+                    if (namespaceURI.endsWith("addressing")) {
+                        currentNamespaceURI = namespaceURI;
+                        wsaHeaders.add(el.getName().getLocalPart());
+                    } else if (CxfBcAddressingTest.CUSTOMER_NAME.getNamespaceURI().equals(namespaceURI)) {
+                        String headerText = (String)el.getValue();
+                        if (CxfBcAddressingTest.CUSTOMER_KEY.equals(headerText)) {
+                            wsaHeaders.add(el.getName().getLocalPart());
                         }
                     }
                 }

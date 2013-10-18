@@ -89,7 +89,7 @@
         <camel.version>2.12.1</camel.version>
 
         <!-- CXF -->
-        <cxf.version>2.6.4</cxf.version>
+        <cxf.version>2.7.6</cxf.version>
 
         <!-- Geronimo Specs and Modules -->
         <geronimo-activation.version>1.0.2</geronimo-activation.version>
@@ -146,9 +146,9 @@
         <spring.osgi.version>1.2.0</spring.osgi.version>
         <stax-api.version>1.0-2</stax-api.version>
         <woden.version>1.0.0M6</woden.version>
-        <woodstox.version>4.0.8</woodstox.version>
+        <woodstox.version>4.2.0</woodstox.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <wss4j.version>1.6.8</wss4j.version>
+        <wss4j.version>1.6.10</wss4j.version>
         <xalan.version>2.7.1</xalan.version>
         <xbean.version>3.11.1</xbean.version>
         <xercesImpl.version>2.9.1</xercesImpl.version>
