@@ -36,9 +36,6 @@ public class ScriptingComponentTest extends SpringTestSupport {
     private static final String TEST_PROPERTY = "JSR-223-TEST-PROPERTY-NAME";
     private static final String PROP_VALUE    = "JSR-223-TEST-PROPERTY-VALUE";
 
-    // TODO need to run JRuby tests first here since upgrading to 1.7.2 for some reason. Was getting
-    // NameError: ArrayJavaProxy is already defined
-    // (root) at <script>:20
     public void testJRubyInOut() throws Exception {
         DefaultServiceMixClient client = new DefaultServiceMixClient(jbi);
         InOut me = client.createInOutExchange();

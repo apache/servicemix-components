@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 #
-include Java
-
 import javax.jbi.messaging.MessageExchange
 import javax.jbi.messaging.NormalizedMessage
 import org.apache.servicemix.jbi.jaxp.StringSource
