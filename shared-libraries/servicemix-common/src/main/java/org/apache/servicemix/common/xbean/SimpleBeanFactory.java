@@ -44,10 +44,11 @@ public class SimpleBeanFactory implements BeanFactory {
     }
     public String[] getAliases(String name) throws NoSuchBeanDefinitionException {
         Object bean = beans.get(name);
-        if (bean == null) {
-            throw new NoSuchBeanDefinitionException(name);
+        if (bean != null) {
+           return new String[]{name};
+        } else {
+           return new String[0];
         }
-        return new String[0];
     }
     public Object getBean(String name) throws BeansException {
         return getBean(name, (Class) null);
