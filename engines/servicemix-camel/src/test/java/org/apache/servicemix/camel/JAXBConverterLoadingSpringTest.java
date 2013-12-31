@@ -19,13 +19,16 @@ package org.apache.servicemix.camel;
 
 import java.util.List;
 import org.apache.servicemix.jbi.container.ActivationSpec;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class JAXBConverterLoadingSpringTest extends SpringJbiTestSupport {
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Test
     public void test() throws Exception {
         // We just need to make sure the fallbackConverter can be load
         assertTrue(true);
