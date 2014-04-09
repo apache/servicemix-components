@@ -62,7 +62,7 @@
         <servicemix.osgi.bundles>
             org.apache.servicemix.bundles.spring-core,
             org.apache.servicemix.bundles.spring-beans,
-            org.apache.servicemix.bundles.spring-context,
+            org.apache.servicemix.bundles.spring-context
         </servicemix.osgi.bundles>
     </properties>
 
