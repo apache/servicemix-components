@@ -45,7 +45,7 @@
     </repositories>    
 
     <properties>
-        <saxon.version>9.4.0.4</saxon.version>
+        <saxon.version>9.5.1-1</saxon.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.saxon*,
@@ -56,7 +56,7 @@
             org.apache.xbean.spring.context.v2,
             org.springframework.beans.factory.xml,
             sun.misc;resolution:=optional,
-            net.sf.saxon.*;version="[9.4.0,9.5)",
+            net.sf.saxon.*;version="[9.5,9.6)",
             *
         </servicemix.osgi.import>
         <servicemix.osgi.export>
@@ -68,7 +68,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sf.saxon</groupId>
-            <artifactId>saxon9he</artifactId>
+            <artifactId>Saxon-HE</artifactId>
             <version>${saxon.version}</version>
         </dependency>
         <dependency>
