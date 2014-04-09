@@ -36,9 +36,9 @@
     <!-- configure required bundles to mimic ServiceMix 3 JBI component classloader in OSGi environment -->
     <properties>
         <servicemix.osgi.bundles>
-            org.springframework.core,
-            org.springframework.beans,
-            org.springframework.context,
+            org.apache.servicemix.bundles.spring-core,
+            org.apache.servicemix.bundles.spring-beans,
+            org.apache.servicemix.bundles.spring-context,
             servicemix-common,
             servicemix-soap,
             servicemix-soap2

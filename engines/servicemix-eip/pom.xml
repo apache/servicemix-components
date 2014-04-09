@@ -60,9 +60,9 @@
             META-INF.services.org.apache.xbean.spring.http.servicemix.apache.org.eip
         </servicemix.osgi.export>
         <servicemix.osgi.bundles>
-            org.springframework.core,
-            org.springframework.beans,
-            org.springframework.context
+            org.apache.servicemix.bundles.spring-core,
+            org.apache.servicemix.bundles.spring-beans,
+            org.apache.servicemix.bundles.spring-context,
         </servicemix.osgi.bundles>
     </properties>
 
