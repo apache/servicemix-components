@@ -183,6 +183,7 @@
                         <!--  TODO -->
                         <exclude>**/AnnotatedBeanEndpointTest.*</exclude>
                         <exclude>**/ConsumerBeanTest.*</exclude>
+                        <exclude>**/SenderBeanTest.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
