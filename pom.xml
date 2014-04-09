@@ -130,7 +130,7 @@
         <jaxb-xjc.version>2.1.12</jaxb-xjc.version>
         <jdom.version>1.1</jdom.version>
         <jencks.version>2.2</jencks.version>
-        <jetty.version>7.5.4.v20111024</jetty.version>
+        <jetty.version>8.1.9.v20130131</jetty.version>
         <junit.version>4.7</junit.version>
         <log4j.version>1.2.16</log4j.version>
         <mx4j.version>3.0.1</mx4j.version>

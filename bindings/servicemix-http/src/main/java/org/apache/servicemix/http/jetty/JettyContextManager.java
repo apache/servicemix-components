@@ -21,7 +21,7 @@ import org.apache.servicemix.common.security.KeystoreManager;
 import org.apache.servicemix.http.*;
 import org.eclipse.jetty.http.HttpMethods;
 import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.http.security.Constraint;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -382,7 +382,7 @@ public class JettyContextManager implements ContextManager {
     protected class DisplayServiceHandler extends AbstractHandler {
 
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-            if (response.isCommitted() || HttpConnection.getCurrentConnection().getRequest().isHandled()) {
+            if (response.isCommitted() || AbstractHttpConnection.getCurrentConnection().getRequest().isHandled()) {
                 return;
             }
 

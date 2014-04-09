@@ -34,7 +34,7 @@ import org.apache.cxf.transport.http_jetty.JettyHTTPDestination;
 import org.apache.cxf.transport.http_jetty.JettyHTTPServerEngine;
 import org.eclipse.jetty.http.HttpMethods;
 import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.server.HttpConnection;
+import org.eclipse.jetty.server.AbstractHttpConnection;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.util.ByteArrayISO8859Writer;
@@ -60,7 +60,7 @@ public class ListServiceHandler extends AbstractHandler {
             HttpServletResponse response, int dispatch) throws IOException,
             ServletException {
         if (response.isCommitted()
-                || HttpConnection.getCurrentConnection().getRequest()
+                || AbstractHttpConnection.getCurrentConnection().getRequest()
                         .isHandled()) {
             return;
         }
