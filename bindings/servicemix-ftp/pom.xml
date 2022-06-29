@@ -38,7 +38,7 @@
     <properties>
         <backport-util-concurrent.version>3.1</backport-util-concurrent.version>
         <ftpserver.version>1.0.4</ftpserver.version>
-        <mina.version>2.0.0-RC1</mina.version>
+        <mina.version>2.0.22</mina.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.ftp*,
