@@ -37,7 +37,7 @@
 
     <properties>
         <commons-vfs.version>1.0</commons-vfs.version>
-        <jsch.version>0.1.31</jsch.version>
+        <jsch.version>0.1.54</jsch.version>
 
         <servicemix.osgi.import>
             !org.apache.servicemix.vfs*,
