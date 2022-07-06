@@ -83,7 +83,7 @@
 
         <!-- ActiveMQ -->
         <activeio.version>3.1.2</activeio.version>
-        <activemq.version>5.9.0</activemq.version>
+        <activemq.version>5.15.9</activemq.version>
         
         <!-- Camel -->
         <camel.version>2.12.1</camel.version>
