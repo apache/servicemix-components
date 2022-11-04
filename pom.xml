@@ -115,7 +115,7 @@
         <bsf.version>2.3.0</bsf.version>
         <bsh.version>1.3.0</bsh.version>
         <commons-codec.version>1.3</commons-codec.version>
-        <commons-collections.version>3.2.1</commons-collections.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
         <commons-httpclient.version>3.1</commons-httpclient.version>
         <commons-io.version>1.4</commons-io.version>
         <commons-jexl.version>2.0.1</commons-jexl.version>
