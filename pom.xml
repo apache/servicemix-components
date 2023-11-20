@@ -122,7 +122,7 @@
         <commons-management.version>1.0</commons-management.version>
         <commons-net.version>1.4.1</commons-net.version>
         <commons-pool.version>1.5.4</commons-pool.version>
-        <derby.version>10.5.3.0_1</derby.version>
+        <derby.version>10.17.1.0</derby.version>
         <easymock.version>2.4</easymock.version>
         <javax.mail.version>1.4.4</javax.mail.version>
         <jaxb-api.version>2.1</jaxb-api.version>
